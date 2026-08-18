@@ -2,16 +2,20 @@ package com.retailpos.pricing;
 
 import com.retailpos.domain.PriceHistory;
 import com.retailpos.domain.PriceHistoryRepository;
+import com.retailpos.domain.Product;
+import com.retailpos.domain.ProductRepository;
 import com.retailpos.domain.SystemConfig;
 import com.retailpos.domain.SystemConfigRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/pricing")
+@RequestMapping({"/api/pricing", "/api/admin/pricing"})
 @CrossOrigin(origins = "*")
 public class PricingController {
 
@@ -19,14 +23,51 @@ public class PricingController {
     private final PricingSimulationService pricingSimulationService;
     private final PriceHistoryRepository priceHistoryRepository;
     private final SystemConfigRepository systemConfigRepository;
+    private final ProductRepository productRepository;
     private final MarketCrashService marketCrashService;
 
-    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, MarketCrashService marketCrashService) {
+    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, ProductRepository productRepository, MarketCrashService marketCrashService) {
         this.priceAdjustmentService = priceAdjustmentService;
         this.pricingSimulationService = pricingSimulationService;
         this.priceHistoryRepository = priceHistoryRepository;
         this.systemConfigRepository = systemConfigRepository;
+        this.productRepository = productRepository;
         this.marketCrashService = marketCrashService;
+    }
+
+    @GetMapping({"/live", "/products"})
+    public ResponseEntity<List<Product>> getLivePrices() {
+        return ResponseEntity.ok(productRepository.findAll());
+    }
+
+    @GetMapping("/products/{productId}")
+    public ResponseEntity<Product> getProductPricing(@PathVariable Long productId) {
+        return ResponseEntity.of(productRepository.findById(productId));
+    }
+
+    @GetMapping("/products/{productId}/metrics")
+    public ResponseEntity<Map<String, Object>> getProductMetrics(@PathVariable Long productId) {
+        Product p = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("productId", p.getId());
+        metrics.put("flavour", p.getFlavour());
+        metrics.put("basePrice", p.getDefaultCupPrice());
+        metrics.put("currentPrice", p.getCurrentCupPrice());
+        metrics.put("minPrice", p.getMinCupPrice());
+        metrics.put("maxPrice", p.getMaxCupPrice());
+        metrics.put("lastPriceUpdate", p.getLastPriceChangeTimestamp());
+
+        return ResponseEntity.ok(metrics);
+    }
+
+    @PostMapping({"/products/{productId}/price", "/admin/products/{productId}/price"})
+    public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> updateManualPrice(
+            @PathVariable Long productId,
+            @RequestParam BigDecimal newPrice,
+            @RequestParam(required = false, defaultValue = "MANUAL_ADMIN_CHANGE") String reason) {
+        return ResponseEntity.ok(priceAdjustmentService.updateManualPrice(productId, newPrice, reason));
     }
 
     @GetMapping("/market-crash/status")
@@ -34,7 +75,7 @@ public class PricingController {
         return ResponseEntity.ok(marketCrashService.getStatus());
     }
 
-    @PostMapping("/market-crash/trigger")
+    @PostMapping({"/market-crash/trigger", "/market-crash"})
     public ResponseEntity<MarketCrashService.MarketCrashStatus> triggerMarketCrash(@RequestParam(defaultValue = "3") int durationMinutes) {
         return ResponseEntity.ok(marketCrashService.triggerMarketCrash(durationMinutes, "MANUAL_ADMIN"));
     }
@@ -44,7 +85,7 @@ public class PricingController {
         return ResponseEntity.ok(marketCrashService.stopMarketCrash());
     }
 
-    @GetMapping("/evaluate")
+    @GetMapping({"/evaluate", "/admin/evaluate"})
     public ResponseEntity<List<PriceAdjustmentService.PriceEvaluationResult>> evaluateAllPrices() {
         return ResponseEntity.ok(priceAdjustmentService.evaluateAllProducts());
     }
@@ -69,7 +110,7 @@ public class PricingController {
         return ResponseEntity.ok(pricingSimulationService.runSimulation(request));
     }
 
-    @GetMapping("/config")
+    @GetMapping({"/config", "/admin/config"})
     public ResponseEntity<List<SystemConfig>> getConfig() {
         return ResponseEntity.ok(systemConfigRepository.findAll());
     }
@@ -89,7 +130,7 @@ public class PricingController {
         public void setValue(String value) { this.value = value; }
     }
 
-    @PutMapping("/config")
+    @PutMapping({"/config", "/admin/config"})
     public ResponseEntity<List<SystemConfig>> updateConfig(@RequestBody List<UpdateConfigItem> updates) {
         for (UpdateConfigItem item : updates) {
             systemConfigRepository.findById(item.getKey()).ifPresent(cfg -> {
@@ -100,3 +141,4 @@ public class PricingController {
         return ResponseEntity.ok(systemConfigRepository.findAll());
     }
 }
+

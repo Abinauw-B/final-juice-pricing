@@ -27,3 +27,24 @@ management:
     web:
       exposure:
         include: health,info,metrics
+
+pricing:
+  engine:
+    enabled: true
+    interval-ms: 60000
+  demand:
+    window-minutes: 5
+    target-orders: 10
+  weight:
+    demand: 0.45
+    inventory: 0.30
+    momentum: 0.15
+    time: 0.10
+  idle-decay-percent: 4
+  max-change-percent: 10
+  crash:
+    enabled: true
+    probability: 0.03
+    multiplier: 0.55
+  minimum-change-percent: 1
+

@@ -234,6 +234,54 @@ public class PriceAdjustmentService {
                 .toList();
     }
 
+    @Transactional
+    public PriceEvaluationResult updateManualPrice(Long productId, BigDecimal newPrice, String reason) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+
+        BigDecimal minPrice = product.getMinCupPrice() != null ? product.getMinCupPrice() : new BigDecimal("18.00");
+        BigDecimal maxPrice = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : new BigDecimal("25.00");
+
+        if (newPrice.compareTo(minPrice) < 0) {
+            throw new IllegalArgumentException("Price cannot be less than minimum price of ₹" + minPrice);
+        }
+        if (newPrice.compareTo(maxPrice) > 0) {
+            throw new IllegalArgumentException("Price cannot exceed maximum price of ₹" + maxPrice);
+        }
+
+        BigDecimal oldPrice = product.getCurrentCupPrice();
+        LocalDateTime now = LocalDateTime.now();
+
+        product.setCurrentCupPrice(newPrice);
+        product.setLastPriceChangeTimestamp(now);
+        productRepository.save(product);
+
+        PriceHistory history = PriceHistory.builder()
+                .productId(productId)
+                .oldPrice(oldPrice)
+                .newPrice(newPrice)
+                .demandScore(50.0)
+                .stockPressurePct(0.0)
+                .timeFactorMultiplier(1.0)
+                .explanation(reason != null && !reason.isBlank() ? reason : "MANUAL_ADMIN_CHANGE")
+                .createdAt(now)
+                .build();
+        priceHistoryRepository.save(history);
+
+        return PriceEvaluationResult.builder()
+                .productId(productId)
+                .flavour(product.getFlavour())
+                .oldPrice(oldPrice)
+                .newPrice(newPrice)
+                .priceChanged(true)
+                .demandScore(50.0)
+                .stockPressurePct(0.0)
+                .timeFactorMultiplier(1.0)
+                .explanation("Price manually set to ₹" + newPrice + " (" + reason + ")")
+                .statusReason("MANUAL_ADMIN_CHANGE")
+                .build();
+    }
+
     private double getConfigDouble(String key, double defaultVal) {
         return systemConfigRepository.findById(key)
                 .map(c -> Double.parseDouble(c.getConfigValue()))

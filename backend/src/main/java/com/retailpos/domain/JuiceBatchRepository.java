@@ -21,6 +21,9 @@ public interface JuiceBatchRepository extends JpaRepository<JuiceBatch, Long> {
     @Query("SELECT b FROM JuiceBatch b WHERE b.productId = :productId AND b.status = 'ACTIVE' ORDER BY b.id ASC")
     List<JuiceBatch> findActiveBatchesForProductWithLock(@Param("productId") Long productId);
 
-    @Query("SELECT b FROM JuiceBatch b WHERE b.productId = :productId AND b.status = 'ACTIVE' ORDER BY b.id ASC")
-    Optional<JuiceBatch> findFirstActiveBatchForProduct(@Param("productId") Long productId);
+    Optional<JuiceBatch> findFirstByProductIdAndStatusOrderByIdAsc(Long productId, JuiceBatch.BatchStatus status);
+
+    default Optional<JuiceBatch> findFirstActiveBatchForProduct(Long productId) {
+        return findFirstByProductIdAndStatusOrderByIdAsc(productId, JuiceBatch.BatchStatus.ACTIVE);
+    }
 }
