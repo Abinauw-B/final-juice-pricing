@@ -245,13 +245,13 @@ public class POSService {
                 String explanation;
 
                 if (purchasedProductIds.contains(p.getId())) {
-                    // Purchased item -> Price surges proportionally (+1 or +2)
-                    int surge = Math.min(2, Math.max(1, totalPurchasedQty));
+                    // Purchased item -> Price surges strictly by +₹1 step (e.g. ₹18 -> ₹19 -> ₹20)
+                    int surge = 1;
                     newPrice = oldPrice.add(BigDecimal.valueOf(surge));
                     if (newPrice.compareTo(p.getMaxCupPrice()) > 0) {
                         newPrice = p.getMaxCupPrice();
                     }
-                    explanation = String.format("📈 BAR STOCK SURGE: Buying volume surge (+%d cups). Price increased from ₹%s to ₹%s for %s.", totalPurchasedQty, oldPrice, newPrice, p.getFlavour());
+                    explanation = String.format("📈 BAR STOCK SURGE: Buying volume surge (+%d cup(s)). Price increased from ₹%s to ₹%s for %s.", totalPurchasedQty, oldPrice, newPrice, p.getFlavour());
                 } else {
                     // Unpurchased items -> Dynamic market variation & capital shift discount (-1)
                     if (oldPrice.compareTo(p.getMinCupPrice()) > 0) {
