@@ -1,6 +1,6 @@
 package com.retailpos.pos;
 
-import com.retailpos.domain.*;
+imprt com.retailpos.domain.*;
 import com.retailpos.inventory.JuiceBatchService;
 import com.retailpos.pricing.MarketCrashService;
 import org.springframework.stereotype.Service;
