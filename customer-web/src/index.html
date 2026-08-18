@@ -1035,6 +1035,14 @@
       renderCart();
     }
 
+    function closeReceiptModal() {
+      const modal = document.getElementById('receiptModal');
+      if (modal) modal.style.display = 'none';
+      cart = [];
+      renderCart();
+      fetchProducts();
+    }
+
     async function checkBackendHealth() {
       try {
         const res = await fetch('http://localhost:8088/api/health');
