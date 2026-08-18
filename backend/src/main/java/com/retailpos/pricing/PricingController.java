@@ -62,6 +62,38 @@ public class PricingController {
         return ResponseEntity.ok(metrics);
     }
 
+    @GetMapping("/products/{productId}/breakdown")
+    public ResponseEntity<Map<String, Object>> getProductBreakdown(@PathVariable Long productId) {
+        Product p = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+
+        BigDecimal base = p.getDefaultCupPrice() != null ? p.getDefaultCupPrice() : new BigDecimal("20.00");
+        BigDecimal current = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : base;
+        BigDecimal diff = current.subtract(base);
+        double pct = base.compareTo(BigDecimal.ZERO) > 0 ? diff.doubleValue() / base.doubleValue() * 100.0 : 0.0;
+
+        Map<String, Object> breakdown = new HashMap<>();
+        breakdown.put("productId", p.getId());
+        breakdown.put("productName", p.getName());
+        breakdown.put("flavour", p.getFlavour());
+        breakdown.put("basePrice", base);
+        breakdown.put("currentPrice", current);
+        breakdown.put("minPrice", p.getMinCupPrice());
+        breakdown.put("maxPrice", p.getMaxCupPrice());
+        breakdown.put("priceChange", diff);
+        breakdown.put("priceChangePercent", Math.round(pct * 100.0) / 100.0);
+        breakdown.put("trend", current.compareTo(base) > 0 ? "UP" : (current.compareTo(base) < 0 ? "DOWN" : "STABLE"));
+        breakdown.put("demandMultiplier", 1.0);
+        breakdown.put("inventoryMultiplier", 1.0);
+        breakdown.put("timeMultiplier", 1.0);
+        breakdown.put("trendMultiplier", 1.0);
+        breakdown.put("rawPrice", current);
+        breakdown.put("previousPrice", base);
+        breakdown.put("finalPrice", current);
+
+        return ResponseEntity.ok(breakdown);
+    }
+
     @PostMapping({"/products/{productId}/price", "/admin/products/{productId}/price"})
     public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> updateManualPrice(
             @PathVariable Long productId,
