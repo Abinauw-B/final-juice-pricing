@@ -21,14 +21,16 @@ public class POSService {
     private final PriceHistoryRepository priceHistoryRepository;
     private final JuiceBatchService juiceBatchService;
     private final MarketCrashService marketCrashService;
+    private final com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, SimpMessagingTemplate messagingTemplate) {
+    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService, SimpMessagingTemplate messagingTemplate) {
         this.productRepository = productRepository;
         this.salesOrderRepository = salesOrderRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.juiceBatchService = juiceBatchService;
         this.marketCrashService = marketCrashService;
+        this.priceAdjustmentService = priceAdjustmentService;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -232,55 +234,9 @@ public class POSService {
         salesOrder.setItems(orderItems);
         salesOrderRepository.save(salesOrder);
 
-        // Bar Stock Exchange dynamic price recalculation across all products
+        // Authoritative Bar Stock Exchange dynamic price recalculation across all products
         if (marketCrashService == null || !marketCrashService.isCrashActive()) {
-            List<Product> allProducts = productRepository.findAll();
-            LocalDateTime now = LocalDateTime.now();
-
-            int totalPurchasedQty = request.getItems().stream().mapToInt(CartItemRequest::getQuantity).sum();
-
-            for (Product p : allProducts) {
-                BigDecimal oldPrice = p.getCurrentCupPrice();
-                BigDecimal newPrice = oldPrice;
-                String explanation;
-
-                if (purchasedProductIds.contains(p.getId())) {
-                    // Purchased item -> Price surges strictly by +₹1 step (e.g. ₹18 -> ₹19 -> ₹20)
-                    int surge = 1;
-                    newPrice = oldPrice.add(BigDecimal.valueOf(surge));
-                    if (newPrice.compareTo(p.getMaxCupPrice()) > 0) {
-                        newPrice = p.getMaxCupPrice();
-                    }
-                    explanation = String.format("📈 BAR STOCK SURGE: Buying volume surge (+%d cup(s)). Price increased from ₹%s to ₹%s for %s.", totalPurchasedQty, oldPrice, newPrice, p.getFlavour());
-                } else {
-                    // Unpurchased items -> Dynamic market variation & capital shift discount (-1)
-                    if (oldPrice.compareTo(p.getMinCupPrice()) > 0) {
-                        newPrice = oldPrice.subtract(BigDecimal.ONE);
-                        explanation = String.format("📉 BAR STOCK DIVERTS: Demand shifted away. Price discounted from ₹%s to ₹%s for %s.", oldPrice, newPrice, p.getFlavour());
-                    } else {
-                        explanation = String.format("Price for %s locked at absolute floor boundary ₹%s.", p.getFlavour(), p.getMinCupPrice());
-                    }
-                }
-
-                if (newPrice.compareTo(oldPrice) != 0) {
-                    p.setCurrentCupPrice(newPrice);
-                    p.setLastPriceChangeTimestamp(now);
-                    productRepository.saveAndFlush(p);
-
-                    PriceHistory history = PriceHistory.builder()
-                            .productId(p.getId())
-                            .oldPrice(oldPrice)
-                            .newPrice(newPrice)
-                            .demandScore(purchasedProductIds.contains(p.getId()) ? 92.0 : 28.0)
-                            .stockPressurePct(50.0)
-                            .timeFactorMultiplier(1.0)
-                            .explanation(explanation)
-                            .createdAt(now)
-                            .build();
-                    priceHistoryRepository.save(history);
-                }
-            }
-            productRepository.flush();
+            priceAdjustmentService.evaluateAllProducts();
             try {
                 if (messagingTemplate != null) {
                     messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());

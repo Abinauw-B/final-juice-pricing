@@ -83,11 +83,15 @@ public class PricingController {
         breakdown.put("priceChange", diff);
         breakdown.put("priceChangePercent", Math.round(pct * 100.0) / 100.0);
         breakdown.put("trend", current.compareTo(base) > 0 ? "UP" : (current.compareTo(base) < 0 ? "DOWN" : "STABLE"));
-        breakdown.put("demandMultiplier", 1.0);
-        breakdown.put("inventoryMultiplier", 1.0);
-        breakdown.put("timeMultiplier", 1.0);
-        breakdown.put("trendMultiplier", 1.0);
+        breakdown.put("demandScore", 1.0);
+        breakdown.put("inventoryRatio", 1.0);
+        breakdown.put("demandPressure", 0.0);
+        breakdown.put("inventoryPressure", 0.0);
+        breakdown.put("trendPressure", 0.0);
+        breakdown.put("timePressure", 0.0);
+        breakdown.put("totalPressure", 0.0);
         breakdown.put("rawPrice", current);
+        breakdown.put("smoothedPrice", current);
         breakdown.put("previousPrice", base);
         breakdown.put("finalPrice", current);
 
