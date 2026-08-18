@@ -36,6 +36,7 @@ public class DemandCalculationService {
         double stockPressureScore = stockPressureService.calculateStockPressureScore(stockPressurePct);
         double timeFactorScore = timeFactorService.getTimeFactorScore(currentTime);
 
+        // Neutral baseline score of 50.0 when velocity is 0 and stock/time are at neutral defaults
         double demandScore = (weightVelocity * velocityScore) 
                            + (weightStockPressure * stockPressureScore) 
                            + (weightTimeFactor * timeFactorScore);

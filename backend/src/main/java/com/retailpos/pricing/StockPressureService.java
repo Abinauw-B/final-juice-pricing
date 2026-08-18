@@ -34,7 +34,9 @@ public class StockPressureService {
     }
 
     public double calculateStockPressureScore(double pressurePct) {
-        return pressurePct; // Direct 0-100 score mapping
+        // 0% pressure (fresh batch) -> 50.0 neutral baseline
+        // 100% pressure (fully depleted) -> 100.0 maximum pressure
+        return 50.0 + (pressurePct * 0.5);
     }
 
     public PressureLevel getPressureLevel(double pressurePct) {
