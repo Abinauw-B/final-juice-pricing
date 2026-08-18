@@ -1,4 +1,4 @@
-package com.retailpos.pos;
+p=ackage com.retailpos.pos;
 
 import com.retailpos.domain.*;
 import com.retailpos.inventory.JuiceBatchService;
