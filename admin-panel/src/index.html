@@ -2250,27 +2250,44 @@
 
     function renderSimulationData(sim) {
       const grid = document.getElementById('simMetricsGrid');
+      const startP = sim.initialPrice !== undefined ? sim.initialPrice : (sim.startPrice || 20);
+      const endP = sim.finalPrice !== undefined ? sim.finalPrice : (sim.endPrice || 22);
       if (grid) {
         grid.innerHTML = `
           <div class="metric-card"><div class="metric-label">Simulated Flavour</div><div class="metric-val" style="font-size: 18px;">${sim.flavourName || 'Fresh Juice'}</div></div>
-          <div class="metric-card"><div class="metric-label">Start / End Price</div><div class="metric-val" style="font-size: 18px; color: #059669;">₹${Math.round(sim.startPrice || 20)} &rarr; ₹${Math.round(sim.endPrice || 22)}</div></div>
+          <div class="metric-card"><div class="metric-label">Start / End Price</div><div class="metric-val" style="font-size: 18px; color: #059669;">₹${Math.round(startP)} &rarr; ₹${Math.round(endP)}</div></div>
           <div class="metric-card"><div class="metric-label">Total Cups Sold</div><div class="metric-val" style="font-size: 18px; color: #2563eb;">${sim.totalCupsSold || 40} cups</div></div>
         `;
       }
       const timeline = document.getElementById('simTimelineBody');
       if (timeline && sim.steps) {
-        timeline.innerHTML = sim.steps.map((s, idx) => `
-          <tr>
-            <td>Step ${idx + 1}</td>
-            <td>${s.timestamp || 'T+' + (idx * 5) + 'm'}</td>
-            <td>${s.remainingVolumeMl} ml</td>
-            <td>${s.cupsSold} cups</td>
-            <td>${s.demandScore || 65} / 100</td>
-            <td><span class="status-tag ${s.priceMovement === 'UP' ? 'tag-active' : 'tag-crash'}">${s.priceMovement || 'UP'}</span></td>
-            <td style="font-weight: 800;">₹${Math.round(s.currentPrice)}</td>
-            <td style="font-size: 12px;">${s.explanation}</td>
-          </tr>
-        `).join('');
+        timeline.innerHTML = sim.steps.map((s, idx) => {
+          const stepNum = s.stepIndex !== undefined ? s.stepIndex : (idx + 1);
+          const timeLabel = s.timeStr || `T+${idx * 5}m`;
+          const remVol = s.remainingVolumeMl !== undefined ? s.remainingVolumeMl : 20000;
+          const cupsSold = s.cupsSoldThisStep !== undefined ? s.cupsSoldThisStep : (s.cupsSold !== undefined ? s.cupsSold : 4);
+          const demand = s.demandScore !== undefined ? (Math.round(s.demandScore * 10) / 10) : 65;
+          const movement = s.priceMovement || 'UNCHANGED';
+          const stepPrice = s.price !== undefined ? s.price : (s.currentPrice !== undefined ? s.currentPrice : 20);
+          
+          let tagClass = 'tag-active';
+          if (movement.includes('-') || movement === 'DOWN' || movement === 'CRASH') {
+            tagClass = 'tag-crash';
+          }
+
+          return `
+            <tr>
+              <td>Step ${stepNum}</td>
+              <td>${timeLabel}</td>
+              <td>${remVol} ml</td>
+              <td>${cupsSold} cups</td>
+              <td>${demand} / 100</td>
+              <td><span class="status-tag ${tagClass}">${movement}</span></td>
+              <td style="font-weight: 800;">₹${Math.round(stepPrice)}</td>
+              <td style="font-size: 12px;">${s.explanation || 'Dynamic price evaluation step.'}</td>
+            </tr>
+          `;
+        }).join('');
       }
     }
 
@@ -2288,23 +2305,24 @@
         const steps = [];
         let currVol = req.initialVolumeMl;
         let currPrice = req.initialPrice;
-        for (let i = 1; i <= 6; i++) {
-          currVol -= req.cupsPerInterval * 250;
+        for (let i = 1; i <= 10; i++) {
+          currVol = Math.max(0, currVol - (req.cupsPerInterval * 250));
           if (i === 5 && req.includeCrash) {
             currPrice = req.minPrice;
           } else {
-            currPrice = Math.min(req.maxPrice, Math.max(req.minPrice, currPrice + (i % 2 === 0 ? 1 : -1)));
+            currPrice = Math.min(req.maxPrice, Math.max(req.minPrice, currPrice + (i % 2 === 0 ? 1 : 0)));
           }
+          const movement = (i === 5 && req.includeCrash) ? 'CRASH' : (i % 2 === 0 ? '+₹1' : 'UNCHANGED');
           steps.push(`
             <tr>
               <td>Step ${i}</td>
               <td>T+${i * 5}m</td>
               <td>${currVol} ml</td>
-              <td>${i * req.cupsPerInterval} cups</td>
-              <td>${50 + i * 5} / 100</td>
-              <td><span class="status-tag ${i === 5 && req.includeCrash ? 'tag-crash' : 'tag-active'}">${i === 5 && req.includeCrash ? 'CRASH' : (currPrice >= req.initialPrice ? 'UP' : 'DOWN')}</span></td>
+              <td>${req.cupsPerInterval} cups</td>
+              <td>${Math.min(100, 50 + i * 2)} / 100</td>
+              <td><span class="status-tag ${movement === 'CRASH' ? 'tag-crash' : 'tag-active'}">${movement}</span></td>
               <td style="font-weight: 800;">₹${Math.round(currPrice)}</td>
-              <td style="font-size: 12px;">${i === 5 && req.includeCrash ? 'Market Crash event injected' : 'Demand velocity pressure simulation step'}</td>
+              <td style="font-size: 12px;">${movement === 'CRASH' ? '🚨 Market Crash event injected!' : (i % 2 === 0 ? `Step ${i}: Demand triggers +₹1 increase to ₹${Math.round(currPrice)}.` : `Step ${i}: Cooldown window active. Price held at ₹${Math.round(currPrice)}.`)}</td>
             </tr>
           `);
         }
@@ -2313,16 +2331,17 @@
     }
 
     async function deploySimParametersToLivePOS() {
-      if (!confirm("Deploy simulation parameters directly to Live POS?")) return;
+      if (!confirm("Deploy simulation parameters directly to Live POS and PostgreSQL Database?")) return;
       const btn = document.getElementById('btnDeploySim');
-      if (btn) setButtonLoading(btn, true, 'Deploying...');
+      if (btn) setButtonLoading(btn, true, 'Deploying & Syncing...');
 
-      const flavourName = document.getElementById('simFlavour').value;
-      const startPrice = parseFloat(document.getElementById('simStartPrice').value);
-      const minPrice = parseFloat(document.getElementById('simMinPrice').value);
-      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value);
+      const flavourName = document.getElementById('simFlavour').value.trim();
+      const startPrice = parseFloat(document.getElementById('simStartPrice').value) || 20;
+      const minPrice = parseFloat(document.getElementById('simMinPrice').value) || 18;
+      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 25;
 
       try {
+        // 1. Update Global Pricing Bounds Configuration in PostgreSQL
         const updates = [
           { key: 'HARD_FLOOR_PRICE', value: minPrice.toString() },
           { key: 'HARD_CEILING_PRICE', value: maxPrice.toString() }
@@ -2331,11 +2350,43 @@
           method: 'PUT',
           body: JSON.stringify(updates)
         });
-      } catch (e) {}
+
+        // 2. Find and update product price in PostgreSQL Database
+        const prodsRes = await fetch('http://localhost:8088/api/pos/products');
+        if (prodsRes.ok) {
+          const products = await prodsRes.json();
+          const match = products.find(p => 
+            p.name.toLowerCase().includes(flavourName.toLowerCase()) || 
+            flavourName.toLowerCase().includes(p.name.toLowerCase()) ||
+            (p.flavour && flavourName.toLowerCase().includes(p.flavour.toLowerCase()))
+          ) || products[0];
+
+          if (match) {
+            await fetch(`http://localhost:8088/api/pos/products/${match.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...match,
+                currentCupPrice: startPrice,
+                defaultCupPrice: startPrice,
+                minCupPrice: minPrice,
+                maxCupPrice: maxPrice
+              })
+            });
+
+            await apiFetch(`/pricing/products/${match.id}/price?newPrice=${startPrice}&reason=SANDBOX_SIMULATION_DEPLOYMENT`, {
+              method: 'POST'
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Error deploying simulation parameters:', e);
+      }
 
       broadcastEvent('PRODUCT_PRICE_UPDATE', { flavourName, startPrice, minPrice, maxPrice });
+      await refreshDashboard();
       if (btn) setButtonLoading(btn, false);
-      showToast(`🚀 Deployed Live POS Pricing Parameters for "${flavourName}"!`, 'success');
+      showToast(`🚀 Deployed Live POS Pricing Parameters for "${flavourName}" (Set to ₹${Math.round(startPrice)})!`, 'success');
     }
 
     document.getElementById('reportTypeSelect')?.addEventListener('change', renderReports);
