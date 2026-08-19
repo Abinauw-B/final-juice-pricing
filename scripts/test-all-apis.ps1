@@ -92,10 +92,14 @@ Assert-Test "9. Stop Market Crash Routine (POST /api/pricing/market-crash/stop)"
 
 # 10. Customer POS Order Checkout Test
 Assert-Test "10. Execute POS Cart Order Checkout (POST /api/pos/checkout)" {
+    $batches = Invoke-RestMethod -Uri "$baseUrl/batches/active" -Method GET -Headers $headers
+    $activeBatch = $batches | Where-Object { $_.remainingVolumeMl -ge 250 } | Select-Object -First 1
+    $targetId = if ($activeBatch) { $activeBatch.productId } else { $script:firstProductId }
+
     $orderBody = @{
         paymentMethod = "CASH"
         items = @(
-            @{ productId = $script:firstProductId; quantity = 1; cupSizeMl = 250 }
+            @{ productId = $targetId; quantity = 1; cupSizeMl = 250 }
         )
     } | ConvertTo-Json -Depth 3
 
