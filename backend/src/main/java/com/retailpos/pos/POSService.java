@@ -198,14 +198,12 @@ public class POSService {
             int cupSize = (itemReq.getCupSizeMl() != null && itemReq.getCupSizeMl() > 0) ? itemReq.getCupSizeMl() : product.getDefaultCupSizeMl();
             int qty = (itemReq.getQuantity() != null && itemReq.getQuantity() > 0) ? itemReq.getQuantity() : 1;
 
-            int totalVolumeMl = cupSize * qty;
+            BigDecimal unitPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : (product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("20.00"));
+            BigDecimal itemTotal = unitPrice.multiply(BigDecimal.valueOf(qty));
+            orderTotal = orderTotal.add(itemTotal);
 
             // Atomically deduct volume from active batch using pessimistic lock
             JuiceBatch updatedBatch = juiceBatchService.deductBatchVolume(product.getId(), totalVolumeMl);
-
-            BigDecimal unitPrice = product.getCurrentCupPrice();
-            BigDecimal itemTotal = unitPrice.multiply(BigDecimal.valueOf(qty));
-            orderTotal = orderTotal.add(itemTotal);
 
             SalesOrderItem orderItem = SalesOrderItem.builder()
                     .salesOrder(salesOrder)

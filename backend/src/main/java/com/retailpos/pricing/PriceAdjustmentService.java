@@ -112,10 +112,15 @@ public class PriceAdjustmentService {
 
     @Transactional
     public PriceEvaluationResult evaluateAndAdjustPrice(Long productId) {
+        return evaluateAndAdjustPrice(productId, LocalDateTime.now());
+    }
+
+    @Transactional
+    public PriceEvaluationResult evaluateAndAdjustPrice(Long productId, LocalDateTime evaluationTime) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = evaluationTime != null ? evaluationTime : LocalDateTime.now();
 
         // 1. Fetch System Hard Limits
         BigDecimal hardFloor = BigDecimal.valueOf(getConfigDouble("HARD_FLOOR_PRICE", 18.0));
