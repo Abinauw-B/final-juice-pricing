@@ -156,6 +156,7 @@ public class MarketCrashService {
         // STOMP WebSocket broadcast
         try {
             messagingTemplate.convertAndSend("/topic/market-crash", status);
+            messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
         } catch (Exception e) {
             log.debug("WebSocket broadcast bypass: {}", e.getMessage());
         }
@@ -171,6 +172,7 @@ public class MarketCrashService {
 
         try {
             messagingTemplate.convertAndSend("/topic/market-crash", status);
+            messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
         } catch (Exception e) {
             log.debug("WebSocket broadcast bypass: {}", e.getMessage());
         }

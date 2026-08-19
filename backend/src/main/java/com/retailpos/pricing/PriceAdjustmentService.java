@@ -115,23 +115,60 @@ public class PriceAdjustmentService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
 
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1. Fetch System Hard Limits
+        BigDecimal hardFloor = BigDecimal.valueOf(getConfigDouble("HARD_FLOOR_PRICE", 18.0));
+        BigDecimal hardCeiling = BigDecimal.valueOf(getConfigDouble("HARD_CEILING_PRICE", 25.0));
+
+        BigDecimal productMin = product.getMinCupPrice() != null ? product.getMinCupPrice() : hardFloor;
+        BigDecimal productMax = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : hardCeiling;
+
+        BigDecimal effectiveMinPrice = productMin.max(hardFloor);
+        BigDecimal effectiveMaxPrice = productMax.min(hardCeiling);
+        if (effectiveMinPrice.compareTo(effectiveMaxPrice) > 0) {
+            effectiveMinPrice = effectiveMaxPrice;
+        }
+
+        // 2. Market Crash Overrides
         if (marketCrashService != null && marketCrashService.isCrashActive()) {
+            BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : effectiveMinPrice;
+            BigDecimal crashPrice = effectiveMinPrice;
+            boolean changed = oldPrice.compareTo(crashPrice) != 0;
+
+            if (changed) {
+                product.setCurrentCupPrice(crashPrice);
+                product.setLastPriceChangeTimestamp(now);
+                productRepository.save(product);
+
+                PriceHistory history = PriceHistory.builder()
+                        .productId(productId)
+                        .oldPrice(oldPrice)
+                        .newPrice(crashPrice)
+                        .demandScore(0.0)
+                        .stockPressurePct(100.0)
+                        .timeFactorMultiplier(1.0)
+                        .explanation("🚨 Market Crash Event! Price set to floor limit of ₹" + crashPrice)
+                        .createdAt(now)
+                        .build();
+                priceHistoryRepository.save(history);
+            }
+
             return PriceEvaluationResult.builder()
                     .productId(productId)
                     .flavour(product.getFlavour())
-                    .oldPrice(product.getMinCupPrice())
-                    .newPrice(product.getMinCupPrice())
-                    .priceChanged(false)
+                    .oldPrice(oldPrice)
+                    .newPrice(crashPrice)
+                    .priceChanged(changed)
                     .demandScore(0.0)
-                    .stockPressurePct(0.0)
+                    .stockPressurePct(100.0)
                     .timeFactorMultiplier(1.0)
-                    .explanation("🚨 Market Crash Routine Active! All products set to floor price.")
+                    .explanation("🚨 Market Crash Routine Active! Product price held at floor of ₹" + crashPrice)
                     .statusReason("MARKET_CRASH_ACTIVE")
                     .build();
         }
 
-        LocalDateTime now = LocalDateTime.now();
-
+        // 3. Cooldown Check
         long cooldownMins = getConfigLong("cooldown_minutes", 0);
         if (cooldownMins > 0 && product.getLastPriceChangeTimestamp() != null) {
             long minsSinceLastChange = Duration.between(product.getLastPriceChangeTimestamp(), now).toMinutes();
@@ -147,7 +184,7 @@ public class PriceAdjustmentService {
                         .oldPrice(product.getCurrentCupPrice())
                         .newPrice(product.getCurrentCupPrice())
                         .priceChanged(false)
-                        .demandScore(1.0)
+                        .demandScore(50.0)
                         .stockPressurePct(0.0)
                         .timeFactorMultiplier(1.0)
                         .explanation(explanation)
@@ -156,125 +193,47 @@ public class PriceAdjustmentService {
             }
         }
 
-        // 1. Demand Pressure (weighted sales windows: 15m, 1h, 6h, 24h)
-        int s15m = salesOrderItemRepository.countQuantitySoldForProductSince(productId, now.minusMinutes(15));
-        int s1h = salesOrderItemRepository.countQuantitySoldForProductSince(productId, now.minusHours(1));
-        int s6h = salesOrderItemRepository.countQuantitySoldForProductSince(productId, now.minusHours(6));
-        int s24h = salesOrderItemRepository.countQuantitySoldForProductSince(productId, now.minusHours(24));
+        // 4. 30-Second Rolling Window Order Velocity Calculation
+        int vt = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(30), now);
+        int vtPrev = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(60), now.minusSeconds(30));
 
-        double recentDemandUnits = (s15m * 0.50) + (s1h * 0.30) + (s6h * 0.15) + (s24h * 0.05);
-        double demandScore = (s15m == 0 && s1h == 0 && s6h == 0 && s24h == 0) ? 1.0 : 1.0 + (recentDemandUnits / 5.0);
+        double vtPrevEff = Math.max((double) vtPrev, 1.0);
+        double velocityRatio = (double) vt / vtPrevEff;
 
-        double demandPressure;
-        if (demandScore <= 0.5) {
-            demandPressure = -0.10 + (demandScore / 0.5) * 0.05;
-        } else if (demandScore <= 1.0) {
-            demandPressure = -0.05 + ((demandScore - 0.5) / 0.5) * 0.05;
-        } else if (demandScore <= 1.5) {
-            demandPressure = 0.00 + ((demandScore - 1.0) / 0.5) * 0.08;
+        // Bounded Demand Score (0 <= demandScore <= 100)
+        double demandScore;
+        if (vt == 0 && vtPrev == 0) {
+            demandScore = 50.0;
         } else {
-            demandPressure = 0.08 + Math.min(1.0, (demandScore - 1.5) / 0.5) * 0.07;
+            demandScore = 50.0 + ((velocityRatio - 1.0) * 25.0);
         }
-        demandPressure = Math.max(-0.10, Math.min(0.20, demandPressure));
+        demandScore = Math.max(0.0, Math.min(100.0, demandScore));
 
-        // 2. Inventory Pressure (currentStock / targetStock)
-        Optional<JuiceBatch> activeBatchOpt = juiceBatchRepository.findFirstActiveBatchForProduct(productId);
-        double inventoryRatio = 1.0;
-        if (activeBatchOpt.isPresent()) {
-            JuiceBatch b = activeBatchOpt.get();
-            if (b.getInitialVolumeMl() > 0) {
-                inventoryRatio = (double) b.getRemainingVolumeMl() / b.getInitialVolumeMl();
-            }
-        }
-        double inventoryPressure;
-        if (inventoryRatio > 1.50) {
-            inventoryPressure = -0.10;
-        } else if (inventoryRatio >= 1.00) {
-            inventoryPressure = -0.05;
-        } else if (inventoryRatio >= 0.75) {
-            inventoryPressure = 0.00;
-        } else if (inventoryRatio >= 0.50) {
-            inventoryPressure = 0.04;
-        } else if (inventoryRatio >= 0.25) {
-            inventoryPressure = 0.08;
-        } else if (inventoryRatio >= 0.10) {
-            inventoryPressure = 0.12;
-        } else {
-            inventoryPressure = 0.15;
-        }
-        inventoryPressure = Math.max(-0.10, Math.min(0.15, inventoryPressure));
+        BigDecimal prevPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : (product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("20.00"));
+        BigDecimal targetPrice = prevPrice;
 
-        // 3. Trend Pressure (current vs previous velocity)
-        int prevVel = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusMinutes(30), now.minusMinutes(15));
-        double trendRatio = prevVel > 0 ? (double) s15m / prevVel : (s15m > 0 ? 1.5 : 1.0);
-        double trendPressure;
-        if (trendRatio >= 1.5) {
-            trendPressure = 0.10;
-        } else if (trendRatio >= 1.1) {
-            trendPressure = 0.05;
-        } else if (trendRatio >= 0.9) {
-            trendPressure = 0.00;
-        } else if (trendRatio >= 0.5) {
-            trendPressure = -0.05;
-        } else {
-            trendPressure = -0.10;
-        }
-        trendPressure = Math.max(-0.10, Math.min(0.10, trendPressure));
-
-        // 4. Time Pressure
-        int hour = now.getHour();
-        double timePressure;
-        if (hour >= 16 && hour < 18) {
-            timePressure = -0.10; // Happy hour
-        } else if (hour >= 20 && hour < 23) {
-            timePressure = 0.08; // Peak hours
-        } else if (hour >= 23 || hour < 1) {
-            timePressure = -0.05; // Late hours
-        } else {
-            timePressure = 0.00; // Normal
-        }
-
-        // Config Weights (0.40, 0.30, 0.20, 0.10)
-        double wDemand = getConfigDouble("weight_velocity", 0.40);
-        double wInventory = getConfigDouble("weight_stock_pressure", 0.30);
-        double wTrend = getConfigDouble("weight_trend", 0.20);
-        double wTime = getConfigDouble("weight_time_factor", 0.10);
-
-        double totalPressure = (demandPressure * wDemand)
-                             + (inventoryPressure * wInventory)
-                             + (trendPressure * wTrend)
-                             + (timePressure * wTime);
-
-        BigDecimal basePrice = product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("20.00");
-        BigDecimal rawPrice = basePrice.multiply(BigDecimal.valueOf(1.0 + totalPressure));
-
-        BigDecimal prevPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : basePrice;
-
-        // Smoothing: smoothedPrice = (prevPrice * 0.70) + (rawPrice * 0.30)
-        BigDecimal smoothedPrice = prevPrice.multiply(new BigDecimal("0.70"))
-                                    .add(rawPrice.multiply(new BigDecimal("0.30")));
-
-        // Movement Limit (max ±5% step per cycle or ±₹1 step)
-        BigDecimal maxStepUp = prevPrice.add(BigDecimal.ONE);
-        BigDecimal maxStepDown = prevPrice.subtract(BigDecimal.ONE);
-        BigDecimal movementLimitedPrice = smoothedPrice.min(maxStepUp).max(maxStepDown);
-
-        // Min/Max Clamp
-        BigDecimal minPrice = product.getMinCupPrice() != null ? product.getMinCupPrice() : basePrice.multiply(new BigDecimal("0.70"));
-        BigDecimal maxPrice = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : basePrice.multiply(new BigDecimal("2.00"));
-
-        BigDecimal targetPrice = movementLimitedPrice.min(maxPrice).max(minPrice).setScale(0, java.math.RoundingMode.HALF_UP);
-
-        boolean changed = targetPrice.compareTo(prevPrice) != 0;
         String actionText;
 
-        if (changed) {
-            if (targetPrice.compareTo(prevPrice) > 0) {
-                actionText = String.format("Price increased from ₹%s to ₹%s for %s due to market pressure (Total Pressure: %.2f%%).", prevPrice, targetPrice, product.getFlavour(), totalPressure * 100.0);
-            } else {
-                actionText = String.format("Price decreased from ₹%s to ₹%s for %s due to market pressure (Total Pressure: %.2f%%).", prevPrice, targetPrice, product.getFlavour(), totalPressure * 100.0);
-            }
+        if (vt > vtPrev) {
+            // Surge pricing (+₹1 step)
+            targetPrice = prevPrice.add(BigDecimal.ONE).min(effectiveMaxPrice);
+            actionText = String.format("Surge Pricing: Order velocity increased (Vt=%d vs Vt-1=%d, Demand Score %.1f). Price adjusted +₹1 to ₹%s.", vt, vtPrev, demandScore, targetPrice);
+        } else if (vt < vtPrev) {
+            // Price decay (-₹1 step)
+            targetPrice = prevPrice.subtract(BigDecimal.ONE).max(effectiveMinPrice);
+            actionText = String.format("Price Decay: Order velocity decreased (Vt=%d vs Vt-1=%d, Demand Score %.1f). Price adjusted -₹1 to ₹%s.", vt, vtPrev, demandScore, targetPrice);
+        } else {
+            // Stable demand
+            targetPrice = prevPrice.min(effectiveMaxPrice).max(effectiveMinPrice);
+            actionText = String.format("Stable Demand: Order velocity steady (Vt=%d, Demand Score %.1f). Price held at ₹%s.", vt, demandScore, targetPrice);
+        }
 
+        // Hard bounds clamping
+        targetPrice = targetPrice.min(effectiveMaxPrice).max(effectiveMinPrice).setScale(0, java.math.RoundingMode.HALF_UP);
+
+        boolean changed = targetPrice.compareTo(prevPrice) != 0;
+
+        if (changed) {
             product.setCurrentCupPrice(targetPrice);
             product.setLastPriceChangeTimestamp(now);
             productRepository.save(product);
@@ -284,14 +243,12 @@ public class PriceAdjustmentService {
                     .oldPrice(prevPrice)
                     .newPrice(targetPrice)
                     .demandScore(demandScore)
-                    .stockPressurePct((1.0 - inventoryRatio) * 100.0)
-                    .timeFactorMultiplier(1.0 + timePressure)
+                    .stockPressurePct(0.0)
+                    .timeFactorMultiplier(1.0)
                     .explanation(actionText)
                     .createdAt(now)
                     .build();
             priceHistoryRepository.save(history);
-        } else {
-            actionText = String.format("Price maintained at ₹%s for %s. Market pressure is steady (Total Pressure: %.2f%%).", prevPrice, product.getFlavour(), totalPressure * 100.0);
         }
 
         return PriceEvaluationResult.builder()
@@ -301,8 +258,8 @@ public class PriceAdjustmentService {
                 .newPrice(targetPrice)
                 .priceChanged(changed)
                 .demandScore(demandScore)
-                .stockPressurePct((1.0 - inventoryRatio) * 100.0)
-                .timeFactorMultiplier(1.0 + timePressure)
+                .stockPressurePct(0.0)
+                .timeFactorMultiplier(1.0)
                 .explanation(actionText)
                 .statusReason(changed ? "PRICE_ADJUSTED" : "PRICE_STABLE")
                 .build();
@@ -321,8 +278,11 @@ public class PriceAdjustmentService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
 
-        BigDecimal minPrice = product.getMinCupPrice() != null ? product.getMinCupPrice() : new BigDecimal("18.00");
-        BigDecimal maxPrice = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : new BigDecimal("25.00");
+        BigDecimal hardFloor = BigDecimal.valueOf(getConfigDouble("HARD_FLOOR_PRICE", 18.0));
+        BigDecimal hardCeiling = BigDecimal.valueOf(getConfigDouble("HARD_CEILING_PRICE", 25.0));
+
+        BigDecimal minPrice = product.getMinCupPrice() != null ? product.getMinCupPrice().max(hardFloor) : hardFloor;
+        BigDecimal maxPrice = product.getMaxCupPrice() != null ? product.getMaxCupPrice().min(hardCeiling) : hardCeiling;
 
         if (newPrice.compareTo(minPrice) < 0) {
             throw new IllegalArgumentException("Price cannot be less than minimum price of ₹" + minPrice);
@@ -334,28 +294,32 @@ public class PriceAdjustmentService {
         BigDecimal oldPrice = product.getCurrentCupPrice();
         LocalDateTime now = LocalDateTime.now();
 
+        boolean changed = oldPrice == null || oldPrice.compareTo(newPrice) != 0;
+
         product.setCurrentCupPrice(newPrice);
         product.setLastPriceChangeTimestamp(now);
         productRepository.save(product);
 
-        PriceHistory history = PriceHistory.builder()
-                .productId(productId)
-                .oldPrice(oldPrice)
-                .newPrice(newPrice)
-                .demandScore(50.0)
-                .stockPressurePct(0.0)
-                .timeFactorMultiplier(1.0)
-                .explanation(reason != null && !reason.isBlank() ? reason : "MANUAL_ADMIN_CHANGE")
-                .createdAt(now)
-                .build();
-        priceHistoryRepository.save(history);
+        if (changed) {
+            PriceHistory history = PriceHistory.builder()
+                    .productId(productId)
+                    .oldPrice(oldPrice)
+                    .newPrice(newPrice)
+                    .demandScore(50.0)
+                    .stockPressurePct(0.0)
+                    .timeFactorMultiplier(1.0)
+                    .explanation(reason != null && !reason.isBlank() ? reason : "MANUAL_ADMIN_CHANGE")
+                    .createdAt(now)
+                    .build();
+            priceHistoryRepository.save(history);
+        }
 
         return PriceEvaluationResult.builder()
                 .productId(productId)
                 .flavour(product.getFlavour())
                 .oldPrice(oldPrice)
                 .newPrice(newPrice)
-                .priceChanged(true)
+                .priceChanged(changed)
                 .demandScore(50.0)
                 .stockPressurePct(0.0)
                 .timeFactorMultiplier(1.0)

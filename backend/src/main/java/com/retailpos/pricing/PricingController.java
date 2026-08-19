@@ -26,13 +26,16 @@ public class PricingController {
     private final ProductRepository productRepository;
     private final MarketCrashService marketCrashService;
 
-    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, ProductRepository productRepository, MarketCrashService marketCrashService) {
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, ProductRepository productRepository, MarketCrashService marketCrashService, SimpMessagingTemplate messagingTemplate) {
         this.priceAdjustmentService = priceAdjustmentService;
         this.pricingSimulationService = pricingSimulationService;
         this.priceHistoryRepository = priceHistoryRepository;
         this.systemConfigRepository = systemConfigRepository;
         this.productRepository = productRepository;
         this.marketCrashService = marketCrashService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @GetMapping({"/live", "/products"})
@@ -103,7 +106,13 @@ public class PricingController {
             @PathVariable Long productId,
             @RequestParam BigDecimal newPrice,
             @RequestParam(required = false, defaultValue = "MANUAL_ADMIN_CHANGE") String reason) {
-        return ResponseEntity.ok(priceAdjustmentService.updateManualPrice(productId, newPrice, reason));
+        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.updateManualPrice(productId, newPrice, reason);
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+            }
+        } catch (Exception e) {}
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/market-crash/status")
@@ -123,12 +132,24 @@ public class PricingController {
 
     @GetMapping({"/evaluate", "/admin/evaluate"})
     public ResponseEntity<List<PriceAdjustmentService.PriceEvaluationResult>> evaluateAllPrices() {
-        return ResponseEntity.ok(priceAdjustmentService.evaluateAllProducts());
+        List<PriceAdjustmentService.PriceEvaluationResult> list = priceAdjustmentService.evaluateAllProducts();
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+            }
+        } catch (Exception e) {}
+        return ResponseEntity.ok(list);
     }
 
     @PostMapping("/evaluate/{productId}")
     public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> evaluateProductPrice(@PathVariable Long productId) {
-        return ResponseEntity.ok(priceAdjustmentService.evaluateAndAdjustPrice(productId));
+        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.evaluateAndAdjustPrice(productId);
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+            }
+        } catch (Exception e) {}
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/history")
@@ -174,6 +195,11 @@ public class PricingController {
                 systemConfigRepository.save(cfg);
             });
         }
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+            }
+        } catch (Exception e) {}
         return ResponseEntity.ok(systemConfigRepository.findAll());
     }
 }
