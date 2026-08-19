@@ -153,16 +153,18 @@
     function renderBoard() {
       const body = document.getElementById('exchangeBoardBody');
       body.innerHTML = products.map(p => {
-        const isUp = p.currentCupPrice >= p.basePrice;
+        const currentP = Math.round(p.currentCupPrice || 20);
+        const baseP = Math.round(p.basePrice || 20);
+        const isUp = currentP >= baseP;
         const badgeClass = isUp ? 'badge-up' : 'badge-down';
         const arrow = isUp ? '▲' : '▼';
         return `
           <tr>
             <td style="font-weight: 800;">${p.name}</td>
-            <td style="color: #94a3b8;">₹${p.basePrice}</td>
-            <td style="font-size: 15px; color: #64748b;">₹${p.minCupPrice} - ₹${p.maxCupPrice}</td>
+            <td style="color: #94a3b8;">₹${baseP}</td>
+            <td style="font-size: 15px; color: #64748b;">₹${Math.round(p.minCupPrice || 18)} - ₹${Math.round(p.maxCupPrice || 25)}</td>
             <td><span class="trend-badge ${badgeClass}">${arrow} ${p.trend || '0%'}</span></td>
-            <td style="font-size: 26px; font-weight: 900; color: ${isUp ? '#10b981' : '#ef4444'};">₹${p.currentCupPrice}</td>
+            <td style="font-size: 26px; font-weight: 900; color: ${isUp ? '#10b981' : '#ef4444'};">₹${currentP}</td>
           </tr>
         `;
       }).join('');
@@ -183,7 +185,7 @@
       savedDynamic.forEach(sp => {
         const p = products.find(prod => prod.id === sp.id || (prod.name && sp.name && prod.name.toLowerCase() === sp.name.toLowerCase()));
         if (p && sp.currentCupPrice !== undefined) {
-          p.currentCupPrice = sp.currentCupPrice;
+          p.currentCupPrice = Math.round(sp.currentCupPrice);
           if (sp.trend !== undefined) p.trend = sp.trend;
           if (sp.trendDirection !== undefined) p.trendDirection = sp.trendDirection;
         }

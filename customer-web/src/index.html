@@ -4,9 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juice Bar Stock Exchange POS - Customer Terminal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    // Suppress Chromium legacy unload permission violation warnings from SockJS
+    (function() {
+      const origAdd = window.addEventListener;
+      window.addEventListener = function(type, listener, options) {
+        if (type === 'unload') return;
+        return origAdd.call(this, type, listener, options);
+      };
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
   <style>
@@ -496,7 +507,7 @@
       const savedDynamic = JSON.parse(localStorage.getItem('pubexchange_dynamic_products') || '[]');
       savedDynamic.forEach(sp => {
         if (sp.id && sp.currentCupPrice !== undefined) {
-          activePriceMap[sp.id] = sp.currentCupPrice;
+          activePriceMap[sp.id] = Math.round(sp.currentCupPrice);
           if (sp.trend !== undefined) activeTrendMap[sp.id] = sp.trend;
           if (sp.trendDirection !== undefined) activeDirMap[sp.id] = sp.trendDirection;
         }
@@ -530,7 +541,7 @@
 
       base.forEach(p => {
         if (activePriceMap[p.id] !== undefined) {
-          p.currentCupPrice = activePriceMap[p.id];
+          p.currentCupPrice = Math.round(activePriceMap[p.id]);
           if (activeTrendMap[p.id] !== undefined) p.trend = activeTrendMap[p.id];
           if (activeDirMap[p.id] !== undefined) p.trendDirection = activeDirMap[p.id];
         }
@@ -540,8 +551,9 @@
 
       if (!isMarketCrashActive) {
         products.forEach(p => {
-          const minP = p.minCupPrice || 18;
-          const maxP = p.maxCupPrice || 25;
+          const minP = Math.round(p.minCupPrice || 18);
+          const maxP = Math.round(p.maxCupPrice || 25);
+          p.currentCupPrice = Math.round(p.currentCupPrice || 20);
           if (p.currentCupPrice < minP) p.currentCupPrice = minP;
           if (p.currentCupPrice > maxP) p.currentCupPrice = maxP;
         });
@@ -582,7 +594,7 @@
       updatedList.forEach(up => {
         const p = products.find(prod => prod.id === up.productId || (prod.name && up.flavourName && prod.name.toLowerCase() === up.flavourName.toLowerCase()));
         if (p) {
-          if (up.finalPrice !== undefined) p.currentCupPrice = up.finalPrice;
+          if (up.finalPrice !== undefined) p.currentCupPrice = Math.round(up.finalPrice);
           if (up.trend !== undefined) p.trend = up.trend;
           if (up.trendDirection !== undefined) p.trendDirection = up.trendDirection;
         }
@@ -598,16 +610,16 @@
         if ((payload.productId && p.id === payload.productId) || (payload.flavourName && (p.name.toLowerCase().includes(payload.flavourName.toLowerCase()) || p.flavour.toLowerCase().includes(payload.flavourName.toLowerCase())))) {
           if (payload.flavourName) p.name = payload.flavourName;
           if (payload.startPrice) {
-            p.basePrice = payload.startPrice;
-            p.defaultCupPrice = payload.startPrice;
+            p.basePrice = Math.round(payload.startPrice);
+            p.defaultCupPrice = Math.round(payload.startPrice);
           }
-          if (payload.minPrice) p.minCupPrice = payload.minPrice;
-          if (payload.maxPrice) p.maxCupPrice = payload.maxPrice;
+          if (payload.minPrice) p.minCupPrice = Math.round(payload.minPrice);
+          if (payload.maxPrice) p.maxCupPrice = Math.round(payload.maxPrice);
           if (payload.finalPrice) {
-            const oldP = p.currentCupPrice;
-            p.currentCupPrice = payload.finalPrice;
-            const diff = p.currentCupPrice - (p.basePrice || 20);
-            const pct = Math.round((diff / (p.basePrice || 20)) * 100);
+            const oldP = Math.round(p.currentCupPrice);
+            p.currentCupPrice = Math.round(payload.finalPrice);
+            const diff = p.currentCupPrice - (Math.round(p.basePrice) || 20);
+            const pct = Math.round((diff / (Math.round(p.basePrice) || 20)) * 100);
             p.trendDirection = pct < 0 ? 'DOWN' : (pct > 0 ? 'UP' : 'FLAT');
             p.trend = `${pct >= 0 ? '+' : ''}${pct}% ${pct < 0 ? '▼' : '▲'}`;
             p.flashEffect = payload.finalPrice > oldP ? 'flash-surge' : (payload.finalPrice < oldP ? 'flash-discount' : '');
@@ -741,16 +753,17 @@
       const container = document.getElementById('stockTickerContent');
       if (!container) return;
       container.innerHTML = products.map(p => {
-        const activePrice = isMarketCrashActive ? (p.minCupPrice || 18) : p.currentCupPrice;
-        const isUp = activePrice >= (p.basePrice || 20);
+        const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 20));
+        const baseP = Math.round(p.basePrice || 20);
+        const isUp = activePrice >= baseP;
         const trendClass = isMarketCrashActive ? 'trend-down' : (isUp ? 'trend-up' : 'trend-down');
         const arrow = isMarketCrashActive ? '▼ [CRASH]' : (isUp ? '▲' : '▼');
         const icon = fruitIcons[p.id] || '🍹';
         return `
           <div class="ticker-item">
-            <span>${icon} ${p.flavour}:</span>
+            <span>${icon} ${p.flavour || p.name}:</span>
             <span class="${trendClass}">₹${activePrice} ${arrow}</span>
-            <span style="font-size: 11px; color: #64748b;">[Min: ₹${p.minCupPrice || 18}]</span>
+            <span style="font-size: 11px; color: #64748b;">[Min: ₹${Math.round(p.minCupPrice || 18)}]</span>
           </div>
         `;
       }).join(' &bull; ');
@@ -764,8 +777,8 @@
       const grid = document.getElementById('productGrid');
       if (!grid) return;
       grid.innerHTML = products.map(p => {
-        const activePrice = isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 20);
-        const baseP = p.defaultCupPrice || p.basePrice || 20;
+        const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 20));
+        const baseP = Math.round(p.defaultCupPrice || p.basePrice || 20);
         const diff = activePrice - baseP;
         const icon = fruitIcons[p.id] || '🍹';
         const cardClass = fruitCardClasses[p.id] || 'card-orange';
@@ -774,16 +787,16 @@
         let badgeText = '✨ Base Trading';
         if (isMarketCrashActive) {
           badgeClass = 'badge-crash';
-          badgeText = '🚨 MARKET CRASH ₹18';
+          badgeText = `🚨 MARKET CRASH ₹${Math.round(p.minCupPrice || 18)}`;
         } else if (diff > 0) {
           badgeClass = 'badge-high';
-          badgeText = `📈 PROFIT SURGE (+₹${diff})`;
+          badgeText = `📈 PROFIT SURGE (+₹${Math.round(diff)})`;
         } else if (diff < 0) {
           badgeClass = 'badge-low';
-          badgeText = `📉 LOSS DISCOUNT (-₹${Math.abs(diff)})`;
+          badgeText = `📉 LOSS DISCOUNT (-₹${Math.round(Math.abs(diff))})`;
         }
 
-        const pctChange = (((activePrice - baseP) / baseP) * 100).toFixed(0);
+        const pctChange = Math.round(((activePrice - baseP) / baseP) * 100);
         let pctText, pctColor, pctBg;
         if (isMarketCrashActive) {
           pctText = '-10% ▼ [CRASH LOSS]';
@@ -824,12 +837,12 @@
               </div>
               <div style="text-align: right;">
                 <span style="font-size: 11px; font-weight: 800; color: #64748b; display: block;">Base ₹${baseP}</span>
-                <span style="font-size: 11px; font-weight: 900; color: #059669;">Range [₹${p.minCupPrice || 18} - ₹${p.maxCupPrice || 25}]</span>
+                <span style="font-size: 11px; font-weight: 900; color: #059669;">Range [₹${Math.round(p.minCupPrice || 18)} - ₹${Math.round(p.maxCupPrice || 25)}]</span>
               </div>
             </div>
 
             <button class="add-btn ${isMarketCrashActive ? 'crash-btn' : ''}" onclick="addToCart(${p.id})">
-              ${isMarketCrashActive ? '🔥 RUSH BUY AT ₹18' : '🛒 + Add Cup to Cart'}
+              ${isMarketCrashActive ? `🔥 RUSH BUY AT ₹${Math.round(p.minCupPrice || 18)}` : '🛒 + Add Cup to Cart'}
             </button>
           </div>
         `;
@@ -861,10 +874,10 @@
 
       const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
       const totalVolume = cart.reduce((sum, i) => sum + (i.cupSizeMl * i.quantity), 0);
-      const totalPayable = cart.reduce((sum, i) => {
-        const itemPrice = isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice;
+      const totalPayable = Math.round(cart.reduce((sum, i) => {
+        const itemPrice = Math.round(isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice);
         return sum + (itemPrice * i.quantity);
-      }, 0);
+      }, 0));
 
       countLabel.textContent = `${totalItems} cups`;
 
@@ -879,14 +892,15 @@
         checkoutBtn.textContent = '⚡ Complete POS Checkout';
       } else {
         container.innerHTML = cart.map((item, idx) => {
-          const itemPrice = isMarketCrashActive ? (item.product.minCupPrice || 18) : item.product.currentCupPrice;
+          const itemPrice = Math.round(isMarketCrashActive ? (item.product.minCupPrice || 18) : item.product.currentCupPrice);
           const icon = fruitIcons[item.product.id] || '🍹';
+          const itemTotal = Math.round(itemPrice * item.quantity);
           return `
             <div class="cart-item">
               <div>
                 <div style="font-weight: 900; color: #0f172a; font-size: 15px;">${icon} ${item.product.name}</div>
                 <div style="font-size: 13px; color: #475569; font-weight: 700; margin-top: 2px;">
-                  ₹${itemPrice} &bull; ${item.cupSizeMl}ml &bull; Total: ₹${(itemPrice * item.quantity).toFixed(2)}
+                  ₹${itemPrice} &bull; ${item.cupSizeMl}ml &bull; Total: ₹${itemTotal}
                 </div>
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -900,9 +914,9 @@
 
         summaryBox.style.display = 'block';
         document.getElementById('totalVolumeText').textContent = `${totalVolume} ml (${totalVolume / 250} cups)`;
-        document.getElementById('totalPayableText').textContent = `₹${totalPayable.toFixed(2)}`;
+        document.getElementById('totalPayableText').textContent = `₹${totalPayable}`;
         checkoutBtn.disabled = false;
-        checkoutBtn.textContent = `⚡ Complete POS Checkout (₹${totalPayable.toFixed(2)})`;
+        checkoutBtn.textContent = `⚡ Complete POS Checkout (₹${totalPayable})`;
       }
     }
 
@@ -921,7 +935,7 @@
             p.flashEffect = 'flash-surge';
           }
         } else {
-          if (p.currentCupPrice > p.basePrice) {
+          if (p.currentCupPrice > (p.minCupPrice || 18)) {
             p.currentCupPrice -= 1;
             const diff = p.currentCupPrice - (p.basePrice || 20);
             const pct = Math.round((diff / (p.basePrice || 20)) * 100);
@@ -988,12 +1002,13 @@
       const purchasedIds = new Set(cart.map(i => i.product.id));
 
       const modalItemsHtml = cart.map(i => {
-        const itemPrice = isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice;
+        const itemPrice = Math.round(isMarketCrashActive ? (i.product.minCupPrice || 18) : i.product.currentCupPrice);
         const icon = fruitIcons[i.product.id] || '🍹';
+        const itemTotal = Math.round(itemPrice * i.quantity);
         return `
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #0f172a;">
             <span>${icon} ${i.product.name} x ${i.quantity} (${i.cupSizeMl * i.quantity}ml)</span>
-            <span style="color: #059669;">₹${(itemPrice * i.quantity).toFixed(2)}</span>
+            <span style="color: #059669;">₹${itemTotal}</span>
           </div>
         `;
       }).join('');
@@ -1002,7 +1017,7 @@
       document.getElementById('modalItemsContainer').innerHTML = modalItemsHtml + `
         <div style="border-top: 2px dashed #cbd5e1; margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 900; font-size: 16px; color: #0f172a;">
           <span>TOTAL PAID</span>
-          <span style="color: #059669;">₹${totalAmount.toFixed(2)}</span>
+          <span style="color: #059669;">₹${Math.round(totalAmount)}</span>
         </div>
       `;
       document.getElementById('modalPaymentMethod').textContent = paymentMethod;

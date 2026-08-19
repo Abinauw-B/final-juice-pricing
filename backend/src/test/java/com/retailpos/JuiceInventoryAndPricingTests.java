@@ -79,7 +79,7 @@ public class JuiceInventoryAndPricingTests {
             mangoProduct = productRepository.save(mangoProduct);
         }
         JuiceBatch batch = batchRepository.findFirstActiveBatchForProduct(mangoProduct.getId()).orElse(null);
-        if (batch == null || batch.getRemainingVolumeMl() < 1000) {
+        if (batch == null) {
             batchRepository.save(JuiceBatch.builder()
                     .productId(mangoProduct.getId())
                     .batchCode("BATCH-TEST-" + System.currentTimeMillis())
@@ -90,6 +90,10 @@ public class JuiceInventoryAndPricingTests {
                     .status(JuiceBatch.BatchStatus.ACTIVE)
                     .createdAt(java.time.LocalDateTime.now())
                     .build());
+        } else if (batch.getRemainingVolumeMl() < 5000) {
+            batch.setRemainingVolumeMl(20000);
+            batch.setStatus(JuiceBatch.BatchStatus.ACTIVE);
+            batchRepository.save(batch);
         }
     }
 

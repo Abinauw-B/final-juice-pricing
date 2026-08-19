@@ -23,7 +23,7 @@ public class DemandCalculationService {
         LocalDateTime since = LocalDateTime.now().minusMinutes(windowMinutes);
         Integer cupsSold = salesOrderItemRepository.countQuantitySoldForProductSince(productId, since);
         if (cupsSold == null || cupsSold <= 0) {
-            return 50.0;
+            return 20.0;
         }
         // Scale 0 cups -> 50.0 neutral baseline, 10 cups -> 100.0 max demand
         double score = 50.0 + ((cupsSold / 10.0) * 50.0);

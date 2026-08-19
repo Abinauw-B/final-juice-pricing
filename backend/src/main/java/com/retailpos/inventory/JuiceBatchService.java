@@ -98,4 +98,55 @@ public class JuiceBatchService {
 
         return updatedBatch;
     }
+
+    @Transactional
+    public JuiceBatch updateBatch(String batchCodeOrId, Integer remainingVolumeMl, JuiceBatch.BatchStatus status) {
+        JuiceBatch batch = null;
+        if (batchCodeOrId.matches("\\d+")) {
+            batch = batchRepository.findById(Long.parseLong(batchCodeOrId)).orElse(null);
+        }
+        if (batch == null) {
+            batch = batchRepository.findByBatchCode(batchCodeOrId)
+                    .orElseThrow(() -> new IllegalArgumentException("Batch not found: " + batchCodeOrId));
+        }
+
+        if (remainingVolumeMl != null) {
+            batch.setRemainingVolumeMl(remainingVolumeMl);
+        }
+        if (status != null) {
+            batch.setStatus(status);
+        }
+        batch.setUpdatedAt(LocalDateTime.now());
+        return batchRepository.save(batch);
+    }
+
+    @Transactional
+    public JuiceBatch restockBatch(Long batchId, Integer additionalMl) {
+        JuiceBatch batch = batchRepository.findById(batchId)
+                .orElseThrow(() -> new IllegalArgumentException("Batch not found with ID: " + batchId));
+        int volToAdd = additionalMl != null ? additionalMl : 20000;
+        int newRemaining = Math.min(batch.getContainerCapacityMl(), batch.getRemainingVolumeMl() + volToAdd);
+        batch.setRemainingVolumeMl(newRemaining);
+        if (newRemaining > 0) {
+            batch.setStatus(JuiceBatch.BatchStatus.ACTIVE);
+        }
+        batch.setUpdatedAt(LocalDateTime.now());
+
+        InventoryTransaction tx = InventoryTransaction.builder()
+                .productId(batch.getProductId())
+                .batchId(batch.getId())
+                .transactionType("BATCH_RESTOCKED")
+                .volumeChangeMl(volToAdd)
+                .notes("Restocked batch " + batch.getBatchCode() + " by " + volToAdd + " ml")
+                .createdAt(LocalDateTime.now())
+                .build();
+        transactionRepository.save(tx);
+
+        return batchRepository.save(batch);
+    }
+
+    @Transactional
+    public void deleteBatch(Long batchId) {
+        batchRepository.deleteById(batchId);
+    }
 }

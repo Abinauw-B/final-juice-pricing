@@ -263,7 +263,7 @@ public class PriceAdjustmentService {
         BigDecimal minPrice = product.getMinCupPrice() != null ? product.getMinCupPrice() : basePrice.multiply(new BigDecimal("0.70"));
         BigDecimal maxPrice = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : basePrice.multiply(new BigDecimal("2.00"));
 
-        BigDecimal targetPrice = movementLimitedPrice.min(maxPrice).max(minPrice).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal targetPrice = movementLimitedPrice.min(maxPrice).max(minPrice).setScale(0, java.math.RoundingMode.HALF_UP);
 
         boolean changed = targetPrice.compareTo(prevPrice) != 0;
         String actionText;

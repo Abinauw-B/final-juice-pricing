@@ -17,6 +17,8 @@ public interface JuiceBatchRepository extends JpaRepository<JuiceBatch, Long> {
 
     List<JuiceBatch> findByStatus(JuiceBatch.BatchStatus status);
 
+    Optional<JuiceBatch> findByBatchCode(String batchCode);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT b FROM JuiceBatch b WHERE b.productId = :productId AND b.status = 'ACTIVE' ORDER BY b.id ASC")
     List<JuiceBatch> findActiveBatchesForProductWithLock(@Param("productId") Long productId);

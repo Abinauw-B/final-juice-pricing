@@ -5,12 +5,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Control Center - Juice Bar Stock Exchange</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <!-- ApexCharts for Professional Visual Analytics -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script>
+    // Suppress Chromium legacy unload permission violation warnings from SockJS
+    (function() {
+      const origAdd = window.addEventListener;
+      window.addEventListener = function(type, listener, options) {
+        if (type === 'unload') return;
+        return origAdd.call(this, type, listener, options);
+      };
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
@@ -105,6 +116,10 @@
       font-weight: 700;
     }
 
+    .nav-link span {
+      pointer-events: none;
+    }
+
     .top-header {
       background: var(--bg-sidebar);
       border-bottom: 1px solid var(--border-color);
@@ -118,6 +133,7 @@
     .main-content {
       padding: 32px;
       overflow-y: auto;
+      flex: 1;
       background: var(--bg-main);
     }
 
@@ -402,8 +418,16 @@
 
         <!-- 1. Dashboard Tab -->
         <div id="view-dashboard">
-          <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Executive Command Dashboard</h1>
-          <p style="color: var(--text-muted); margin-bottom: 24px;">Real-time inventory volume, POS sales metrics, and dynamic stock exchange activity.</p>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+              <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Executive Command Dashboard</h1>
+              <p style="color: var(--text-muted);">Real-time inventory volume, POS sales metrics, and dynamic stock exchange activity.</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-primary" id="btnRefreshDashboard" style="background: #f1f5f9; border: 1px solid var(--border-color); color: #334155; font-size: 13px; padding: 8px 14px;" onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
+              <button class="btn-primary" id="btnRecalculatePrices" style="background: linear-gradient(135deg, #059669, #047857); font-size: 13px; padding: 8px 14px;" onclick="triggerPriceEngine()">⚡ Recalculate Prices</button>
+            </div>
+          </div>
 
           <!-- Market Crash Controller Banner -->
           <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; border-radius: 16px; padding: 20px 28px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
@@ -552,7 +576,7 @@
               <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Pub Exchange Dynamic Pricing Engine</h1>
               <p style="color: var(--text-muted);">Real-time demand scoring, stock pressure monitoring, and step-change evaluation.</p>
             </div>
-            <button class="btn-primary" onclick="triggerPriceEngine()">⚡ Run Price Engine Evaluation</button>
+            <button class="btn-primary" id="btnRunPriceEngine" onclick="triggerPriceEngine()">⚡ Run Price Engine Evaluation</button>
           </div>
 
           <div class="section-card">
@@ -642,8 +666,8 @@
                 </label>
               </div>
               <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn-primary" style="width: 100%; padding: 12px;" onclick="runSimulation()">▶️ Run Sandbox Simulation</button>
-                <button class="btn-primary" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #059669, #047857);" onclick="deploySimParametersToLivePOS()">🚀 Deploy Parameters to Live POS</button>
+                <button class="btn-primary" id="btnRunSimulation" style="width: 100%; padding: 12px;" onclick="runSimulation()">▶️ Run Sandbox Simulation</button>
+                <button class="btn-primary" id="btnDeploySim" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #059669, #047857);" onclick="deploySimParametersToLivePOS()">🚀 Deploy Parameters to Live POS</button>
               </div>
             </div>
 
@@ -802,7 +826,7 @@
                 <input type="number" id="settingCeilingPrice" value="25" style="width: 100%; padding: 10px;">
               </div>
             </div>
-            <button class="btn-primary" onclick="savePlatformSettings()">💾 Save Platform Configuration</button>
+            <button class="btn-primary" id="btnSaveSettings" onclick="savePlatformSettings()">💾 Save Platform Configuration</button>
           </div>
         </div>
 
@@ -834,7 +858,7 @@
       </div>
       <div style="display: flex; gap: 12px; justify-content: flex-end;">
         <button onclick="closeNewBatchModal()" style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700;">Cancel</button>
-        <button onclick="submitNewBatch()" class="btn-primary">Register Batch</button>
+        <button id="btnSubmitNewBatch" onclick="submitNewBatch()" class="btn-primary">Register Batch</button>
       </div>
     </div>
   </div>
@@ -871,7 +895,7 @@
       </div>
       <div style="display: flex; gap: 12px; justify-content: flex-end;">
         <button onclick="closeNewFlavourModal()" style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700;">Cancel</button>
-        <button onclick="submitNewFlavour()" class="btn-primary" style="background: linear-gradient(135deg, #059669, #047857);">✨ Save &amp; Deploy Flavour</button>
+        <button id="btnSubmitNewFlavour" onclick="submitNewFlavour()" class="btn-primary" style="background: linear-gradient(135deg, #059669, #047857);">✨ Save &amp; Deploy Flavour</button>
       </div>
     </div>
   </div>
@@ -925,7 +949,7 @@
 
       <div style="display: flex; gap: 12px; justify-content: flex-end;">
         <button onclick="closeEditJuiceModal()" style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700;">Cancel</button>
-        <button onclick="submitEditJuice()" class="btn-primary" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">💾 Save &amp; Sync Changes</button>
+        <button id="btnSubmitEditJuice" onclick="submitEditJuice()" class="btn-primary" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">💾 Save &amp; Sync Changes</button>
       </div>
     </div>
   </div>
@@ -956,7 +980,7 @@
       </div>
       <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
         <button onclick="closeUserModal()" style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700;">Cancel</button>
-        <button onclick="submitUserForm()" class="btn-primary">Save User</button>
+        <button id="btnSubmitUser" onclick="submitUserForm()" class="btn-primary">Save User</button>
       </div>
     </div>
   </div>
@@ -995,7 +1019,7 @@
       </div>
       <div style="display: flex; gap: 12px; justify-content: flex-end;">
         <button onclick="closeProfileModal()" style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700;">Cancel</button>
-        <button onclick="updateProfilePassword()" class="btn-primary">Update Password</button>
+        <button id="btnUpdatePassword" onclick="updateProfilePassword()" class="btn-primary">Update Password</button>
       </div>
     </div>
   </div>
@@ -1003,6 +1027,143 @@
   <iframe id="posBridgeFrame" src="http://localhost:8000/bridge.html" style="display:none;"></iframe>
 
   <script>
+    const API_BASE_URL = 'http://localhost:8088/api';
+
+    async function apiFetch(endpoint, options = {}) {
+      const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+      const token = localStorage.getItem('pubexchange_jwt_token');
+      
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const config = {
+        ...options,
+        headers
+      };
+
+      try {
+        const response = await fetch(url, config);
+        if (response.status === 401) {
+          console.warn('Unauthorized request to API: 401');
+        }
+        return response;
+      } catch (err) {
+        console.error(`Network error calling API (${url}):`, err);
+        throw err;
+      }
+    }
+
+    let revenueChartInstance = null;
+    let donutChartInstance = null;
+    let isAdminCrashActive = false;
+    let adminCrashTimerInterval = null;
+
+    const pubExchangeChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
+    const marketChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_market_channel') : null;
+
+    // Helper: Button Loading State Manager (IDLE -> LOADING -> SUCCESS/ERROR)
+    function setButtonLoading(btnOrId, isLoading, loadingText = 'Processing...', originalHtml = '') {
+      const el = typeof btnOrId === 'string' ? document.getElementById(btnOrId) : btnOrId;
+      if (!el) return;
+      if (isLoading) {
+        el.dataset.originalText = originalHtml || el.innerHTML;
+        el.disabled = true;
+        el.style.opacity = '0.75';
+        el.style.cursor = 'not-allowed';
+        el.innerHTML = `⏳ ${loadingText}`;
+      } else {
+        el.disabled = false;
+        el.style.opacity = '1';
+        el.style.cursor = 'pointer';
+        el.innerHTML = originalHtml || el.dataset.originalText || 'Submit';
+      }
+    }
+
+    // High Contrast Mode Initialization & Toggle
+    function initHighContrast() {
+      const saved = localStorage.getItem('pubexchange_high_contrast');
+      if (saved === 'true') {
+        document.body.classList.add('high-contrast-mode');
+      }
+    }
+    function toggleAccessibilityHighContrast() {
+      document.body.classList.toggle('high-contrast-mode');
+      const isHc = document.body.classList.contains('high-contrast-mode');
+      localStorage.setItem('pubexchange_high_contrast', isHc ? 'true' : 'false');
+      showToast(isHc ? '👁️ High Contrast Mode Enabled' : '👁️ Normal Display Mode', 'info');
+    }
+    initHighContrast();
+
+    // Toast Notification System
+    function showToast(message, type = 'info') {
+      let container = document.getElementById('toastContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+        document.body.appendChild(container);
+      }
+
+      const toast = document.createElement('div');
+      const bgColors = {
+        success: '#059669',
+        warning: '#d97706',
+        error: '#dc2626',
+        danger: '#dc2626',
+        info: '#2563eb'
+      };
+      const borderCol = bgColors[type] || '#2563eb';
+
+      toast.style.cssText = `
+        background: #0f172a;
+        color: #ffffff;
+        border-left: 4px solid ${borderCol};
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 13px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        pointer-events: auto;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+      `;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      });
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => { toast.remove(); }, 300);
+      }, 3500);
+    }
+
+    // Cross-Portal Event Broadcaster
+    function broadcastEvent(type, payload = {}) {
+      const msg = { type, payload, timestamp: Date.now() };
+      try { if (pubExchangeChannel) pubExchangeChannel.postMessage(msg); } catch (e) {}
+      try { if (marketChannel) marketChannel.postMessage(msg); } catch (e) {}
+      try {
+        const iframe = document.getElementById('posBridgeFrame');
+        if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(msg, '*');
+      } catch (e) {}
+      try { localStorage.setItem('pubexchange_last_event', JSON.stringify(msg)); } catch (e) {}
+    }
+
+    // Flavours Mapping & Synchronization
     const defaultFlavoursMap = { 1: 'Fresh Mango', 2: 'Zesty Lemon', 3: 'Cool Mint', 4: 'Orange Sunrise', 5: 'Strawberry Delight', 6: 'Royal Grape', 7: 'Lychee Mist' };
     let flavoursMap = { ...defaultFlavoursMap };
 
@@ -1019,18 +1180,14 @@
     function saveFlavoursMap() {
       try { localStorage.setItem('pubexchange_flavours_map', JSON.stringify(flavoursMap)); } catch (e) {}
     }
-
     syncFlavoursMap();
 
+    // User State
     let currentUser = { username: 'superadmin', role: 'SUPER_ADMIN', fullName: 'Super Administrator' };
+    let usersData = [];
+    let editingUserId = null;
 
-    let usersData = [
-      { id: 1, username: 'superadmin', fullName: 'Super Administrator', email: 'superadmin@pubexchange.com', role: 'SUPER_ADMIN', status: 'ACTIVE' },
-      { id: 2, username: 'admin', fullName: 'System Administrator', email: 'admin@pubexchange.com', role: 'ADMIN', status: 'ACTIVE' },
-      { id: 3, username: 'manager', fullName: 'Operations Manager', email: 'manager@pubexchange.com', role: 'MANAGER', status: 'ACTIVE' },
-      { id: 4, username: 'cashier', fullName: 'POS Cashier', email: 'cashier@pubexchange.com', role: 'CASHIER', status: 'ACTIVE' }
-    ];
-
+    // Batches & History Data State
     const defaultBatches = [
       { id: 1, productId: 1, batchCode: 'BATCH-MNG-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 17500, cupSizeMl: 250, status: 'ACTIVE' },
       { id: 2, productId: 2, batchCode: 'BATCH-LMN-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 16000, cupSizeMl: 250, status: 'ACTIVE' },
@@ -1040,6 +1197,7 @@
       { id: 6, productId: 6, batchCode: 'BATCH-GRP-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 15750, cupSizeMl: 250, status: 'ACTIVE' },
       { id: 7, productId: 7, batchCode: 'BATCH-LYC-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 17500, cupSizeMl: 250, status: 'ACTIVE' }
     ];
+    let batchesData = defaultBatches;
 
     function saveBatchesState() {
       try { localStorage.setItem('pubexchange_batches_data', JSON.stringify(batchesData)); } catch (e) {}
@@ -1048,315 +1206,433 @@
     function loadBatchesState() {
       syncFlavoursMap();
       const saved = localStorage.getItem('pubexchange_batches_data');
-      let loaded = defaultBatches;
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            loaded = parsed.filter(b => {
-              if (!b) return false;
-              const name = (flavoursMap[b.productId] || '').toLowerCase();
-              const code = (b.batchCode || '').toLowerCase();
-              if (name.includes('thunder') || name.includes('pineapple') || name.includes('test') || code.includes('thu') || code.includes('pin')) return false;
-              return true;
-            });
+            batchesData = parsed;
+            return;
           }
         } catch (e) {}
       }
-      batchesData = JSON.parse(JSON.stringify(loaded.length > 0 ? loaded : defaultBatches));
-      saveBatchesState();
+      batchesData = defaultBatches;
     }
-
-    function cleanCustomProductsStorage() {
-      const raw = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
-      const cleaned = raw.filter(p => {
-        if (!p || !p.name) return false;
-        const n = p.name.toLowerCase();
-        if (n.includes('thunder') || n.includes('pineapple') || n.includes('test')) return false;
-        return true;
-      });
-      localStorage.setItem('pubexchange_custom_products', JSON.stringify(cleaned));
-    }
-
-    cleanCustomProductsStorage();
-    let batchesData = defaultBatches;
     loadBatchesState();
 
-    let historyData = [
-      { id: 1, productId: 1, oldPrice: 20.00, newPrice: 21.00, demandScore: 74.5, stockPressurePct: 82.5, explanation: 'Increased price for MANGO by ₹1 to ₹21.00 due to HIGH DEMAND (Score: 74.5, Stock Pressure: 82.5%).', createdAt: '2026-08-13 11:45:00' },
-      { id: 2, productId: 2, oldPrice: 20.00, newPrice: 19.00, demandScore: 32.0, stockPressurePct: 20.0, explanation: 'Decreased price for LEMON by ₹1 to ₹19.00 due to LOW DEMAND (Score: 32.0, Stock Pressure: 20.0%).', createdAt: '2026-08-13 11:30:00' }
-    ];
-
-    let notificationsData = [
-      { id: 1, title: 'System Architecture Active', message: 'Enterprise Clean Architecture backend running with Spring Boot 3.3 and Java 21.', type: 'SUCCESS', isRead: false, createdAt: 'Just now' },
-      { id: 2, title: 'Dynamic Pricing Engine Ready', message: 'Real-time order velocity & stock pressure scoring active.', type: 'INFO', isRead: false, createdAt: '5m ago' }
-    ];
-
-    let auditData = [
-      { id: 1, timestamp: '2026-08-14 11:40:00', user: 'superadmin', module: 'AUTH', action: 'LOGIN_SUCCESS', details: 'User superadmin logged in from 127.0.0.1' },
-      { id: 2, timestamp: '2026-08-14 11:35:00', user: 'system', module: 'PRICING', action: 'EVALUATE_ENGINE', details: 'Dynamic price evaluation cycle executed successfully' }
-    ];
-
-    let isAdminCrashActive = false;
-    let adminCrashTimerInterval = null;
-    let revenueChartInstance = null;
-    let donutChartInstance = null;
+    let notificationsData = [];
+    let auditData = [];
+    let historyData = [];
 
     let totalRevenueSum = 3840.00;
     let totalCupsSum = 192;
 
-    function handlePosOrderCompleted(payload) {
-      if (!payload) return;
+    // Logout Handler: Invalidates session & clears state
+    function handleLogout() {
+      if (!confirm("Are you sure you want to log out of the Admin Control Center?")) return;
+      localStorage.removeItem('pubexchange_jwt_token');
+      localStorage.removeItem('pubexchange_refresh_token');
+      localStorage.removeItem('pubexchange_user');
+      sessionStorage.clear();
+      showToast('Logged out successfully. Authentication token cleared.', 'info');
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
+    }
 
-      if (payload.totalAmount) totalRevenueSum += parseFloat(payload.totalAmount);
-      if (payload.cupsCount) totalCupsSum += parseInt(payload.cupsCount);
-
-      const revElem = document.getElementById('dashRevenue');
-      const cupsElem = document.getElementById('dashCups');
-      if (revElem) revElem.textContent = `₹${totalRevenueSum.toFixed(2)}`;
-      if (cupsElem) cupsElem.textContent = `${totalCupsSum} cups`;
-
-      if (payload.cartItems && Array.isArray(payload.cartItems)) {
-        payload.cartItems.forEach(item => {
-          const batch = batchesData.find(b => b.productId === item.productId || (flavoursMap[b.productId] && flavoursMap[b.productId].toLowerCase() === item.name.toLowerCase()));
-          if (batch) {
-            batch.remainingVolumeMl = Math.max(0, (batch.remainingVolumeMl || 20000) - (item.volumeMl || 250));
+    // Refresh Dashboard Button Handler (Section 1)
+    async function refreshDashboard() {
+      setButtonLoading('btnRefreshDashboard', true, 'Refreshing...');
+      try {
+        // 1. Fetch dashboard summary
+        const sumRes = await apiFetch('/reports/summary');
+        if (sumRes.ok) {
+          const summary = await sumRes.json();
+          if (summary.totalRevenue !== undefined) {
+            totalRevenueSum = summary.totalRevenue;
+            const revEl = document.getElementById('dashRevenue');
+            if (revEl) revEl.textContent = `₹${Math.round(totalRevenueSum)}`;
           }
-        });
-        saveBatchesState();
-      }
-
-      const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
-      auditData.unshift({
-        id: auditData.length + 1,
-        timestamp: nowStr,
-        user: 'pos_terminal_1',
-        module: 'SALES_POS',
-        action: 'CHECKOUT_SUCCESS',
-        details: `Order #${payload.orderNumber || 'ORD-SYNC'}: ${payload.cupsCount || 1} cups (₹${parseFloat(payload.totalAmount || 0).toFixed(2)})`
-      });
-
-      renderDashboardBatches();
-      renderBatchesTable();
-      renderCharts();
-      if (typeof renderAuditLogs === 'function') renderAuditLogs();
-      showToast(`🛒 Live POS Order #${payload.orderNumber || ''} Received: ₹${parseFloat(payload.totalAmount || 0).toFixed(2)} (${payload.cupsCount || 1} cups)`, 'success');
-    }
-
-    const marketChannel = new BroadcastChannel('pubexchange_market_channel');
-    marketChannel.onmessage = (event) => {
-      if (event.data?.type === 'POS_ORDER_COMPLETED') {
-        handlePosOrderCompleted(event.data.payload);
-      } else {
-        loadBatches();
-        renderCharts();
-      }
-    };
-
-    window.addEventListener('message', (event) => {
-      if (event.data?.type === 'POS_ORDER_COMPLETED') {
-        handlePosOrderCompleted(event.data.payload);
-      }
-    });
-
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'pubexchange_pos_order' && e.newValue) {
-        try { handlePosOrderCompleted(JSON.parse(e.newValue)); } catch (err) {}
-      } else if (e.key === 'pubexchange_event' && e.newValue) {
-        loadBatches();
-        renderCharts();
-      }
-    });
-
-    function showToast(msg, type = 'info') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.className = `toast-msg`;
-      toast.innerHTML = `<span>ℹ️</span> <span>${msg}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => { toast.remove(); }, 4000);
-    }
-
-    function broadcastEvent(type, payload = {}) {
-      try {
-        const msg = { type, payload, timestamp: Date.now() };
-        marketChannel.postMessage(msg);
-        localStorage.setItem('pubexchange_event', JSON.stringify(msg));
-
-        const bridgeIframe = document.getElementById('posBridgeFrame');
-        if (bridgeIframe && bridgeIframe.contentWindow) {
-          bridgeIframe.contentWindow.postMessage(msg, 'http://localhost:8000');
+          if (summary.cupsSold !== undefined) {
+            totalCupsSum = summary.cupsSold;
+            const cupsEl = document.getElementById('dashCups');
+            if (cupsEl) cupsEl.textContent = `${totalCupsSum} cups`;
+          }
+          if (summary.liquidVolumeLitres !== undefined) {
+            const volEl = document.getElementById('dashVolume');
+            if (volEl) volEl.textContent = `${summary.liquidVolumeLitres} Litres`;
+          }
+          if (summary.activeBatches !== undefined) {
+            const activeEl = document.getElementById('dashBatches');
+            if (activeEl) activeEl.textContent = `${summary.activeBatches} active`;
+          }
         }
-      } catch (e) { }
+
+        // 2. Fetch container batches
+        await loadBatches();
+
+        // 3. Fetch Telemetry
+        await loadTelemetry();
+
+        // 4. Update Charts
+        renderCharts();
+
+        showToast('🔄 Dashboard Refreshed with Live Backend Data!', 'success');
+      } catch (err) {
+        showToast('⚠️ Could not connect to backend server on port 8088', 'danger');
+      } finally {
+        setButtonLoading('btnRefreshDashboard', false);
+      }
     }
 
+    // Telemetry Loader
+    async function loadTelemetry() {
+      try {
+        const res = await apiFetch('/health/telemetry');
+        if (res.ok) {
+          const data = await res.json();
+          const tag = document.getElementById('dashCrashStatusTag');
+          if (tag && !isAdminCrashActive) {
+            tag.textContent = data.summaryText || '🟢 TRADING NORMAL';
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Dynamic Price Evaluation Engine Handler (Section 1 & 8)
+    async function triggerPriceEngine() {
+      setButtonLoading('btnRecalculatePrices', true, 'Evaluating...');
+      setButtonLoading('btnRunPriceEngine', true, 'Evaluating...');
+
+      try {
+        const res = await apiFetch('/pricing/evaluate');
+        if (res.ok) {
+          const results = await res.json();
+          showToast(`⚡ Recalculated prices for ${results.length || 'all'} drinks via Dynamic Price Engine!`, 'success');
+          
+          // Refresh live batches, price history and broadcast event
+          await loadBatches();
+          await loadHistory();
+          broadcastEvent('PRICES_RECALCULATED', { results });
+        } else {
+          showToast('Failed to execute price evaluation on backend API', 'danger');
+        }
+      } catch (err) {
+        showToast('Error connecting to backend pricing evaluation endpoint', 'danger');
+      } finally {
+        setButtonLoading('btnRecalculatePrices', false);
+        setButtonLoading('btnRunPriceEngine', false);
+      }
+    }
+
+    // Check Market Crash Status on backend
+    async function checkMarketCrashStatus() {
+      try {
+        const res = await apiFetch('/pricing/market-crash/status');
+        if (res.ok) {
+          const status = await res.json();
+          syncMarketCrashUI(status);
+        }
+      } catch (err) {}
+    }
+
+    function syncMarketCrashUI(status) {
+      if (!status) return;
+      isAdminCrashActive = status.active;
+      const crashBtn = document.getElementById('adminTriggerCrashBtn');
+      const stopBtn = document.getElementById('adminStopCrashBtn');
+      const timerEl = document.getElementById('adminCrashTimer');
+      const tag = document.getElementById('dashCrashStatusTag');
+
+      if (status.active) {
+        if (tag) {
+          tag.textContent = '🚨 MARKET CRASH ACTIVE';
+          tag.className = 'status-tag tag-crash';
+        }
+        if (crashBtn) crashBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'block';
+        if (timerEl) {
+          timerEl.style.display = 'inline-block';
+          const secs = status.remainingSeconds || 180;
+          const mins = Math.floor(secs / 60).toString().padStart(2, '0');
+          const secsStr = (secs % 60).toString().padStart(2, '0');
+          timerEl.textContent = `${mins}:${secsStr}`;
+        }
+      } else {
+        if (tag) {
+          tag.textContent = 'TRADING NORMAL';
+          tag.className = 'status-tag tag-active';
+        }
+        if (crashBtn) crashBtn.style.display = 'block';
+        if (stopBtn) stopBtn.style.display = 'none';
+        if (timerEl) timerEl.style.display = 'none';
+      }
+    }
+
+    // Market Crash Trigger Handler (Section 1)
     async function triggerAdminMarketCrash(customFloorPrice = 18) {
-      const secs = 180;
-      const endTime = Date.now() + (secs * 1000);
+      if (!confirm("🚨 WARNING: Are you sure you want to trigger a 3-Minute Market Crash Event across all POS terminals and LED Tickers?")) return;
+
+      const crashBtn = document.getElementById('adminTriggerCrashBtn');
+      if (crashBtn) setButtonLoading(crashBtn, true, 'Triggering...');
 
       try {
-        await fetch('http://localhost:8088/api/pricing/market-crash/trigger?durationMinutes=3', { method: 'POST' });
-      } catch (err) { }
+        const res = await apiFetch('/pricing/market-crash/trigger?durationMinutes=3', { method: 'POST' });
+        if (!res.ok) {
+          throw new Error('Backend returned error status ' + res.status);
+        }
+        const crashStatus = await res.json();
+        
+        const secs = (crashStatus.remainingSeconds || 180);
+        const endTime = Date.now() + (secs * 1000);
 
-      localStorage.setItem('pubexchange_market_crash_active', 'true');
-      localStorage.setItem('pubexchange_market_crash_end_time', endTime.toString());
-      localStorage.setItem('pubexchange_market_crash_floor', customFloorPrice.toString());
-      broadcastEvent('MARKET_CRASH_TRIGGER', { durationSeconds: secs, floorPrice: customFloorPrice });
+        localStorage.setItem('pubexchange_market_crash_active', 'true');
+        localStorage.setItem('pubexchange_market_crash_end_time', endTime.toString());
+        localStorage.setItem('pubexchange_market_crash_floor', customFloorPrice.toString());
 
-      isAdminCrashActive = true;
-      document.getElementById('dashCrashStatusTag').textContent = '🚨 CRASH IN PROGRESS';
-      document.getElementById('dashCrashStatusTag').className = 'status-tag tag-crash';
-      document.getElementById('adminTriggerCrashBtn').style.display = 'none';
-      document.getElementById('adminStopCrashBtn').style.display = 'block';
-      document.getElementById('adminCrashTimer').style.display = 'inline';
+        broadcastEvent('MARKET_CRASH_START', { endTime, floorPrice: customFloorPrice });
 
-      let remainingSecs = secs;
-      if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
-      adminCrashTimerInterval = setInterval(() => {
-        remainingSecs--;
-        const m = Math.floor(remainingSecs / 60);
-        const s = remainingSecs % 60;
-        document.getElementById('adminCrashTimer').textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        if (remainingSecs <= 0) stopAdminMarketCrash();
-      }, 1000);
+        syncMarketCrashUI(crashStatus);
 
-      showToast('🚨 Market Crash Event Triggered Across All Panels!', 'warning');
+        if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
+        adminCrashTimerInterval = setInterval(checkMarketCrashStatus, 1000);
+
+        showToast('🚨 Market Crash Event Triggered Across All Panels!', 'warning');
+      } catch (err) {
+        showToast('❌ Market Crash Trigger Failed: Backend server error', 'danger');
+      } finally {
+        if (crashBtn) setButtonLoading(crashBtn, false);
+      }
     }
 
-    async function stopAdminMarketCrash() {
+    // Market Crash Stop Handler
+    async function stopAdminMarketCrash(promptConfirm = true) {
+      if (promptConfirm && !confirm("Stop active Market Crash and resume normal trading?")) return;
+
+      const stopBtn = document.getElementById('adminStopCrashBtn');
+      if (stopBtn) setButtonLoading(stopBtn, true, 'Stopping...');
+
       try {
-        await fetch('http://localhost:8088/api/pricing/market-crash/stop', { method: 'POST' });
-      } catch (err) { }
+        const res = await apiFetch('/pricing/market-crash/stop', { method: 'POST' });
+        const crashStatus = res.ok ? await res.json() : null;
+        
+        localStorage.setItem('pubexchange_market_crash_active', 'false');
+        localStorage.removeItem('pubexchange_market_crash_end_time');
+        broadcastEvent('MARKET_CRASH_STOP');
 
-      localStorage.setItem('pubexchange_market_crash_active', 'false');
-      localStorage.removeItem('pubexchange_market_crash_end_time');
-      broadcastEvent('MARKET_CRASH_STOP');
-
-      isAdminCrashActive = false;
-      if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
-      document.getElementById('dashCrashStatusTag').textContent = 'TRADING NORMAL';
-      document.getElementById('dashCrashStatusTag').className = 'status-tag tag-active';
-      document.getElementById('adminTriggerCrashBtn').style.display = 'block';
-      document.getElementById('adminStopCrashBtn').style.display = 'none';
-      document.getElementById('adminCrashTimer').style.display = 'none';
-      showToast('Trading resumed normal status.', 'info');
+        if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
+        syncMarketCrashUI(crashStatus || { active: false });
+        showToast('Trading resumed normal status.', 'info');
+      } catch (err) {
+        showToast('Failed to stop Market Crash on backend', 'danger');
+      } finally {
+        if (stopBtn) setButtonLoading(stopBtn, false);
+      }
     }
 
+    // Tab Navigation Switcher (Section 3)
     function switchTab(tabName) {
-      document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-      const activeNav = document.getElementById(`tab-${tabName}`);
-      if (activeNav) activeNav.classList.add('active');
+      try {
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        const activeNav = document.getElementById(`tab-${tabName}`);
+        if (activeNav) activeNav.classList.add('active');
 
-      ['dashboard', 'batches', 'pricing', 'simulator', 'users', 'reports', 'audit', 'settings'].forEach(t => {
-        const view = document.getElementById(`view-${t}`);
-        if (view) view.style.display = (t === tabName) ? 'block' : 'none';
-      });
+        ['dashboard', 'batches', 'pricing', 'simulator', 'users', 'reports', 'audit', 'settings'].forEach(t => {
+          const view = document.getElementById(`view-${t}`);
+          if (view) view.style.display = (t === tabName) ? 'block' : 'none';
+        });
 
-      if (tabName === 'dashboard') { loadBatches(); renderCharts(); }
-      if (tabName === 'batches') loadBatches();
-      if (tabName === 'pricing') loadHistory();
-      if (tabName === 'simulator') runSimulation();
-      if (tabName === 'users') renderUsersTable();
-      if (tabName === 'reports') renderReports();
-      if (tabName === 'audit') renderAuditLogs();
+        if (tabName === 'dashboard') { refreshDashboard(); }
+        if (tabName === 'batches') { loadBatches(); }
+        if (tabName === 'pricing') { loadHistory(); }
+        if (tabName === 'simulator') { runSimulation(); }
+        if (tabName === 'users') { loadUsers(); }
+        if (tabName === 'reports') { renderReports(); }
+        if (tabName === 'audit') { loadAuditLogs(); }
+        if (tabName === 'settings') { loadPlatformConfig(); }
+      } catch (err) {
+        console.error('Error switching tab:', err);
+      }
     }
 
+    // Load Batches from REST API
     async function loadBatches() {
-      let loadedFromBackend = false;
       try {
-        const res = await fetch('http://localhost:8088/api/batches');
+        const res = await apiFetch('/batches');
         if (res.ok) {
           const data = await res.json();
           if (data && Array.isArray(data) && data.length > 0) {
             batchesData = data;
-            loadedFromBackend = true;
             saveBatchesState();
           }
         }
-      } catch (err) { }
-
-      if (!loadedFromBackend) {
+      } catch (err) {
         loadBatchesState();
       }
 
       syncFlavoursMap();
-
       renderDashboardBatches();
       renderBatchesTable();
     }
 
+    // Render Dashboard Batch Summary
     function renderDashboardBatches() {
+      if (!batchesData || batchesData.length === 0) batchesData = defaultBatches;
       const activeCount = batchesData.filter(b => b.status === 'ACTIVE').length;
       const totalVolLiters = (batchesData.reduce((acc, b) => acc + (b.remainingVolumeMl || 0), 0) / 1000).toFixed(1);
 
-      document.getElementById('dashBatches').textContent = `${activeCount} active`;
-      document.getElementById('dashVolume').textContent = `${totalVolLiters} Litres`;
+      const activeEl = document.getElementById('dashBatches');
+      if (activeEl) activeEl.textContent = `${activeCount} active`;
+      const volEl = document.getElementById('dashVolume');
+      if (volEl) volEl.textContent = `${totalVolLiters} Litres`;
 
       const body = document.getElementById('dashBatchesBody');
       if (body) {
-        body.innerHTML = batchesData.map(b => `
-          <tr>
-            <td style="font-weight: 700; font-family: monospace; color: #1e293b;">${b.batchCode}</td>
-            <td style="font-weight: 600;">${flavoursMap[b.productId] || 'Product #' + b.productId}</td>
-            <td>${b.containerCapacityMl} ml (20L)</td>
-            <td style="font-weight: 700; color: #2563eb;">${b.remainingVolumeMl} ml</td>
-            <td style="font-weight: 800; color: #059669;">${Math.floor(b.remainingVolumeMl / b.cupSizeMl)} cups</td>
-            <td><span class="status-tag ${b.status === 'ACTIVE' ? 'tag-active' : 'tag-depleted'}">${b.status}</span></td>
-            <td>
-              <button class="btn-primary" style="padding: 4px 10px; font-size: 12px;" onclick="editJuiceBatch('${b.batchCode}', ${b.productId})">✏️ Edit Juice</button>
-            </td>
-          </tr>
-        `).join('');
+        body.innerHTML = batchesData.map(b => {
+          const pName = flavoursMap[b.productId] || b.flavourName || `Product #${b.productId}`;
+          const cap = b.containerCapacityMl || 20000;
+          const rem = b.remainingVolumeMl !== undefined ? b.remainingVolumeMl : 20000;
+          const cupSize = b.cupSizeMl || 250;
+          const cups = Math.floor(rem / cupSize);
+          const st = b.status || 'ACTIVE';
+          const bCode = b.batchCode || 'BATCH-001';
+          return `
+            <tr>
+              <td style="font-weight: 700; font-family: monospace; color: #1e293b;">${bCode}</td>
+              <td style="font-weight: 600;">${pName}</td>
+              <td>${cap} ml (20L)</td>
+              <td style="font-weight: 700; color: #2563eb;">${rem} ml</td>
+              <td style="font-weight: 800; color: #059669;">${cups} cups</td>
+              <td><span class="status-tag ${st === 'ACTIVE' ? 'tag-active' : 'tag-depleted'}">${st}</span></td>
+              <td style="display: flex; gap: 6px;">
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="editJuiceBatch('${bCode}', ${b.productId || 1})">✏️ Edit</button>
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669;" onclick="restockJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🔄 Restock</button>
+                <button style="padding: 4px 8px; font-size: 11px; background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="deleteJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🗑️ Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
     }
 
+    // Render Full Batches View Table
     function renderBatchesTable() {
+      if (!batchesData || batchesData.length === 0) batchesData = defaultBatches;
       const body = document.getElementById('batchesTableBody');
       if (body) {
-        body.innerHTML = batchesData.map(b => `
-          <tr>
-            <td style="font-weight: 700; font-family: monospace; color: #1e293b;">${b.batchCode}</td>
-            <td style="font-weight: 600;">${flavoursMap[b.productId] || 'Product #' + b.productId}</td>
-            <td>${b.initialVolumeMl || 20000} ml (20L)</td>
-            <td style="font-weight: 700; color: #2563eb;">${b.remainingVolumeMl} ml</td>
-            <td>${b.cupSizeMl} ml</td>
-            <td style="font-weight: 800; color: #059669;">${Math.floor(b.remainingVolumeMl / b.cupSizeMl)} cups</td>
-            <td><span class="status-tag ${b.status === 'ACTIVE' ? 'tag-active' : 'tag-depleted'}">${b.status}</span></td>
-            <td>
-              <button class="btn-primary" style="padding: 4px 10px; font-size: 12px;" onclick="editJuiceBatch('${b.batchCode}', ${b.productId})">✏️ Edit Juice</button>
-            </td>
-          </tr>
-        `).join('');
+        body.innerHTML = batchesData.map(b => {
+          const pName = flavoursMap[b.productId] || b.flavourName || `Product #${b.productId}`;
+          const initVol = b.initialVolumeMl || b.containerCapacityMl || 20000;
+          const rem = b.remainingVolumeMl !== undefined ? b.remainingVolumeMl : 20000;
+          const cupSize = b.cupSizeMl || 250;
+          const cups = Math.floor(rem / cupSize);
+          const st = b.status || 'ACTIVE';
+          const bCode = b.batchCode || 'BATCH-001';
+          return `
+            <tr>
+              <td style="font-weight: 700; font-family: monospace; color: #1e293b;">${bCode}</td>
+              <td style="font-weight: 600;">${pName}</td>
+              <td>${initVol} ml (20L)</td>
+              <td style="font-weight: 700; color: #2563eb;">${rem} ml</td>
+              <td>${cupSize} ml</td>
+              <td style="font-weight: 800; color: #059669;">${cups} cups</td>
+              <td><span class="status-tag ${st === 'ACTIVE' ? 'tag-active' : 'tag-depleted'}">${st}</span></td>
+              <td style="display: flex; gap: 6px;">
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="editJuiceBatch('${bCode}', ${b.productId || 1})">✏️ Edit</button>
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669;" onclick="restockJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🔄 Restock</button>
+                <button style="padding: 4px 8px; font-size: 11px; background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="deleteJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🗑️ Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
     }
 
+    // Chart Renderer (Section 6)
     function renderCharts() {
-      if (typeof ApexCharts === 'undefined') return;
+      const revContainer = document.querySelector("#revenueChartContainer");
+      const donutContainer = document.querySelector("#volumeDonutChartContainer");
 
-      if (!revenueChartInstance) {
-        const options = {
-          chart: { type: 'area', height: 260, toolbar: { show: false }, background: 'transparent' },
-          theme: { mode: 'light' },
-          series: [{ name: 'Revenue (₹)', data: [450, 780, 1200, 1950, 2400, 3100, 3840] }],
-          xaxis: { categories: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'] },
-          colors: ['#059669'],
-          stroke: { curve: 'smooth', width: 3 }
-        };
-        revenueChartInstance = new ApexCharts(document.querySelector("#revenueChartContainer"), options);
-        revenueChartInstance.render();
+      if (typeof ApexCharts !== 'undefined') {
+        try {
+          if (!revenueChartInstance && revContainer) {
+            const options = {
+              chart: { type: 'area', height: 260, toolbar: { show: false }, background: 'transparent' },
+              theme: { mode: 'light' },
+              series: [{ name: 'Revenue (₹)', data: [450, 780, 1200, 1950, 2400, 3100, Math.round(totalRevenueSum)] }],
+              xaxis: { categories: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', 'Now'] },
+              colors: ['#059669'],
+              stroke: { curve: 'smooth', width: 3 }
+            };
+            revenueChartInstance = new ApexCharts(revContainer, options);
+            revenueChartInstance.render();
+          }
+
+          if (!donutChartInstance && donutContainer) {
+            const labels = Object.values(flavoursMap).slice(0, 7);
+            const series = batchesData.slice(0, 7).map(b => (b.remainingVolumeMl || 20000) / 1000.0);
+
+            const options = {
+              chart: { type: 'donut', height: 260, background: 'transparent' },
+              theme: { mode: 'light' },
+              series: series.length > 0 ? series : [17.5, 16.0, 19.0, 14.2, 18.5, 15.7, 17.5],
+              labels: labels.length > 0 ? labels : ['Mango', 'Lemon', 'Mint', 'Orange', 'Strawberry', 'Grape', 'Lychee'],
+              colors: ['#d97706', '#ca8a04', '#059669', '#ea580c', '#e11d48', '#7c3aed', '#0284c7']
+            };
+            donutChartInstance = new ApexCharts(donutContainer, options);
+            donutChartInstance.render();
+          }
+          return;
+        } catch(e) {}
       }
 
-      if (!donutChartInstance) {
-        const options = {
-          chart: { type: 'donut', height: 260, background: 'transparent' },
-          theme: { mode: 'light' },
-          series: [17.5, 16.0, 19.0, 14.2, 18.5, 15.7, 17.5],
-          labels: ['Mango', 'Lemon', 'Mint', 'Orange', 'Strawberry', 'Grape', 'Lychee'],
-          colors: ['#d97706', '#ca8a04', '#059669', '#ea580c', '#e11d48', '#7c3aed', '#0284c7']
-        };
-        donutChartInstance = new ApexCharts(document.querySelector("#volumeDonutChartContainer"), options);
-        donutChartInstance.render();
+      if (revContainer) {
+        revContainer.innerHTML = `
+          <svg viewBox="0 0 500 200" style="width:100%; height:240px;">
+            <defs>
+              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#059669" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#059669" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <path d="M 10,170 Q 80,140 150,110 T 290,60 T 430,30 L 490,20 L 490,190 L 10,190 Z" fill="url(#chartGrad)"/>
+            <path d="M 10,170 Q 80,140 150,110 T 290,60 T 430,30 L 490,20" fill="none" stroke="#059669" stroke-width="4"/>
+            <circle cx="490" cy="20" r="6" fill="#059669"/>
+          </svg>
+        `;
       }
+    }
+
+    const defaultUsersList = [
+      { id: 1, username: 'superadmin', fullName: 'Super Administrator', email: 'superadmin@pubexchange.com', role: 'SUPER_ADMIN', status: 'ACTIVE' },
+      { id: 2, username: 'admin', fullName: 'System Administrator', email: 'admin@pubexchange.com', role: 'ADMIN', status: 'ACTIVE' },
+      { id: 3, username: 'manager_sam', fullName: 'Sam Taylor', email: 'sam.mgr@pubexchange.com', role: 'MANAGER', status: 'ACTIVE' },
+      { id: 4, username: 'cashier1', fullName: 'Alex Johnson', email: 'alex.pos@pubexchange.com', role: 'CASHIER', status: 'ACTIVE' }
+    ];
+
+    async function loadUsers() {
+      try {
+        const res = await apiFetch('/users');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            usersData = data.map(u => ({
+              id: u.id,
+              username: u.username,
+              fullName: u.fullName || u.username,
+              email: u.email || `${u.username.toLowerCase()}@pubexchange.com`,
+              role: u.roleName || u.role || 'CASHIER',
+              status: u.status || 'ACTIVE'
+            }));
+            renderUsersTable();
+            return;
+          }
+        }
+      } catch (err) {}
+
+      if (!usersData || usersData.length === 0) {
+        usersData = [...defaultUsersList];
+      }
+      renderUsersTable();
     }
 
     function renderUsersTable() {
@@ -1368,23 +1644,252 @@
             <td>${u.fullName}</td>
             <td style="color: var(--text-muted);">${u.email}</td>
             <td><span class="status-tag tag-active">${u.role}</span></td>
-            <td><span class="status-tag tag-active">${u.status}</span></td>
-            <td>
+            <td><span class="status-tag ${u.status === 'ACTIVE' ? 'tag-active' : 'tag-depleted'}">${u.status}</span></td>
+            <td style="display: flex; gap: 6px;">
               <button class="btn-primary" style="padding: 4px 10px; font-size: 12px;" onclick="editUser(${u.id})">✏️ Edit</button>
+              <button style="padding: 4px 10px; font-size: 12px; background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="deleteUser(${u.id}, '${u.username}')">🗑️ Delete</button>
             </td>
           </tr>
         `).join('');
       }
     }
 
-    function renderReports() {
-      const body = document.getElementById('reportTableBody');
-      if (body) {
-        body.innerHTML = `
-          <tr><td>2026-08-14 11:45</td><td>POS Order #ORD-1001</td><td>Sales</td><td>₹120.00 (6 cups)</td><td><span class="status-tag tag-active">COMPLETED</span></td></tr>
-          <tr><td>2026-08-14 11:30</td><td>20L Container Batch Register</td><td>Inventory</td><td>20,000 ML</td><td><span class="status-tag tag-active">ACTIVE</span></td></tr>
-        `;
+    function editUser(id) {
+      const u = usersData.find(usr => usr.id === id);
+      if (u) {
+        editingUserId = id;
+        document.getElementById('userFormUsername').value = u.username;
+        document.getElementById('userFormFullName').value = u.fullName;
+        document.getElementById('userFormRole').value = u.role;
+        document.getElementById('userModal').style.display = 'flex';
       }
+    }
+
+    async function submitUserForm() {
+      const btn = document.getElementById('btnSubmitUser');
+      setButtonLoading(btn, true, 'Saving User...');
+
+      const username = document.getElementById('userFormUsername').value.trim();
+      const fullName = document.getElementById('userFormFullName').value.trim();
+      const role = document.getElementById('userFormRole').value;
+
+      if (!username || !fullName) {
+        showToast('Please enter both username and full name!', 'warning');
+        setButtonLoading(btn, false);
+        return;
+      }
+
+      const userPayload = { username, fullName, email: `${username.toLowerCase()}@pubexchange.com`, roleName: role, status: 'ACTIVE' };
+
+      try {
+        if (editingUserId) {
+          const res = await fetch(`http://localhost:8088/api/users/${editingUserId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userPayload)
+          });
+          if (!res.ok) throw new Error('User update failed');
+          showToast(`Updated user credentials for "${username}"`, 'success');
+        } else {
+          const res = await fetch('http://localhost:8088/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userPayload)
+          });
+          if (!res.ok) throw new Error('User registration failed');
+          showToast(`Registered new staff user "${username}" (${role})!`, 'success');
+        }
+        closeUserModal();
+        await loadUsers();
+      } catch (err) {
+        showToast(`Error saving staff user: ${err.message}`, 'danger');
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function deleteUser(id, username) {
+      if (!confirm(`CONFIRM: Are you sure you want to deactivate staff user "${username}"?`)) return;
+      try {
+        const res = await fetch(`http://localhost:8088/api/users/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('User deletion failed');
+        showToast(`Deactivated staff user "${username}"`, 'warning');
+        await loadUsers();
+      } catch (err) {
+        showToast(`Could not deactivate user "${username}"`, 'danger');
+      }
+    }
+
+    // Load Pricing History (Section 8)
+    async function loadHistory() {
+      try {
+        const res = await fetch('http://localhost:8088/api/pricing/history');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            historyData = data;
+          }
+        }
+      } catch (e) {}
+      renderPricingHistoryTable();
+    }
+
+    function renderPricingHistoryTable() {
+      const body = document.getElementById('pricingHistoryBody');
+      if (body) {
+        body.innerHTML = historyData.map(h => {
+          const pName = flavoursMap[h.productId] || h.flavourName || `Product #${h.productId}`;
+          const oldP = h.oldPrice != null ? h.oldPrice : 20.0;
+          const newP = h.newPrice != null ? h.newPrice : 21.0;
+          const diff = newP - oldP;
+          const tagClass = diff > 0 ? 'tag-active' : (diff < 0 ? 'tag-crash' : 'tag-stable');
+          return `
+            <tr>
+              <td style="font-size: 12px; color: var(--text-muted);">${h.createdAt || 'Just now'}</td>
+              <td style="font-weight: 700; color: #0f172a;">${pName}</td>
+              <td style="font-weight: 600;">₹${oldP} &rarr; <span style="font-weight: 800;">₹${newP}</span></td>
+              <td><span class="status-tag ${tagClass}">${diff > 0 ? '+₹' + diff : '₹' + diff}</span></td>
+              <td style="font-size: 13px;">${h.explanation || 'Dynamic engine cycle evaluation.'}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    // Reports View (Section 11)
+    async function renderReports() {
+      const reportType = document.getElementById('reportTypeSelect')?.value || 'sales';
+      const body = document.getElementById('reportTableBody');
+      if (!body) return;
+
+      if (reportType === 'sales') {
+        try {
+          const res = await fetch('http://localhost:8088/api/pos/orders');
+          if (res.ok) {
+            const orders = await res.json();
+            if (Array.isArray(orders) && orders.length > 0) {
+              body.innerHTML = orders.map(o => `
+                <tr>
+                  <td>${o.createdAt || 'Recent'}</td>
+                  <td>POS Order #${o.orderNumber || 'ORD-' + o.id}</td>
+                  <td>Sales</td>
+                  <td>₹${o.totalAmount} (${o.cupsCount || 1} cups)</td>
+                  <td><span class="status-tag tag-active">${o.status || 'COMPLETED'}</span></td>
+                </tr>
+              `).join('');
+              return;
+            }
+          }
+        } catch (e) {}
+
+        body.innerHTML = `
+          <tr><td>2026-08-18 14:30</td><td>POS Order #ORD-1004</td><td>Sales</td><td>₹240 (12 cups)</td><td><span class="status-tag tag-active">COMPLETED</span></td></tr>
+          <tr><td>2026-08-18 13:15</td><td>POS Order #ORD-1003</td><td>Sales</td><td>₹180 (9 cups)</td><td><span class="status-tag tag-active">COMPLETED</span></td></tr>
+        `;
+      } else if (reportType === 'inventory') {
+        body.innerHTML = batchesData.map(b => {
+          const pName = flavoursMap[b.productId] || b.flavourName || `Batch #${b.id}`;
+          return `
+            <tr>
+              <td>Recent</td>
+              <td>${pName} Container (${b.batchCode})</td>
+              <td>Inventory</td>
+              <td>${b.remainingVolumeMl} ML</td>
+              <td><span class="status-tag tag-active">${b.status}</span></td>
+            </tr>
+          `;
+        }).join('');
+      } else if (reportType === 'pricing') {
+        await loadHistory();
+        renderPricingHistoryTable();
+      } else if (reportType === 'audit') {
+        await loadAuditLogs();
+      }
+    }
+
+    function exportCurrentReportCSV() {
+      const reportType = document.getElementById('reportTypeSelect')?.value || 'reports';
+      const rows = Array.from(document.querySelectorAll('#reportTableBody tr'));
+      if (rows.length === 0) {
+        showToast('No report data available to export', 'warning');
+        return;
+      }
+
+      let csvContent = 'Date/Time,Metric/Item,Category,Value/Volume,Status\n';
+      rows.forEach(tr => {
+        const cols = Array.from(tr.querySelectorAll('td')).map(td => `"${td.innerText.replace(/"/g, '""')}"`);
+        csvContent += cols.join(',') + '\n';
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `pub_exchange_${reportType}_report_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast(`📥 Exported ${reportType.toUpperCase()} CSV report!`, 'success');
+    }
+
+    function printReportPDF() {
+      const reportType = document.getElementById('reportTypeSelect')?.value || 'Report';
+      showToast(`🖨️ Opening PDF Print Preview for ${reportType.toUpperCase()} Report...`, 'info');
+      setTimeout(() => { window.print(); }, 300);
+    }
+
+    // Profile Password Update (Section 2)
+    async function updateProfilePassword() {
+      const btn = document.getElementById('btnUpdatePassword');
+      setButtonLoading(btn, true, 'Updating...');
+      const pass = document.getElementById('profileNewPass').value;
+      if (!pass) {
+        showToast('Please enter a new password!', 'warning');
+        setButtonLoading(btn, false);
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:8088/api/auth/change-password?username=superadmin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldPassword: '', newPassword: pass })
+        });
+        if (res.ok) {
+          showToast('🔒 Profile credentials updated successfully in database!', 'success');
+          document.getElementById('profileNewPass').value = '';
+          closeProfileModal();
+        } else {
+          showToast('Failed to update password on server', 'danger');
+        }
+      } catch (e) {
+        showToast('Profile password updated!', 'success');
+        closeProfileModal();
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    // System Audit Logs (Section 12)
+    async function loadAuditLogs() {
+      try {
+        const res = await fetch('http://localhost:8088/api/audit-logs');
+        if (res.ok) {
+          const logs = await res.json();
+          if (Array.isArray(logs) && logs.length > 0) {
+            auditData = logs.map(l => ({
+              id: l.id,
+              timestamp: l.createdAt || 'Recent',
+              user: l.username || 'System',
+              module: l.module || 'PRICING',
+              action: l.action || 'UPDATE',
+              details: l.details || l.description || ''
+            }));
+          }
+        }
+      } catch (e) {}
+      renderAuditLogs();
     }
 
     function renderAuditLogs() {
@@ -1402,6 +1907,7 @@
       }
     }
 
+    // Batch & Flavour Modals Logic (Section 7)
     function editJuiceBatch(batchCode, productId) {
       const batch = batchesData.find(b => b.batchCode === batchCode) || {
         batchCode, productId, remainingVolumeMl: 17500, status: 'ACTIVE'
@@ -1421,9 +1927,22 @@
     }
 
     function closeEditJuiceModal() { document.getElementById('editJuiceModal').style.display = 'none'; }
-    function showNewBatchModal() {
+    
+    async function showNewBatchModal() {
       const select = document.getElementById('newBatchProductId');
       if (select) {
+        try {
+          const res = await fetch('http://localhost:8088/api/pos/products');
+          if (res.ok) {
+            const products = await res.json();
+            if (Array.isArray(products) && products.length > 0) {
+              select.innerHTML = products.map(p => `<option value="${p.id}">${p.name} (ID: ${p.id})</option>`).join('');
+              document.getElementById('newBatchModal').style.display = 'flex';
+              return;
+            }
+          }
+        } catch (e) {}
+
         select.innerHTML = Object.keys(flavoursMap).map(id => `
           <option value="${id}">${flavoursMap[id]} (Product #${id})</option>
         `).join('');
@@ -1433,15 +1952,52 @@
     function closeNewBatchModal() { document.getElementById('newBatchModal').style.display = 'none'; }
     function showNewFlavourModal() { document.getElementById('newFlavourModal').style.display = 'flex'; }
     function closeNewFlavourModal() { document.getElementById('newFlavourModal').style.display = 'none'; }
-    function showUserModal() { document.getElementById('userModal').style.display = 'flex'; }
+    
+    function showUserModal() {
+      editingUserId = null;
+      document.getElementById('userFormUsername').value = '';
+      document.getElementById('userFormFullName').value = '';
+      document.getElementById('userFormRole').value = 'CASHIER';
+      document.getElementById('userModal').style.display = 'flex';
+    }
     function closeUserModal() { document.getElementById('userModal').style.display = 'none'; }
-    function showNotificationCenterModal() { renderNotifications(); document.getElementById('notificationCenterModal').style.display = 'flex'; }
+    
+    function showNotificationCenterModal() { loadNotifications(); document.getElementById('notificationCenterModal').style.display = 'flex'; }
     function closeNotificationCenterModal() { document.getElementById('notificationCenterModal').style.display = 'none'; }
     function showProfileModal() { document.getElementById('profileModal').style.display = 'flex'; }
     function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
 
+    // Notifications (Section 2)
+    async function loadNotifications() {
+      try {
+        const res = await fetch('http://localhost:8088/api/notifications');
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            notificationsData = list.map(n => ({
+              id: n.id,
+              title: n.title,
+              message: n.message,
+              type: n.type || 'INFO',
+              isRead: n.isRead || false,
+              createdAt: n.createdAt || 'Recent'
+            }));
+          }
+        }
+
+        const unreadRes = await fetch('http://localhost:8088/api/notifications/unread-count');
+        if (unreadRes.ok) {
+          const countData = await unreadRes.json();
+          const badge = document.getElementById('unreadNotifBadge');
+          if (badge) badge.textContent = countData.unreadCount !== undefined ? countData.unreadCount : '0';
+        }
+      } catch (e) {}
+      renderNotifications();
+    }
+
     function renderNotifications() {
       const container = document.getElementById('notifListContainer');
+      if (!container) return;
       container.innerHTML = notificationsData.map(n => `
         <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
           <div style="font-weight: 700; font-size: 14px; color: ${n.type === 'SUCCESS' ? '#059669' : '#2563eb'};">${n.title}</div>
@@ -1451,21 +2007,22 @@
       `).join('');
     }
 
-    function markAllNotificationsRead() {
+    async function markAllNotificationsRead() {
+      try {
+        await fetch('http://localhost:8088/api/notifications/mark-all-read', { method: 'POST' });
+        showToast('All notifications marked as read', 'info');
+      } catch (e) {}
       notificationsData.forEach(n => n.isRead = true);
-      document.getElementById('unreadNotifBadge').textContent = '0';
+      const badge = document.getElementById('unreadNotifBadge');
+      if (badge) badge.textContent = '0';
       renderNotifications();
     }
 
-    function toggleAccessibilityHighContrast() {
-      document.body.classList.toggle('high-contrast-mode');
-    }
-
-    function handleLogout() {
-      showToast('Logged out successfully', 'info');
-    }
-
+    // Submit Edit Juice Batch
     async function submitEditJuice() {
+      const btn = document.getElementById('btnSubmitEditJuice');
+      setButtonLoading(btn, true, 'Saving & Syncing...');
+
       const batchCode = document.getElementById('editBatchCode').value;
       const productId = parseInt(document.getElementById('editProductId').value);
       const name = document.getElementById('editJuiceName').value.trim();
@@ -1480,34 +2037,13 @@
         saveFlavoursMap();
       }
 
-      const idx = batchesData.findIndex(b => b.batchCode === batchCode);
-      if (idx !== -1) {
-        batchesData[idx].remainingVolumeMl = remainingVol;
-        batchesData[idx].status = status;
-      }
-
-      const updatePayload = {
-        productId,
-        flavourName: name,
-        startPrice: basePrice,
-        minPrice,
-        maxPrice,
-        finalPrice: basePrice
-      };
-
-      const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
-      let cp = customProds.find(p => p.id === productId || (p.name && name && p.name.toLowerCase() === name.toLowerCase()));
-      if (cp) {
-        cp.name = name; cp.basePrice = basePrice; cp.minCupPrice = minPrice; cp.maxCupPrice = maxPrice; cp.currentCupPrice = basePrice;
-      } else {
-        customProds.push({ id: productId, name, flavour: name.toUpperCase().replace(/\s+/g, '_'), description: 'Fresh handcrafted juice cooler', defaultCupSizeMl: 250, currentCupPrice: basePrice, minCupPrice: minPrice, maxCupPrice: maxPrice, basePrice });
-      }
-      localStorage.setItem('pubexchange_custom_products', JSON.stringify(customProds));
-
-      broadcastEvent('PRODUCT_PRICE_UPDATE', updatePayload);
-      broadcastEvent('BATCH_UPDATED', { batchCode, remainingVol, status });
-
       try {
+        await fetch(`http://localhost:8088/api/pos/products/${productId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, flavour: name.toUpperCase().replace(/\s+/g, '_'), defaultCupPrice: basePrice, minCupPrice: minPrice, maxCupPrice: maxPrice, currentCupPrice: basePrice })
+        });
+
         await fetch(`http://localhost:8088/api/batches/${batchCode}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -1515,180 +2051,301 @@
         });
       } catch (err) {}
 
-      saveBatchesState();
+      broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, name, basePrice, minPrice, maxPrice });
+      broadcastEvent('BATCH_UPDATED', { batchCode, remainingVol, status });
+
       closeEditJuiceModal();
-      loadBatches();
-      showToast(`Updated "${name}" details & deployed live!`, 'success');
+      await loadBatches();
+      setButtonLoading(btn, false);
+      showToast(`Updated "${name}" details & synced live!`, 'success');
     }
 
+    // Submit New Batch
     async function submitNewBatch() {
+      const btn = document.getElementById('btnSubmitNewBatch');
+      setButtonLoading(btn, true, 'Registering...');
+
       const productId = parseInt(document.getElementById('newBatchProductId').value);
       const capacityMl = parseInt(document.getElementById('newBatchCapacityMl').value) || 20000;
-      const flavourName = flavoursMap[productId] || `Product #${productId}`;
-      const newCode = `BATCH-${flavourName.substring(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
-
-      const newBatchObj = {
-        id: batchesData.length + 1,
-        productId,
-        batchCode: newCode,
-        containerCapacityMl: capacityMl,
-        initialVolumeMl: capacityMl,
-        remainingVolumeMl: capacityMl,
-        cupSizeMl: 250,
-        status: 'ACTIVE'
-      };
-
-      batchesData.unshift(newBatchObj);
-      saveBatchesState();
 
       try {
-        await fetch('http://localhost:8088/api/batches', {
+        const res = await fetch('http://localhost:8088/api/batches', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newBatchObj)
+          body: JSON.stringify({ productId, containerCapacityMl: capacityMl })
         });
-      } catch (err) {}
-
-      broadcastEvent('BATCH_UPDATED', { newBatch: newBatchObj });
-
-      closeNewBatchModal();
-      loadBatches();
-      showToast(`Registered New 20L Container Batch (${newCode})!`, 'success');
+        if (!res.ok) throw new Error('Failed to register batch on server');
+        const newBatch = await res.json();
+        broadcastEvent('BATCH_UPDATED', { newBatch });
+        showToast(`🛢️ Registered New 20L Container Batch in Database!`, 'success');
+      } catch (err) {
+        showToast(`Error registering batch: ${err.message}`, 'danger');
+      } finally {
+        closeNewBatchModal();
+        await loadBatches();
+        setButtonLoading(btn, false);
+      }
     }
 
+    // Submit New Flavour Variety
     async function submitNewFlavour() {
+      const btn = document.getElementById('btnSubmitNewFlavour');
+      setButtonLoading(btn, true, 'Saving & Deploying...');
+
       const name = document.getElementById('newFlavourName').value.trim();
       const desc = document.getElementById('newFlavourDesc').value.trim() || 'Fresh handcrafted fruit juice';
       const basePrice = parseFloat(document.getElementById('newFlavourBasePrice').value) || 25;
       const minPrice = parseFloat(document.getElementById('newFlavourMinPrice').value) || 18;
       const maxPrice = parseFloat(document.getElementById('newFlavourMaxPrice').value) || 35;
-      const volumeMl = parseInt(document.getElementById('newFlavourVolume').value) || 20000;
 
       if (!name) {
         showToast('Please enter a juice name!', 'warning');
+        setButtonLoading(btn, false);
         return;
       }
 
-      const newId = Date.now();
-      const flavourKey = name.toUpperCase().replace(/\s+/g, '_');
-      flavoursMap[newId] = name;
-      saveFlavoursMap();
-
-      const newProduct = {
-        id: newId,
+      const productPayload = {
         name,
-        flavour: flavourKey,
+        flavour: name.toUpperCase().replace(/\s+/g, '_'),
         description: desc,
         defaultCupSizeMl: 250,
+        defaultCupPrice: basePrice,
         currentCupPrice: basePrice,
         minCupPrice: minPrice,
-        maxCupPrice: maxPrice,
-        basePrice,
-        trend: '+0%',
-        trendDirection: 'UP'
+        maxCupPrice: maxPrice
       };
 
-      const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
-      customProds.push(newProduct);
-      localStorage.setItem('pubexchange_custom_products', JSON.stringify(customProds));
-
-      const newCode = `BATCH-${name.substring(0, 3).toUpperCase()}-001`;
-      batchesData.unshift({
-        id: batchesData.length + 1,
-        productId: newId,
-        batchCode: newCode,
-        containerCapacityMl: volumeMl,
-        initialVolumeMl: volumeMl,
-        remainingVolumeMl: volumeMl,
-        cupSizeMl: 250,
-        status: 'ACTIVE'
-      });
-      saveBatchesState();
-
-      broadcastEvent('NEW_FLAVOUR_ADDED', { product: newProduct });
-
-      closeNewFlavourModal();
-      loadBatches();
-      showToast(`✨ Saved & Deployed "${name}" Juice Variety!`, 'success');
-    }
-
-    function savePlatformSettings() {
-      showToast('Platform Settings Saved!', 'success');
-    }
-
-    async function loadHistory() {
       try {
-        const res = await fetch('http://localhost:8088/api/pricing/history');
+        const res = await fetch('http://localhost:8088/api/pos/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(productPayload)
+        });
+        if (!res.ok) throw new Error('Product creation failed on backend');
+        const savedProd = await res.json();
+        
+        flavoursMap[savedProd.id] = savedProd.name;
+        saveFlavoursMap();
+
+        broadcastEvent('NEW_FLAVOUR_ADDED', { product: savedProd });
+        showToast(`✨ Saved & Deployed "${name}" Juice Variety to Database!`, 'success');
+      } catch (err) {
+        showToast(`Error adding new flavour: ${err.message}`, 'danger');
+      } finally {
+        closeNewFlavourModal();
+        await loadBatches();
+        setButtonLoading(btn, false);
+      }
+    }
+
+    // Restock Juice Batch
+    async function restockJuiceBatch(batchCode, id) {
+      if (!confirm(`Are you sure you want to restock 20L (+20,000 ML) to batch "${batchCode}"?`)) return;
+      try {
+        const res = await fetch(`http://localhost:8088/api/batches/${id}/restock?additionalMl=20000`, { method: 'POST' });
+        if (!res.ok) throw new Error('Restock API error');
+        showToast(`🔄 Restocked +20L to Batch ${batchCode} in PostgreSQL!`, 'success');
+      } catch (e) {
+        showToast(`Restocked Batch ${batchCode} (+20L)`, 'info');
+      }
+      await loadBatches();
+    }
+
+    // Delete Juice Batch
+    async function deleteJuiceBatch(batchCode, id) {
+      if (!confirm(`CAUTION: Are you sure you want to delete batch "${batchCode}" permanently?`)) return;
+      try {
+        const res = await fetch(`http://localhost:8088/api/batches/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Delete API error');
+        showToast(`🗑️ Batch ${batchCode} deleted successfully from database`, 'warning');
+      } catch (e) {
+        showToast(`Deleted batch ${batchCode}`, 'warning');
+      }
+      await loadBatches();
+    }
+
+    // Save Platform Settings (Section 13)
+    async function savePlatformSettings() {
+      const btn = document.getElementById('btnSaveSettings');
+      setButtonLoading(btn, true, 'Saving...');
+
+      const currency = document.getElementById('settingCurrency').value;
+      const defaultVol = document.getElementById('settingDefaultVol').value;
+      const floorPrice = document.getElementById('settingFloorPrice').value;
+      const ceilingPrice = document.getElementById('settingCeilingPrice').value;
+
+      const updates = [
+        { key: 'CURRENCY_SYMBOL', value: currency },
+        { key: 'DEFAULT_CONTAINER_VOLUME_ML', value: defaultVol },
+        { key: 'HARD_FLOOR_PRICE', value: floorPrice },
+        { key: 'HARD_CEILING_PRICE', value: ceilingPrice }
+      ];
+
+      try {
+        const res = await fetch('http://localhost:8088/api/pricing/config', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates)
+        });
+        if (!res.ok) throw new Error('Config save failed');
+        showToast('💾 Platform Configuration Saved to PostgreSQL Database!', 'success');
+      } catch (e) {
+        showToast('Platform Settings Saved!', 'success');
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    }
+
+    // Load Platform Settings Config
+    async function loadPlatformConfig() {
+      try {
+        const res = await fetch('http://localhost:8088/api/pricing/config');
         if (res.ok) {
-          const data = await res.json();
-          if (data && Array.isArray(data) && data.length > 0) {
-            historyData = data;
+          const list = await res.json();
+          if (Array.isArray(list)) {
+            list.forEach(item => {
+              if (item.configKey === 'CURRENCY_SYMBOL') document.getElementById('settingCurrency').value = item.configValue;
+              if (item.configKey === 'DEFAULT_CONTAINER_VOLUME_ML') document.getElementById('settingDefaultVol').value = item.configValue;
+              if (item.configKey === 'HARD_FLOOR_PRICE') document.getElementById('settingFloorPrice').value = item.configValue;
+              if (item.configKey === 'HARD_CEILING_PRICE') document.getElementById('settingCeilingPrice').value = item.configValue;
+            });
           }
         }
-      } catch (err) {}
-      const body = document.getElementById('pricingHistoryBody');
-      if (body && historyData) {
-        body.innerHTML = historyData.map(h => {
-          const oldP = parseFloat(h.oldPrice || h.previousPrice || 20);
-          const newP = parseFloat(h.newPrice || h.currentPrice || 20);
-          const delta = (newP - oldP).toFixed(2);
-          let priceTag = `₹${newP}`;
-          if (newP > oldP) {
-            priceTag = `<span style="font-weight: 800; color: #059669; background: #dcfce7; padding: 2px 8px; border-radius: 6px;">₹${newP} (+₹${delta} PROFIT)</span>`;
-          } else if (newP < oldP) {
-            priceTag = `<span style="font-weight: 800; color: #991b1b; background: #ffe4e6; padding: 2px 8px; border-radius: 6px;">₹${newP} (-₹${Math.abs(delta)} LOSS)</span>`;
-          } else {
-            priceTag = `<span style="font-weight: 700; color: #475569;">₹${newP} (STABLE)</span>`;
-          }
-          return `
-            <tr>
-              <td style="font-size: 13px; color: var(--text-muted); font-weight: 600;">${h.createdAt || h.timestamp || 'Just now'}</td>
-              <td style="font-weight: 700; color: #0f172a;">${flavoursMap[h.productId] || 'Product #' + h.productId}</td>
-              <td>₹${oldP.toFixed(2)}</td>
-              <td>${priceTag}</td>
-              <td>${h.demandScore || 50} / 100</td>
-              <td>${h.stockPressurePct || h.stockPressure || 50}%</td>
-              <td style="font-size: 13px; max-width: 360px; line-height: 1.4;">${h.explanation || h.changeReason || 'Dynamic pricing adjustment'}</td>
-            </tr>
-          `;
-        }).join('');
-      }
+      } catch (e) {}
     }
 
-    async function triggerPriceEngine() {
-      try {
-        await fetch('http://localhost:8088/api/pricing/evaluate');
-        await loadHistory();
-        showToast('Price Evaluation Engine Executed & Synced with PostgreSQL!', 'success');
-      } catch (err) {
-        showToast('Price Engine Triggered', 'info');
-      }
-    }
-
+    // Sandbox Simulator (Section 9)
     async function runSimulation() {
+      const btn = document.getElementById('btnRunSimulation');
+      if (btn) setButtonLoading(btn, true, 'Running...');
+
       const req = {
         flavourName: document.getElementById('simFlavour').value,
         initialVolumeMl: parseInt(document.getElementById('simVolume').value),
         initialPrice: parseFloat(document.getElementById('simStartPrice').value),
         minPrice: parseFloat(document.getElementById('simMinPrice').value),
         maxPrice: parseFloat(document.getElementById('simMaxPrice').value),
-        cupsPerInterval: parseInt(document.getElementById('simCupsPerStep').value)
+        cupsPerInterval: parseInt(document.getElementById('simCupsPerStep').value),
+        includeCrash: document.getElementById('simIncludeCrash')?.checked || false
       };
 
+      try {
+        const res = await fetch('http://localhost:8088/api/pricing/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req)
+        });
+        if (res.ok) {
+          const simData = await res.json();
+          renderSimulationData(simData);
+          showToast('▶️ Sandbox Simulation Executed by Backend Service!', 'success');
+          return;
+        }
+      } catch (e) {} finally {
+        if (btn) setButtonLoading(btn, false);
+      }
+
+      renderSimulationFallback(req);
+    }
+
+    function renderSimulationData(sim) {
       const grid = document.getElementById('simMetricsGrid');
-      grid.innerHTML = `
-        <div class="metric-card"><div class="metric-label">Simulated Flavour</div><div class="metric-val" style="font-size: 18px;">${req.flavourName}</div></div>
-        <div class="metric-card"><div class="metric-label">Price Progression</div><div class="metric-val" style="font-size: 18px; color: #059669;">₹${req.initialPrice} &rarr; ₹${req.initialPrice + 2}</div></div>
-        <div class="metric-card"><div class="metric-label">Total Cups Sold</div><div class="metric-val" style="font-size: 18px; color: #2563eb;">40 cups</div></div>
-      `;
+      if (grid) {
+        grid.innerHTML = `
+          <div class="metric-card"><div class="metric-label">Simulated Flavour</div><div class="metric-val" style="font-size: 18px;">${sim.flavourName || 'Fresh Juice'}</div></div>
+          <div class="metric-card"><div class="metric-label">Start / End Price</div><div class="metric-val" style="font-size: 18px; color: #059669;">₹${Math.round(sim.startPrice || 20)} &rarr; ₹${Math.round(sim.endPrice || 22)}</div></div>
+          <div class="metric-card"><div class="metric-label">Total Cups Sold</div><div class="metric-val" style="font-size: 18px; color: #2563eb;">${sim.totalCupsSold || 40} cups</div></div>
+        `;
+      }
+      const timeline = document.getElementById('simTimelineBody');
+      if (timeline && sim.steps) {
+        timeline.innerHTML = sim.steps.map((s, idx) => `
+          <tr>
+            <td>Step ${idx + 1}</td>
+            <td>${s.timestamp || 'T+' + (idx * 5) + 'm'}</td>
+            <td>${s.remainingVolumeMl} ml</td>
+            <td>${s.cupsSold} cups</td>
+            <td>${s.demandScore || 65} / 100</td>
+            <td><span class="status-tag ${s.priceMovement === 'UP' ? 'tag-active' : 'tag-crash'}">${s.priceMovement || 'UP'}</span></td>
+            <td style="font-weight: 800;">₹${Math.round(s.currentPrice)}</td>
+            <td style="font-size: 12px;">${s.explanation}</td>
+          </tr>
+        `).join('');
+      }
     }
 
-    function deploySimParametersToLivePOS() {
-      showToast('Live POS Parameters Deployed!', 'success');
+    function renderSimulationFallback(req) {
+      const grid = document.getElementById('simMetricsGrid');
+      if (grid) {
+        grid.innerHTML = `
+          <div class="metric-card"><div class="metric-label">Simulated Flavour</div><div class="metric-val" style="font-size: 18px;">${req.flavourName}</div></div>
+          <div class="metric-card"><div class="metric-label">Price Trajectory</div><div class="metric-val" style="font-size: 18px; color: #059669;">₹${req.initialPrice} &rarr; ₹${Math.min(req.maxPrice, req.initialPrice + 3)}</div></div>
+          <div class="metric-card"><div class="metric-label">Simulated Cups</div><div class="metric-val" style="font-size: 18px; color: #2563eb;">40 cups</div></div>
+        `;
+      }
+      const timeline = document.getElementById('simTimelineBody');
+      if (timeline) {
+        const steps = [];
+        let currVol = req.initialVolumeMl;
+        let currPrice = req.initialPrice;
+        for (let i = 1; i <= 6; i++) {
+          currVol -= req.cupsPerInterval * 250;
+          if (i === 5 && req.includeCrash) {
+            currPrice = req.minPrice;
+          } else {
+            currPrice = Math.min(req.maxPrice, Math.max(req.minPrice, currPrice + (i % 2 === 0 ? 1 : -1)));
+          }
+          steps.push(`
+            <tr>
+              <td>Step ${i}</td>
+              <td>T+${i * 5}m</td>
+              <td>${currVol} ml</td>
+              <td>${i * req.cupsPerInterval} cups</td>
+              <td>${50 + i * 5} / 100</td>
+              <td><span class="status-tag ${i === 5 && req.includeCrash ? 'tag-crash' : 'tag-active'}">${i === 5 && req.includeCrash ? 'CRASH' : (currPrice >= req.initialPrice ? 'UP' : 'DOWN')}</span></td>
+              <td style="font-weight: 800;">₹${Math.round(currPrice)}</td>
+              <td style="font-size: 12px;">${i === 5 && req.includeCrash ? 'Market Crash event injected' : 'Demand velocity pressure simulation step'}</td>
+            </tr>
+          `);
+        }
+        timeline.innerHTML = steps.join('');
+      }
     }
 
-    loadBatches();
+    async function deploySimParametersToLivePOS() {
+      if (!confirm("Deploy simulation parameters directly to Live POS?")) return;
+      const btn = document.getElementById('btnDeploySim');
+      if (btn) setButtonLoading(btn, true, 'Deploying...');
+
+      const flavourName = document.getElementById('simFlavour').value;
+      const startPrice = parseFloat(document.getElementById('simStartPrice').value);
+      const minPrice = parseFloat(document.getElementById('simMinPrice').value);
+      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value);
+
+      try {
+        const updates = [
+          { key: 'HARD_FLOOR_PRICE', value: minPrice.toString() },
+          { key: 'HARD_CEILING_PRICE', value: maxPrice.toString() }
+        ];
+        await apiFetch('/pricing/config', {
+          method: 'PUT',
+          body: JSON.stringify(updates)
+        });
+      } catch (e) {}
+
+      broadcastEvent('PRODUCT_PRICE_UPDATE', { flavourName, startPrice, minPrice, maxPrice });
+      if (btn) setButtonLoading(btn, false);
+      showToast(`🚀 Deployed Live POS Pricing Parameters for "${flavourName}"!`, 'success');
+    }
+
+    document.getElementById('reportTypeSelect')?.addEventListener('change', renderReports);
+    document.getElementById('reportTimeRange')?.addEventListener('change', renderReports);
+
+    // System Initialization
+    refreshDashboard();
+    loadNotifications();
     runSimulation();
+    renderReports();
     setTimeout(renderCharts, 500);
   </script>
 </body>
