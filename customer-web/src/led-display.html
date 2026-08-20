@@ -3,139 +3,666 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LED Digital Stock Exchange Display - Noida Pub Exchange Mode</title>
+  <title>Noida Pub Exchange - Beverage Stock Market LED Ticker</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
   <style>
     :root {
-      --bg-black: #f8fafc;
-      --bg-panel: #ffffff;
-      --border-panel: #cbd5e1;
-      --green-up: #059669;
-      --red-down: #dc2626;
-      --gold-crash: #d97706;
+      --bg-page: #0B0F14;
+      --bg-surface: #111720;
+      --bg-surface-secondary: #151C26;
+      --bg-card: #18212C;
+      --bg-elevated: #1D2733;
+      --border: #293544;
+      --border-subtle: #202A36;
+      --text-primary: #F3F5F7;
+      --text-secondary: #A8B2BE;
+      --text-muted: #748091;
+      --success: #22C55E;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --info: #3B82F6;
+      --radius-card: 12px;
+      --radius-btn: 8px;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-    body { background: var(--bg-black); color: #0f172a; min-height: 100vh; overflow: hidden; padding: 24px; }
 
-    /* Top LED Banner */
-    .led-header {
-      background: #ffffff;
-      border: 2px solid #cbd5e1;
-      border-radius: 20px; padding: 20px 32px;
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      letter-spacing: -0.01em;
     }
-    .led-brand { font-size: 32px; font-weight: 900; background: linear-gradient(90deg, #ea580c, #d97706); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .led-clock { font-size: 36px; font-weight: 900; font-family: monospace; color: #2563eb; }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding: 16px;
+    }
+
+    /* Top Exchange Header */
+    .top-header {
+      height: 68px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Backend Connection Status Badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .status-badge-online {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--success);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+    .status-badge-offline {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .status-badge-online .status-dot {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+    .status-badge-offline .status-dot {
+      background: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+
+    /* Market Clock */
+    .market-clock-card {
+      background: var(--bg-surface-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-btn);
+      padding: 4px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .clock-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .clock-val {
+      font-family: monospace, monospace;
+      font-variant-numeric: tabular-nums;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    /* Header Nav Buttons */
+    .btn-nav {
+      background: var(--bg-surface-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      border-radius: var(--radius-btn);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .btn-nav:hover {
+      background: var(--bg-elevated);
+      border-color: var(--text-secondary);
+    }
 
     /* Market Crash Takeover Banner */
-    .crash-led-banner {
-      background: linear-gradient(135deg, #fee2e2, #fecdd3);
-      border: 3px solid #f87171; border-radius: 20px;
-      padding: 24px 36px; margin-bottom: 24px;
-      display: none; justify-content: space-between; align-items: center;
-      animation: ledPulse 1s infinite alternate;
+    .market-crash-banner {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      border: 1px solid #f87171;
+      border-radius: var(--radius-card);
+      padding: 14px 20px;
+      margin-bottom: 12px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
     }
-    @keyframes ledPulse { 0% { transform: scale(1); box-shadow: 0 0 15px rgba(239,68,68,0.3); } 100% { transform: scale(1.008); box-shadow: 0 0 25px rgba(239,68,68,0.5); } }
+    .crash-title {
+      font-size: 16px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .crash-timer {
+      font-size: 20px;
+      font-weight: 900;
+      font-family: monospace;
+      font-variant-numeric: tabular-nums;
+      background: #000000;
+      padding: 4px 14px;
+      border-radius: 6px;
+      color: #facc15;
+    }
 
-    .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; height: calc(100vh - 160px); }
+    /* Market Summary Bar */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .summary-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .summary-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+    .summary-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
 
-    /* Price Exchange Table */
-    .panel-card { background: var(--bg-panel); border: 1px solid var(--border-panel); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
-    .panel-title { font-size: 20px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
 
-    .exchange-table { width: 100%; border-collapse: collapse; }
-    .exchange-table th { color: #64748b; font-size: 14px; font-weight: 700; text-align: left; padding: 12px; border-bottom: 1px solid var(--border-panel); }
-    .exchange-table td { padding: 16px 12px; border-bottom: 1px solid #f1f5f9; font-size: 20px; font-weight: 700; color: #0f172a; }
+    /* Panel Card */
+    .panel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .panel-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-sub {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
 
-    .trend-badge { font-size: 14px; padding: 4px 12px; border-radius: 20px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; }
-    .badge-up { background: #dcfce7; color: var(--green-up); border: 1px solid #bbf7d0; }
-    .badge-down { background: #ffe4e6; color: var(--red-down); border: 1px solid #fecdd3; }
+    /* Exchange Table */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .exchange-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .exchange-table th {
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--bg-surface-secondary);
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .exchange-table td {
+      padding: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 15px;
+      color: var(--text-primary);
+      vertical-align: middle;
+      font-variant-numeric: tabular-nums;
+    }
+    .exchange-table tr {
+      background: var(--bg-surface);
+      transition: background 0.15s ease;
+    }
+    .exchange-table tr:nth-child(even) {
+      background: var(--bg-surface-secondary);
+    }
+    .exchange-table tr:hover {
+      background: var(--bg-elevated);
+    }
 
-    /* Leaderboards (Top Gainers / Losers) */
-    .gainer-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-    .loser-box { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 16px; padding: 16px; }
+    /* Price cell styling */
+    .price-cell {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      transition: color 0.3s ease, background 0.3s ease;
+    }
 
-    .qr-card { text-align: center; background: #f8fafc; border-radius: 16px; padding: 20px; margin-top: auto; border: 1px solid var(--border-panel); }
+    /* Price change flash animation classes */
+    .flash-up {
+      color: var(--success) !important;
+      background: rgba(34, 197, 94, 0.15) !important;
+      border-radius: 4px;
+    }
+    .flash-down {
+      color: var(--danger) !important;
+      background: rgba(239, 68, 68, 0.15) !important;
+      border-radius: 4px;
+    }
+
+    /* Trend Badges */
+    .movement-badge {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .movement-up {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .movement-down {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .movement-flat {
+      background: var(--bg-surface-secondary);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* Status Pill */
+    .status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    .status-high { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-discount { background: rgba(59, 130, 246, 0.15); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.3); }
+    .status-floor { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-stable { background: var(--bg-surface-secondary); color: var(--text-muted); border: 1px solid var(--border-subtle); }
+
+    /* Market Movers Cards */
+    .mover-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .mover-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .mover-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .mover-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .mover-price {
+      font-size: 20px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* QR Code Card */
+    .qr-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      text-align: center;
+      margin-top: auto;
+    }
+    .qr-box {
+      width: 130px;
+      height: 130px;
+      background: #FFFFFF;
+      border-radius: 8px;
+      padding: 8px;
+      margin: 10px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Bottom Ticker Bar */
+    .ticker-bar {
+      height: 38px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-btn);
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding: 0 12px;
+    }
+    .ticker-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding-right: 14px;
+      border-right: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+    .ticker-track {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      padding-left: 14px;
+    }
+    .ticker-content {
+      display: inline-block;
+      white-space: nowrap;
+      animation: tickerMarquee 25s linear infinite;
+    }
+    @keyframes tickerMarquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
   </style>
 </head>
 <body>
 
   <!-- Top Header Banner -->
-  <div class="led-header">
-    <div>
-      <div class="led-brand">📈 NOIDA PUB EXCHANGE BEVERAGE TICKER</div>
-      <div style="font-size: 14px; color: #94a3b8;">Real-Time Dynamic Stock Market Display Node</div>
+  <header class="top-header">
+    <div class="brand-section">
+      <div class="brand-logo">🍹</div>
+      <div>
+        <div class="brand-title">Noida Pub Exchange</div>
+        <div class="brand-subtitle">Beverage Stock Market LED Ticker Node</div>
+      </div>
     </div>
-    <div style="display: flex; align-items: center; gap: 16px;">
-      <a href="http://localhost:8000/" target="_blank" style="text-decoration: none; font-size: 13px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 8px 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3); display: flex; align-items: center; gap: 6px;">
-        🛒 Open POS Terminal (8000)
+
+    <div class="header-actions">
+      <!-- Backend Connection Status -->
+      <span id="backendStatusBadge" class="status-badge status-badge-offline">
+        <span class="status-dot"></span>
+        <span id="backendStatusText">● BACKEND OFFLINE</span>
+      </span>
+
+      <!-- Market Clock -->
+      <div class="market-clock-card">
+        <span class="clock-label">Market Time</span>
+        <span class="clock-val" id="liveClockDisplay">12:00:00 LIVE</span>
+      </div>
+
+      <!-- Actions -->
+      <button class="btn-nav" onclick="toggleFullScreen()" title="Toggle Fullscreen Mode">
+        ⛶ Fullscreen
+      </button>
+      <a href="http://localhost:8000/" target="_blank" class="btn-nav">
+        🛒 Open POS
       </a>
-      <a href="http://localhost:8001/" target="_blank" style="text-decoration: none; font-size: 13px; font-weight: 800; background: #ffffff; color: #0f172a; padding: 8px 16px; border-radius: 12px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 6px;">
-        ⚙️ Admin Panel (8001)
+      <a href="http://localhost:8001/" target="_blank" class="btn-nav">
+        ⚙️ Admin Panel
       </a>
-      <div class="led-clock" id="liveClock">12:00:00</div>
     </div>
-  </div>
+  </header>
 
   <!-- Market Crash Banner -->
-  <div class="crash-led-banner" id="ledCrashBanner">
-    <div style="font-size: 28px; font-weight: 900; color: white; display: flex; align-items: center; gap: 14px;">
+  <div class="market-crash-banner" id="ledCrashBanner">
+    <div class="crash-title">
       <span>🚨 MARKET CRASH ACTIVE!</span>
-      <span style="font-size: 18px; font-weight: 600; color: #fef08a;">ALL DRINKS DROPPED TO ₹18 FLOOR PRICE</span>
+      <span style="font-size: 13px; opacity: 0.95;" id="ledCrashBannerMsg">All Drinks Dropped to Absolute Floor Limit ₹18.00</span>
     </div>
-    <div style="font-size: 36px; font-weight: 900; font-family: monospace; color: #facc15; background: black; padding: 6px 20px; border-radius: 12px;" id="ledCrashTimer">03:00</div>
+    <div class="crash-timer" id="ledCrashTimer">03:00</div>
+  </div>
+
+  <!-- Market Summary Bar -->
+  <div class="summary-bar">
+    <div class="summary-card">
+      <span class="summary-title">Active Beverages</span>
+      <span class="summary-val" id="sumActiveCount">7 Products</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-title">Price Movements</span>
+      <span class="summary-val" id="sumMoversCount" style="color: var(--success);">1 Rising</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-title">Average Base</span>
+      <span class="summary-val" id="sumAvgBase">₹20.00</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-title">Avg Market Price</span>
+      <span class="summary-val" id="sumAvgMarket" style="color: var(--warning);">₹18.57</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-title">Trading Engine</span>
+      <span class="summary-val" style="color: var(--info);">30s Velocity</span>
+    </div>
   </div>
 
   <div class="main-grid">
-    <!-- Live Beverage Price Grid -->
+    <!-- Main Exchange Board -->
     <div class="panel-card">
-      <div class="panel-title">🍹 Live Beverage Stock Exchange Board</div>
-      <table class="exchange-table">
-        <thead>
-          <tr>
-            <th>BEVERAGE FLAVOUR</th>
-            <th>BASE PRICE</th>
-            <th>RANGE</th>
-            <th>TREND</th>
-            <th>CURRENT PRICE</th>
-          </tr>
-        </thead>
-        <tbody id="exchangeBoardBody">
-          <!-- Rendered dynamically -->
-        </tbody>
-      </table>
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">📊 Live Beverage Market</div>
+          <div class="panel-sub">REAL-TIME MARKET MOVEMENT &bull; NOIDA PUB EXCHANGE</div>
+        </div>
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">
+          Range: ₹18.00 &ndash; ₹25.00
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="exchange-table">
+          <thead>
+            <tr>
+              <th>Beverage</th>
+              <th>Base</th>
+              <th>Range</th>
+              <th>Change</th>
+              <th>Current Price</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="exchangeBoardBody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Leaderboards & QR Ordering -->
-    <div style="display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
       <div class="panel-card" style="flex: 1;">
-        <div class="panel-title">🔥 MARKET GAINERS &amp; LOSERS</div>
-        
-        <div class="gainer-box">
-          <div style="font-size: 13px; color: #10b981; font-weight: 800; margin-bottom: 6px;">▲ TOP GAINER (HIGH DEMAND)</div>
-          <div style="font-size: 22px; font-weight: 900;" id="topGainerName">Fresh Mango Juice</div>
-          <div style="font-size: 14px; color: #94a3b8;" id="topGainerPrice">Current Price: ₹22.00 (+10.0%)</div>
+        <div class="panel-header">
+          <div class="panel-title">📈 Market Movers</div>
+          <div class="panel-sub">Top Gainers &amp; Discounts</div>
         </div>
 
-        <div class="loser-box">
-          <div style="font-size: 13px; color: #ef4444; font-weight: 800; margin-bottom: 6px;">▼ BEST DISCOUNT FLOOR</div>
-          <div style="font-size: 22px; font-weight: 900;" id="topLoserName">Zesty Lemon Juice</div>
-          <div style="font-size: 14px; color: #94a3b8;" id="topLoserPrice">Current Price: ₹18.00 (-10.0%)</div>
+        <!-- Top Gainer -->
+        <div class="mover-card" style="border-left: 3px solid var(--success);">
+          <div class="mover-header">
+            <span style="color: var(--success);">▲ Top Gainer</span>
+            <span class="status-pill status-high">High Demand</span>
+          </div>
+          <div class="mover-name" id="topGainerName">Fresh Mango Juice</div>
+          <div class="mover-details">
+            <span class="mover-price" style="color: var(--success);" id="topGainerPrice">₹22.00</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--success);" id="topGainerChange">+10.0% ▲</span>
+          </div>
         </div>
 
-        <div class="qr-card">
-          <div style="font-size: 18px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;">📲 SCAN TO ORDER AT TABLE</div>
-          <div style="font-size: 13px; color: #94a3b8;">Scan with Smartphone Camera for Mobile QR Order</div>
-          <div style="font-size: 28px; margin-top: 10px;">📱 🍹 ⚡</div>
+        <!-- Best Discount -->
+        <div class="mover-card" style="border-left: 3px solid var(--danger);">
+          <div class="mover-header">
+            <span style="color: var(--danger);">▼ Best Discount</span>
+            <span class="status-pill status-floor">Floor Price</span>
+          </div>
+          <div class="mover-name" id="topLoserName">Zesty Lemon Juice</div>
+          <div class="mover-details">
+            <span class="mover-price" style="color: var(--danger);" id="topLoserPrice">₹18.00</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--danger);" id="topLoserChange">-10.0% ▼</span>
+          </div>
+        </div>
+
+        <!-- QR Order Container -->
+        <div class="qr-container">
+          <div style="font-size: 14px; font-weight: 800; color: var(--text-primary);">ORDER FROM YOUR TABLE</div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">Scan to open the Juice Bar POS</div>
+          <div class="qr-box">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://localhost:8000" alt="Scan to Order POS" />
+          </div>
+          <div style="font-size: 11px; font-weight: 700; font-family: monospace; color: var(--info);">http://localhost:8000</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Bottom Ticker Bar -->
+  <div class="ticker-bar">
+    <div class="ticker-label">Market Ticker</div>
+    <div class="ticker-track">
+      <div class="ticker-content" id="bottomTickerTrack">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
   <script>
+    const fruitIcons = {
+      1: '🥭', 2: '🍋', 3: '🌿', 4: '🍊', 5: '🍓', 6: '🍇', 7: '🍹'
+    };
+
     let products = [
       { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', currentCupPrice: 22, basePrice: 20, minCupPrice: 18, maxCupPrice: 25, trend: '+₹2 ▲', trendDirection: 'UP' },
       { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', currentCupPrice: 18, basePrice: 20, minCupPrice: 18, maxCupPrice: 25, trend: '-₹2 ▼', trendDirection: 'DOWN' },
@@ -145,29 +672,175 @@
       { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', currentCupPrice: 20, basePrice: 20, minCupPrice: 18, maxCupPrice: 25, trend: '0% FLAT', trendDirection: 'FLAT' }
     ];
 
+    let previousPrices = {};
+    let isBackendOnline = false;
+
     function updateClock() {
       const now = new Date();
-      document.getElementById('liveClock').textContent = now.toTimeString().split(' ')[0];
+      const timeStr = now.toTimeString().split(' ')[0];
+      document.getElementById('liveClockDisplay').textContent = `${timeStr} LIVE`;
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    async function checkBackendHealth() {
+      const badge = document.getElementById('backendStatusBadge');
+      const text = document.getElementById('backendStatusText');
+      try {
+        const res = await fetch('http://localhost:8088/api/health');
+        if (res.ok) {
+          isBackendOnline = true;
+          badge.className = 'status-badge status-badge-online';
+          text.textContent = '● BACKEND ONLINE (8088)';
+        } else {
+          isBackendOnline = false;
+          badge.className = 'status-badge status-badge-offline';
+          text.textContent = '● BACKEND OFFLINE';
+        }
+      } catch (err) {
+        isBackendOnline = false;
+        badge.className = 'status-badge status-badge-offline';
+        text.textContent = '● BACKEND OFFLINE';
+      }
     }
 
     function renderBoard() {
       const body = document.getElementById('exchangeBoardBody');
+      if (!body) return;
+
+      let risingCount = 0;
+      let sumBase = 0;
+      let sumCurrent = 0;
+      let topGainer = null;
+      let topLoser = null;
+      let maxDiff = -999;
+      let minDiff = 999;
+
       body.innerHTML = products.map(p => {
         const currentP = Math.round(p.currentCupPrice || 20);
         const baseP = Math.round(p.basePrice || 20);
-        const isUp = currentP >= baseP;
-        const badgeClass = isUp ? 'badge-up' : 'badge-down';
-        const arrow = isUp ? '▲' : '▼';
+        const minP = Math.round(p.minCupPrice || 18);
+        const maxP = Math.round(p.maxCupPrice || 25);
+        const diff = currentP - baseP;
+        const pct = Math.round(((currentP - baseP) / baseP) * 100);
+
+        sumBase += baseP;
+        sumCurrent += currentP;
+
+        if (diff > maxDiff) {
+          maxDiff = diff;
+          topGainer = p;
+        }
+        if (diff < minDiff) {
+          minDiff = diff;
+          topLoser = p;
+        }
+
+        let movementClass = 'movement-flat';
+        let movementSymbol = '—';
+        let statusClass = 'status-stable';
+        let statusText = 'STABLE';
+
+        if (diff > 0) {
+          movementClass = 'movement-up';
+          movementSymbol = '▲ +';
+          statusClass = 'status-high';
+          statusText = 'HIGH DEMAND';
+          risingCount++;
+        } else if (diff < 0) {
+          movementClass = 'movement-down';
+          movementSymbol = '▼ ';
+          statusClass = (currentP <= minP) ? 'status-floor' : 'status-discount';
+          statusText = (currentP <= minP) ? 'FLOOR PRICE' : 'DISCOUNT';
+        }
+
+        // Price Flash animation check
+        let flashClass = '';
+        if (previousPrices[p.id] !== undefined && previousPrices[p.id] !== currentP) {
+          flashClass = currentP > previousPrices[p.id] ? 'flash-up' : 'flash-down';
+        }
+        previousPrices[p.id] = currentP;
+
+        const icon = fruitIcons[p.id] || '🍹';
+
         return `
           <tr>
-            <td style="font-weight: 800;">${p.name}</td>
-            <td style="color: #94a3b8;">₹${baseP}</td>
-            <td style="font-size: 15px; color: #64748b;">₹${Math.round(p.minCupPrice || 18)} - ₹${Math.round(p.maxCupPrice || 25)}</td>
-            <td><span class="trend-badge ${badgeClass}">${arrow} ${p.trend || '0%'}</span></td>
-            <td style="font-size: 26px; font-weight: 900; color: ${isUp ? '#10b981' : '#ef4444'};">₹${currentP}</td>
+            <td style="font-weight: 700;">${icon} ${p.name}</td>
+            <td style="color: var(--text-secondary);">₹${baseP}.00</td>
+            <td style="font-size: 13px; color: var(--text-muted);">₹${minP}.00 &ndash; ₹${maxP}.00</td>
+            <td>
+              <span class="movement-badge ${movementClass}">${movementSymbol}${Math.abs(pct)}%</span>
+            </td>
+            <td class="price-cell ${flashClass}">₹${currentP}.00</td>
+            <td>
+              <span class="status-pill ${statusClass}">${statusText}</span>
+            </td>
           </tr>
         `;
       }).join('');
+
+      // Remove flash classes after 600ms
+      setTimeout(() => {
+        document.querySelectorAll('.flash-up, .flash-down').forEach(el => {
+          el.classList.remove('flash-up', 'flash-down');
+        });
+      }, 600);
+
+      // Render Summary Metrics
+      const totalCount = products.length;
+      const avgBase = (totalCount > 0 ? (sumBase / totalCount) : 20).toFixed(2);
+      const avgMarket = (totalCount > 0 ? (sumCurrent / totalCount) : 20).toFixed(2);
+
+      document.getElementById('sumActiveCount').textContent = `${totalCount} Products`;
+      document.getElementById('sumMoversCount').textContent = `${risingCount} Rising`;
+      document.getElementById('sumAvgBase').textContent = `₹${avgBase}`;
+      document.getElementById('sumAvgMarket').textContent = `₹${avgMarket}`;
+
+      // Render Market Movers (Top Gainer & Best Discount)
+      if (topGainer) {
+        const gPrice = Math.round(topGainer.currentCupPrice || 20);
+        const gBase = Math.round(topGainer.basePrice || 20);
+        const gPct = Math.round(((gPrice - gBase) / gBase) * 100);
+        document.getElementById('topGainerName').textContent = topGainer.name;
+        document.getElementById('topGainerPrice').textContent = `₹${gPrice}.00`;
+        document.getElementById('topGainerChange').textContent = `${gPct >= 0 ? '+' : ''}${gPct}% ▲`;
+      }
+      if (topLoser) {
+        const lPrice = Math.round(topLoser.currentCupPrice || 20);
+        const lBase = Math.round(topLoser.basePrice || 20);
+        const lPct = Math.round(((lPrice - lBase) / lBase) * 100);
+        document.getElementById('topLoserName').textContent = topLoser.name;
+        document.getElementById('topLoserPrice').textContent = `₹${lPrice}.00`;
+        document.getElementById('topLoserChange').textContent = `${lPct}% ▼`;
+      }
+
+      // Render Bottom Ticker Track
+      const track = document.getElementById('bottomTickerTrack');
+      if (track) {
+        const tickerHtml = products.map(p => {
+          const cP = Math.round(p.currentCupPrice || 20);
+          const bP = Math.round(p.basePrice || 20);
+          const diff = cP - bP;
+          const pct = Math.round(((cP - bP) / bP) * 100);
+          const sign = diff > 0 ? '▲+' : (diff < 0 ? '▼' : '—');
+          const color = diff > 0 ? 'var(--success)' : (diff < 0 ? 'var(--danger)' : 'var(--text-muted)');
+          const flavour = (p.flavour || p.name).toUpperCase();
+          return `
+            <span class="ticker-item">
+              <span style="color: var(--text-primary);">${flavour}:</span>
+              <span style="color: ${color}; font-weight: 700;">₹${cP}.00 ${sign}${Math.abs(pct)}%</span>
+            </span>
+          `;
+        }).join(' &bull; ');
+        // Duplicate for continuous marquee seamless loop
+        track.innerHTML = `${tickerHtml} &bull; ${tickerHtml}`;
+      }
     }
 
     function loadCustomProducts() {
@@ -238,6 +911,36 @@
       renderBoard();
     }
 
+    function connectWebSocket() {
+      if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
+      try {
+        const socket = new SockJS('http://localhost:8088/ws');
+        const stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.connect({}, function () {
+          stompClient.subscribe('/topic/prices', function (message) {
+            if (message.body) {
+              const res = JSON.parse(message.body);
+              if (res && res.updatedPrices) {
+                products = res.updatedPrices;
+                renderBoard();
+              } else if (Array.isArray(res)) {
+                products = res;
+                renderBoard();
+              }
+            }
+          });
+          stompClient.subscribe('/topic/market-crash', function (message) {
+            if (message.body) {
+              fetchLiveExchangeData();
+            }
+          });
+        }, function () {
+          setTimeout(connectWebSocket, 5000);
+        });
+      } catch (err) {}
+    }
+
     const marketChannel = new BroadcastChannel('pubexchange_market_channel');
     marketChannel.onmessage = (event) => {
       if (event.data?.type === 'NEW_FLAVOUR_ADDED' && event.data.payload?.product) {
@@ -287,9 +990,13 @@
       renderBoard();
     }
 
+    // Initialization
     setInterval(updateClock, 1000);
+    setInterval(checkBackendHealth, 3000);
     setInterval(fetchLiveExchangeData, 1000);
+    checkBackendHealth();
     fetchLiveExchangeData();
+    connectWebSocket();
     renderBoard();
   </script>
 </body>
