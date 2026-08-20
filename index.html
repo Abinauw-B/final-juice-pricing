@@ -48,6 +48,20 @@
       padding: 12px 20px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border-color);
       display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px;
     }
+    body.high-contrast-black {
+      --bg-dark: #000000;
+      --panel-bg: #09090b;
+      --border-color: #3f3f46;
+      background: #000000 !important;
+      color: #ffffff !important;
+    }
+    body.high-contrast-black .header,
+    body.high-contrast-black .frame-card,
+    body.high-contrast-black .frame-header {
+      background: #09090b !important;
+      color: #ffffff !important;
+      border-color: #3f3f46 !important;
+    }
     iframe { width: 100%; height: 100%; border: none; }
   </style>
 </head>
@@ -61,6 +75,9 @@
       </div>
     </div>
     <div class="nav-buttons">
+      <button id="rootContrastBtn" onclick="toggleRootContrast()" class="btn" style="background: #000000; color: #ffffff; border: 2px solid #ffffff; cursor: pointer;">
+        👁️ Contrast
+      </button>
       <a href="http://localhost:8001/index.html" target="_blank" class="btn btn-admin">⚙️ Open Admin Control Center (8001)</a>
       <a href="http://localhost:8000/index.html" target="_blank" class="btn btn-customer">🍹 Open Customer POS Web App (8000)</a>
       <a href="http://localhost:8000/led-display.html" target="_blank" class="btn btn-led">📺 Open Wall LED TV Board</a>
@@ -73,7 +90,7 @@
         <span>⚙️ ADMIN COMMAND CENTER &amp; SANDBOX SIMULATOR (PORT 8001)</span>
         <a href="http://localhost:8001/index.html" target="_blank" style="color: #6366f1; text-decoration: none; font-size: 12px;">Open in New Window ↗</a>
       </div>
-      <iframe src="http://localhost:8001/index.html"></iframe>
+      <iframe id="adminFrame" src="http://localhost:8001/index.html"></iframe>
     </div>
 
     <div class="frame-card">
@@ -81,9 +98,40 @@
         <span>🍹 LIVE CUSTOMER POS MENU &amp; MARKET PRICING (PORT 8000)</span>
         <a href="http://localhost:8000/index.html" target="_blank" style="color: #ff6b00; text-decoration: none; font-size: 12px;">Open in New Window ↗</a>
       </div>
-      <iframe src="http://localhost:8000/index.html"></iframe>
+      <iframe id="customerFrame" src="http://localhost:8000/index.html"></iframe>
     </div>
   </div>
 
+  <script>
+    function toggleRootContrast() {
+      document.body.classList.toggle('high-contrast-black');
+      const isBlack = document.body.classList.contains('high-contrast-black');
+      localStorage.setItem('pubexchange_contrast_mode', isBlack ? 'black' : 'normal');
+      const btn = document.getElementById('rootContrastBtn');
+      if (btn) {
+        btn.style.background = isBlack ? '#ffffff' : '#000000';
+        btn.style.color = isBlack ? '#000000' : '#ffffff';
+        btn.innerHTML = isBlack ? '👁️ Contrast (ON - Black)' : '👁️ Contrast';
+      }
+      try {
+        const af = document.getElementById('adminFrame');
+        if (af && af.contentWindow) af.contentWindow.postMessage({ type: 'CONTRAST_TOGGLE' }, '*');
+        const cf = document.getElementById('customerFrame');
+        if (cf && cf.contentWindow) cf.contentWindow.postMessage({ type: 'CONTRAST_TOGGLE' }, '*');
+      } catch(e) {}
+    }
+
+    if (localStorage.getItem('pubexchange_contrast_mode') === 'black') {
+      document.body.classList.add('high-contrast-black');
+      setTimeout(() => {
+        const btn = document.getElementById('rootContrastBtn');
+        if (btn) {
+          btn.style.background = '#ffffff';
+          btn.style.color = '#000000';
+          btn.innerHTML = '👁️ Contrast (ON - Black)';
+        }
+      }, 100);
+    }
+  </script>
 </body>
 </html>

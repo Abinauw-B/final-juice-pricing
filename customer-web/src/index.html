@@ -301,9 +301,35 @@
       background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
       display: flex; align-items: center; justify-content: center; z-index: 1000;
     }
-    .receipt-modal {
-      background: #ffffff; border: 2px solid #cbd5e1; border-radius: 26px;
-      width: 480px; padding: 36px; box-shadow: 0 30px 70px rgba(0,0,0,0.25);
+    /* High Contrast Black Mode */
+    body.high-contrast-black {
+      background: #000000 !important;
+      color: #ffffff !important;
+    }
+    body.high-contrast-black .header-banner,
+    body.high-contrast-black .ticker-wrap,
+    body.high-contrast-black .flavour-card,
+    body.high-contrast-black .cart-panel,
+    body.high-contrast-black .price-box,
+    body.high-contrast-black .cart-item,
+    body.high-contrast-black .cart-summary,
+    body.high-contrast-black .receipt-modal {
+      background: #09090b !important;
+      color: #ffffff !important;
+      border-color: #3f3f46 !important;
+      box-shadow: 0 0 20px rgba(255,255,255,0.08) !important;
+    }
+    body.high-contrast-black h1,
+    body.high-contrast-black h2,
+    body.high-contrast-black h3,
+    body.high-contrast-black span,
+    body.high-contrast-black div,
+    body.high-contrast-black p,
+    body.high-contrast-black .flavour-name,
+    body.high-contrast-black .price-tag,
+    body.high-contrast-black .cart-title,
+    body.high-contrast-black .ticker-item {
+      color: #ffffff !important;
     }
   </style>
 </head>
@@ -339,6 +365,9 @@
         <span id="backendHealthBadge" style="font-size: 14px; font-weight: 900; padding: 10px 20px; background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #14532d; border-radius: 24px; border: 1.5px solid #86efac; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
           🟢 BACKEND CONNECTED (8088)
         </span>
+        <button id="contrastBtn" onclick="toggleContrastMode()" style="background: #000000; border: 2px solid #ffffff; color: #ffffff; padding: 10px 18px; border-radius: 20px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: all 0.2s;">
+          👁️ Contrast
+        </button>
         <a href="http://localhost:8001/" target="_blank" style="text-decoration: none; font-size: 13px; font-weight: 800; background: #ffffff; color: #0f172a; padding: 10px 18px; border-radius: 20px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 6px;">
           ⚙️ Admin Panel (8001)
         </a>
@@ -1125,6 +1154,30 @@
     setInterval(checkBackendHealth, 5000);
     setInterval(fetchProducts, 1000);
     setInterval(checkMarketCrashStatus, 2000);
+
+    function toggleContrastMode() {
+      document.body.classList.toggle('high-contrast-black');
+      const isBlack = document.body.classList.contains('high-contrast-black');
+      localStorage.setItem('pubexchange_contrast_mode', isBlack ? 'black' : 'normal');
+      const btn = document.getElementById('contrastBtn');
+      if (btn) {
+        btn.style.background = isBlack ? '#ffffff' : '#000000';
+        btn.style.color = isBlack ? '#000000' : '#ffffff';
+        btn.innerHTML = isBlack ? '👁️ Contrast (ON - Black)' : '👁️ Contrast';
+      }
+    }
+
+    if (localStorage.getItem('pubexchange_contrast_mode') === 'black') {
+      document.body.classList.add('high-contrast-black');
+      setTimeout(() => {
+        const btn = document.getElementById('contrastBtn');
+        if (btn) {
+          btn.style.background = '#ffffff';
+          btn.style.color = '#000000';
+          btn.innerHTML = '👁️ Contrast (ON - Black)';
+        }
+      }, 100);
+    }
   </script>
 </body>
 </html>
