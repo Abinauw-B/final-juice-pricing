@@ -1162,29 +1162,37 @@
     setInterval(checkMarketCrashStatus, 2000);
 
     function toggleThemeMode() {
-      document.body.classList.toggle('dark-theme-mode');
       const isDark = document.body.classList.contains('dark-theme-mode');
-      localStorage.setItem('pubexchange_theme_mode', isDark ? 'dark' : 'light');
+      setCustomerThemeMode(!isDark);
+    }
+
+    function setCustomerThemeMode(isDark) {
+      localStorage.removeItem('pubexchange_contrast_mode');
+      document.body.classList.remove('high-contrast-black');
+      
+      if (isDark) {
+        document.body.classList.add('dark-theme-mode');
+        localStorage.setItem('pubexchange_theme_mode', 'dark');
+      } else {
+        document.body.classList.remove('dark-theme-mode');
+        localStorage.setItem('pubexchange_theme_mode', 'light');
+      }
       updateThemeButtonUICustomer(isDark);
     }
 
     function updateThemeButtonUICustomer(isDark) {
       const btn = document.getElementById('themeToggleBtnCustomer');
       if (btn) {
-        btn.style.background = isDark ? '#3b82f6' : '#1e293b';
-        btn.style.color = '#ffffff';
+        btn.style.background = isDark ? '#2563eb' : '#ffffff';
+        btn.style.border = isDark ? '1.5px solid #3b82f6' : '1.5px solid #cbd5e1';
+        btn.style.color = isDark ? '#ffffff' : '#0f172a';
+        btn.style.boxShadow = isDark ? '0 4px 12px rgba(37, 99, 235, 0.35)' : '0 4px 12px rgba(0,0,0,0.04)';
         btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
       }
     }
 
     const savedThemeCust = localStorage.getItem('pubexchange_theme_mode');
-    if (savedThemeCust === 'dark' || savedThemeCust === null) {
-      document.body.classList.add('dark-theme-mode');
-      setTimeout(() => updateThemeButtonUICustomer(true), 50);
-    } else {
-      document.body.classList.remove('dark-theme-mode');
-      setTimeout(() => updateThemeButtonUICustomer(false), 50);
-    }
+    setCustomerThemeMode(savedThemeCust === 'dark');
   </script>
 </body>
 </html>

@@ -107,30 +107,36 @@
 
   <script>
     function toggleRootTheme() {
-      document.body.classList.toggle('dark-theme-mode');
       const isDark = document.body.classList.contains('dark-theme-mode');
-      localStorage.setItem('pubexchange_theme_mode', isDark ? 'dark' : 'light');
+      setRootThemeMode(!isDark);
+    }
+
+    function setRootThemeMode(isDark) {
+      localStorage.removeItem('pubexchange_contrast_mode');
+      document.body.classList.remove('high-contrast-black');
+      
+      if (isDark) {
+        document.body.classList.add('dark-theme-mode');
+        localStorage.setItem('pubexchange_theme_mode', 'dark');
+      } else {
+        document.body.classList.remove('dark-theme-mode');
+        localStorage.setItem('pubexchange_theme_mode', 'light');
+      }
       updateRootThemeUI(isDark);
     }
 
     function updateRootThemeUI(isDark) {
       const btn = document.getElementById('rootThemeBtn');
       if (btn) {
-        btn.style.background = isDark ? '#2563eb' : '#f1f5f9';
-        btn.style.border = isDark ? '1px solid #3b82f6' : '1px solid #cbd5e1';
+        btn.style.background = isDark ? '#2563eb' : '#ffffff';
+        btn.style.border = isDark ? '1.5px solid #3b82f6' : '1.5px solid #cbd5e1';
         btn.style.color = isDark ? '#ffffff' : '#0f172a';
         btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
       }
     }
 
     const savedRootTheme = localStorage.getItem('pubexchange_theme_mode');
-    if (savedRootTheme === 'dark') {
-      document.body.classList.add('dark-theme-mode');
-      setTimeout(() => updateRootThemeUI(true), 50);
-    } else {
-      document.body.classList.remove('dark-theme-mode');
-      setTimeout(() => updateRootThemeUI(false), 50);
-    }
+    setRootThemeMode(savedRootTheme === 'dark');
   </script>
 </body>
 </html>
