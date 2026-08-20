@@ -44,58 +44,100 @@
       --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
     }
 
-    body.high-contrast-mode {
-      --bg-main: #000000 !important;
-      --bg-sidebar: #09090b !important;
-      --bg-card: #09090b !important;
-      --bg-subtle: #18181b !important;
+    /* Ultra-Professional Dark & High Contrast Themes */
+    body.dark-theme-mode, body.high-contrast-mode {
+      --bg-main: #0b0f19 !important;
+      --bg-sidebar: #0f172a !important;
+      --bg-card: #0f172a !important;
+      --bg-subtle: #1e293b !important;
       --accent-blue: #3b82f6 !important;
       --accent-emerald: #10b981 !important;
       --accent-amber: #f59e0b !important;
       --accent-rose: #f43f5e !important;
       --accent-purple: #a855f7 !important;
-      --text-main: #ffffff !important;
-      --text-muted: #a1a1aa !important;
-      --border-color: #3f3f46 !important;
-      background-color: #000000 !important;
-      color: #ffffff !important;
+      --text-main: #f8fafc !important;
+      --text-muted: #94a3b8 !important;
+      --border-color: #1e293b !important;
+      background-color: #0b0f19 !important;
+      color: #f8fafc !important;
     }
 
-    body.high-contrast-mode .sidebar,
-    body.high-contrast-mode .top-header,
-    body.high-contrast-mode .main-content,
-    body.high-contrast-mode .metric-card,
-    body.high-contrast-mode .section-card,
-    body.high-contrast-mode .toast-msg,
-    body.high-contrast-mode table,
-    body.high-contrast-mode tr,
-    body.high-contrast-mode td,
-    body.high-contrast-mode th {
-      background: #09090b !important;
-      color: #ffffff !important;
-      border-color: #3f3f46 !important;
+    body.dark-theme-mode .sidebar {
+      background-color: #0f172a !important;
+      border-right: 1px solid #1e293b !important;
     }
 
-    body.high-contrast-mode h1,
-    body.high-contrast-mode h2,
-    body.high-contrast-mode h3,
-    body.high-contrast-mode h4,
-    body.high-contrast-mode span,
-    body.high-contrast-mode p,
-    body.high-contrast-mode div,
-    body.high-contrast-mode td,
-    body.high-contrast-mode th,
-    body.high-contrast-mode label,
-    body.high-contrast-mode .metric-val {
-      color: #ffffff !important;
+    body.dark-theme-mode .top-header {
+      background-color: #0f172a !important;
+      border-bottom: 1px solid #1e293b !important;
     }
 
-    body.high-contrast-mode input,
-    body.high-contrast-mode select,
-    body.high-contrast-mode textarea {
-      background: #18181b !important;
-      color: #ffffff !important;
-      border-color: #52525b !important;
+    body.dark-theme-mode .main-content {
+      background-color: #0b0f19 !important;
+    }
+
+    body.dark-theme-mode .metric-card,
+    body.dark-theme-mode .section-card,
+    body.dark-theme-mode .toast-msg {
+      background: #0f172a !important;
+      border: 1px solid #1e293b !important;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+      color: #f8fafc !important;
+    }
+
+    body.dark-theme-mode .metric-label {
+      color: #94a3b8 !important;
+    }
+
+    body.dark-theme-mode .metric-val {
+      color: #f8fafc !important;
+    }
+
+    /* Sub-cards and telemetry items inside dashboard */
+    body.dark-theme-mode div[style*="background: #f8fafc"],
+    body.dark-theme-mode div[style*="background:#f8fafc"],
+    body.dark-theme-mode div[style*="background: #ffffff"],
+    body.dark-theme-mode div[style*="background:#ffffff"] {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    body.dark-theme-mode div[style*="background: #f8fafc"] div,
+    body.dark-theme-mode div[style*="background: #ffffff"] div {
+      color: #f8fafc !important;
+    }
+
+    body.dark-theme-mode table,
+    body.dark-theme-mode tr,
+    body.dark-theme-mode td {
+      background: transparent !important;
+      color: #cbd5e1 !important;
+      border-color: #1e293b !important;
+    }
+
+    body.dark-theme-mode th {
+      background: #1e293b !important;
+      color: #94a3b8 !important;
+      border-color: #334155 !important;
+    }
+
+    body.dark-theme-mode tr:hover {
+      background: #1e293b !important;
+    }
+
+    /* Market Crash Banner in dark mode */
+    body.dark-theme-mode div[style*="linear-gradient(135deg, #eff6ff, #dbeafe)"] {
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%) !important;
+      border: 1px solid #3730a3 !important;
+    }
+
+    body.dark-theme-mode input,
+    body.dark-theme-mode select,
+    body.dark-theme-mode textarea {
+      background: #1e293b !important;
+      color: #f8fafc !important;
+      border-color: #334155 !important;
     }
 
     * {
@@ -426,7 +468,7 @@
       <header class="top-header">
         <div style="display: flex; align-items: center; gap: 12px;">
           <span style="font-size: 14px; font-weight: 700; color: #475569;">Enterprise Pub Exchange Control Node</span>
-          <button onclick="toggleAccessibilityHighContrast()" style="background: #f1f5f9; border: 1px solid var(--border-color); color: #334155; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">👁️ Contrast</button>
+          <button id="themeToggleBtnAdmin" onclick="toggleThemeMode()" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">🎨 Theme</button>
           
           <!-- Interlinking Portal Links -->
           <a href="http://localhost:8000/" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.25); display: flex; align-items: center; gap: 6px;">
@@ -2444,28 +2486,29 @@
     renderReports();
     setTimeout(renderCharts, 500);
 
-    function toggleAccessibilityHighContrast() {
-      document.body.classList.toggle('high-contrast-mode');
-      const isBlack = document.body.classList.contains('high-contrast-mode');
-      localStorage.setItem('pubexchange_contrast_mode', isBlack ? 'black' : 'normal');
-      const btn = document.querySelector('button[onclick="toggleAccessibilityHighContrast()"]');
+    function toggleThemeMode() {
+      document.body.classList.toggle('dark-theme-mode');
+      const isDark = document.body.classList.contains('dark-theme-mode');
+      localStorage.setItem('pubexchange_theme_mode', isDark ? 'dark' : 'light');
+      updateThemeButtonUI(isDark);
+    }
+
+    function updateThemeButtonUI(isDark) {
+      const btn = document.getElementById('themeToggleBtnAdmin');
       if (btn) {
-        btn.style.background = isBlack ? '#ffffff' : '#f1f5f9';
-        btn.style.color = isBlack ? '#000000' : '#334155';
-        btn.innerHTML = isBlack ? '👁️ Contrast (ON - Black)' : '👁️ Contrast';
+        btn.style.background = isDark ? '#3b82f6' : '#1e293b';
+        btn.style.color = '#ffffff';
+        btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
       }
     }
 
-    if (localStorage.getItem('pubexchange_contrast_mode') === 'black') {
-      document.body.classList.add('high-contrast-mode');
-      setTimeout(() => {
-        const btn = document.querySelector('button[onclick="toggleAccessibilityHighContrast()"]');
-        if (btn) {
-          btn.style.background = '#ffffff';
-          btn.style.color = '#000000';
-          btn.innerHTML = '👁️ Contrast (ON - Black)';
-        }
-      }, 100);
+    const savedThemeAdmin = localStorage.getItem('pubexchange_theme_mode');
+    if (savedThemeAdmin === 'dark' || savedThemeAdmin === null) {
+      document.body.classList.add('dark-theme-mode');
+      setTimeout(() => updateThemeButtonUI(true), 50);
+    } else {
+      document.body.classList.remove('dark-theme-mode');
+      setTimeout(() => updateThemeButtonUI(false), 50);
     }
   </script>
 </body>
