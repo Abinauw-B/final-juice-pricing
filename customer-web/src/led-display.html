@@ -13,7 +13,28 @@
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
   <style>
+    /* Light Theme Mode (Default) Tokens */
     :root {
+      --bg-page: #F8FAFC;
+      --bg-surface: #FFFFFF;
+      --bg-surface-secondary: #F1F5F9;
+      --bg-card: #FFFFFF;
+      --bg-elevated: #F8FAFC;
+      --border: #E2E8F0;
+      --border-subtle: #EDF2F7;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      --success: #16A34A;
+      --danger: #DC2626;
+      --warning: #D97706;
+      --info: #2563EB;
+      --radius-card: 12px;
+      --radius-btn: 8px;
+    }
+
+    /* Enterprise Financial Terminal Dark Theme Mode Tokens */
+    body.dark-theme-mode {
       --bg-page: #0B0F14;
       --bg-surface: #111720;
       --bg-surface-secondary: #151C26;
@@ -28,8 +49,6 @@
       --danger: #EF4444;
       --warning: #F59E0B;
       --info: #3B82F6;
-      --radius-card: 12px;
-      --radius-btn: 8px;
     }
 
     * {
@@ -524,6 +543,9 @@
       </div>
 
       <!-- Actions -->
+      <button id="themeToggleBtnLED" onclick="toggleThemeMode()" class="btn-nav">
+        ☀️ Theme: Light
+      </button>
       <button class="btn-nav" onclick="toggleFullScreen()" title="Toggle Fullscreen Mode">
         ⛶ Fullscreen
       </button>
@@ -990,7 +1012,34 @@
       renderBoard();
     }
 
+    // Theme Toggle Logic
+    function toggleThemeMode() {
+      const isDark = document.body.classList.contains('dark-theme-mode');
+      setThemeMode(!isDark);
+    }
+
+    function setThemeMode(isDark) {
+      if (isDark) {
+        document.body.classList.add('dark-theme-mode');
+        localStorage.setItem('pubexchange_theme_mode', 'dark');
+      } else {
+        document.body.classList.remove('dark-theme-mode');
+        localStorage.setItem('pubexchange_theme_mode', 'light');
+      }
+      updateThemeButtonUI(isDark);
+    }
+
+    function updateThemeButtonUI(isDark) {
+      const btn = document.getElementById('themeToggleBtnLED');
+      if (btn) {
+        btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
+      }
+    }
+
     // Initialization
+    const savedThemeLED = localStorage.getItem('pubexchange_theme_mode');
+    setThemeMode(savedThemeLED === 'dark');
+
     setInterval(updateClock, 1000);
     setInterval(checkBackendHealth, 3000);
     setInterval(fetchLiveExchangeData, 1000);
