@@ -78,8 +78,8 @@
       </div>
     </div>
     <div class="nav-buttons">
-      <button id="rootThemeBtn" onclick="toggleRootTheme()" class="btn" style="background: #1e293b; color: #ffffff; border: 1px solid #334155; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-        🎨 Theme
+      <button id="rootThemeBtn" onclick="toggleRootTheme()" class="btn" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        ☀️ Theme: Light
       </button>
       <a href="http://localhost:8001/index.html" target="_blank" class="btn btn-admin">⚙️ Open Admin Control Center (8001)</a>
       <a href="http://localhost:8000/index.html" target="_blank" class="btn btn-customer">🍹 Open Customer POS Web App (8000)</a>
@@ -116,14 +116,15 @@
     function updateRootThemeUI(isDark) {
       const btn = document.getElementById('rootThemeBtn');
       if (btn) {
-        btn.style.background = isDark ? '#3b82f6' : '#1e293b';
-        btn.style.color = '#ffffff';
+        btn.style.background = isDark ? '#2563eb' : '#f1f5f9';
+        btn.style.border = isDark ? '1px solid #3b82f6' : '1px solid #cbd5e1';
+        btn.style.color = isDark ? '#ffffff' : '#0f172a';
         btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
       }
     }
 
     const savedRootTheme = localStorage.getItem('pubexchange_theme_mode');
-    if (savedRootTheme === 'dark' || savedRootTheme === null) {
+    if (savedRootTheme === 'dark') {
       document.body.classList.add('dark-theme-mode');
       setTimeout(() => updateRootThemeUI(true), 50);
     } else {

@@ -468,7 +468,7 @@
       <header class="top-header">
         <div style="display: flex; align-items: center; gap: 12px;">
           <span style="font-size: 14px; font-weight: 700; color: #475569;">Enterprise Pub Exchange Control Node</span>
-          <button id="themeToggleBtnAdmin" onclick="toggleThemeMode()" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">🎨 Theme</button>
+          <button id="themeToggleBtnAdmin" onclick="toggleThemeMode()" style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">☀️ Theme: Light</button>
           
           <!-- Interlinking Portal Links -->
           <a href="http://localhost:8000/" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.25); display: flex; align-items: center; gap: 6px;">
@@ -2496,14 +2496,15 @@
     function updateThemeButtonUI(isDark) {
       const btn = document.getElementById('themeToggleBtnAdmin');
       if (btn) {
-        btn.style.background = isDark ? '#3b82f6' : '#1e293b';
-        btn.style.color = '#ffffff';
+        btn.style.background = isDark ? '#2563eb' : '#f1f5f9';
+        btn.style.border = isDark ? '1px solid #3b82f6' : '1px solid #cbd5e1';
+        btn.style.color = isDark ? '#ffffff' : '#334155';
         btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
       }
     }
 
     const savedThemeAdmin = localStorage.getItem('pubexchange_theme_mode');
-    if (savedThemeAdmin === 'dark' || savedThemeAdmin === null) {
+    if (savedThemeAdmin === 'dark') {
       document.body.classList.add('dark-theme-mode');
       setTimeout(() => updateThemeButtonUI(true), 50);
     } else {
