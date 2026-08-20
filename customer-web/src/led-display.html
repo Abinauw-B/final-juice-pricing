@@ -1019,6 +1019,9 @@
     }
 
     function setThemeMode(isDark) {
+      localStorage.removeItem('pubexchange_contrast_mode');
+      document.body.classList.remove('high-contrast-black');
+
       if (isDark) {
         document.body.classList.add('dark-theme-mode');
         localStorage.setItem('pubexchange_theme_mode', 'dark');
@@ -1032,6 +1035,10 @@
     function updateThemeButtonUI(isDark) {
       const btn = document.getElementById('themeToggleBtnLED');
       if (btn) {
+        btn.style.background = isDark ? '#2563eb' : '#ffffff';
+        btn.style.border = isDark ? '1.5px solid #3b82f6' : '1.5px solid #cbd5e1';
+        btn.style.color = isDark ? '#ffffff' : '#0f172a';
+        btn.style.boxShadow = isDark ? '0 4px 12px rgba(37, 99, 235, 0.35)' : '0 4px 12px rgba(0,0,0,0.04)';
         btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
       }
     }
