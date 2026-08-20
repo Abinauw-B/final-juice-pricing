@@ -74,10 +74,10 @@ public class JuiceInventoryAndPricingTests {
                         .minCupPrice(new BigDecimal("18.00"))
                         .maxCupPrice(new BigDecimal("25.00"))
                         .build()));
-        if (mangoProduct.getCurrentCupPrice() == null || mangoProduct.getCurrentCupPrice().compareTo(new BigDecimal("20.00")) != 0) {
-            mangoProduct.setCurrentCupPrice(new BigDecimal("20.00"));
-            mangoProduct = productRepository.save(mangoProduct);
-        }
+        mangoProduct.setDefaultCupPrice(new BigDecimal("20.00"));
+        mangoProduct.setCurrentCupPrice(new BigDecimal("20.00"));
+        mangoProduct.setLastPriceChangeTimestamp(null);
+        mangoProduct = productRepository.save(mangoProduct);
         JuiceBatch batch = batchRepository.findFirstActiveBatchForProduct(mangoProduct.getId()).orElse(null);
         if (batch == null) {
             batchRepository.save(JuiceBatch.builder()

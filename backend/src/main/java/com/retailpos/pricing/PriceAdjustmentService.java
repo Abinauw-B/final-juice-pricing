@@ -222,15 +222,15 @@ public class PriceAdjustmentService {
         if (vt > vtPrev) {
             // Surge pricing (+₹1 step)
             targetPrice = prevPrice.add(BigDecimal.ONE).min(effectiveMaxPrice);
-            actionText = String.format("Surge Pricing: Order velocity increased (Vt=%d vs Vt-1=%d, Demand Score %.1f). Price adjusted +₹1 to ₹%s.", vt, vtPrev, demandScore, targetPrice);
+            actionText = String.format("Surge Pricing for %s: Order velocity increased (Vt=%d vs Vt-1=%d, Demand Score %.1f). Price adjusted +₹1 to ₹%s.", product.getFlavour(), vt, vtPrev, demandScore, targetPrice);
         } else if (vt < vtPrev) {
             // Price decay (-₹1 step)
             targetPrice = prevPrice.subtract(BigDecimal.ONE).max(effectiveMinPrice);
-            actionText = String.format("Price Decay: Order velocity decreased (Vt=%d vs Vt-1=%d, Demand Score %.1f). Price adjusted -₹1 to ₹%s.", vt, vtPrev, demandScore, targetPrice);
+            actionText = String.format("Price Decay for %s: Order velocity decreased (Vt=%d vs Vt-1=%d, Demand Score %.1f). Price adjusted -₹1 to ₹%s.", product.getFlavour(), vt, vtPrev, demandScore, targetPrice);
         } else {
             // Stable demand
             targetPrice = prevPrice.min(effectiveMaxPrice).max(effectiveMinPrice);
-            actionText = String.format("Stable Demand: Order velocity steady (Vt=%d, Demand Score %.1f). Price held at ₹%s.", vt, demandScore, targetPrice);
+            actionText = String.format("Stable Demand for %s: Order velocity steady (Vt=%d, Demand Score %.1f). Price held at ₹%s.", product.getFlavour(), vt, demandScore, targetPrice);
         }
 
         // Hard bounds clamping
