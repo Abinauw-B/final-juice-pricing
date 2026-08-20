@@ -116,17 +116,18 @@ public class PricingController {
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/market-crash/status")
+    @GetMapping({"/market-crash/status", "/crash/status"})
     public ResponseEntity<MarketCrashService.MarketCrashStatus> getMarketCrashStatus() {
         return ResponseEntity.ok(marketCrashService.getStatus());
     }
 
-    @PostMapping({"/market-crash/trigger", "/market-crash"})
-    public ResponseEntity<MarketCrashService.MarketCrashStatus> triggerMarketCrash(@RequestParam(defaultValue = "3") int durationMinutes) {
-        return ResponseEntity.ok(marketCrashService.triggerMarketCrash(durationMinutes, "MANUAL_ADMIN"));
+    @PostMapping({"/market-crash/trigger", "/market-crash", "/crash/trigger", "/crash"})
+    public ResponseEntity<MarketCrashService.MarketCrashStatus> triggerMarketCrash(@RequestParam(required = false, defaultValue = "3") Integer durationMinutes) {
+        int duration = (durationMinutes != null && durationMinutes > 0) ? durationMinutes : 3;
+        return ResponseEntity.ok(marketCrashService.triggerMarketCrash(duration, "MANUAL_ADMIN"));
     }
 
-    @PostMapping("/market-crash/stop")
+    @PostMapping({"/market-crash/stop", "/crash/stop"})
     public ResponseEntity<MarketCrashService.MarketCrashStatus> stopMarketCrash() {
         return ResponseEntity.ok(marketCrashService.stopMarketCrash());
     }

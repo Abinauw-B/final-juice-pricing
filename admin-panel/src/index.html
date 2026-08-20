@@ -2522,7 +2522,31 @@
     document.getElementById('reportTypeSelect')?.addEventListener('change', renderReports);
     document.getElementById('reportTimeRange')?.addEventListener('change', renderReports);
 
+    async function checkAdminBackendHealth() {
+      try {
+        const res = await fetch('http://localhost:8088/api/health');
+        const badge = document.getElementById('sysHealthStatus');
+        if (badge) {
+          if (res.ok) {
+            badge.innerHTML = '🟢 ALL MICROSERVICES ONLINE &amp; POSTGRESQL CONNECTED (8088)';
+            badge.style.color = '#059669';
+          } else {
+            badge.innerHTML = '🔴 BACKEND DISCONNECTED (8088)';
+            badge.style.color = '#dc2626';
+          }
+        }
+      } catch (err) {
+        const badge = document.getElementById('sysHealthStatus');
+        if (badge) {
+          badge.innerHTML = '🔴 BACKEND DISCONNECTED (8088)';
+          badge.style.color = '#dc2626';
+        }
+      }
+    }
+
     // System Initialization
+    checkAdminBackendHealth();
+    setInterval(checkAdminBackendHealth, 5000);
     refreshDashboard();
     loadNotifications();
     runSimulation();

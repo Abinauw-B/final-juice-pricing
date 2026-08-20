@@ -1079,7 +1079,7 @@
         if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'POS_ORDER_COMPLETED', payload: orderBroadcastPayload }, '*');
       } catch (err) {}
 
-      applyBarStockExchangePriceShift(purchasedIds);
+      await fetchProducts();
 
       cart = [];
       renderCart();
