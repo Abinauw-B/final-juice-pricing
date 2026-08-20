@@ -197,6 +197,7 @@ public class POSService {
 
             int cupSize = (itemReq.getCupSizeMl() != null && itemReq.getCupSizeMl() > 0) ? itemReq.getCupSizeMl() : product.getDefaultCupSizeMl();
             int qty = (itemReq.getQuantity() != null && itemReq.getQuantity() > 0) ? itemReq.getQuantity() : 1;
+            int totalVolumeMl = cupSize * qty;
 
             BigDecimal unitPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : (product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("20.00"));
             BigDecimal itemTotal = unitPrice.multiply(BigDecimal.valueOf(qty));
