@@ -22,330 +22,317 @@
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
   <style>
     :root {
-      --bg-main: #f8fafc;
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-secondary: #f1f5f9;
       --bg-card: #ffffff;
-      --accent-orange: #ff6b00;
-      --accent-mango: #f59e0b;
-      --accent-green: #10b981;
-      --accent-red: #ef4444;
-      --accent-blue: #3b82f6;
-      --accent-purple: #8b5cf6;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --border-color: #cbd5e1;
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.04);
-      --shadow-card: 0 10px 25px -5px rgba(0,0,0,0.07), 0 8px 10px -6px rgba(0,0,0,0.03);
-      --shadow-hover: 0 20px 35px -10px rgba(245, 158, 11, 0.2), 0 10px 15px -5px rgba(0,0,0,0.06);
+      --bg-elevated: #ffffff;
+      --border: #e2e8f0;
+      --border-subtle: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent-gold: #d97706;
+      --accent-gold-hover: #b45309;
+      --success: #059669;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --info: #2563eb;
+      --radius-card: 12px;
+      --radius-btn: 8px;
+      --radius-badge: 6px;
+      --shadow-card: 0 4px 16px rgba(0,0,0,0.04);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; letter-spacing: -0.01em; }
-    body { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%); color: var(--text-main); min-height: 100vh; padding: 20px 28px; }
+    body.dark-theme-mode {
+      --bg-page: #0B0F14;
+      --bg-surface: #111720;
+      --bg-secondary: #151C26;
+      --bg-card: #18212C;
+      --bg-elevated: #1D2733;
+      --border: #293544;
+      --border-subtle: #202A36;
+      --text-primary: #F3F5F7;
+      --text-secondary: #A8B2BE;
+      --text-muted: #748091;
+      --accent-gold: #F59E0B;
+      --accent-gold-hover: #FBBF24;
+      --success: #22C55E;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --info: #3B82F6;
+      --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.20);
 
-    /* Stock Ticker Bar */
-    .ticker-wrap {
-      width: 100%;
-      background: #ffffff;
-      border: 2px solid #cbd5e1;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      border-radius: 18px;
-      overflow: hidden;
-      margin-bottom: 20px;
-      padding: 10px 0;
-      display: flex; align-items: center;
-    }
-    .ticker-title {
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
-      color: white; font-weight: 900; font-size: 12px;
-      padding: 8px 18px; border-radius: 12px; margin-left: 14px; white-space: nowrap;
-      letter-spacing: 1px; text-transform: uppercase;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-    }
-    .ticker-content {
-      display: flex; gap: 28px; overflow-x: auto; scrollbar-width: none;
-      padding: 0 20px; width: 100%; white-space: nowrap;
-    }
-    .ticker-content::-webkit-scrollbar { display: none; }
-    .ticker-item { font-size: 14px; font-weight: 800; color: #0f172a; display: inline-flex; align-items: center; gap: 8px; }
-    .trend-up { color: #047857; background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 3px 10px; border-radius: 8px; border: 1px solid #86efac; }
-    .trend-down { color: #b91c1c; background: linear-gradient(135deg, #ffe4e6, #fecdd3); padding: 3px 10px; border-radius: 8px; border: 1px solid #fda4af; }
-
-    /* Market Crash Alert Header */
-    .market-crash-banner {
-      background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-      border: 3px solid #ff758c;
-      border-radius: 22px;
-      padding: 22px 30px;
-      margin-bottom: 24px;
-      display: none;
-      align-items: center; justify-content: space-between;
-      animation: crashPulse 1s infinite alternate;
-      box-shadow: 0 12px 35px rgba(255, 65, 108, 0.4);
-      color: white;
-    }
-    @keyframes crashPulse {
-      0% { box-shadow: 0 0 20px rgba(255, 65, 108, 0.4); transform: scale(1); }
-      100% { box-shadow: 0 0 40px rgba(255, 65, 108, 0.7); transform: scale(1.008); }
-    }
-    .crash-title { font-size: 24px; font-weight: 900; color: #ffffff; display: flex; align-items: center; gap: 14px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    .crash-timer { font-size: 34px; font-weight: 900; background: #ffffff; padding: 6px 24px; border-radius: 14px; color: #ff416c; border: 3px solid #ffffff; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
-
-    .pos-container {
-      display: grid;
-      grid-template-columns: 1fr 430px;
-      gap: 28px;
-      max-width: 1580px;
-      margin: 0 auto;
+      background-color: var(--bg-page) !important;
+      color: var(--text-primary) !important;
     }
 
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; letter-spacing: -0.01em; }
+    body { background: var(--bg-page); color: var(--text-primary); min-height: 100vh; padding: 18px 24px; transition: background 0.2s, color 0.2s; }
+
+    /* Compact Stock Exchange Header */
     .header-banner {
       grid-column: 1 / -1;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
-      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.12);
-      border: 2px solid #fde68a;
-      padding: 22px 30px;
-      border-radius: 22px;
-      margin-bottom: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 14px 22px;
+      border-radius: var(--radius-card);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
+      height: 68px;
     }
 
-    .brand-title { display: flex; align-items: center; gap: 18px; }
+    .brand-title { display: flex; align-items: center; gap: 14px; }
     .brand-icon {
-      width: 58px; height: 58px;
-      background: linear-gradient(135deg, #ff6b00, #ff8800);
-      border-radius: 18px;
+      width: 40px; height: 40px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 32px; box-shadow: 0 8px 22px rgba(255, 107, 0, 0.4);
+      font-size: 22px;
     }
     .brand-name {
-      font-size: 28px; font-weight: 900;
-      background: linear-gradient(135deg, #ff6b00 0%, #ea580c 50%, #d97706 100%);
-      background-clip: text;
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-size: 19px; font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .brand-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+
+    .status-badge-live {
+      font-size: 13px; font-weight: 600; padding: 6px 14px;
+      border-radius: 20px; display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.25); color: var(--success);
+    }
+    .status-badge-live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+    .status-badge-offline {
+      font-size: 13px; font-weight: 600; padding: 6px 14px;
+      border-radius: 20px; display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); color: var(--danger);
+    }
+    .status-badge-offline .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+
+    .btn-compact {
+      height: 38px; padding: 0 14px; border-radius: var(--radius-btn);
+      font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex;
+      align-items: center; gap: 6px; text-decoration: none; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-primary); transition: all 0.15s ease;
+    }
+    .btn-compact:hover { background: var(--bg-secondary); border-color: var(--border-subtle); }
+
+    /* Stock Ticker Bar */
+    .ticker-wrap {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      margin-bottom: 14px;
+      padding: 10px 18px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .ticker-title {
+      color: var(--text-muted); font-weight: 700; font-size: 11px;
+      white-space: nowrap; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .ticker-content {
+      display: flex; gap: 18px; overflow-x: auto; scrollbar-width: none;
+      width: 100%; white-space: nowrap; align-items: center;
+    }
+    .ticker-content::-webkit-scrollbar { display: none; }
+    .ticker-item {
+      font-size: 13px; font-weight: 600; color: var(--text-primary);
+      display: inline-flex; align-items: center; gap: 8px;
+      border-right: 1px solid var(--border-subtle); padding-right: 18px;
+    }
+    .ticker-item:last-child { border-right: none; }
+
+    /* Market Summary Metric Overview Bar */
+    .market-summary-bar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 10px 20px;
+      margin-bottom: 18px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: var(--shadow-card);
+      font-size: 13px;
+    }
+    .summary-metric { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-weight: 500; }
+    .summary-metric strong { color: var(--text-primary); font-weight: 700; }
+
+    /* Main 12-Column Responsive Layout */
+    .pos-container {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 22px;
+      max-width: 1600px;
+      margin: 0 auto;
     }
 
+    /* Clean Professional Product Card */
     .flavour-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px;
+      gap: 18px;
     }
 
     .flavour-card {
-      background: #ffffff;
-      border: 2px solid #e2e8f0;
-      border-radius: 24px;
-      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 18px;
       display: flex; flex-direction: column; justify-content: space-between;
-      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      position: relative; overflow: hidden;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06);
+      box-shadow: var(--shadow-card);
+      transition: transform 0.15s ease, border-color 0.15s ease;
     }
-
-    /* Fruit Specific Custom Gradient Card Styling */
-    .card-mango { background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%); border-color: #fed7aa; }
-    .card-mango::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #f59e0b, #d97706); }
-    .card-mango:hover { border-color: #f59e0b; box-shadow: 0 20px 35px rgba(245, 158, 11, 0.25); }
-
-    .card-lemon { background: linear-gradient(145deg, #ffffff 0%, #fefce8 100%); border-color: #fef08a; }
-    .card-lemon::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #eab308, #ca8a04); }
-    .card-lemon:hover { border-color: #eab308; box-shadow: 0 20px 35px rgba(234, 179, 8, 0.25); }
-
-    .card-mint { background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%); border-color: #bbf7d0; }
-    .card-mint::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #10b981, #059669); }
-    .card-mint:hover { border-color: #10b981; box-shadow: 0 20px 35px rgba(16, 185, 129, 0.25); }
-
-    .card-orange { background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%); border-color: #ffedd5; }
-    .card-orange::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #ff6b00, #ea580c); }
-    .card-orange:hover { border-color: #ff6b00; box-shadow: 0 20px 35px rgba(255, 107, 0, 0.25); }
-
-    .card-strawberry { background: linear-gradient(145deg, #ffffff 0%, #fff1f2 100%); border-color: #fecdd3; }
-    .card-strawberry::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #f43f5e, #e11d48); }
-    .card-strawberry:hover { border-color: #f43f5e; box-shadow: 0 20px 35px rgba(244, 63, 94, 0.25); }
-
-    .card-grape { background: linear-gradient(145deg, #ffffff 0%, #faf5ff 100%); border-color: #e9d5ff; }
-    .card-grape::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #a855f7, #7e22ce); }
-    .card-grape:hover { border-color: #a855f7; box-shadow: 0 20px 35px rgba(168, 85, 247, 0.25); }
-
-    .card-lychee { background: linear-gradient(145deg, #ffffff 0%, #fdf2f8 100%); border-color: #fbcfe8; }
-    .card-lychee::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, #ec4899, #be185d); }
-    .card-lychee:hover { border-color: #ec4899; box-shadow: 0 20px 35px rgba(236, 72, 153, 0.25); }
-
     .flavour-card:hover {
-      transform: translateY(-6px) scale(1.02);
-    }
-    
-    .flavour-card.crash-mode {
-      border-color: #ef4444 !important;
-      background: linear-gradient(135deg, #fff1f2, #ffe4e6) !important;
-      box-shadow: 0 12px 30px rgba(239, 68, 68, 0.3) !important;
-    }
-    .flavour-card.flash-surge { animation: flashSurgeAnim 1s ease-out; }
-    .flavour-card.flash-discount { animation: flashDiscountAnim 1s ease-out; }
-
-    @keyframes flashSurgeAnim {
-      0% { border-color: #10b981; box-shadow: 0 0 30px rgba(16, 185, 129, 0.7); transform: scale(1.04); }
-      100% { transform: scale(1); }
+      transform: translateY(-2px);
+      border-color: var(--border-subtle);
     }
 
-    @keyframes flashDiscountAnim {
-      0% { border-color: #ef4444; box-shadow: 0 0 30px rgba(239, 68, 68, 0.7); transform: scale(0.96); }
-      100% { transform: scale(1); }
-    }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .card-header-left { display: flex; align-items: center; gap: 10px; }
+    .card-icon { font-size: 22px; }
+    .card-name { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+    .card-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.4; min-height: 36px; }
 
-    .flavour-badge {
-      font-size: 12px; font-weight: 800;
-      padding: 6px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+    .market-badge {
+      font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: var(--radius-badge);
+      display: inline-flex; align-items: center; gap: 4px;
     }
-    .badge-high { background: linear-gradient(135deg, #fee2e2, #fecdd3); color: #991b1b; border: 1px solid #fca5a5; }
-    .badge-low { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #14532d; border: 1px solid #86efac; }
-    .badge-normal { background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border: 1px solid #93c5fd; }
-    .badge-crash { background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; font-weight: 900; animation: blink 0.8s infinite; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
+    .badge-up { color: var(--success); background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.25); }
+    .badge-down { color: var(--danger); background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); }
+    .badge-stable { color: var(--text-muted); background: rgba(148, 163, 184, 0.12); border: 1px solid rgba(148, 163, 184, 0.25); }
 
-    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-    .flavour-header { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
-    .flavour-icon { font-size: 34px; width: 50px; height: 50px; background: #ffffff; border-radius: 16px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
-    .flavour-name { font-size: 21px; font-weight: 900; color: #0f172a; line-height: 1.2; }
-    .flavour-desc { font-size: 14px; color: #475569; margin-bottom: 18px; line-height: 1.4; min-height: 40px; font-weight: 500; }
-
-    .price-box {
-      background: #ffffff;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 16px;
-      padding: 14px 18px;
-      margin-bottom: 18px;
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    .price-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
     }
-    .price-tag { font-size: 34px; font-weight: 900; color: #0f172a; letter-spacing: -1px; }
+    .price-main { font-size: 28px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; }
+    .price-unit { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    .price-bounds { font-size: 12px; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between; }
 
-    .add-btn {
-      width: 100%; padding: 16px;
-      background: linear-gradient(135deg, #ff6b00 0%, #ea580c 50%, #d97706 100%);
-      border: none; border-radius: 16px; color: white; font-weight: 900; font-size: 15px;
-      cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 8px 22px rgba(255, 107, 0, 0.35);
-      text-transform: uppercase; letter-spacing: 0.8px;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .add-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 28px rgba(255, 107, 0, 0.5);
-      filter: brightness(1.08);
-    }
-    .add-btn:active { transform: translateY(0); }
-    
-    .add-btn.crash-btn {
-      background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-      font-weight: 900;
-      box-shadow: 0 8px 25px rgba(255, 65, 108, 0.5);
-      animation: crashButtonPulse 1s infinite alternate;
-    }
+    .demand-text { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; display: flex; justify-content: space-between; }
+    .demand-text strong { color: var(--accent-gold); font-weight: 700; }
 
-    @keyframes crashButtonPulse {
-      0% { transform: scale(1); }
-      100% { transform: scale(1.03); box-shadow: 0 12px 30px rgba(255, 65, 108, 0.7); }
+    .add-to-cart-btn {
+      width: 100%; height: 42px;
+      background: var(--accent-gold);
+      border: none; border-radius: var(--radius-btn);
+      color: #111720; font-weight: 700; font-size: 14px;
+      cursor: pointer; transition: background 0.15s ease;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
     }
+    .add-to-cart-btn:hover { background: var(--accent-gold-hover); }
 
-    /* Cart Panel */
+    /* Professional Order Cart Panel */
     .cart-panel {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-      border: 2px solid #cbd5e1;
-      border-radius: 24px;
-      padding: 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 20px;
       display: flex; flex-direction: column;
-      height: calc(100vh - 140px);
-      position: sticky; top: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      height: calc(100vh - 130px);
+      position: sticky; top: 18px;
+      box-shadow: var(--shadow-card);
     }
-    .cart-title { font-size: 24px; font-weight: 900; color: #0f172a; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; }
-    .cart-items { flex: 1; overflow-y: auto; margin-bottom: 20px; padding-right: 4px; }
-    
+    .cart-header { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; }
+    .cart-badge { font-size: 12px; font-weight: 700; color: var(--info); background: rgba(59, 130, 246, 0.12); padding: 4px 10px; border-radius: 12px; }
+
+    .cart-items { flex: 1; overflow-y: auto; margin-bottom: 16px; padding-right: 4px; }
     .cart-item {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 16px; border-radius: 16px; background: #ffffff; border: 1.5px solid #cbd5e1; margin-bottom: 14px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+      padding: 12px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); margin-bottom: 10px;
     }
+    .item-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .item-sub { font-size: 12px; color: var(--text-muted); }
 
-    .item-qty-btn {
-      width: 34px; height: 34px; border-radius: 12px; border: 1.5px solid #cbd5e1;
-      background: #f8fafc; color: #0f172a; font-weight: 900; font-size: 16px; cursor: pointer;
+    .qty-btn {
+      width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--bg-secondary); color: var(--text-primary); font-weight: 700; font-size: 15px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
     }
-    .item-qty-btn:hover { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border-color: #2563eb; }
+    .qty-btn:hover { background: var(--border-subtle); }
 
-    .cart-summary { background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 18px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-    .summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; color: #0f172a; font-weight: 700; }
-    .summary-total { font-size: 24px; font-weight: 900; color: #0f172a; border-top: 2px dashed #cbd5e1; padding-top: 14px; margin-top: 14px; }
+    .cart-summary { background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); }
+    .summary-total { font-size: 20px; font-weight: 800; color: var(--text-primary); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 10px; }
 
     .checkout-btn {
-      width: 100%; padding: 20px;
-      background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-      border: none; border-radius: 18px; color: white; font-size: 18px; font-weight: 900;
-      cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
-      text-transform: uppercase; letter-spacing: 1px;
+      width: 100%; height: 46px;
+      background: var(--success);
+      border: none; border-radius: var(--radius-btn);
+      color: #0B0F14; font-size: 15px; font-weight: 800;
+      cursor: pointer; transition: background 0.15s ease;
     }
-    .checkout-btn:hover:not(:disabled) {
-      transform: translateY(-3px);
-      box-shadow: 0 14px 35px rgba(16, 185, 129, 0.55);
-      filter: brightness(1.08);
-    }
-    .checkout-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+    .checkout-btn:hover:not(:disabled) { background: #16a34a; }
+    .checkout-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Receipt Modal */
+    /* Market Crash Alert Header */
+    .market-crash-banner {
+      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+      border: 1px solid #f87171;
+      border-radius: var(--radius-card);
+      padding: 16px 24px;
+      margin-bottom: 14px;
+      display: none;
+      align-items: center; justify-content: space-between;
+      color: white;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+    }
+    .crash-title { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+    .crash-timer { font-size: 24px; font-weight: 900; font-family: monospace; background: #000000; padding: 4px 16px; border-radius: 6px; color: #facc15; }
+
+    /* Receipt Modal Styling */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px);
+      background: rgba(11, 15, 20, 0.75); backdrop-filter: blur(4px);
       display: flex; align-items: center; justify-content: center; z-index: 1000;
     }
-    /* Ultra-Professional Dark Theme & High Contrast Mode */
-    body.dark-theme-mode, body.high-contrast-black {
-      background: #0b0f19 !important;
-      color: #f8fafc !important;
+    .receipt-modal {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-card);
+      padding: 24px; width: 440px; box-shadow: var(--shadow-card); color: var(--text-primary);
     }
-    body.dark-theme-mode .header-banner,
-    body.dark-theme-mode .ticker-wrap,
-    body.dark-theme-mode .flavour-card,
-    body.dark-theme-mode .cart-panel,
-    body.dark-theme-mode .price-box,
-    body.dark-theme-mode .cart-item,
-    body.dark-theme-mode .cart-summary,
-    body.dark-theme-mode .receipt-modal,
-    body.high-contrast-black .header-banner,
-    body.high-contrast-black .ticker-wrap,
-    body.high-contrast-black .flavour-card,
-    body.high-contrast-black .cart-panel,
-    body.high-contrast-black .price-box,
-    body.high-contrast-black .cart-item,
-    body.high-contrast-black .cart-summary,
-    body.high-contrast-black .receipt-modal {
-      background: #0f172a !important;
-      color: #f8fafc !important;
-      border-color: #1e293b !important;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
-    }
-    body.dark-theme-mode h1, body.dark-theme-mode h2, body.dark-theme-mode h3,
-    body.dark-theme-mode span, body.dark-theme-mode div, body.dark-theme-mode p,
-    body.dark-theme-mode .flavour-name, body.dark-theme-mode .price-tag,
-    body.dark-theme-mode .cart-title, body.dark-theme-mode .ticker-item,
-    body.high-contrast-black h1, body.high-contrast-black h2, body.high-contrast-black h3,
-    body.high-contrast-black span, body.high-contrast-black div, body.high-contrast-black p,
-    body.high-contrast-black .flavour-name, body.high-contrast-black .price-tag,
-    body.high-contrast-black .cart-title, body.high-contrast-black .ticker-item {
-      color: #f8fafc !important;
-    }
+
   </style>
 </head>
 <body>
 
   <!-- Live Stock Exchange Ticker -->
   <div class="ticker-wrap">
-    <div class="ticker-title">📈 BAR STOCK TICKER</div>
+    <div class="ticker-title">MARKET TICKER</div>
     <div class="ticker-content" id="stockTickerContent">
       <!-- Live stock price trends rendered here -->
+    </div>
+  </div>
+
+  <!-- Market Status Overview Bar -->
+  <div class="market-summary-bar" id="marketSummaryBar">
+    <div class="summary-metric">
+      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22C55E; box-shadow:0 0 6px #22C55E;"></span>
+      <strong>Market Open</strong>
+    </div>
+    <div class="summary-metric">
+      <span>Catalog: <strong id="summaryTotalProds">7 Products</strong></span>
+    </div>
+    <div class="summary-metric">
+      <span>Price Dynamics: <strong id="summaryRisingCount" style="color:var(--success);">1 Price Rising</strong> &bull; <strong id="summaryStableCount" style="color:var(--text-muted);">6 Stable/Discounted</strong></span>
+    </div>
+    <div class="summary-metric">
+      <span>Market Velocity: <strong style="color:var(--accent-gold);">30s Rolling Window</strong></span>
+    </div>
+    <div class="summary-metric" style="margin-left:auto;">
+      <span>Last Sync: <strong id="summaryLastSync" style="font-family:monospace; color:var(--text-primary);">--:--:--</strong></span>
     </div>
   </div>
 
@@ -353,7 +340,7 @@
   <div class="market-crash-banner" id="marketCrashBanner">
     <div class="crash-title">
       <span>🚨 MARKET CRASH ACTIVE!</span>
-      <span style="font-size: 16px; font-weight: 700; opacity: 0.95;" id="marketCrashBannerMsg">All Juice Flavours Dropped to Absolute Floor Limit ₹18!</span>
+      <span style="font-size: 14px; font-weight: 600; opacity: 0.95;" id="marketCrashBannerMsg">All Drink Prices Dropped to Floor Limit ₹18!</span>
     </div>
     <div class="crash-timer" id="crashTimerDisplay">03:00</div>
   </div>
@@ -364,20 +351,20 @@
         <div class="brand-icon">🍹</div>
         <div>
           <div class="brand-name">Juice Bar Stock Exchange</div>
-          <div style="font-size: 15px; color: #475569; font-weight: 700;">Real-Time Order Scarcity &amp; Dynamic Price Engine Terminal</div>
+          <div class="brand-subtitle">Real-Time Market Pricing &amp; Dynamic POS Terminal</div>
         </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 14px;">
-        <span id="backendHealthBadge" style="font-size: 14px; font-weight: 900; padding: 10px 20px; background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #14532d; border-radius: 24px; border: 1.5px solid #86efac; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
-          🟢 BACKEND CONNECTED (8088)
+      <div class="header-actions">
+        <span id="backendHealthBadge" class="status-badge-live">
+          <span class="dot"></span> LIVE &bull; Backend Connected
         </span>
-        <button id="themeToggleBtnCustomer" onclick="toggleThemeMode()" style="background: #ffffff; border: 1.5px solid #cbd5e1; color: #0f172a; padding: 10px 18px; border-radius: 20px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: all 0.2s;">
+        <button id="themeToggleBtnCustomer" onclick="toggleThemeMode()" class="btn-compact">
           ☀️ Theme: Light
         </button>
-        <a href="http://localhost:8001/" target="_blank" style="text-decoration: none; font-size: 13px; font-weight: 800; background: #ffffff; color: #0f172a; padding: 10px 18px; border-radius: 20px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 6px;">
-          ⚙️ Admin Panel (8001)
+        <a href="http://localhost:8001/" target="_blank" class="btn-compact">
+          ⚙️ Admin Panel
         </a>
-        <a href="http://localhost:8000/led-display.html" target="_blank" style="text-decoration: none; font-size: 13px; font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 10px 18px; border-radius: 20px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); display: flex; align-items: center; gap: 6px;">
+        <a href="http://localhost:8000/led-display.html" target="_blank" class="btn-compact" style="background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.3); color: var(--info);">
           📺 LED Ticker
         </a>
       </div>
@@ -385,9 +372,9 @@
 
     <!-- Product Flavour Grid -->
     <main>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-        <h2 style="font-size: 24px; font-weight: 900; color: #0f172a;">Live Juice Menu &amp; Market Pricing</h2>
-        <span style="font-size: 14px; font-weight: 800; color: #475569; background: #ffffff; padding: 8px 18px; border-radius: 14px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">Base: ₹20 &bull; Floor: ₹18 &bull; Ceiling: ₹25</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="font-size: 20px; font-weight: 700; color: var(--text-primary);">Live Juice Market &amp; Dynamic Pricing</h2>
+        <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); background: var(--bg-surface); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid var(--border);">Base: ₹20 &bull; Floor: ₹18 &bull; Ceiling: ₹25</span>
       </div>
       <div class="flavour-grid" id="productGrid">
         <!-- Rendered dynamically -->
@@ -396,25 +383,25 @@
 
     <!-- Cart Summary Panel -->
     <aside class="cart-panel">
-      <div class="cart-title">
+      <div class="cart-header">
         <span>Order Cart</span>
-        <span style="font-size: 14px; font-weight: 900; color: #2563eb; background: linear-gradient(135deg, #eff6ff, #dbeafe); padding: 6px 14px; border-radius: 14px; border: 1px solid #bfdbfe;" id="cartItemCount">0 cups</span>
+        <span class="cart-badge" id="cartItemCount">0 items</span>
       </div>
 
       <div class="cart-items" id="cartItemsContainer">
-        <div style="text-align: center; color: #64748b; padding: 60px 0; font-weight: 700;">
-          🛒 Cart is empty.<br>Click "+ Add Cup to Cart" to build order.
+        <div style="text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 14px;">
+          🛒 Cart is empty.<br>Click "+ Add to Cart" to build order.
         </div>
       </div>
 
       <div class="cart-summary" id="cartSummaryBox" style="display: none;">
         <div class="summary-row">
           <span>Total Volume</span>
-          <span id="totalVolumeText" style="color: #0f172a; font-weight: 900;">0 ml (0 cups)</span>
+          <strong id="totalVolumeText" style="color: var(--text-primary);">0 ml (0 cups)</strong>
         </div>
         <div class="summary-row" style="align-items: center;">
           <span>Payment Method</span>
-          <select id="paymentMethodSelect" style="background: #ffffff; color: #0f172a; border: 1.5px solid #cbd5e1; padding: 8px 14px; border-radius: 10px; font-weight: 800;">
+          <select id="paymentMethodSelect" style="background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px;">
             <option value="CASH">Cash Payment</option>
             <option value="UPI">UPI / QR Code</option>
             <option value="CARD">Debit / Credit Card</option>
@@ -422,12 +409,12 @@
         </div>
         <div class="summary-row summary-total">
           <span>Total Payable</span>
-          <span style="color: #059669;" id="totalPayableText">₹0.00</span>
+          <span style="color: var(--success);" id="totalPayableText">₹0.00</span>
         </div>
       </div>
 
       <button class="checkout-btn" id="checkoutBtn" disabled onclick="processCheckout()">
-        ⚡ Complete POS Checkout
+        Complete Checkout
       </button>
     </aside>
   </div>
@@ -787,21 +774,50 @@
       }
       const container = document.getElementById('stockTickerContent');
       if (!container) return;
+
+      let rising = 0;
+      let stableOrDiscounted = 0;
+
       container.innerHTML = products.map(p => {
         const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 20));
-        const baseP = Math.round(p.basePrice || 20);
-        const isUp = activePrice >= baseP;
-        const trendClass = isMarketCrashActive ? 'trend-down' : (isUp ? 'trend-up' : 'trend-down');
-        const arrow = isMarketCrashActive ? '▼ [CRASH]' : (isUp ? '▲' : '▼');
+        const baseP = Math.round(p.basePrice || p.defaultCupSizeMl ? 20 : 20);
+        const diff = activePrice - baseP;
+        const pct = Math.round(((activePrice - baseP) / baseP) * 100);
+
+        let color = 'var(--text-muted)';
+        let sign = '— ';
+        if (diff > 0) {
+          color = 'var(--success)';
+          sign = '▲ +';
+          rising++;
+        } else if (diff < 0) {
+          color = 'var(--danger)';
+          sign = '▼ ';
+          stableOrDiscounted++;
+        } else {
+          stableOrDiscounted++;
+        }
+
         const icon = fruitIcons[p.id] || '🍹';
         return `
           <div class="ticker-item">
             <span>${icon} ${p.flavour || p.name}:</span>
-            <span class="${trendClass}">₹${activePrice} ${arrow}</span>
-            <span style="font-size: 11px; color: #64748b;">[Min: ₹${Math.round(p.minCupPrice || 18)}]</span>
+            <span style="color: ${color}; font-weight: 700;">₹${activePrice}.00 ${sign}${Math.abs(pct)}%</span>
           </div>
         `;
-      }).join(' &bull; ');
+      }).join('');
+
+      const totalEl = document.getElementById('summaryTotalProds');
+      if (totalEl) totalEl.textContent = `${products.length} Products`;
+
+      const risingEl = document.getElementById('summaryRisingCount');
+      if (risingEl) risingEl.textContent = `${rising} Price Rising`;
+
+      const stableEl = document.getElementById('summaryStableCount');
+      if (stableEl) stableEl.textContent = `${stableOrDiscounted} Stable/Discounted`;
+
+      const syncEl = document.getElementById('summaryLastSync');
+      if (syncEl) syncEl.textContent = new Date().toLocaleTimeString();
     }
 
     function renderProducts() {
@@ -813,71 +829,60 @@
       if (!grid) return;
       grid.innerHTML = products.map(p => {
         const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 20));
-        const baseP = Math.round(p.defaultCupPrice || p.basePrice || 20);
+        const baseP = Math.round(p.defaultCupSizeMl ? 20 : (p.basePrice || 20));
         const diff = activePrice - baseP;
         const icon = fruitIcons[p.id] || '🍹';
-        const cardClass = fruitCardClasses[p.id] || 'card-orange';
 
-        let badgeClass = 'badge-normal';
-        let badgeText = '✨ Base Trading';
+        let badgeClass = 'badge-stable';
+        let badgeText = '— 0.0% STABLE';
         if (isMarketCrashActive) {
-          badgeClass = 'badge-crash';
-          badgeText = `🚨 MARKET CRASH ₹${Math.round(p.minCupPrice || 18)}`;
+          badgeClass = 'badge-down';
+          badgeText = `▼ CRASH ₹${Math.round(p.minCupPrice || 18)}`;
         } else if (diff > 0) {
-          badgeClass = 'badge-high';
-          badgeText = `📈 PROFIT SURGE (+₹${Math.round(diff)})`;
+          badgeClass = 'badge-up';
+          const pct = Math.round(((activePrice - baseP) / baseP) * 100);
+          badgeText = `▲ +${pct}% SURGE`;
         } else if (diff < 0) {
-          badgeClass = 'badge-low';
-          badgeText = `📉 LOSS DISCOUNT (-₹${Math.round(Math.abs(diff))})`;
+          badgeClass = 'badge-down';
+          const pct = Math.round(((activePrice - baseP) / baseP) * 100);
+          badgeText = `▼ ${pct}% DISCOUNT`;
         }
 
-        const pctChange = Math.round(((activePrice - baseP) / baseP) * 100);
-        let pctText, pctColor, pctBg;
-        if (isMarketCrashActive) {
-          pctText = '-10% ▼ [CRASH LOSS]';
-          pctColor = '#991b1b';
-          pctBg = 'linear-gradient(135deg, #ffe4e6, #fecdd3)';
-        } else if (diff > 0) {
-          pctText = `+${pctChange}% ▲ [PROFIT]`;
-          pctColor = '#14532d';
-          pctBg = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
-        } else if (diff < 0) {
-          pctText = `${pctChange}% ▼ [LOSS]`;
-          pctColor = '#991b1b';
-          pctBg = 'linear-gradient(135deg, #ffe4e6, #fecdd3)';
-        } else {
-          pctText = `0% = [BASE ₹${baseP}]`;
-          pctColor = '#475569';
-          pctBg = '#f1f5f9';
-        }
+        const demandLevel = (activePrice > baseP) ? 'HIGH SURGE' : (activePrice < baseP ? 'DISCOUNTED' : 'NORMAL');
+        const demandColor = (activePrice > baseP) ? 'var(--warning)' : (activePrice < baseP ? 'var(--info)' : 'var(--text-muted)');
 
         return `
-          <div class="flavour-card ${cardClass} ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <span class="flavour-badge ${badgeClass}">${badgeText}</span>
-              <span style="font-size: 12px; font-weight: 800; color: ${pctColor}; background: ${pctBg}; padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.05);">${pctText}</span>
-            </div>
-            
-            <div class="flavour-header">
-              <div class="flavour-icon">${icon}</div>
-              <div class="flavour-name">${p.name}</div>
-            </div>
-            
-            <div class="flavour-desc">${p.description}</div>
-            
-            <div class="price-box">
-              <div>
-                <span class="price-tag">₹${activePrice}</span>
-                <span style="font-size: 13px; font-weight: 800; color: #64748b;"> / ${p.defaultCupSizeMl || 250}ml</span>
+          <div class="flavour-card ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}">
+            <div>
+              <div class="card-top">
+                <div class="card-header-left">
+                  <span class="card-icon">${icon}</span>
+                  <span class="card-name">${p.name}</span>
+                </div>
+                <span class="market-badge ${badgeClass}">${badgeText}</span>
               </div>
-              <div style="text-align: right;">
-                <span style="font-size: 11px; font-weight: 800; color: #64748b; display: block;">Base ₹${baseP}</span>
-                <span style="font-size: 11px; font-weight: 900; color: #059669;">Range [₹${Math.round(p.minCupPrice || 18)} - ₹${Math.round(p.maxCupPrice || 25)}]</span>
+              <div class="card-desc">${p.description}</div>
+              
+              <div class="price-section">
+                <div>
+                  <span class="price-main">₹${activePrice}.00</span>
+                  <span class="price-unit">/ ${p.defaultCupSizeMl || 250}ml</span>
+                </div>
+                <div class="price-bounds">
+                  <span>Base ₹${baseP}.00</span>
+                  <span>Floor ₹${Math.round(p.minCupPrice || 18)}.00</span>
+                  <span>Ceiling ₹${Math.round(p.maxCupPrice || 25)}.00</span>
+                </div>
+              </div>
+
+              <div class="demand-text">
+                <span>Market Demand</span>
+                <strong style="color: ${demandColor};">${demandLevel}</strong>
               </div>
             </div>
 
-            <button class="add-btn ${isMarketCrashActive ? 'crash-btn' : ''}" onclick="addToCart(${p.id})">
-              ${isMarketCrashActive ? `🔥 RUSH BUY AT ₹${Math.round(p.minCupPrice || 18)}` : '🛒 + Add Cup to Cart'}
+            <button class="add-to-cart-btn" onclick="addToCart(${p.id})">
+              ${isMarketCrashActive ? `🔥 Buy at Floor ₹${Math.round(p.minCupPrice || 18)}` : '+ Add to Cart'}
             </button>
           </div>
         `;
@@ -914,17 +919,17 @@
         return sum + (itemPrice * i.quantity);
       }, 0));
 
-      countLabel.textContent = `${totalItems} cups`;
+      countLabel.textContent = `${totalItems} ${totalItems === 1 ? 'item' : 'items'}`;
 
       if (cart.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; color: #64748b; padding: 60px 0; font-weight: 700;">
-            🛒 Cart is empty.<br>Click "+ Add Cup to Cart" to build order.
+          <div style="text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 14px;">
+            🛒 Cart is empty.<br>Click "+ Add to Cart" to build order.
           </div>
         `;
         summaryBox.style.display = 'none';
         checkoutBtn.disabled = true;
-        checkoutBtn.textContent = '⚡ Complete POS Checkout';
+        checkoutBtn.textContent = 'Complete Checkout';
       } else {
         container.innerHTML = cart.map((item, idx) => {
           const itemPrice = Math.round(isMarketCrashActive ? (item.product.minCupPrice || 18) : item.product.currentCupPrice);
@@ -933,15 +938,15 @@
           return `
             <div class="cart-item">
               <div>
-                <div style="font-weight: 900; color: #0f172a; font-size: 15px;">${icon} ${item.product.name}</div>
-                <div style="font-size: 13px; color: #475569; font-weight: 700; margin-top: 2px;">
-                  ₹${itemPrice} &bull; ${item.cupSizeMl}ml &bull; Total: ₹${itemTotal}
+                <div class="item-title">${icon} ${item.product.name}</div>
+                <div class="item-sub">
+                  ₹${itemPrice}.00 &bull; ${item.cupSizeMl}ml &bull; Sub: ₹${itemTotal}.00
                 </div>
               </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <button class="item-qty-btn" onclick="updateQty(${idx}, -1)">-</button>
-                <span style="font-weight: 900; font-size: 16px; width: 24px; text-align: center; color: #0f172a;">${item.quantity}</span>
-                <button class="item-qty-btn" onclick="updateQty(${idx}, 1)">+</button>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button class="qty-btn" onclick="updateQty(${idx}, -1)">-</button>
+                <span style="font-weight: 700; font-size: 14px; width: 22px; text-align: center; color: var(--text-primary);">${item.quantity}</span>
+                <button class="qty-btn" onclick="updateQty(${idx}, 1)">+</button>
               </div>
             </div>
           `;
@@ -949,9 +954,9 @@
 
         summaryBox.style.display = 'block';
         document.getElementById('totalVolumeText').textContent = `${totalVolume} ml (${totalVolume / 250} cups)`;
-        document.getElementById('totalPayableText').textContent = `₹${totalPayable}`;
+        document.getElementById('totalPayableText').textContent = `₹${totalPayable}.00`;
         checkoutBtn.disabled = false;
-        checkoutBtn.textContent = `⚡ Complete POS Checkout (₹${totalPayable})`;
+        checkoutBtn.textContent = `Complete Checkout (₹${totalPayable}.00)`;
       }
     }
 
@@ -1099,24 +1104,18 @@
         const badge = document.getElementById('backendHealthBadge');
         if (badge) {
           if (res.ok) {
-            badge.innerHTML = '🟢 BACKEND CONNECTED (8088)';
-            badge.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
-            badge.style.color = '#14532d';
-            badge.style.borderColor = '#86efac';
+            badge.className = 'status-badge-live';
+            badge.innerHTML = '<span class="dot"></span> LIVE &bull; Backend Connected';
           } else {
-            badge.innerHTML = '🔴 BACKEND OFFLINE';
-            badge.style.background = 'linear-gradient(135deg, #ffe4e6, #fecdd3)';
-            badge.style.color = '#991b1b';
-            badge.style.borderColor = '#fda4af';
+            badge.className = 'status-badge-offline';
+            badge.innerHTML = '<span class="dot"></span> OFFLINE &bull; Disconnected';
           }
         }
       } catch (err) {
         const badge = document.getElementById('backendHealthBadge');
         if (badge) {
-          badge.innerHTML = '🔴 BACKEND OFFLINE';
-          badge.style.background = 'linear-gradient(135deg, #ffe4e6, #fecdd3)';
-          badge.style.color = '#991b1b';
-          badge.style.borderColor = '#fda4af';
+          badge.className = 'status-badge-offline';
+          badge.innerHTML = '<span class="dot"></span> OFFLINE &bull; Disconnected';
         }
       }
     }
