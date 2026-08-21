@@ -445,4 +445,41 @@ public class PriceAdjustmentService {
                 .map(c -> Long.parseLong(c.getConfigValue()))
                 .orElse(defaultVal);
     }
+
+    @Transactional
+    public List<Product> resetAllProductsToDefault() {
+        List<Product> products = productRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+        for (Product product : products) {
+            BigDecimal oldPrice = product.getCurrentCupPrice();
+            BigDecimal defP = product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("22.00");
+
+            product.setCurrentCupPrice(defP);
+            product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
+            product.setLastPriceChangeTimestamp(now);
+            productRepository.save(product);
+
+            PriceHistory history = PriceHistory.builder()
+                    .productId(product.getId())
+                    .oldPrice(oldPrice != null ? oldPrice : defP)
+                    .newPrice(defP)
+                    .demandScore(50.0)
+                    .stockPressurePct(0.0)
+                    .timeFactorMultiplier(1.0)
+                    .explanation(String.format("↺ Admin manually reset price to base default ₹%s.", defP))
+                    .createdAt(now)
+                    .build();
+            priceHistoryRepository.save(history);
+        }
+
+        List<Product> updatedList = productRepository.findAll();
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/prices", updatedList);
+                messagingTemplate.convertAndSend("/topic/products", updatedList);
+            }
+        } catch (Exception e) {}
+
+        return updatedList;
+    }
 }

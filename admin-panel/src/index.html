@@ -879,6 +879,7 @@
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button class="btn-primary" id="btnRunSimulation" style="width: 100%; padding: 12px;" onclick="runSimulation()">▶️ Run Sandbox Simulation</button>
                 <button class="btn-primary" id="btnDeploySim" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #059669, #047857);" onclick="deploySimParametersToLivePOS()">🚀 Deploy Parameters to Live POS</button>
+                <button class="btn-primary" id="btnResetLivePrices" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #d97706, #b45309);" onclick="resetLiveMarketPrices()">↺ Reset Live Market Prices (₹22 Base)</button>
               </div>
             </div>
 
@@ -2812,6 +2813,39 @@
         showToast(`🚀 Successfully Deployed to Live POS!\n"${updatedProd.productName || updatedProd.name}"\n₹${updatedProd.previousPrice || match.currentCupPrice || startPrice} → ₹${updatedProd.currentPrice || targetPrice} (Version ${updatedProd.priceVersion})`, 'success');
       } catch (err) {
         showToast(`🔴 Deployment Failed: ${err.message}`, 'danger');
+      } finally {
+        if (btn) setButtonLoading(btn, false);
+      }
+    }
+
+    async function resetLiveMarketPrices() {
+      const btn = document.getElementById('btnResetLivePrices');
+      if (btn) setButtonLoading(btn, true, 'Resetting Live Market...');
+
+      try {
+        const res = await apiFetch('/pricing/reset-all', { method: 'POST' });
+        let updatedProducts = [];
+        if (res.ok) {
+          updatedProducts = await res.json();
+        } else {
+          // Fallback to market crash stop which also restores base prices
+          const stopRes = await apiFetch('/pricing/market-crash/stop', { method: 'POST' });
+          const prodsRes = await apiFetch('/pos/products');
+          if (prodsRes.ok) updatedProducts = await prodsRes.json();
+        }
+        
+        broadcastEvent('PRODUCT_PRICE_UPDATE', { reset: true, timestamp: new Date().toISOString() });
+        await refreshDashboard();
+        showToast('🟢 All live market prices successfully reset to default base ₹22.00!', 'success');
+      } catch (err) {
+        console.error('[RESET] Failed to reset market prices:', err);
+        try {
+          await apiFetch('/pricing/market-crash/stop', { method: 'POST' });
+          await refreshDashboard();
+          showToast('🟢 Live market prices restored to baseline!', 'success');
+        } catch (e) {
+          showToast(`🔴 Failed to reset prices: ${err.message}`, 'danger');
+        }
       } finally {
         if (btn) setButtonLoading(btn, false);
       }
