@@ -134,6 +134,9 @@ public class MarketCrashService {
             BigDecimal oldPrice = product.getCurrentCupPrice();
             BigDecimal floorPrice = product.getMinCupPrice();
 
+            if (oldPrice == null || oldPrice.compareTo(floorPrice) != 0) {
+                product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
+            }
             product.setCurrentCupPrice(floorPrice);
             product.setLastPriceChangeTimestamp(now);
             productRepository.save(product);

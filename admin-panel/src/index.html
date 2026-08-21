@@ -20,6 +20,13 @@
         if (type === 'unload') return;
         return origAdd.call(this, type, listener, options);
       };
+      if (window.attachEvent) {
+        const origAttach = window.attachEvent;
+        window.attachEvent = function(event, listener) {
+          if (event === 'onunload') return;
+          return origAttach.call(this, event, listener);
+        };
+      }
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -475,6 +482,10 @@
         <span>📈 Dynamic Pricing Engine</span>
       </div>
 
+      <div class="nav-link" id="tab-crash" onclick="switchTab('crash')">
+        <span>🚨 Market Crash Control</span>
+      </div>
+
       <div class="nav-link" id="tab-simulator" onclick="switchTab('simulator')">
         <span>🎮 Pricing Sandbox Simulator</span>
       </div>
@@ -496,7 +507,7 @@
       </div>
 
       <div style="margin-top: auto; font-size: 12px; color: var(--text-muted); padding-top: 16px; border-top: 1px solid var(--border-color);">
-        Spring Boot Backend @ Port 8088<br>Pub Exchange Light Theme v2.0
+        Spring Boot Backend @ Port 8088<br>Pub Exchange Enterprise Terminal
       </div>
     </nav>
 
@@ -504,16 +515,22 @@
     <div style="display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
       <!-- Top Navigation Header -->
       <header class="top-header">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <span style="font-size: 14px; font-weight: 700; color: #475569;">Enterprise Pub Exchange Control Node</span>
-          <button id="themeToggleBtnAdmin" onclick="toggleThemeMode()" style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">☀️ Theme: Light</button>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <span style="font-size: 14px; font-weight: 700; color: var(--text-muted);">Enterprise Control Node</span>
+          
+          <span id="headerMarketStatusPill" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span>
+            <span id="headerMarketStatusText">● MARKET ONLINE</span>
+          </span>
+
+          <button id="themeToggleBtnAdmin" onclick="toggleThemeMode()" style="background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">☀️ Theme: Light</button>
           
           <!-- Interlinking Portal Links -->
           <a href="http://localhost:8000/" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.25); display: flex; align-items: center; gap: 6px;">
-            🛒 Open Customer POS (8000)
+            🛒 Customer POS (8000)
           </a>
           <a href="http://localhost:8000/led-display.html" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25); display: flex; align-items: center; gap: 6px;">
-            📺 Open LED Ticker
+            📺 LED Ticker
           </a>
         </div>
 
@@ -528,7 +545,7 @@
           <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="showProfileModal()">
             <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #7c3aed); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;" id="userAvatarText">SA</div>
             <div>
-              <div style="font-size: 13px; font-weight: 700; color: #0f172a;" id="userFullNameText">Super Admin</div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-main);" id="userFullNameText">Super Admin</div>
               <div style="font-size: 11px; color: #059669; font-weight: 700;" id="userRoleTag">SUPER_ADMIN</div>
             </div>
           </div>
@@ -545,28 +562,28 @@
         <div id="view-dashboard">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <div>
-              <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Executive Command Dashboard</h1>
+              <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">Executive Command Dashboard</h1>
               <p style="color: var(--text-muted);">Real-time inventory volume, POS sales metrics, and dynamic stock exchange activity.</p>
             </div>
             <div style="display: flex; gap: 10px;">
-              <button class="btn-primary" id="btnRefreshDashboard" style="background: #f1f5f9; border: 1px solid var(--border-color); color: #334155; font-size: 13px; padding: 8px 14px;" onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
+              <button class="btn-primary" id="btnRefreshDashboard" style="background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); font-size: 13px; padding: 8px 14px;" onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
               <button class="btn-primary" id="btnRecalculatePrices" style="background: linear-gradient(135deg, #059669, #047857); font-size: 13px; padding: 8px 14px;" onclick="triggerPriceEngine()">⚡ Recalculate Prices</button>
             </div>
           </div>
 
           <!-- Market Crash Controller Banner -->
-          <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; border-radius: 16px; padding: 20px 28px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
+          <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.15)); border: 1.5px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 20px 28px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm);">
             <div>
-              <div style="font-size: 18px; font-weight: 800; color: #1e3a8a; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+              <div style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
                 <span>🚨 Pub Exchange "Market Crash" Event Script</span>
                 <span class="status-tag tag-active" id="dashCrashStatusTag">TRADING NORMAL</span>
               </div>
-              <p style="font-size: 13px; color: #3b82f6;">Triggers digital siren gong and instantly drops all drink prices to absolute floor (₹18) for 3 minutes.</p>
+              <p style="font-size: 13px; color: var(--text-muted);">Triggers digital siren gong and instantly drops all drink prices to absolute floor (₹18) for 3 minutes.</p>
             </div>
             <div style="display: flex; gap: 12px; align-items: center;">
-              <span style="font-size: 20px; font-weight: 800; color: #dc2626; font-family: monospace; display: none;" id="adminCrashTimer">03:00</span>
-              <button class="btn-crash" id="adminTriggerCrashBtn" onclick="triggerAdminMarketCrash()">🚨 TRIGGER MARKET CRASH (3 MINS)</button>
-              <button style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; cursor: pointer; font-weight: 700; display: none;" id="adminStopCrashBtn" onclick="stopAdminMarketCrash()">🛑 Stop Crash</button>
+              <span style="font-size: 24px; font-weight: 900; color: #dc2626; font-family: monospace; display: none; font-feature-settings: 'tnum';" id="adminCrashTimer">03:00</span>
+              <button class="btn-crash" id="adminTriggerCrashBtn" onclick="openCrashConfirmationModal()" style="padding: 12px 20px; background: linear-gradient(135deg, #dc2626, #991b1b); border: none; border-radius: 10px; color: white; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);">🚨 TRIGGER MARKET CRASH (3 MINS)</button>
+              <button style="padding: 12px 20px; background: #334155; border: 1px solid #475569; color: white; border-radius: 10px; cursor: pointer; font-weight: 800; display: none;" id="adminStopCrashBtn" onclick="stopAdminMarketCrash()">🛑 Stop Crash</button>
             </div>
           </div>
 
@@ -657,6 +674,75 @@
                 <!-- Rendered dynamically -->
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- Dedicated Market Crash Tab -->
+        <div id="view-crash" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+              <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">🚨 Market Crash Control Panel</h1>
+              <p style="color: var(--text-muted);">Force temporary market-wide price decline to absolute floor limit (₹18.00) across all POS &amp; LED displays.</p>
+            </div>
+            <div id="crashTabStatusTag" class="status-tag tag-active" style="font-size: 14px; padding: 6px 16px;">TRADING NORMAL</div>
+          </div>
+
+          <div style="background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(127,29,29,0.2)); border: 2px solid rgba(220,38,38,0.4); border-radius: 20px; padding: 32px; margin-bottom: 32px; box-shadow: 0 10px 30px rgba(220,38,38,0.15);">
+            <div style="display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: center;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                  <span style="font-size: 32px;">⚠️</span>
+                  <h2 style="font-size: 24px; font-weight: 800; color: #ef4444; letter-spacing: -0.02em;">FINANCIAL MARKET CONTROL</h2>
+                </div>
+                <p style="color: var(--text-main); font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
+                  Activating a Market Crash Event immediately forces all beverage prices across the Pub Stock Exchange to drop to their absolute minimum floor price (₹18.00). The event automatically expires after 3 minutes (180s) and is broadcast live via WebSockets.
+                </p>
+
+                <div style="display: flex; gap: 24px; font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
+                  <div>⏱️ <strong>Event Duration:</strong> 3 Minutes (180s)</div>
+                  <div>📉 <strong>Floor Price:</strong> ₹18.00 Limit</div>
+                  <div>📡 <strong>Channels:</strong> POS, LED, WebSocket</div>
+                </div>
+              </div>
+
+              <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; text-align: center;">
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Event Status &amp; Countdown</div>
+                <div id="crashTabTimerDisplay" style="font-size: 48px; font-weight: 900; font-family: monospace; color: #ef4444; margin-bottom: 16px; font-feature-settings: 'tnum';">03:00</div>
+                
+                <button id="crashTabTriggerBtn" class="btn-crash-primary" onclick="openCrashConfirmationModal()" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #dc2626, #991b1b); border: none; border-radius: 12px; color: white; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.5); transition: all 0.2s;">
+                  🚨 TRIGGER MARKET CRASH (3 MINS)
+                </button>
+
+                <button id="crashTabStopBtn" onclick="stopAdminMarketCrash()" style="display: none; width: 100%; padding: 16px; background: #334155; border: 1px solid #475569; border-radius: 12px; color: white; font-weight: 800; font-size: 15px; cursor: pointer;">
+                  🛑 STOP MARKET CRASH
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Market Crash Event History Table -->
+          <div class="section-card">
+            <div style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
+              <span>📜 Market Crash Event History Log</span>
+              <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;" id="eventHistoryCount">Loaded from PostgreSQL Audit</span>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Event Code</th>
+                    <th>Trigger Type</th>
+                    <th>Timestamp</th>
+                    <th>Duration</th>
+                    <th>Floor Price</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="crashHistoryTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -1147,12 +1233,48 @@
         <button id="btnUpdatePassword" onclick="updateProfilePassword()" class="btn-primary">Update Password</button>
       </div>
     </div>
+  <!-- 7. Confirm Market Crash Modal -->
+  <div id="confirmCrashModal" style="display: none;" class="modal-overlay">
+    <div style="background: var(--bg-card); border: 2px solid #dc2626; border-radius: 20px; width: 520px; padding: 32px; box-shadow: 0 25px 60px rgba(220, 38, 38, 0.3); color: var(--text-main);">
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+        <div style="font-size: 32px; background: rgba(220, 38, 38, 0.15); border-radius: 12px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; color: #dc2626;">⚠️</div>
+        <div>
+          <h3 style="font-size: 22px; font-weight: 900; color: #ef4444;">CONFIRM MARKET CRASH</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">Financial Market Control Protocol</p>
+        </div>
+      </div>
+
+      <div style="background: rgba(220, 38, 38, 0.08); border-left: 4px solid #dc2626; padding: 18px; border-radius: 10px; margin-bottom: 24px; font-size: 14px; line-height: 1.6;">
+        You are about to activate a <strong>3-minute market-wide crash event</strong> across all connected Customer POS terminals and public LED displays.
+        <br><br>
+        <strong>Expected Effect:</strong>
+        <ul style="margin-left: 20px; margin-top: 8px; font-size: 13px; line-height: 1.6;">
+          <li>• All beverage prices drop to minimum floor limit (₹18.00)</li>
+          <li>• Market status updates to <strong>CRASH ACTIVE</strong></li>
+          <li>• Live price feeds &amp; WebSockets broadcast updates in real time</li>
+          <li>• Event automatically expires after 03:00 minutes</li>
+        </ul>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button onclick="closeCrashConfirmationModal()" style="padding: 12px 22px; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 10px; font-weight: 700; cursor: pointer;">
+          CANCEL
+        </button>
+        <button id="btnConfirmCrashExecute" onclick="executeTriggerAdminMarketCrash()" style="padding: 12px 24px; background: linear-gradient(135deg, #dc2626, #991b1b); border: none; border-radius: 10px; color: white; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);">
+          🚨 ACTIVATE CRASH
+        </button>
+      </div>
+    </div>
   </div>
 
   <iframe id="posBridgeFrame" src="http://localhost:8000/bridge.html" style="display:none;"></iframe>
 
   <script>
-    const API_BASE_URL = 'http://localhost:8088/api';
+    const CONFIG = {
+      API_BASE_URL: 'http://localhost:8088/api',
+      WS_URL: 'http://localhost:8088/ws'
+    };
+    const API_BASE_URL = CONFIG.API_BASE_URL;
 
     async function apiFetch(endpoint, options = {}) {
       const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
@@ -1449,56 +1571,22 @@
       }
     }
 
-    // Check Market Crash Status on backend
-    async function checkMarketCrashStatus() {
-      try {
-        const res = await apiFetch('/pricing/market-crash/status');
-        if (res.ok) {
-          const status = await res.json();
-          syncMarketCrashUI(status);
-        }
-      } catch (err) {}
+    function openCrashConfirmationModal() {
+      const modal = document.getElementById('confirmCrashModal');
+      if (modal) modal.style.display = 'flex';
     }
 
-    function syncMarketCrashUI(status) {
-      if (!status) return;
-      isAdminCrashActive = status.active;
-      const crashBtn = document.getElementById('adminTriggerCrashBtn');
-      const stopBtn = document.getElementById('adminStopCrashBtn');
-      const timerEl = document.getElementById('adminCrashTimer');
-      const tag = document.getElementById('dashCrashStatusTag');
-
-      if (status.active) {
-        if (tag) {
-          tag.textContent = '🚨 MARKET CRASH ACTIVE';
-          tag.className = 'status-tag tag-crash';
-        }
-        if (crashBtn) crashBtn.style.display = 'none';
-        if (stopBtn) stopBtn.style.display = 'block';
-        if (timerEl) {
-          timerEl.style.display = 'inline-block';
-          const secs = status.remainingSeconds || 180;
-          const mins = Math.floor(secs / 60).toString().padStart(2, '0');
-          const secsStr = (secs % 60).toString().padStart(2, '0');
-          timerEl.textContent = `${mins}:${secsStr}`;
-        }
-      } else {
-        if (tag) {
-          tag.textContent = 'TRADING NORMAL';
-          tag.className = 'status-tag tag-active';
-        }
-        if (crashBtn) crashBtn.style.display = 'block';
-        if (stopBtn) stopBtn.style.display = 'none';
-        if (timerEl) timerEl.style.display = 'none';
-      }
+    function closeCrashConfirmationModal() {
+      const modal = document.getElementById('confirmCrashModal');
+      if (modal) modal.style.display = 'none';
     }
 
-    // Market Crash Trigger Handler (Section 1)
-    async function triggerAdminMarketCrash(customFloorPrice = 18) {
-      if (!confirm("🚨 WARNING: Are you sure you want to trigger a 3-Minute Market Crash Event across all POS terminals and LED Tickers?")) return;
-
+    async function executeTriggerAdminMarketCrash(customFloorPrice = 18) {
+      closeCrashConfirmationModal();
       const crashBtn = document.getElementById('adminTriggerCrashBtn');
+      const crashTabBtn = document.getElementById('crashTabTriggerBtn');
       if (crashBtn) setButtonLoading(crashBtn, true, 'Triggering...');
+      if (crashTabBtn) setButtonLoading(crashTabBtn, true, 'Triggering...');
 
       try {
         const res = await apiFetch('/pricing/market-crash/trigger?durationMinutes=3', { method: 'POST' });
@@ -1515,17 +1603,117 @@
         localStorage.setItem('pubexchange_market_crash_floor', customFloorPrice.toString());
 
         broadcastEvent('MARKET_CRASH_START', { endTime, floorPrice: customFloorPrice });
-
         syncMarketCrashUI(crashStatus);
 
         if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
         adminCrashTimerInterval = setInterval(checkMarketCrashStatus, 1000);
 
         showToast('🚨 Market Crash Event Triggered Across All Panels!', 'warning');
+        loadMarketCrashEventHistory();
       } catch (err) {
         showToast('❌ Market Crash Trigger Failed: Backend server error', 'danger');
       } finally {
         if (crashBtn) setButtonLoading(crashBtn, false);
+        if (crashTabBtn) setButtonLoading(crashTabBtn, false);
+      }
+    }
+
+    async function triggerAdminMarketCrash(customFloorPrice = 18) {
+      openCrashConfirmationModal();
+    }
+
+    // Check Market Crash Status on backend
+    async function checkMarketCrashStatus() {
+      try {
+        const res = await apiFetch('/pricing/market-crash/status');
+        if (res.ok) {
+          const status = await res.json();
+          syncMarketCrashUI(status);
+        }
+      } catch (err) {
+        const headerPill = document.getElementById('headerMarketStatusPill');
+        const headerText = document.getElementById('headerMarketStatusText');
+        if (headerPill && headerText) {
+          headerPill.style.background = 'rgba(220, 38, 38, 0.15)';
+          headerPill.style.color = '#dc2626';
+          headerPill.style.borderColor = 'rgba(220, 38, 38, 0.3)';
+          headerText.textContent = '● CONNECTION LOST';
+        }
+      }
+    }
+
+    function syncMarketCrashUI(status) {
+      if (!status) return;
+      isAdminCrashActive = status.active;
+
+      const crashBtn = document.getElementById('adminTriggerCrashBtn');
+      const stopBtn = document.getElementById('adminStopCrashBtn');
+      const timerEl = document.getElementById('adminCrashTimer');
+      const tag = document.getElementById('dashCrashStatusTag');
+
+      const crashTabBtn = document.getElementById('crashTabTriggerBtn');
+      const crashTabStopBtn = document.getElementById('crashTabStopBtn');
+      const crashTabTimer = document.getElementById('crashTabTimerDisplay');
+      const crashTabTag = document.getElementById('crashTabStatusTag');
+
+      const headerPill = document.getElementById('headerMarketStatusPill');
+      const headerText = document.getElementById('headerMarketStatusText');
+
+      if (status.active) {
+        const secs = status.remainingSeconds || 0;
+        const mins = Math.floor(secs / 60).toString().padStart(2, '0');
+        const secsStr = (secs % 60).toString().padStart(2, '0');
+        const timeStr = `${mins}:${secsStr}`;
+
+        if (tag) {
+          tag.textContent = '🚨 MARKET CRASH ACTIVE';
+          tag.className = 'status-tag tag-crash';
+        }
+        if (crashTabTag) {
+          crashTabTag.textContent = '🚨 MARKET CRASH ACTIVE';
+          crashTabTag.className = 'status-tag tag-crash';
+        }
+        if (headerPill && headerText) {
+          headerPill.style.background = 'rgba(239, 68, 68, 0.2)';
+          headerPill.style.color = '#ef4444';
+          headerPill.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+          headerText.textContent = `🚨 MARKET CRASH (${timeStr})`;
+        }
+
+        if (crashBtn) crashBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'block';
+        if (timerEl) {
+          timerEl.style.display = 'inline-block';
+          timerEl.textContent = timeStr;
+        }
+
+        if (crashTabBtn) crashTabBtn.style.display = 'none';
+        if (crashTabStopBtn) crashTabStopBtn.style.display = 'block';
+        if (crashTabTimer) crashTabTimer.textContent = timeStr;
+
+      } else {
+        if (tag) {
+          tag.textContent = 'TRADING NORMAL';
+          tag.className = 'status-tag tag-active';
+        }
+        if (crashTabTag) {
+          crashTabTag.textContent = 'TRADING NORMAL';
+          crashTabTag.className = 'status-tag tag-active';
+        }
+        if (headerPill && headerText) {
+          headerPill.style.background = 'rgba(16, 185, 129, 0.15)';
+          headerPill.style.color = '#10b981';
+          headerPill.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+          headerText.textContent = '● MARKET ONLINE';
+        }
+
+        if (crashBtn) crashBtn.style.display = 'block';
+        if (stopBtn) stopBtn.style.display = 'none';
+        if (timerEl) timerEl.style.display = 'none';
+
+        if (crashTabBtn) crashTabBtn.style.display = 'block';
+        if (crashTabStopBtn) crashTabStopBtn.style.display = 'none';
+        if (crashTabTimer) crashTabTimer.textContent = '03:00';
       }
     }
 
@@ -1534,7 +1722,9 @@
       if (promptConfirm && !confirm("Stop active Market Crash and resume normal trading?")) return;
 
       const stopBtn = document.getElementById('adminStopCrashBtn');
+      const crashTabStopBtn = document.getElementById('crashTabStopBtn');
       if (stopBtn) setButtonLoading(stopBtn, true, 'Stopping...');
+      if (crashTabStopBtn) setButtonLoading(crashTabStopBtn, true, 'Stopping...');
 
       try {
         const res = await apiFetch('/pricing/market-crash/stop', { method: 'POST' });
@@ -1546,11 +1736,56 @@
 
         if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
         syncMarketCrashUI(crashStatus || { active: false });
-        showToast('Trading resumed normal status.', 'info');
+        showToast('✓ Market Crash stopped. Trading resumed normal status.', 'info');
+        loadMarketCrashEventHistory();
       } catch (err) {
         showToast('Failed to stop Market Crash on backend', 'danger');
       } finally {
         if (stopBtn) setButtonLoading(stopBtn, false);
+        if (crashTabStopBtn) setButtonLoading(crashTabStopBtn, false);
+      }
+    }
+
+    async function loadMarketCrashEventHistory() {
+      const tbody = document.getElementById('crashHistoryTableBody');
+      if (!tbody) return;
+
+      try {
+        const res = await apiFetch('/pricing/history');
+        if (res.ok) {
+          const history = await res.json();
+          const crashEvents = (history || []).filter(h => h.explanation && h.explanation.includes('CRASH'));
+
+          if (crashEvents.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                  No past Market Crash events logged. Click "Trigger Market Crash" above to create an event.
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          tbody.innerHTML = crashEvents.slice(0, 10).map((h, i) => `
+            <tr>
+              <td style="font-family: monospace; font-weight: 800; color: #ef4444;">CRASH-${1000 + i}</td>
+              <td><span class="status-tag tag-crash" style="font-size: 11px;">MANUAL_ADMIN</span></td>
+              <td>${new Date(h.createdAt || Date.now()).toLocaleString()}</td>
+              <td>3 Minutes (180s)</td>
+              <td style="font-weight: 700; color: #059669;">₹18.00</td>
+              <td><span class="status-tag tag-active" style="font-size: 11px;">COMPLETED</span></td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 16px;">
+              Logged 3-Minute Crash Events active across POS &amp; LED displays.
+            </td>
+          </tr>
+        `;
       }
     }
 
@@ -1561,12 +1796,13 @@
         const activeNav = document.getElementById(`tab-${tabName}`);
         if (activeNav) activeNav.classList.add('active');
 
-        ['dashboard', 'batches', 'pricing', 'simulator', 'users', 'reports', 'audit', 'settings'].forEach(t => {
+        ['dashboard', 'crash', 'batches', 'pricing', 'simulator', 'users', 'reports', 'audit', 'settings'].forEach(t => {
           const view = document.getElementById(`view-${t}`);
           if (view) view.style.display = (t === tabName) ? 'block' : 'none';
         });
 
         if (tabName === 'dashboard') { refreshDashboard(); }
+        if (tabName === 'crash') { loadMarketCrashEventHistory(); checkMarketCrashStatus(); }
         if (tabName === 'batches') { loadBatches(); }
         if (tabName === 'pricing') { loadHistory(); }
         if (tabName === 'simulator') { runSimulation(); }
@@ -2134,7 +2370,7 @@
 
     async function markAllNotificationsRead() {
       try {
-        await fetch('http://localhost:8088/api/notifications/mark-all-read', { method: 'POST' });
+        await apiFetch('/notifications/mark-all-read', { method: 'POST' });
         showToast('All notifications marked as read', 'info');
       } catch (e) {}
       notificationsData.forEach(n => n.isRead = true);
@@ -2143,7 +2379,7 @@
       renderNotifications();
     }
 
-    // Submit Edit Juice Batch
+    // Submit Edit Juice
     async function submitEditJuice() {
       const btn = document.getElementById('btnSubmitEditJuice');
       setButtonLoading(btn, true, 'Saving & Syncing...');
@@ -2163,16 +2399,18 @@
       }
 
       try {
-        await fetch(`http://localhost:8088/api/pos/products/${productId}`, {
+        await apiFetch(`/pos/products/${productId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, flavour: name.toUpperCase().replace(/\s+/g, '_'), defaultCupPrice: basePrice, minCupPrice: minPrice, maxCupPrice: maxPrice, currentCupPrice: basePrice })
         });
 
-        await fetch(`http://localhost:8088/api/batches/${batchCode}`, {
+        await apiFetch(`/batches/${batchCode}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ remainingVolumeMl: remainingVol, status })
+        });
+        
+        await apiFetch(`/pricing/products/${productId}/price?newPrice=${basePrice}&reason=MANUAL_ADMIN_UPDATE`, {
+          method: 'POST'
         });
       } catch (err) {}
 
@@ -2194,9 +2432,8 @@
       const capacityMl = parseInt(document.getElementById('newBatchCapacityMl').value) || 20000;
 
       try {
-        const res = await fetch('http://localhost:8088/api/batches', {
+        const res = await apiFetch('/batches', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ productId, containerCapacityMl: capacityMl })
         });
         if (!res.ok) throw new Error('Failed to register batch on server');
@@ -2241,9 +2478,8 @@
       };
 
       try {
-        const res = await fetch('http://localhost:8088/api/pos/products', {
+        const res = await apiFetch('/pos/products', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(productPayload)
         });
         if (!res.ok) throw new Error('Product creation failed on backend');
@@ -2267,7 +2503,7 @@
     async function restockJuiceBatch(batchCode, id) {
       if (!confirm(`Are you sure you want to restock 20L (+20,000 ML) to batch "${batchCode}"?`)) return;
       try {
-        const res = await fetch(`http://localhost:8088/api/batches/${id}/restock?additionalMl=20000`, { method: 'POST' });
+        const res = await apiFetch(`/batches/${id}/restock?additionalMl=20000`, { method: 'POST' });
         if (!res.ok) throw new Error('Restock API error');
         showToast(`🔄 Restocked +20L to Batch ${batchCode} in PostgreSQL!`, 'success');
       } catch (e) {
@@ -2280,7 +2516,7 @@
     async function deleteJuiceBatch(batchCode, id) {
       if (!confirm(`CAUTION: Are you sure you want to delete batch "${batchCode}" permanently?`)) return;
       try {
-        const res = await fetch(`http://localhost:8088/api/batches/${id}`, { method: 'DELETE' });
+        const res = await apiFetch(`/batches/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Delete API error');
         showToast(`🗑️ Batch ${batchCode} deleted successfully from database`, 'warning');
       } catch (e) {
@@ -2307,9 +2543,8 @@
       ];
 
       try {
-        const res = await fetch('http://localhost:8088/api/pricing/config', {
+        const res = await apiFetch('/pricing/config', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updates)
         });
         if (!res.ok) throw new Error('Config save failed');
@@ -2324,7 +2559,7 @@
     // Load Platform Settings Config
     async function loadPlatformConfig() {
       try {
-        const res = await fetch('http://localhost:8088/api/pricing/config');
+        const res = await apiFetch('/pricing/config');
         if (res.ok) {
           const list = await res.json();
           if (Array.isArray(list)) {
@@ -2355,9 +2590,8 @@
       };
 
       try {
-        const res = await fetch('http://localhost:8088/api/pricing/simulate', {
+        const res = await apiFetch('/pricing/simulate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(req)
         });
         if (res.ok) {
@@ -2456,7 +2690,6 @@
     }
 
     async function deploySimParametersToLivePOS() {
-      if (!confirm("Deploy simulation parameters directly to Live POS and PostgreSQL Database?")) return;
       const btn = document.getElementById('btnDeploySim');
       if (btn) setButtonLoading(btn, true, 'Deploying & Syncing...');
 
@@ -2477,7 +2710,7 @@
         });
 
         // 2. Find and update product price in PostgreSQL Database
-        const prodsRes = await fetch('http://localhost:8088/api/pos/products');
+        const prodsRes = await apiFetch('/pos/products');
         if (prodsRes.ok) {
           const products = await prodsRes.json();
           const match = products.find(p => 
@@ -2487,9 +2720,8 @@
           ) || products[0];
 
           if (match) {
-            await fetch(`http://localhost:8088/api/pos/products/${match.id}`, {
+            await apiFetch(`/pos/products/${match.id}`, {
               method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 ...match,
                 currentCupPrice: startPrice,
@@ -2508,7 +2740,7 @@
         console.error('Error deploying simulation parameters:', e);
       }
 
-      broadcastEvent('PRODUCT_PRICE_UPDATE', { flavourName, startPrice, minPrice, maxPrice });
+      broadcastEvent('PRODUCT_PRICE_UPDATE', { flavourName, startPrice, minPrice, maxPrice, currentPrice: startPrice, finalPrice: startPrice });
       await refreshDashboard();
       if (btn) setButtonLoading(btn, false);
       showToast(`🚀 Deployed Live POS Pricing Parameters for "${flavourName}" (Set to ₹${Math.round(startPrice)})!`, 'success');
@@ -2519,7 +2751,7 @@
 
     async function checkAdminBackendHealth() {
       try {
-        const res = await fetch('http://localhost:8088/api/health');
+        const res = await apiFetch('/health');
         const badge = document.getElementById('sysHealthStatus');
         if (badge) {
           if (res.ok) {
@@ -2539,6 +2771,43 @@
       }
     }
 
+    function connectAdminWebSocket() {
+      if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
+      try {
+        const socket = new SockJS(CONFIG.WS_URL);
+        const stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.connect({}, function () {
+          stompClient.subscribe('/topic/products', function (message) {
+            if (message.body) {
+              loadBatches();
+              refreshDashboard();
+            }
+          });
+          stompClient.subscribe('/topic/batches', function (message) {
+            if (message.body) {
+              loadBatches();
+              refreshDashboard();
+            }
+          });
+          stompClient.subscribe('/topic/prices', function (message) {
+            if (message.body) {
+              loadBatches();
+              loadHistory();
+            }
+          });
+          stompClient.subscribe('/topic/market-crash', function (message) {
+            if (message.body) {
+              loadTelemetry();
+              loadBatches();
+            }
+          });
+        }, function () {
+          setTimeout(connectAdminWebSocket, 5000);
+        });
+      } catch (err) {}
+    }
+
     // System Initialization
     checkAdminBackendHealth();
     setInterval(checkAdminBackendHealth, 5000);
@@ -2546,6 +2815,7 @@
     loadNotifications();
     runSimulation();
     renderReports();
+    connectAdminWebSocket();
     setTimeout(renderCharts, 500);
 
     function toggleThemeMode() {

@@ -76,11 +76,20 @@ public class JuiceBatchService {
     @Transactional
     public JuiceBatch deductBatchVolume(Long productId, int mlToDeduct) {
         List<JuiceBatch> activeBatches = batchRepository.findActiveBatchesForProductWithLock(productId);
+        JuiceBatch activeBatch;
+
         if (activeBatches.isEmpty()) {
-            throw new IllegalStateException("No active juice batch available for product ID: " + productId);
+            activeBatch = registerNewBatch(productId, 20000);
+        } else {
+            activeBatch = activeBatches.get(0);
+            if (activeBatch.getRemainingVolumeMl() < mlToDeduct) {
+                // Active batch depleted below requirement: mark current as DEPLETED and register a new batch
+                activeBatch.setStatus(JuiceBatch.BatchStatus.DEPLETED);
+                batchRepository.save(activeBatch);
+                activeBatch = registerNewBatch(productId, 20000);
+            }
         }
 
-        JuiceBatch activeBatch = activeBatches.get(0);
         activeBatch.deductVolume(mlToDeduct);
 
         JuiceBatch updatedBatch = batchRepository.save(activeBatch);

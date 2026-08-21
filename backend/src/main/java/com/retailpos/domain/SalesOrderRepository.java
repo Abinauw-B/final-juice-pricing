@@ -13,6 +13,8 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
     List<SalesOrder> findByCreatedAtAfter(LocalDateTime since);
 
+    java.util.Optional<SalesOrder> findByIdempotencyKey(String idempotencyKey);
+
     @Query("SELECT COUNT(so) FROM SalesOrder so WHERE so.createdAt >= :since")
     Long countOrdersSince(@Param("since") LocalDateTime since);
 }

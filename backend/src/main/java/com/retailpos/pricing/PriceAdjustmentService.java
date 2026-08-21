@@ -143,6 +143,7 @@ public class PriceAdjustmentService {
 
             if (changed) {
                 product.setCurrentCupPrice(crashPrice);
+                product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
                 product.setLastPriceChangeTimestamp(now);
                 productRepository.save(product);
 
@@ -198,39 +199,36 @@ public class PriceAdjustmentService {
             }
         }
 
-        // 4. 30-Second Rolling Window Order Velocity Calculation
-        int vt = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(30), now);
-        int vtPrev = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(60), now.minusSeconds(30));
+        // 4. Rolling 60-Second Window Order Velocity & Quantity Calculation
+        int currentQty = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(60), now);
+        int prevQty = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(120), now.minusSeconds(60));
 
-        double vtPrevEff = Math.max((double) vtPrev, 1.0);
-        double velocityRatio = (double) vt / vtPrevEff;
-
-        // Bounded Demand Score (0 <= demandScore <= 100)
         double demandScore;
-        if (vt == 0 && vtPrev == 0) {
-            demandScore = 50.0;
+        if (currentQty == 0 && prevQty == 0) {
+            demandScore = 20.0;
         } else {
-            demandScore = 50.0 + ((velocityRatio - 1.0) * 25.0);
+            double prevQtyEff = Math.max((double) prevQty, 1.0);
+            double velocityRatio = (double) currentQty / prevQtyEff;
+            demandScore = Math.max(0.0, Math.min(100.0, 50.0 + ((velocityRatio - 1.0) * 25.0)));
         }
-        demandScore = Math.max(0.0, Math.min(100.0, demandScore));
 
         BigDecimal prevPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : (product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("20.00"));
         BigDecimal targetPrice = prevPrice;
 
         String actionText;
 
-        if (vt > vtPrev) {
+        if (currentQty > prevQty || (currentQty > 0 && currentQty >= prevQty)) {
             // Surge pricing (+₹1 step)
             targetPrice = prevPrice.add(BigDecimal.ONE).min(effectiveMaxPrice);
-            actionText = String.format("Surge Pricing for %s: Order velocity increased (Vt=%d vs Vt-1=%d, Demand Score %.1f). Price adjusted +₹1 to ₹%s.", product.getFlavour(), vt, vtPrev, demandScore, targetPrice);
-        } else if (vt < vtPrev) {
+            actionText = String.format("Surge Pricing for %s: High order velocity (Current Qty=%d vs Prev=%d, Demand Score %.1f). Price adjusted +₹1 to ₹%s.", product.getFlavour(), currentQty, prevQty, demandScore, targetPrice);
+        } else if (currentQty < prevQty || currentQty == 0) {
             // Price decay (-₹1 step)
             targetPrice = prevPrice.subtract(BigDecimal.ONE).max(effectiveMinPrice);
-            actionText = String.format("Price Decay for %s: Order velocity decreased (Vt=%d vs Vt-1=%d, Demand Score %.1f). Price adjusted -₹1 to ₹%s.", product.getFlavour(), vt, vtPrev, demandScore, targetPrice);
+            actionText = String.format("Price Decay for %s: Low/no order velocity (Current Qty=%d vs Prev=%d, Demand Score %.1f). Price adjusted -₹1 to ₹%s.", product.getFlavour(), currentQty, prevQty, demandScore, targetPrice);
         } else {
             // Stable demand
             targetPrice = prevPrice.min(effectiveMaxPrice).max(effectiveMinPrice);
-            actionText = String.format("Stable Demand for %s: Order velocity steady (Vt=%d, Demand Score %.1f). Price held at ₹%s.", product.getFlavour(), vt, demandScore, targetPrice);
+            actionText = String.format("Stable Demand for %s: Steady order velocity (Qty=%d, Demand Score %.1f). Price held at ₹%s.", product.getFlavour(), currentQty, demandScore, targetPrice);
         }
 
         // Hard bounds clamping
@@ -240,6 +238,7 @@ public class PriceAdjustmentService {
 
         if (changed) {
             product.setCurrentCupPrice(targetPrice);
+            product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
             product.setLastPriceChangeTimestamp(now);
             productRepository.save(product);
 
@@ -302,6 +301,9 @@ public class PriceAdjustmentService {
         boolean changed = oldPrice == null || oldPrice.compareTo(newPrice) != 0;
 
         product.setCurrentCupPrice(newPrice);
+        if (changed) {
+            product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
+        }
         product.setLastPriceChangeTimestamp(now);
         productRepository.save(product);
 

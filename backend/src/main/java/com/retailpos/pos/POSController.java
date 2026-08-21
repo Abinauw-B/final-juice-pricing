@@ -8,6 +8,7 @@ import com.retailpos.domain.SalesOrder;
 import com.retailpos.domain.SalesOrderRepository;
 import com.retailpos.inventory.JuiceBatchService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -26,13 +27,23 @@ public class POSController {
     private final JuiceBatchService juiceBatchService;
     private final SalesOrderRepository salesOrderRepository;
     private final PriceHistoryRepository priceHistoryRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public POSController(POSService posService, ProductRepository productRepository, JuiceBatchService juiceBatchService, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository) {
+    public POSController(POSService posService, ProductRepository productRepository, JuiceBatchService juiceBatchService, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, SimpMessagingTemplate messagingTemplate) {
         this.posService = posService;
         this.productRepository = productRepository;
         this.juiceBatchService = juiceBatchService;
         this.salesOrderRepository = salesOrderRepository;
         this.priceHistoryRepository = priceHistoryRepository;
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    private void broadcastProductUpdate() {
+        try {
+            List<Product> allProducts = productRepository.findAll();
+            messagingTemplate.convertAndSend("/topic/prices", allProducts);
+            messagingTemplate.convertAndSend("/topic/products", allProducts);
+        } catch (Exception e) {}
     }
 
     @GetMapping("/products")
@@ -109,6 +120,7 @@ public class POSController {
             juiceBatchService.registerNewBatch(saved.getId(), 20000);
         } catch (Exception e) {}
 
+        broadcastProductUpdate();
         return ResponseEntity.ok(saved);
     }
 
@@ -123,7 +135,9 @@ public class POSController {
             if (details.getMaxCupPrice() != null) existing.setMaxCupPrice(details.getMaxCupPrice());
             if (details.getDefaultCupPrice() != null) existing.setDefaultCupPrice(details.getDefaultCupPrice());
             existing.setLastPriceChangeTimestamp(LocalDateTime.now());
-            return ResponseEntity.ok(productRepository.save(existing));
+            Product updated = productRepository.save(existing);
+            broadcastProductUpdate();
+            return ResponseEntity.ok(updated);
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -131,15 +145,35 @@ public class POSController {
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         if (productRepository.existsById(id)) {
             productRepository.deleteById(id);
+            broadcastProductUpdate();
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
     }
 
     @PostMapping({"/checkout", "/orders"})
-    public ResponseEntity<POSService.CheckoutResponse> checkout(@RequestBody POSService.CheckoutRequest request) {
-        POSService.CheckoutResponse response = posService.processCheckout(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> checkout(
+            @RequestBody POSService.CheckoutRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKeyHeader) {
+        try {
+            if (request != null && (request.getIdempotencyKey() == null || request.getIdempotencyKey().isBlank())) {
+                if (idempotencyKeyHeader != null && !idempotencyKeyHeader.isBlank()) {
+                    request.setIdempotencyKey(idempotencyKeyHeader);
+                }
+            }
+            POSService.CheckoutResponse response = posService.processCheckout(request);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("success", false);
+            err.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(err);
+        } catch (Exception e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("success", false);
+            err.put("message", "POS checkout failed: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(err);
+        }
     }
 
     @GetMapping("/orders")

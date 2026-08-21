@@ -69,13 +69,13 @@ public class JuiceInventoryAndPricingTests {
                         .name("Fresh Mango Juice")
                         .flavour("MANGO")
                         .defaultCupSizeMl(250)
-                        .defaultCupPrice(new BigDecimal("20.00"))
-                        .currentCupPrice(new BigDecimal("20.00"))
+                        .defaultCupPrice(new BigDecimal("22.00"))
+                        .currentCupPrice(new BigDecimal("22.00"))
                         .minCupPrice(new BigDecimal("18.00"))
                         .maxCupPrice(new BigDecimal("25.00"))
                         .build()));
-        mangoProduct.setDefaultCupPrice(new BigDecimal("20.00"));
-        mangoProduct.setCurrentCupPrice(new BigDecimal("20.00"));
+        mangoProduct.setDefaultCupPrice(new BigDecimal("22.00"));
+        mangoProduct.setCurrentCupPrice(new BigDecimal("22.00"));
         mangoProduct.setLastPriceChangeTimestamp(null);
         mangoProduct = productRepository.save(mangoProduct);
         JuiceBatch batch = batchRepository.findFirstActiveBatchForProduct(mangoProduct.getId()).orElse(null);
@@ -156,10 +156,10 @@ public class JuiceInventoryAndPricingTests {
     }
 
     @Test
-    @DisplayName("Req 4: Initial cup price default is ₹20")
+    @DisplayName("Req 4: Initial cup price default is ₹22")
     void testInitialDefaultPrice() {
-        assertEquals(new BigDecimal("20.00"), mangoProduct.getDefaultCupPrice());
-        assertEquals(new BigDecimal("20.00"), mangoProduct.getCurrentCupPrice());
+        assertEquals(new BigDecimal("22.00"), mangoProduct.getDefaultCupPrice());
+        assertEquals(new BigDecimal("22.00"), mangoProduct.getCurrentCupPrice());
     }
 
     @Test
@@ -316,5 +316,49 @@ public class JuiceInventoryAndPricingTests {
             marketCrashService.stopMarketCrash();
             assertFalse(marketCrashService.isCrashActive());
         }
+    }
+
+    @Test
+    @DisplayName("Req 19: Repeated Purchases & Independent Concurrent Product Price Movement")
+    @Transactional
+    void testRepeatedPurchaseProductIndependentMovement() {
+        // Ensure 4 products exist at initial price of ₹22
+        Product mango = productRepository.findByFlavourIgnoreCase("MANGO").orElseThrow();
+        Product orange = productRepository.findByFlavourIgnoreCase("ORANGE").orElseThrow();
+        Product mint = productRepository.findByFlavourIgnoreCase("MINT").orElseThrow();
+
+        mango.setCurrentCupPrice(new BigDecimal("22.00"));
+        mango.setLastPriceChangeTimestamp(null);
+        productRepository.save(mango);
+
+        orange.setCurrentCupPrice(new BigDecimal("22.00"));
+        orange.setLastPriceChangeTimestamp(null);
+        productRepository.save(orange);
+
+        mint.setCurrentCupPrice(new BigDecimal("22.00"));
+        mint.setLastPriceChangeTimestamp(null);
+        productRepository.save(mint);
+
+        // Perform repeated purchases for MANGO (3 separate checkouts: 1, 2, and 3 cups = 6 total)
+        for (int qty : List.of(1, 2, 3)) {
+            POSService.CartItemRequest item = new POSService.CartItemRequest();
+            item.setProductId(mango.getId());
+            item.setQuantity(qty);
+            POSService.CheckoutRequest req = new POSService.CheckoutRequest();
+            req.setItems(List.of(item));
+            posService.processCheckout(req);
+        }
+
+        // Execute pricing engine evaluation for products
+        PriceAdjustmentService.PriceEvaluationResult mangoRes = priceAdjustmentService.evaluateAndAdjustPrice(mango.getId());
+        PriceAdjustmentService.PriceEvaluationResult orangeRes = priceAdjustmentService.evaluateAndAdjustPrice(orange.getId());
+        PriceAdjustmentService.PriceEvaluationResult mintRes = priceAdjustmentService.evaluateAndAdjustPrice(mint.getId());
+
+        // MANGO experienced high demand -> Surge ticks applied step-by-step above initial ₹22.00
+        assertTrue(mangoRes.getNewPrice().compareTo(new BigDecimal("22.00")) > 0, "Mango price must surge above initial ₹22.00");
+
+        // ORANGE & MINT experienced 0 demand -> Decayed below initial ₹22.00 price independently
+        assertTrue(orangeRes.getNewPrice().compareTo(new BigDecimal("22.00")) < 0, "Orange price must decay below initial ₹22.00");
+        assertTrue(mintRes.getNewPrice().compareTo(new BigDecimal("22.00")) < 0, "Mint price must decay below initial ₹22.00");
     }
 }

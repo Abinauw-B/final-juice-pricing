@@ -110,6 +110,8 @@ public class PricingEngineService {
             this.timeDecayScore = timeDecayScore;
         }
 
+        public Long getId() { return beverageId; }
+        public void setId(Long id) { this.beverageId = id; }
         public Long getBeverageId() { return beverageId; }
         public void setBeverageId(Long beverageId) { this.beverageId = beverageId; }
         public String getName() { return name; }
@@ -118,6 +120,8 @@ public class PricingEngineService {
         public void setFlavour(String flavour) { this.flavour = flavour; }
         public BigDecimal getCurrentPrice() { return currentPrice; }
         public void setCurrentPrice(BigDecimal currentPrice) { this.currentPrice = currentPrice; }
+        public BigDecimal getCurrentCupPrice() { return currentPrice; }
+        public void setCurrentCupPrice(BigDecimal currentCupPrice) { this.currentPrice = currentCupPrice; }
         public BigDecimal getPreviousPrice() { return previousPrice; }
         public void setPreviousPrice(BigDecimal previousPrice) { this.previousPrice = previousPrice; }
         public BigDecimal getPriceDelta() { return priceDelta; }

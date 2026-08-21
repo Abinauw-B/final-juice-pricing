@@ -1,7 +1,9 @@
 package com.retailpos.inventory;
 
 import com.retailpos.domain.JuiceBatch;
+import com.retailpos.domain.ProductRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,9 +14,21 @@ import java.util.List;
 public class JuiceBatchController {
 
     private final JuiceBatchService juiceBatchService;
+    private final ProductRepository productRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public JuiceBatchController(JuiceBatchService juiceBatchService) {
+    public JuiceBatchController(JuiceBatchService juiceBatchService, ProductRepository productRepository, SimpMessagingTemplate messagingTemplate) {
         this.juiceBatchService = juiceBatchService;
+        this.productRepository = productRepository;
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    private void broadcastBatchUpdate() {
+        try {
+            messagingTemplate.convertAndSend("/topic/batches", juiceBatchService.getAllBatches());
+            messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+            messagingTemplate.convertAndSend("/topic/products", productRepository.findAll());
+        } catch (Exception e) {}
     }
 
     @GetMapping
@@ -62,24 +76,28 @@ public class JuiceBatchController {
     @PostMapping
     public ResponseEntity<JuiceBatch> registerBatch(@RequestBody CreateBatchRequest request) {
         JuiceBatch newBatch = juiceBatchService.registerNewBatch(request.getProductId(), request.getContainerCapacityMl());
+        broadcastBatchUpdate();
         return ResponseEntity.ok(newBatch);
     }
 
     @PutMapping("/{identifier}")
     public ResponseEntity<JuiceBatch> updateBatch(@PathVariable String identifier, @RequestBody UpdateBatchRequest request) {
         JuiceBatch updated = juiceBatchService.updateBatch(identifier, request.getRemainingVolumeMl(), request.getStatus());
+        broadcastBatchUpdate();
         return ResponseEntity.ok(updated);
     }
 
     @PostMapping("/{id}/restock")
     public ResponseEntity<JuiceBatch> restockBatch(@PathVariable Long id, @RequestParam(required = false, defaultValue = "20000") Integer additionalMl) {
         JuiceBatch restocked = juiceBatchService.restockBatch(id, additionalMl);
+        broadcastBatchUpdate();
         return ResponseEntity.ok(restocked);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBatch(@PathVariable Long id) {
         juiceBatchService.deleteBatch(id);
+        broadcastBatchUpdate();
         return ResponseEntity.ok().build();
     }
 }

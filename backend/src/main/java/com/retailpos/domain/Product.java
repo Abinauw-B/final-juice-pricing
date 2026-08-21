@@ -38,6 +38,9 @@ public class Product {
     @Column(name = "last_price_change_timestamp")
     private LocalDateTime lastPriceChangeTimestamp;
 
+    @Column(name = "price_version", nullable = false)
+    private Integer priceVersion = 1;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -46,7 +49,7 @@ public class Product {
 
     public Product() {}
 
-    public Product(Long id, String name, String flavour, String description, Integer defaultCupSizeMl, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, LocalDateTime lastPriceChangeTimestamp, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Product(Long id, String name, String flavour, String description, Integer defaultCupSizeMl, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, LocalDateTime lastPriceChangeTimestamp, Integer priceVersion, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.flavour = flavour;
@@ -57,6 +60,7 @@ public class Product {
         this.minCupPrice = minCupPrice != null ? minCupPrice : new BigDecimal("18.00");
         this.maxCupPrice = maxCupPrice != null ? maxCupPrice : new BigDecimal("25.00");
         this.lastPriceChangeTimestamp = lastPriceChangeTimestamp;
+        this.priceVersion = priceVersion != null ? priceVersion : 1;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -81,6 +85,8 @@ public class Product {
     public void setMaxCupPrice(BigDecimal maxCupPrice) { this.maxCupPrice = maxCupPrice; }
     public LocalDateTime getLastPriceChangeTimestamp() { return lastPriceChangeTimestamp; }
     public void setLastPriceChangeTimestamp(LocalDateTime lastPriceChangeTimestamp) { this.lastPriceChangeTimestamp = lastPriceChangeTimestamp; }
+    public Integer getPriceVersion() { return priceVersion; }
+    public void setPriceVersion(Integer priceVersion) { this.priceVersion = priceVersion; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
@@ -99,6 +105,7 @@ public class Product {
         private BigDecimal minCupPrice = new BigDecimal("18.00");
         private BigDecimal maxCupPrice = new BigDecimal("25.00");
         private LocalDateTime lastPriceChangeTimestamp;
+        private Integer priceVersion = 1;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -112,11 +119,12 @@ public class Product {
         public ProductBuilder minCupPrice(BigDecimal minCupPrice) { this.minCupPrice = minCupPrice; return this; }
         public ProductBuilder maxCupPrice(BigDecimal maxCupPrice) { this.maxCupPrice = maxCupPrice; return this; }
         public ProductBuilder lastPriceChangeTimestamp(LocalDateTime lastPriceChangeTimestamp) { this.lastPriceChangeTimestamp = lastPriceChangeTimestamp; return this; }
+        public ProductBuilder priceVersion(Integer priceVersion) { this.priceVersion = priceVersion; return this; }
         public ProductBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
         public ProductBuilder updatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
 
         public Product build() {
-            return new Product(id, name, flavour, description, defaultCupSizeMl, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, lastPriceChangeTimestamp, createdAt, updatedAt);
+            return new Product(id, name, flavour, description, defaultCupSizeMl, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, lastPriceChangeTimestamp, priceVersion, createdAt, updatedAt);
         }
     }
 }
