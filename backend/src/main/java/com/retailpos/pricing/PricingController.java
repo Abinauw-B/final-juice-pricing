@@ -187,6 +187,25 @@ public class PricingController {
         return ResponseEntity.ok(marketCrashService.stopMarketCrash());
     }
 
+    @PostMapping({"/reset-all", "/admin/reset-all"})
+    public ResponseEntity<List<Product>> resetAllPrices() {
+        List<Product> products = productRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+        for (Product p : products) {
+            BigDecimal def = p.getDefaultCupPrice() != null ? p.getDefaultCupPrice() : new BigDecimal("22.00");
+            p.setCurrentCupPrice(def);
+            p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
+            p.setLastPriceChangeTimestamp(now);
+            productRepository.save(p);
+        }
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+            }
+        } catch (Exception e) {}
+        return ResponseEntity.ok(productRepository.findAll());
+    }
+
     @RequestMapping(value = {"/evaluate", "/admin/evaluate"}, method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<List<PriceAdjustmentService.PriceEvaluationResult>> evaluateAllPrices() {
         List<PriceAdjustmentService.PriceEvaluationResult> list = priceAdjustmentService.evaluateAllProducts();

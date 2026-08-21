@@ -171,6 +171,34 @@ public class MarketCrashService {
     public synchronized MarketCrashStatus stopMarketCrash() {
         this.crashActive = false;
         this.crashEndTime = LocalDateTime.now();
+
+        List<Product> products = productRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Product product : products) {
+            BigDecimal oldPrice = product.getCurrentCupPrice();
+            BigDecimal defaultPrice = product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("22.00");
+
+            if (oldPrice != null && oldPrice.compareTo(defaultPrice) != 0) {
+                product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
+                product.setCurrentCupPrice(defaultPrice);
+                product.setLastPriceChangeTimestamp(now);
+                productRepository.save(product);
+
+                PriceHistory history = PriceHistory.builder()
+                        .productId(product.getId())
+                        .oldPrice(oldPrice)
+                        .newPrice(defaultPrice)
+                        .demandScore(50.0)
+                        .stockPressurePct(0.0)
+                        .timeFactorMultiplier(1.0)
+                        .explanation(String.format("🟢 Market Crash ended. Price restored from ₹%s to default base price ₹%s.", oldPrice, defaultPrice))
+                        .createdAt(now)
+                        .build();
+                priceHistoryRepository.save(history);
+            }
+        }
+
         MarketCrashStatus status = getStatus();
 
         try {
