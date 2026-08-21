@@ -4,10 +4,13 @@
   "private": true,
   "description": "Juice Shop POS, Inventory & Dynamic Pricing System",
   "scripts": {
-    "start": "npx concurrently \"npm --prefix customer-web start\" \"npm --prefix admin-panel start\"",
-    "dev": "npx concurrently \"npm --prefix customer-web start\" \"npm --prefix admin-panel start\"",
+    "start": "npx concurrently \"npm run dev:backend\" \"npm --prefix customer-web start\" \"npm --prefix admin-panel start\"",
+    "dev": "npx concurrently \"npm run dev:backend\" \"npm --prefix customer-web start\" \"npm --prefix admin-panel start\"",
     "dev:customer": "npm --prefix customer-web start",
     "dev:admin": "npm --prefix admin-panel start",
-    "dev:backend": "cd backend && mvn spring-boot:run"
+    "dev:backend": "cd backend && mvnw spring-boot:run"
+  },
+  "dependencies": {
+    "ws": "^8.21.3"
   }
 }

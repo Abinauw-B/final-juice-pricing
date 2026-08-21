@@ -155,14 +155,64 @@ public class POSController {
     public ResponseEntity<?> checkout(
             @RequestBody POSService.CheckoutRequest request,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKeyHeader) {
-        try {
-            if (request != null && (request.getIdempotencyKey() == null || request.getIdempotencyKey().isBlank())) {
-                if (idempotencyKeyHeader != null && !idempotencyKeyHeader.isBlank()) {
-                    request.setIdempotencyKey(idempotencyKeyHeader);
+        if (request != null && request.getItems() != null) {
+            for (POSService.CartItemRequest item : request.getItems()) {
+                if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                    Map<String, Object> errBody = new HashMap<>();
+                    errBody.put("success", false);
+                    errBody.put("status", 400);
+                    errBody.put("error", "BAD_REQUEST");
+                    errBody.put("message", "Invalid quantity: Item quantity must be greater than 0");
+                    return ResponseEntity.badRequest().body(errBody);
                 }
             }
+        }
+
+        if (request != null && (request.getIdempotencyKey() == null || request.getIdempotencyKey().isBlank())) {
+            if (idempotencyKeyHeader != null && !idempotencyKeyHeader.isBlank()) {
+                request.setIdempotencyKey(idempotencyKeyHeader);
+            }
+        }
+        try {
             POSService.CheckoutResponse response = posService.processCheckout(request);
             return ResponseEntity.ok(response);
+        } catch (org.springframework.dao.DataIntegrityViolationException dive) {
+            if (request != null && request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
+                for (int attempt = 0; attempt < 30; attempt++) {
+                    java.util.Optional<SalesOrder> existingOrder = salesOrderRepository.findByIdempotencyKey(request.getIdempotencyKey());
+                    if (existingOrder.isPresent()) {
+                        SalesOrder existing = existingOrder.get();
+                        List<POSService.OrderItemResponse> existingItems = existing.getItems().stream().map(i ->
+                                POSService.OrderItemResponse.builder()
+                                        .productName(i.getProductName())
+                                        .quantity(i.getQuantity())
+                                        .cupSizeMl(i.getCupSizeMl())
+                                        .unitPrice(i.getUnitPrice())
+                                        .totalPrice(i.getTotalPrice())
+                                        .volumeDeductedMl(i.getVolumeDeductedMl())
+                                        .build()
+                        ).toList();
+
+                        POSService.CheckoutResponse dupResp = POSService.CheckoutResponse.builder()
+                                .success(true)
+                                .orderId(existing.getId())
+                                .orderNumber(existing.getOrderNumber())
+                                .message("Order processed successfully (idempotent duplicate)")
+                                .totalAmount(existing.getTotalAmount())
+                                .paymentMethod(existing.getPaymentMethod())
+                                .paymentStatus(existing.getPaymentStatus())
+                                .timestamp(existing.getCreatedAt())
+                                .items(existingItems)
+                                .build();
+                        return ResponseEntity.ok(dupResp);
+                    }
+                    try { Thread.sleep(100); } catch (InterruptedException ignored) {}
+                }
+            }
+            Map<String, Object> err = new HashMap<>();
+            err.put("success", false);
+            err.put("message", "POS checkout failed: " + dive.getMessage());
+            return ResponseEntity.internalServerError().body(err);
         } catch (IllegalArgumentException | IllegalStateException e) {
             Map<String, Object> err = new HashMap<>();
             err.put("success", false);

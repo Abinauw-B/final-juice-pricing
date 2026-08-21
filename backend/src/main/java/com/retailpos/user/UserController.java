@@ -103,5 +103,10 @@ public class UserController {
     public ResponseEntity<List<Role>> getRoles() {
         return ResponseEntity.ok(roleRepository.findAll());
     }
+
+    @GetMapping("/admin/secure/test")
+    public ResponseEntity<java.util.Map<String, Object>> testAdminSecure() {
+        return ResponseEntity.ok(java.util.Map.of("status", 200, "message", "Admin access granted", "authorized", true));
+    }
 }
 

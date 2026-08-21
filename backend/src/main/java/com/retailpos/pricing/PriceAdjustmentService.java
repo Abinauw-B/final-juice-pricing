@@ -199,9 +199,9 @@ public class PriceAdjustmentService {
             }
         }
 
-        // 4. Rolling 60-Second Window Order Velocity & Quantity Calculation
-        int currentQty = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(60), now);
-        int prevQty = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(120), now.minusSeconds(60));
+        // 4. Rolling 30-Second Window Order Velocity & Quantity Calculation
+        int currentQty = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(30), now);
+        int prevQty = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusSeconds(60), now.minusSeconds(30));
 
         double demandScore;
         if (currentQty == 0 && prevQty == 0) {
@@ -333,6 +333,105 @@ public class PriceAdjustmentService {
                 .explanation("Price manually set to ₹" + newPrice + " (" + reason + ")")
                 .statusReason("MANUAL_ADMIN_CHANGE")
                 .build();
+    }
+
+    public static class AdminPricingDeployRequest {
+        private Long productId;
+        private BigDecimal defaultPrice;
+        private BigDecimal currentPrice;
+        private BigDecimal price; // Alias for target price
+        private BigDecimal minPrice;
+        private BigDecimal maxPrice;
+
+        public AdminPricingDeployRequest() {}
+        public AdminPricingDeployRequest(Long productId, BigDecimal defaultPrice, BigDecimal currentPrice, BigDecimal minPrice, BigDecimal maxPrice) {
+            this.productId = productId;
+            this.defaultPrice = defaultPrice;
+            this.currentPrice = currentPrice;
+            this.minPrice = minPrice;
+            this.maxPrice = maxPrice;
+        }
+
+        public Long getProductId() { return productId; }
+        public void setProductId(Long productId) { this.productId = productId; }
+        public BigDecimal getDefaultPrice() { return defaultPrice; }
+        public void setDefaultPrice(BigDecimal defaultPrice) { this.defaultPrice = defaultPrice; }
+        public BigDecimal getCurrentPrice() { return currentPrice; }
+        public void setCurrentPrice(BigDecimal currentPrice) { this.currentPrice = currentPrice; }
+        public BigDecimal getPrice() { return price; }
+        public void setPrice(BigDecimal price) { this.price = price; }
+        public BigDecimal getMinPrice() { return minPrice; }
+        public void setMinPrice(BigDecimal minPrice) { this.minPrice = minPrice; }
+        public BigDecimal getMaxPrice() { return maxPrice; }
+        public void setMaxPrice(BigDecimal maxPrice) { this.maxPrice = maxPrice; }
+    }
+
+    @Transactional
+    public Product deployAdminPricing(AdminPricingDeployRequest request) {
+        if (request == null || request.getProductId() == null) {
+            throw new IllegalArgumentException("Product ID is required for deployment.");
+        }
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + request.getProductId()));
+
+        BigDecimal minP = request.getMinPrice() != null ? request.getMinPrice() : product.getMinCupPrice();
+        BigDecimal maxP = request.getMaxPrice() != null ? request.getMaxPrice() : product.getMaxCupPrice();
+        BigDecimal targetP = request.getPrice() != null ? request.getPrice() : request.getCurrentPrice();
+        BigDecimal currP = targetP != null ? targetP : (request.getDefaultPrice() != null ? request.getDefaultPrice() : product.getCurrentCupPrice());
+        BigDecimal defP = request.getDefaultPrice() != null ? request.getDefaultPrice() : product.getDefaultCupPrice();
+
+        if (minP != null && maxP != null && minP.compareTo(maxP) > 0) {
+            throw new IllegalArgumentException("Minimum price (₹" + minP + ") cannot exceed maximum price (₹" + maxP + ")");
+        }
+        if (currP != null && minP != null && currP.compareTo(minP) < 0) {
+            throw new IllegalArgumentException("Current price (₹" + currP + ") cannot be below minimum price (₹" + minP + ")");
+        }
+        if (currP != null && maxP != null && currP.compareTo(maxP) > 0) {
+            throw new IllegalArgumentException("Current price (₹" + currP + ") cannot exceed maximum price (₹" + maxP + ")");
+        }
+
+        BigDecimal oldPrice = product.getCurrentCupPrice();
+
+        // 1. Update Product attributes
+        product.setMinCupPrice(minP);
+        product.setMaxCupPrice(maxP);
+        product.setDefaultCupPrice(defP);
+        product.setCurrentCupPrice(currP);
+        
+        // 2. Increment price_version
+        product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
+        product.setLastPriceChangeTimestamp(LocalDateTime.now());
+
+        Product savedProduct = productRepository.save(product);
+
+        // 3. Update global config bounds if min/max provided
+        if (minP != null) {
+            systemConfigRepository.findById("HARD_FLOOR_PRICE").ifPresent(cfg -> {
+                cfg.setConfigValue(minP.toString());
+                systemConfigRepository.save(cfg);
+            });
+        }
+        if (maxP != null) {
+            systemConfigRepository.findById("HARD_CEILING_PRICE").ifPresent(cfg -> {
+                cfg.setConfigValue(maxP.toString());
+                systemConfigRepository.save(cfg);
+            });
+        }
+
+        // 4. Insert Price History
+        PriceHistory history = PriceHistory.builder()
+                .productId(product.getId())
+                .oldPrice(oldPrice != null ? oldPrice : currP)
+                .newPrice(currP)
+                .demandScore(50.0)
+                .stockPressurePct(0.0)
+                .timeFactorMultiplier(1.0)
+                .explanation("ATOMIC_ADMIN_DEPLOYMENT: Set default=₹" + defP + ", current=₹" + currP + ", min=₹" + minP + ", max=₹" + maxP)
+                .createdAt(LocalDateTime.now())
+                .build();
+        priceHistoryRepository.save(history);
+
+        return savedProduct;
     }
 
     private double getConfigDouble(String key, double defaultVal) {

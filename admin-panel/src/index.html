@@ -1318,7 +1318,9 @@
       const el = typeof btnOrId === 'string' ? document.getElementById(btnOrId) : btnOrId;
       if (!el) return;
       if (isLoading) {
-        el.dataset.originalText = originalHtml || el.innerHTML;
+        if (!el.dataset.originalText || el.dataset.originalText.startsWith('⏳')) {
+          el.dataset.originalText = originalHtml || el.innerHTML;
+        }
         el.disabled = true;
         el.style.opacity = '0.75';
         el.style.cursor = 'not-allowed';
@@ -1327,7 +1329,14 @@
         el.disabled = false;
         el.style.opacity = '1';
         el.style.cursor = 'pointer';
-        el.innerHTML = originalHtml || el.dataset.originalText || 'Submit';
+        if (el.dataset.originalText && !el.dataset.originalText.startsWith('⏳')) {
+          el.innerHTML = el.dataset.originalText;
+          delete el.dataset.originalText;
+        } else if (originalHtml) {
+          el.innerHTML = originalHtml;
+        } else {
+          el.innerHTML = 'Submit';
+        }
       }
     }
 
@@ -1792,6 +1801,7 @@
     // Tab Navigation Switcher (Section 3)
     function switchTab(tabName) {
       try {
+        localStorage.setItem('pubexchange_active_tab', tabName);
         document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
         const activeNav = document.getElementById(`tab-${tabName}`);
         if (activeNav) activeNav.classList.add('active');
@@ -1805,7 +1815,7 @@
         if (tabName === 'crash') { loadMarketCrashEventHistory(); checkMarketCrashStatus(); }
         if (tabName === 'batches') { loadBatches(); }
         if (tabName === 'pricing') { loadHistory(); }
-        if (tabName === 'simulator') { runSimulation(); }
+        if (tabName === 'simulator') { restoreSimulatorParams(); runSimulation(); }
         if (tabName === 'users') { loadUsers(); }
         if (tabName === 'reports') { renderReports(); }
         if (tabName === 'audit') { loadAuditLogs(); }
@@ -2575,17 +2585,52 @@
     }
 
     // Sandbox Simulator (Section 9)
+    function saveSimulatorParams() {
+      const params = {
+        flavourName: document.getElementById('simFlavour')?.value || 'Fresh Mango Juice',
+        initialVolumeMl: document.getElementById('simVolume')?.value || '20000',
+        initialPrice: document.getElementById('simStartPrice')?.value || '20',
+        cupsPerInterval: document.getElementById('simCupsPerStep')?.value || '4',
+        minPrice: document.getElementById('simMinPrice')?.value || '18',
+        maxPrice: document.getElementById('simMaxPrice')?.value || '25',
+        includeCrash: document.getElementById('simIncludeCrash')?.checked || false
+      };
+      try {
+        localStorage.setItem('pubexchange_sim_params', JSON.stringify(params));
+      } catch (e) {}
+    }
+
+    function restoreSimulatorParams() {
+      const saved = localStorage.getItem('pubexchange_sim_params');
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          if (p.flavourName !== undefined && document.getElementById('simFlavour')) document.getElementById('simFlavour').value = p.flavourName;
+          if (p.initialVolumeMl !== undefined && document.getElementById('simVolume')) document.getElementById('simVolume').value = p.initialVolumeMl;
+          if (p.initialPrice !== undefined && document.getElementById('simStartPrice')) document.getElementById('simStartPrice').value = p.initialPrice;
+          if (p.cupsPerInterval !== undefined && document.getElementById('simCupsPerStep')) document.getElementById('simCupsPerStep').value = p.cupsPerInterval;
+          if (p.minPrice !== undefined && document.getElementById('simMinPrice')) document.getElementById('simMinPrice').value = p.minPrice;
+          if (p.maxPrice !== undefined && document.getElementById('simMaxPrice')) document.getElementById('simMaxPrice').value = p.maxPrice;
+          if (p.includeCrash !== undefined && document.getElementById('simIncludeCrash')) {
+            document.getElementById('simIncludeCrash').checked = !!p.includeCrash;
+          }
+        } catch (e) {}
+      }
+    }
+
     async function runSimulation() {
+      restoreSimulatorParams();
+      saveSimulatorParams();
       const btn = document.getElementById('btnRunSimulation');
       if (btn) setButtonLoading(btn, true, 'Running...');
 
       const req = {
         flavourName: document.getElementById('simFlavour').value,
-        initialVolumeMl: parseInt(document.getElementById('simVolume').value),
-        initialPrice: parseFloat(document.getElementById('simStartPrice').value),
-        minPrice: parseFloat(document.getElementById('simMinPrice').value),
-        maxPrice: parseFloat(document.getElementById('simMaxPrice').value),
-        cupsPerInterval: parseInt(document.getElementById('simCupsPerStep').value),
+        initialVolumeMl: parseInt(document.getElementById('simVolume').value) || 20000,
+        initialPrice: parseFloat(document.getElementById('simStartPrice').value) || 20,
+        minPrice: parseFloat(document.getElementById('simMinPrice').value) || 18,
+        maxPrice: parseFloat(document.getElementById('simMaxPrice').value) || 25,
+        cupsPerInterval: parseInt(document.getElementById('simCupsPerStep').value) || 4,
         includeCrash: document.getElementById('simIncludeCrash')?.checked || false
       };
 
@@ -2611,6 +2656,7 @@
       const grid = document.getElementById('simMetricsGrid');
       const startP = sim.initialPrice !== undefined ? sim.initialPrice : (sim.startPrice || 20);
       const endP = sim.finalPrice !== undefined ? sim.finalPrice : (sim.endPrice || 22);
+      window.lastSimulatedFinalPrice = Math.round(endP);
       if (grid) {
         grid.innerHTML = `
           <div class="metric-card"><div class="metric-label">Simulated Flavour</div><div class="metric-val" style="font-size: 18px;">${sim.flavourName || 'Fresh Juice'}</div></div>
@@ -2652,6 +2698,7 @@
 
     function renderSimulationFallback(req) {
       const grid = document.getElementById('simMetricsGrid');
+      let currPrice = req.initialPrice;
       if (grid) {
         grid.innerHTML = `
           <div class="metric-card"><div class="metric-label">Simulated Flavour</div><div class="metric-val" style="font-size: 18px;">${req.flavourName}</div></div>
@@ -2663,7 +2710,6 @@
       if (timeline) {
         const steps = [];
         let currVol = req.initialVolumeMl;
-        let currPrice = req.initialPrice;
         for (let i = 1; i <= 10; i++) {
           currVol = Math.max(0, currVol - (req.cupsPerInterval * 250));
           if (i === 5 && req.includeCrash) {
@@ -2687,86 +2733,124 @@
         }
         timeline.innerHTML = steps.join('');
       }
+      window.lastSimulatedFinalPrice = Math.round(currPrice);
     }
 
     async function deploySimParametersToLivePOS() {
+      saveSimulatorParams();
       const btn = document.getElementById('btnDeploySim');
-      if (btn) setButtonLoading(btn, true, 'Deploying & Syncing...');
+      if (btn) setButtonLoading(btn, true, 'Deploying to Backend...');
 
       const flavourName = document.getElementById('simFlavour').value.trim();
       const startPrice = parseFloat(document.getElementById('simStartPrice').value) || 20;
       const minPrice = parseFloat(document.getElementById('simMinPrice').value) || 18;
       const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 25;
+      const targetPrice = window.lastSimulatedFinalPrice !== undefined ? window.lastSimulatedFinalPrice : startPrice;
 
       try {
-        // 1. Update Global Pricing Bounds Configuration in PostgreSQL
-        const updates = [
-          { key: 'HARD_FLOOR_PRICE', value: minPrice.toString() },
-          { key: 'HARD_CEILING_PRICE', value: maxPrice.toString() }
-        ];
-        await apiFetch('/pricing/config', {
-          method: 'PUT',
-          body: JSON.stringify(updates)
+        // 1. Fetch live product list from backend to match product ID in PostgreSQL
+        const prodsRes = await apiFetch('/pos/products');
+        if (!prodsRes.ok) {
+          throw new Error(`Could not connect to backend server on port 8088 (HTTP ${prodsRes.status})`);
+        }
+        
+        const products = await prodsRes.json();
+        const match = products.find(p => 
+          p.name.toLowerCase().includes(flavourName.toLowerCase()) || 
+          flavourName.toLowerCase().includes(p.name.toLowerCase()) ||
+          (p.flavour && flavourName.toLowerCase().includes(p.flavour.toLowerCase()))
+        ) || products[0];
+
+        if (!match) {
+          throw new Error(`Product "${flavourName}" not found in PostgreSQL database.`);
+        }
+
+        console.log(`[DEPLOY] Product ID: ${match.id}`);
+        console.log(`[DEPLOY] Product: ${match.name}`);
+        console.log(`[DEPLOY] Sandbox Final Price: ₹${targetPrice}`);
+        console.log(`[DEPLOY] Min Price: ₹${minPrice}`);
+        console.log(`[DEPLOY] Max Price: ₹${maxPrice}`);
+
+        // 2. Execute ONE Atomic Deployment Request in Spring Boot @Transactional boundary
+        const deployPayload = {
+          productId: match.id,
+          price: targetPrice,
+          currentPrice: targetPrice,
+          defaultPrice: startPrice,
+          minPrice: minPrice,
+          maxPrice: maxPrice
+        };
+
+        const deployRes = await apiFetch('/pricing/deploy', {
+          method: 'POST',
+          body: JSON.stringify(deployPayload)
         });
 
-        // 2. Find and update product price in PostgreSQL Database
-        const prodsRes = await apiFetch('/pos/products');
-        if (prodsRes.ok) {
-          const products = await prodsRes.json();
-          const match = products.find(p => 
-            p.name.toLowerCase().includes(flavourName.toLowerCase()) || 
-            flavourName.toLowerCase().includes(p.name.toLowerCase()) ||
-            (p.flavour && flavourName.toLowerCase().includes(p.flavour.toLowerCase()))
-          ) || products[0];
+        if (!deployRes.ok) {
+          const errData = await deployRes.json().catch(() => ({}));
+          throw new Error(errData.message || `Backend failed atomic deployment transaction (HTTP ${deployRes.status})`);
+        }
 
-          if (match) {
-            await apiFetch(`/pos/products/${match.id}`, {
-              method: 'PUT',
-              body: JSON.stringify({
-                ...match,
-                currentCupPrice: startPrice,
-                defaultCupPrice: startPrice,
-                minCupPrice: minPrice,
-                maxCupPrice: maxPrice
-              })
-            });
+        const updatedProd = await deployRes.json();
+        console.log(`[DEPLOY] API Response:`, updatedProd);
 
-            await apiFetch(`/pricing/products/${match.id}/price?newPrice=${startPrice}&reason=SANDBOX_SIMULATION_DEPLOYMENT`, {
-              method: 'POST'
-            });
+        // 3. Post-Deploy Verification: Safety check database persistence
+        const verifyRes = await apiFetch('/pos/products');
+        if (verifyRes.ok) {
+          const vProducts = await verifyRes.json();
+          const vProd = vProducts.find(p => p.id === match.id);
+          if (vProd && Number(vProd.currentCupPrice) === Number(targetPrice)) {
+            console.log(`[LIVE SYNC VERIFIED] PostgreSQL price ₹${vProd.currentCupPrice} matches deployment price ₹${targetPrice}`);
+          } else {
+            console.warn(`[LIVE SYNC ERROR] Database price ₹${vProd?.currentCupPrice} disagrees with deployment target ₹${targetPrice}`);
           }
         }
-      } catch (e) {
-        console.error('Error deploying simulation parameters:', e);
-      }
 
-      broadcastEvent('PRODUCT_PRICE_UPDATE', { flavourName, startPrice, minPrice, maxPrice, currentPrice: startPrice, finalPrice: startPrice });
-      await refreshDashboard();
-      if (btn) setButtonLoading(btn, false);
-      showToast(`🚀 Deployed Live POS Pricing Parameters for "${flavourName}" (Set to ₹${Math.round(startPrice)})!`, 'success');
+        // ONLY IF ATOMIC TRANSACTION COMMITTED SUCCESSFULLY IN POSTGRESQL:
+        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId: updatedProd.productId || updatedProd.id, flavourName: updatedProd.productName || updatedProd.name, startPrice, minPrice, maxPrice, currentPrice: targetPrice, finalPrice: targetPrice });
+        await refreshDashboard();
+        showToast(`🚀 Successfully Deployed to Live POS!\n"${updatedProd.productName || updatedProd.name}"\n₹${updatedProd.previousPrice || match.currentCupPrice || startPrice} → ₹${updatedProd.currentPrice || targetPrice} (Version ${updatedProd.priceVersion})`, 'success');
+      } catch (err) {
+        showToast(`🔴 Deployment Failed: ${err.message}`, 'danger');
+      } finally {
+        if (btn) setButtonLoading(btn, false);
+      }
     }
 
     document.getElementById('reportTypeSelect')?.addEventListener('change', renderReports);
     document.getElementById('reportTimeRange')?.addEventListener('change', renderReports);
 
     async function checkAdminBackendHealth() {
+      const badge = document.getElementById('sysHealthStatus');
+      const headerPill = document.getElementById('headerMarketStatusPill');
+      const headerText = document.getElementById('headerMarketStatusText');
+
       try {
         const res = await apiFetch('/health');
-        const badge = document.getElementById('sysHealthStatus');
-        if (badge) {
-          if (res.ok) {
+        if (res.ok) {
+          if (badge) {
             badge.innerHTML = '🟢 ALL MICROSERVICES ONLINE &amp; POSTGRESQL CONNECTED (8088)';
             badge.style.color = '#059669';
-          } else {
-            badge.innerHTML = '🔴 BACKEND DISCONNECTED (8088)';
-            badge.style.color = '#dc2626';
           }
+          if (headerPill && headerText && !isAdminCrashActive) {
+            headerPill.style.background = 'rgba(16, 185, 129, 0.15)';
+            headerPill.style.color = '#10b981';
+            headerPill.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            headerText.textContent = '● MARKET ONLINE';
+          }
+        } else {
+          throw new Error(`HTTP ${res.status}`);
         }
       } catch (err) {
-        const badge = document.getElementById('sysHealthStatus');
         if (badge) {
-          badge.innerHTML = '🔴 BACKEND DISCONNECTED (8088)';
+          badge.innerHTML = '🔴 BACKEND OFFLINE (Port 8088 Unreachable)';
           badge.style.color = '#dc2626';
+        }
+        if (headerPill && headerText && !isAdminCrashActive) {
+          headerPill.style.background = 'rgba(220, 38, 38, 0.15)';
+          headerPill.style.color = '#dc2626';
+          headerPill.style.borderColor = 'rgba(220, 38, 38, 0.3)';
+          headerText.textContent = '🔴 BACKEND OFFLINE';
         }
       }
     }
@@ -2813,10 +2897,31 @@
     setInterval(checkAdminBackendHealth, 5000);
     refreshDashboard();
     loadNotifications();
-    runSimulation();
+    restoreSimulatorParams();
+    
+    const savedActiveTab = localStorage.getItem('pubexchange_active_tab');
+    if (savedActiveTab) {
+      switchTab(savedActiveTab);
+    } else {
+      runSimulation();
+    }
+    
     renderReports();
     connectAdminWebSocket();
     setTimeout(renderCharts, 500);
+
+    // Attach immediate auto-save listeners to simulator input fields
+    ['simFlavour', 'simVolume', 'simStartPrice', 'simCupsPerStep', 'simMinPrice', 'simMaxPrice'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', saveSimulatorParams);
+        el.addEventListener('change', saveSimulatorParams);
+      }
+    });
+    const crashChk = document.getElementById('simIncludeCrash');
+    if (crashChk) {
+      crashChk.addEventListener('change', saveSimulatorParams);
+    }
 
     function toggleThemeMode() {
       const isDark = document.body.classList.contains('dark-theme-mode');

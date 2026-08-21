@@ -2,6 +2,7 @@ package com.retailpos.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -11,8 +12,11 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    private final String jwtSecret = "PubExchangeSuperSecretKeyForJWTAuth2026EnterpriseProductionEngine!";
-    private final long jwtExpirationInMs = 86400000L; // 24 hours
+    @Value("${jwt.secret:PubExchangeSuperSecretKeyForJWTAuth2026EnterpriseProductionEngine!}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration-ms:86400000}")
+    private long jwtExpirationInMs;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));

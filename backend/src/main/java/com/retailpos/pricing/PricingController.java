@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,19 @@ public class PricingController {
         return ResponseEntity.ok(metrics);
     }
 
+    @GetMapping({"/history/{productId}", "/history"})
+    public ResponseEntity<List<PriceHistory>> getPriceHistory(@PathVariable(required = false) String productId) {
+        if (productId != null && !productId.isBlank()) {
+            try {
+                Long pid = Long.parseLong(productId);
+                return ResponseEntity.ok(priceHistoryRepository.findByProductIdOrderByCreatedAtDesc(pid));
+            } catch (NumberFormatException nfe) {
+                return ResponseEntity.ok(java.util.Collections.emptyList());
+            }
+        }
+        return ResponseEntity.ok(priceHistoryRepository.findAllByOrderByCreatedAtDesc());
+    }
+
     @GetMapping("/products/{productId}/breakdown")
     public ResponseEntity<Map<String, Object>> getProductBreakdown(@PathVariable Long productId) {
         Product p = productRepository.findById(productId)
@@ -116,6 +130,47 @@ public class PricingController {
         return ResponseEntity.ok(res);
     }
 
+    @PostMapping({"/deploy", "/admin/deploy"})
+    public ResponseEntity<Map<String, Object>> deployAdminPricing(@RequestBody PriceAdjustmentService.AdminPricingDeployRequest request) {
+        Product updated = priceAdjustmentService.deployAdminPricing(request);
+        try {
+            if (messagingTemplate != null) {
+                Map<String, Object> wsPayload = new HashMap<>();
+                wsPayload.put("productId", updated.getId());
+                wsPayload.put("id", updated.getId());
+                wsPayload.put("name", updated.getName());
+                wsPayload.put("flavour", updated.getFlavour());
+                wsPayload.put("currentCupPrice", updated.getCurrentCupPrice());
+                wsPayload.put("currentPrice", updated.getCurrentCupPrice());
+                wsPayload.put("defaultCupPrice", updated.getDefaultCupPrice());
+                wsPayload.put("minCupPrice", updated.getMinCupPrice());
+                wsPayload.put("maxCupPrice", updated.getMaxCupPrice());
+                wsPayload.put("priceVersion", updated.getPriceVersion());
+                wsPayload.put("timestamp", LocalDateTime.now().toString());
+
+                messagingTemplate.convertAndSend("/topic/prices", wsPayload);
+                messagingTemplate.convertAndSend("/topic/products", productRepository.findAll());
+            }
+        } catch (Exception e) {}
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("deployed", true);
+        response.put("id", updated.getId());
+        response.put("productId", updated.getId());
+        response.put("name", updated.getName());
+        response.put("productName", updated.getName());
+        response.put("currentCupPrice", updated.getCurrentCupPrice());
+        response.put("currentPrice", updated.getCurrentCupPrice());
+        response.put("defaultCupPrice", updated.getDefaultCupPrice());
+        response.put("minCupPrice", updated.getMinCupPrice());
+        response.put("maxCupPrice", updated.getMaxCupPrice());
+        response.put("priceVersion", updated.getPriceVersion());
+        response.put("timestamp", LocalDateTime.now().toString());
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping({"/market-crash/status", "/crash/status"})
     public ResponseEntity<MarketCrashService.MarketCrashStatus> getMarketCrashStatus() {
         return ResponseEntity.ok(marketCrashService.getStatus());
@@ -132,7 +187,7 @@ public class PricingController {
         return ResponseEntity.ok(marketCrashService.stopMarketCrash());
     }
 
-    @GetMapping({"/evaluate", "/admin/evaluate"})
+    @RequestMapping(value = {"/evaluate", "/admin/evaluate"}, method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<List<PriceAdjustmentService.PriceEvaluationResult>> evaluateAllPrices() {
         List<PriceAdjustmentService.PriceEvaluationResult> list = priceAdjustmentService.evaluateAllProducts();
         try {
@@ -152,16 +207,6 @@ public class PricingController {
             }
         } catch (Exception e) {}
         return ResponseEntity.ok(res);
-    }
-
-    @GetMapping("/history")
-    public ResponseEntity<List<PriceHistory>> getPriceHistory() {
-        return ResponseEntity.ok(priceHistoryRepository.findAllByOrderByCreatedAtDesc());
-    }
-
-    @GetMapping("/products/{productId}/history")
-    public ResponseEntity<List<PriceHistory>> getProductPriceHistory(@PathVariable Long productId) {
-        return ResponseEntity.ok(priceHistoryRepository.findByProductIdOrderByCreatedAtDesc(productId));
     }
 
     @PostMapping("/simulate")

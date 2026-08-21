@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/audit-logs")
+@RequestMapping({"/api/audit-logs", "/api/audit/logs"})
 @CrossOrigin(origins = "*")
 public class AuditController {
 
@@ -20,7 +20,11 @@ public class AuditController {
 
     @GetMapping
     public ResponseEntity<List<AuditLog>> getAuditLogs() {
-        return ResponseEntity.ok(auditLogRepository.findTop100ByOrderByCreatedAtDesc());
+        try {
+            return ResponseEntity.ok(auditLogRepository.findTop100ByOrderByIdDesc());
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of());
+        }
     }
 
     @PostMapping

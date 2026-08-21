@@ -1,5 +1,10 @@
 # Git Ignore for Juice Shop POS & Dynamic Pricing System
 
+# Environment & Secret files
+.env
+.env.*
+!.env.example
+
 # Build directories
 target/
 backend/target/

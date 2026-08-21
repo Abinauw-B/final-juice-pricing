@@ -793,6 +793,15 @@
                 products = res;
               } else if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) {
                 products = res.updatedPrices;
+              } else if (res && (res.id || res.productId)) {
+                const pId = res.id || res.productId;
+                const idx = products.findIndex(p => p.id === pId);
+                if (idx !== -1) {
+                  products[idx] = { ...products[idx], ...res };
+                } else {
+                  fetchProductList();
+                  return;
+                }
               } else {
                 fetchProductList();
                 return;

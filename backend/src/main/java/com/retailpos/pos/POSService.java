@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @Service
@@ -27,8 +29,9 @@ public class POSService {
     private final com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService;
     private final com.retailpos.pricing.PriceLockService priceLockService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final TransactionTemplate transactionTemplate;
 
-    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService, com.retailpos.pricing.PriceLockService priceLockService, SimpMessagingTemplate messagingTemplate) {
+    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService, com.retailpos.pricing.PriceLockService priceLockService, SimpMessagingTemplate messagingTemplate, PlatformTransactionManager transactionManager) {
         this.productRepository = productRepository;
         this.salesOrderRepository = salesOrderRepository;
         this.priceHistoryRepository = priceHistoryRepository;
@@ -37,6 +40,7 @@ public class POSService {
         this.priceAdjustmentService = priceAdjustmentService;
         this.priceLockService = priceLockService;
         this.messagingTemplate = messagingTemplate;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
     public static class CartItemRequest {
@@ -222,7 +226,8 @@ public class POSService {
         }
     }
 
-    @Transactional
+    private final Map<String, java.util.concurrent.CompletableFuture<CheckoutResponse>> pendingIdempotencyRequests = new java.util.concurrent.ConcurrentHashMap<>();
+
     public CheckoutResponse processCheckout(CheckoutRequest request) {
         log.info("POS checkout request received with {} items", request != null && request.getItems() != null ? request.getItems().size() : 0);
 
@@ -231,12 +236,13 @@ public class POSService {
             throw new IllegalArgumentException("Cart cannot be empty for checkout");
         }
 
-        // Idempotency check: Return existing order if idempotency key already processed
+        // Idempotency check: Return existing order if idempotency key already processed or in progress
         if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
-            Optional<SalesOrder> existingOrder = salesOrderRepository.findByIdempotencyKey(request.getIdempotencyKey());
+            String key = request.getIdempotencyKey();
+            Optional<SalesOrder> existingOrder = salesOrderRepository.findByIdempotencyKey(key);
             if (existingOrder.isPresent()) {
                 SalesOrder existing = existingOrder.get();
-                log.info("Idempotent checkout request detected for key {}. Returning existing order #{}", request.getIdempotencyKey(), existing.getOrderNumber());
+                log.info("Idempotent checkout request detected for key {}. Returning existing order #{}", key, existing.getOrderNumber());
                 List<OrderItemResponse> existingItems = existing.getItems().stream().map(i ->
                         OrderItemResponse.builder()
                                 .productName(i.getProductName())
@@ -260,7 +266,59 @@ public class POSService {
                         .items(existingItems)
                         .build();
             }
+
+            java.util.concurrent.CompletableFuture<CheckoutResponse> future = new java.util.concurrent.CompletableFuture<>();
+            java.util.concurrent.CompletableFuture<CheckoutResponse> previous = pendingIdempotencyRequests.putIfAbsent(key, future);
+            if (previous != null) {
+                try {
+                    return previous.get(15, java.util.concurrent.TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    log.warn("Error waiting for concurrent idempotent checkout for key {}", key, e);
+                    Optional<SalesOrder> retryOrder = salesOrderRepository.findByIdempotencyKey(key);
+                    if (retryOrder.isPresent()) {
+                        SalesOrder existing = retryOrder.get();
+                        List<OrderItemResponse> existingItems = existing.getItems().stream().map(i ->
+                                OrderItemResponse.builder()
+                                        .productName(i.getProductName())
+                                        .quantity(i.getQuantity())
+                                        .cupSizeMl(i.getCupSizeMl())
+                                        .unitPrice(i.getUnitPrice())
+                                        .totalPrice(i.getTotalPrice())
+                                        .volumeDeductedMl(i.getVolumeDeductedMl())
+                                        .build()
+                        ).toList();
+
+                        return CheckoutResponse.builder()
+                                .success(true)
+                                .orderId(existing.getId())
+                                .orderNumber(existing.getOrderNumber())
+                                .message("Order processed successfully (idempotent duplicate)")
+                                .totalAmount(existing.getTotalAmount())
+                                .paymentMethod(existing.getPaymentMethod())
+                                .paymentStatus(existing.getPaymentStatus())
+                                .timestamp(existing.getCreatedAt())
+                                .items(existingItems)
+                                .build();
+                    }
+                }
+            }
+
+            try {
+                CheckoutResponse res = transactionTemplate.execute(status -> doProcessCheckout(request));
+                future.complete(res);
+                return res;
+            } catch (Exception ex) {
+                future.completeExceptionally(ex);
+                throw ex;
+            } finally {
+                pendingIdempotencyRequests.remove(key);
+            }
         }
+
+        return transactionTemplate.execute(status -> doProcessCheckout(request));
+    }
+
+    private CheckoutResponse doProcessCheckout(CheckoutRequest request) {
 
         String orderNum = "ORD-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         String paymentMethod = (request.getPaymentMethod() != null) ? request.getPaymentMethod().toUpperCase() : "CASH";
@@ -292,7 +350,8 @@ public class POSService {
             int qty = (itemReq.getQuantity() != null && itemReq.getQuantity() > 0) ? itemReq.getQuantity() : 1;
             int totalVolumeMl = cupSize * qty;
 
-            BigDecimal effectivePrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : (product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("20.00"));
+            // 100% Server Authoritative Price Determination
+            BigDecimal effectivePrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
             int effectiveVersion = product.getPriceVersion() != null ? product.getPriceVersion() : 1;
 
             if (itemReq.getPriceLockToken() != null && !itemReq.getPriceLockToken().isBlank() && priceLockService != null) {
@@ -301,9 +360,7 @@ public class POSService {
                 effectiveVersion = lock.getPriceVersion();
             } else if (itemReq.getPriceVersion() != null && product.getPriceVersion() != null) {
                 if (!itemReq.getPriceVersion().equals(product.getPriceVersion())) {
-                    if (itemReq.getLockedPrice() != null && itemReq.getLockedPrice().compareTo(product.getCurrentCupPrice()) != 0) {
-                        throw new IllegalStateException("PRICE_CHANGED: Price for product '" + product.getName() + "' changed from ₹" + itemReq.getLockedPrice() + " to ₹" + product.getCurrentCupPrice() + ". Please refresh cart.");
-                    }
+                    throw new IllegalStateException("PRICE_CHANGED: Price version mismatch for '" + product.getName() + "'. Server current price is ₹" + effectivePrice + ". Please refresh cart.");
                 }
             }
 
@@ -349,20 +406,54 @@ public class POSService {
         salesOrder.setTotalAmount(orderTotal);
         salesOrder.setItems(orderItems);
 
-        SalesOrder savedOrder = salesOrderRepository.save(salesOrder);
-        log.info("Order created and items persisted: OrderID={}, OrderNumber={}", savedOrder.getId(), savedOrder.getOrderNumber());
+        SalesOrder savedOrder;
+        try {
+            savedOrder = salesOrderRepository.save(salesOrder);
+            log.info("Order created and items persisted: OrderID={}, OrderNumber={}", savedOrder.getId(), savedOrder.getOrderNumber());
+        } catch (org.springframework.dao.DataIntegrityViolationException dive) {
+            if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
+                Optional<SalesOrder> existingOrder = salesOrderRepository.findByIdempotencyKey(request.getIdempotencyKey());
+                if (existingOrder.isPresent()) {
+                    SalesOrder existing = existingOrder.get();
+                    log.info("Concurrent idempotent duplicate request caught for key {}. Returning existing order #{}", request.getIdempotencyKey(), existing.getOrderNumber());
+                    List<OrderItemResponse> existingItems = existing.getItems().stream().map(i ->
+                            OrderItemResponse.builder()
+                                    .productName(i.getProductName())
+                                    .quantity(i.getQuantity())
+                                    .cupSizeMl(i.getCupSizeMl())
+                                    .unitPrice(i.getUnitPrice())
+                                    .totalPrice(i.getTotalPrice())
+                                    .volumeDeductedMl(i.getVolumeDeductedMl())
+                                    .build()
+                    ).toList();
+
+                    return CheckoutResponse.builder()
+                            .success(true)
+                            .orderId(existing.getId())
+                            .orderNumber(existing.getOrderNumber())
+                            .message("Order processed successfully (idempotent duplicate)")
+                            .totalAmount(existing.getTotalAmount())
+                            .paymentMethod(existing.getPaymentMethod())
+                            .paymentStatus(existing.getPaymentStatus())
+                            .timestamp(existing.getCreatedAt())
+                            .items(existingItems)
+                            .build();
+                }
+            }
+            throw dive;
+        }
 
         // Authoritative Bar Stock Exchange dynamic price recalculation across all products
         if (marketCrashService == null || !marketCrashService.isCrashActive()) {
-            priceAdjustmentService.evaluateAllProducts();
-            log.info("Pricing recalculated for order {}", savedOrder.getOrderNumber());
             try {
+                priceAdjustmentService.evaluateAllProducts();
+                log.info("Pricing recalculated for order {}", savedOrder.getOrderNumber());
                 if (messagingTemplate != null) {
                     messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
                     log.info("Price broadcast to /topic/prices");
                 }
             } catch (Exception e) {
-                log.warn("WebSocket price broadcast error: {}", e.getMessage());
+                log.warn("Non-fatal dynamic pricing evaluation error during checkout: {}", e.getMessage());
             }
         }
 

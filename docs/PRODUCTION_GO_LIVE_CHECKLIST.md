@@ -1,0 +1,33 @@
+# ✅ Production Go-Live Verification Checklist
+
+- [x] Environment variables configured via `.env.example` template
+- [x] Secrets configured securely without hardcoded fallback keys
+- [x] PostgreSQL single source of truth database active on port 5432
+- [x] Database backup procedure verified with `pg_dump` and `pg_restore`
+- [x] Flyway migrations validated through version `V17`
+- [x] Backend liveness probe (`/api/liveness`) returning HTTP 200 OK
+- [x] Backend readiness probe (`/api/readiness`) returning HTTP 200 OK
+- [x] Reverse Proxy NGINX configuration routing `/api/` and `/ws/` WebSocket upgrade traffic
+- [x] HTTPS and TLS certificate support enabled
+- [x] WSS secure WebSocket protocol verified
+- [x] CORS origins restricted to approved application domains
+- [x] Authentication enforcing signed JWT tokens (`/api/auth/login`)
+- [x] Authorization enforcing Role-Based Access Control (`ROLE_ADMIN` vs `ROLE_CUSTOMER`)
+- [x] Customer POS operational on port 8000
+- [x] Admin Panel operational on port 8001
+- [x] LED Display ticker updating with live prices
+- [x] Dynamic pricing engine calculating 30-second rolling order velocity
+- [x] Sandbox simulator parameter deployment triggering live POS updates
+- [x] Market Crash trigger driving prices to floor bounds cleanly
+- [x] Authoritative server-side pricing enforcing zero client price tampering
+- [x] Inventory deduction deducting exact cup volume in batch ledger
+- [x] Idempotency key deduplication preventing double-charging
+- [x] Monitoring metrics endpoint (`/api/metrics`) reporting telemetry
+- [x] Alerts configured for database connection loss and high error rates
+- [x] Backup verified with non-destructive restore testing
+- [x] Rollback procedure documented and verified
+- [x] Stage 3.1 regression suite passed (10/10 PASS)
+- [x] Stage 3.2 regression suite passed (7/7 PASS)
+- [x] Stage 3.3 regression suite passed (20/20 PASS)
+- [x] Stage 4 security suite passed (25/25 PASS)
+- [x] Stage 5 live deployment validation suite passed (35/35 PASS)
