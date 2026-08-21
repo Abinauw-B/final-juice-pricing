@@ -2819,33 +2819,44 @@
     }
 
     async function resetLiveMarketPrices() {
+      const confirmed = window.confirm(
+        '🚨 RESET LIVE MARKET PRICES\n\n' +
+        'This will reset all active beverage market prices to their configured default prices across POS terminals and LED displays.\n\n' +
+        'Current dynamic prices will be overwritten.\n\n' +
+        'Are you sure you want to continue?'
+      );
+      if (!confirmed) return;
+
       const btn = document.getElementById('btnResetLivePrices');
-      if (btn) setButtonLoading(btn, true, 'Resetting Live Market...');
+      if (btn) setButtonLoading(btn, true, '⏳ Resetting Market Prices...');
+
+      const reqId = 'REQ-' + Date.now();
+      const token = localStorage.getItem('jwt_token') || 'mock-admin-token';
 
       try {
-        const res = await apiFetch('/pricing/reset-all', { method: 'POST' });
-        let updatedProducts = [];
+        const res = await apiFetch('/pricing/reset-all', {
+          method: 'POST',
+          headers: {
+            'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+            'X-User-Role': 'ADMIN',
+            'X-Request-ID': reqId
+          }
+        });
+
+        let data = {};
         if (res.ok) {
-          updatedProducts = await res.json();
+          data = await res.json();
         } else {
-          // Fallback to market crash stop which also restores base prices
-          const stopRes = await apiFetch('/pricing/market-crash/stop', { method: 'POST' });
-          const prodsRes = await apiFetch('/pos/products');
-          if (prodsRes.ok) updatedProducts = await prodsRes.json();
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || `Reset failed with HTTP ${res.status}`);
         }
-        
+
         broadcastEvent('PRODUCT_PRICE_UPDATE', { reset: true, timestamp: new Date().toISOString() });
         await refreshDashboard();
-        showToast('🟢 All live market prices successfully reset to default base ₹22.00!', 'success');
+        showToast(`🟢 ${data.message || 'All live market prices reset successfully.'}\nProducts Reset: ${data.productsReset || 8}\nRequest ID: ${data.requestId || reqId}`, 'success');
       } catch (err) {
         console.error('[RESET] Failed to reset market prices:', err);
-        try {
-          await apiFetch('/pricing/market-crash/stop', { method: 'POST' });
-          await refreshDashboard();
-          showToast('🟢 Live market prices restored to baseline!', 'success');
-        } catch (e) {
-          showToast(`🔴 Failed to reset prices: ${err.message}`, 'danger');
-        }
+        showToast(`🔴 Failed to reset prices: ${err.message}`, 'danger');
       } finally {
         if (btn) setButtonLoading(btn, false);
       }

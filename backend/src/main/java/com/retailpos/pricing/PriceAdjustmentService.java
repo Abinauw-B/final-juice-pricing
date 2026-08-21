@@ -23,8 +23,9 @@ public class PriceAdjustmentService {
     private final StockPressureService stockPressureService;
     private final TimeFactorService timeFactorService;
     private final MarketCrashService marketCrashService;
+    private final AuditLogRepository auditLogRepository;
 
-    public PriceAdjustmentService(ProductRepository productRepository, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, SalesOrderItemRepository salesOrderItemRepository, JuiceBatchRepository juiceBatchRepository, DemandCalculationService demandCalculationService, StockPressureService stockPressureService, TimeFactorService timeFactorService, MarketCrashService marketCrashService) {
+    public PriceAdjustmentService(ProductRepository productRepository, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, SalesOrderItemRepository salesOrderItemRepository, JuiceBatchRepository juiceBatchRepository, DemandCalculationService demandCalculationService, StockPressureService stockPressureService, TimeFactorService timeFactorService, MarketCrashService marketCrashService, AuditLogRepository auditLogRepository) {
         this.productRepository = productRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.systemConfigRepository = systemConfigRepository;
@@ -34,6 +35,7 @@ public class PriceAdjustmentService {
         this.stockPressureService = stockPressureService;
         this.timeFactorService = timeFactorService;
         this.marketCrashService = marketCrashService;
+        this.auditLogRepository = auditLogRepository;
     }
 
     public static class PriceEvaluationResult {
@@ -446,40 +448,118 @@ public class PriceAdjustmentService {
                 .orElse(defaultVal);
     }
 
+    public static class ResetAllResponse {
+        private boolean success;
+        private String message;
+        private int productsReset;
+        private String requestId;
+        private String timestamp;
+        private List<Product> prices;
+
+        public ResetAllResponse() {}
+        public ResetAllResponse(boolean success, String message, int productsReset, String requestId, String timestamp, List<Product> prices) {
+            this.success = success;
+            this.message = message;
+            this.productsReset = productsReset;
+            this.requestId = requestId;
+            this.timestamp = timestamp;
+            this.prices = prices;
+        }
+
+        public boolean isSuccess() { return success; }
+        public void setSuccess(boolean success) { this.success = success; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+        public int getProductsReset() { return productsReset; }
+        public void setProductsReset(int productsReset) { this.productsReset = productsReset; }
+        public String getRequestId() { return requestId; }
+        public void setRequestId(String requestId) { this.requestId = requestId; }
+        public String getTimestamp() { return timestamp; }
+        public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+        public List<Product> getPrices() { return prices; }
+        public void setPrices(List<Product> prices) { this.prices = prices; }
+    }
+
     @Transactional
-    public List<Product> resetAllProductsToDefault() {
+    public ResetAllResponse resetAllProductsToDefault(String reqId, String actor) {
+        String requestId = (reqId != null && !reqId.isBlank()) ? reqId : "REQ-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        String userActor = (actor != null && !actor.isBlank()) ? actor : "ADMIN";
+
+        // Stop Market Crash if currently active
+        if (marketCrashService != null && marketCrashService.isCrashActive()) {
+            marketCrashService.stopMarketCrash();
+        }
+
         List<Product> products = productRepository.findAll();
         LocalDateTime now = LocalDateTime.now();
-        for (Product product : products) {
-            BigDecimal oldPrice = product.getCurrentCupPrice();
-            BigDecimal defP = product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("22.00");
 
-            product.setCurrentCupPrice(defP);
-            product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
-            product.setLastPriceChangeTimestamp(now);
-            productRepository.save(product);
+        // 1. Validation phase: check default prices vs min/max bounds
+        for (Product p : products) {
+            BigDecimal defP = p.getDefaultCupPrice();
+            if (defP == null) {
+                throw new IllegalStateException("Product " + p.getName() + " has no configured default price");
+            }
+            BigDecimal minP = p.getMinCupPrice() != null ? p.getMinCupPrice() : new BigDecimal("18.00");
+            BigDecimal maxP = p.getMaxCupPrice() != null ? p.getMaxCupPrice() : new BigDecimal("25.00");
 
+            if (defP.compareTo(minP) < 0 || defP.compareTo(maxP) > 0) {
+                throw new IllegalArgumentException(String.format("Product %s default price (₹%s) violates price bounds [₹%s, ₹%s]", p.getName(), defP, minP, maxP));
+            }
+        }
+
+        // 2. Execution phase: reset prices, increment version, log history
+        int resetCount = 0;
+        for (Product p : products) {
+            BigDecimal oldPrice = p.getCurrentCupPrice();
+            BigDecimal defP = p.getDefaultCupPrice();
+
+            p.setCurrentCupPrice(defP);
+            p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
+            p.setLastPriceChangeTimestamp(now);
+            productRepository.save(p);
+            resetCount++;
+
+            // Create price history row for tracking
             PriceHistory history = PriceHistory.builder()
-                    .productId(product.getId())
+                    .productId(p.getId())
                     .oldPrice(oldPrice != null ? oldPrice : defP)
                     .newPrice(defP)
                     .demandScore(50.0)
                     .stockPressurePct(0.0)
                     .timeFactorMultiplier(1.0)
-                    .explanation(String.format("↺ Admin manually reset price to base default ₹%s.", defP))
+                    .explanation(String.format("ADMIN_RESET_TO_DEFAULT: Reset from ₹%s to default ₹%s. Actor: %s, ReqId: %s", oldPrice, defP, userActor, requestId))
                     .createdAt(now)
                     .build();
             priceHistoryRepository.save(history);
         }
 
-        List<Product> updatedList = productRepository.findAll();
-        try {
-            if (messagingTemplate != null) {
-                messagingTemplate.convertAndSend("/topic/prices", updatedList);
-                messagingTemplate.convertAndSend("/topic/products", updatedList);
-            }
-        } catch (Exception e) {}
+        // 3. Audit trail entry
+        if (auditLogRepository != null) {
+            AuditLog log = AuditLog.builder()
+                    .userId(1L)
+                    .action("RESET_ALL_MARKET_PRICES")
+                    .module("PRICING")
+                    .details(String.format("Reset %d active products to default prices. RequestId: %s, Actor: %s", resetCount, requestId, userActor))
+                    .ipAddress("127.0.0.1")
+                    .createdAt(now)
+                    .build();
+            auditLogRepository.save(log);
+        }
 
-        return updatedList;
+        List<Product> updatedList = productRepository.findAll();
+
+        return new ResetAllResponse(
+                true,
+                "All market prices reset to configured default prices successfully",
+                resetCount,
+                requestId,
+                now.toString(),
+                updatedList
+        );
+    }
+
+    @Transactional
+    public ResetAllResponse resetAllProductsToDefault() {
+        return resetAllProductsToDefault(null, "ADMIN");
     }
 }

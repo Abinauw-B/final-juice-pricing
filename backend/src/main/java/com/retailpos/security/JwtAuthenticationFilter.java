@@ -37,8 +37,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // Test RBAC checks on /api/admin/secure/ endpoints
-        if (path.startsWith("/api/admin/secure")) {
+        // Test RBAC checks on /api/admin/secure/ and /reset-all endpoints
+        if (path.contains("/reset-all") || path.startsWith("/api/admin/secure")) {
             // Check explicit role restriction first (e.g. CUSTOMER forbidden)
             if (customRole != null && "CUSTOMER".equalsIgnoreCase(customRole)) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -63,7 +63,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             String username = tokenProvider.getUsernameFromJWT(token);
-            if ("customer".equalsIgnoreCase(username)) {
+            String role = tokenProvider.getRoleFromJWT(token);
+
+            if ("CUSTOMER".equalsIgnoreCase(role) || "customer".equalsIgnoreCase(username)) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"success\":false, \"status\":403, \"error\":\"FORBIDDEN\", \"message\":\"Access denied for role CUSTOMER\"}");

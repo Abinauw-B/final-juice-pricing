@@ -188,8 +188,25 @@ public class PricingController {
     }
 
     @PostMapping({"/reset-all", "/admin/reset-all"})
-    public ResponseEntity<List<Product>> resetAllPrices() {
-        return ResponseEntity.ok(priceAdjustmentService.resetAllProductsToDefault());
+    public ResponseEntity<PriceAdjustmentService.ResetAllResponse> resetAllPrices(
+            @RequestHeader(value = "X-Request-ID", required = false) String headerReqId,
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
+
+        String reqId = (headerReqId != null && !headerReqId.isBlank()) ? headerReqId : "REQ-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
+
+        // 1. Transactional Database Reset Execution (Commit occurs before method returns)
+        PriceAdjustmentService.ResetAllResponse response = priceAdjustmentService.resetAllProductsToDefault(reqId, actor);
+
+        // 2. Broadcast STOMP ONLY AFTER TRANSACTION COMMIT SUCCESS
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/prices", response.getPrices());
+                messagingTemplate.convertAndSend("/topic/products", response.getPrices());
+            }
+        } catch (Exception e) {}
+
+        return ResponseEntity.ok(response);
     }
 
     @RequestMapping(value = {"/evaluate", "/admin/evaluate"}, method = {RequestMethod.GET, RequestMethod.POST})
