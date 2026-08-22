@@ -1,6 +1,8 @@
 package com.retailpos.pricing;
 
 import com.retailpos.domain.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +13,8 @@ import java.util.Optional;
 
 @Service
 public class PriceAdjustmentService {
+
+    private static final Logger log = LoggerFactory.getLogger(PriceAdjustmentService.class);
 
     private final ProductRepository productRepository;
     private final PriceHistoryRepository priceHistoryRepository;
@@ -523,9 +527,11 @@ public class PriceAdjustmentService {
         private BigDecimal maxPrice;
         private String calculationBreakdown;
 
+        private Integer priceVersion;
+
         public PriceDebugDTO() {}
 
-        public PriceDebugDTO(Long productId, String productName, String flavour, BigDecimal currentPrice, double targetSales, int windowW0, int windowW1, int windowW2, double weightedSales, double demandRatio, String demandLevelCategory, int priceMovement, BigDecimal projectedNewPrice, BigDecimal minPrice, BigDecimal maxPrice, String calculationBreakdown) {
+        public PriceDebugDTO(Long productId, String productName, String flavour, BigDecimal currentPrice, double targetSales, int windowW0, int windowW1, int windowW2, double weightedSales, double demandRatio, String demandLevelCategory, int priceMovement, BigDecimal projectedNewPrice, BigDecimal minPrice, BigDecimal maxPrice, String calculationBreakdown, Integer priceVersion) {
             this.productId = productId;
             this.productName = productName;
             this.flavour = flavour;
@@ -542,7 +548,11 @@ public class PriceAdjustmentService {
             this.minPrice = minPrice;
             this.maxPrice = maxPrice;
             this.calculationBreakdown = calculationBreakdown;
+            this.priceVersion = priceVersion;
         }
+
+        public Integer getPriceVersion() { return priceVersion; }
+        public void setPriceVersion(Integer priceVersion) { this.priceVersion = priceVersion; }
 
         public Long getProductId() { return productId; }
         public void setProductId(Long productId) { this.productId = productId; }
@@ -556,20 +566,26 @@ public class PriceAdjustmentService {
         public void setTargetSales(double targetSales) { this.targetSales = targetSales; }
         public int getWindowW0() { return windowW0; }
         public void setWindowW0(int windowW0) { this.windowW0 = windowW0; }
+        public int getW0() { return windowW0; }
         public int getWindowW1() { return windowW1; }
         public void setWindowW1(int windowW1) { this.windowW1 = windowW1; }
+        public int getW1() { return windowW1; }
         public int getWindowW2() { return windowW2; }
         public void setWindowW2(int windowW2) { this.windowW2 = windowW2; }
+        public int getW2() { return windowW2; }
         public double getWeightedSales() { return weightedSales; }
         public void setWeightedSales(double weightedSales) { this.weightedSales = weightedSales; }
         public double getDemandRatio() { return demandRatio; }
         public void setDemandRatio(double demandRatio) { this.demandRatio = demandRatio; }
         public String getDemandLevelCategory() { return demandLevelCategory; }
         public void setDemandLevelCategory(String demandLevelCategory) { this.demandLevelCategory = demandLevelCategory; }
+        public String getDemandLevel() { return demandLevelCategory; }
         public int getPriceMovement() { return priceMovement; }
         public void setPriceMovement(int priceMovement) { this.priceMovement = priceMovement; }
+        public int getMovement() { return priceMovement; }
         public BigDecimal getProjectedNewPrice() { return projectedNewPrice; }
         public void setProjectedNewPrice(BigDecimal projectedNewPrice) { this.projectedNewPrice = projectedNewPrice; }
+        public BigDecimal getProjectedPrice() { return projectedNewPrice; }
         public BigDecimal getMinPrice() { return minPrice; }
         public void setMinPrice(BigDecimal minPrice) { this.minPrice = minPrice; }
         public BigDecimal getMaxPrice() { return maxPrice; }
@@ -616,7 +632,8 @@ public class PriceAdjustmentService {
 
         return new PriceDebugDTO(
                 p.getId(), p.getName(), p.getFlavour(), currentPrice, targetSales,
-                w0, w1, w2, weightedSales, demandRatio, category, movement, projectedPrice, floor, ceiling, breakdown
+                w0, w1, w2, weightedSales, demandRatio, category, movement, projectedPrice, floor, ceiling, breakdown,
+                p.getPriceVersion() != null ? p.getPriceVersion() : 1
         );
     }
 

@@ -318,7 +318,7 @@ public class PricingEngineService {
                 messagingTemplate.convertAndSend("/topic/products", productRepository.findByIsActiveTrueOrderByIdAsc());
                 messagingTemplate.convertAndSend("/topic/led-display", cycleResult);
                 for (ProductPriceDTO dto : dtoList) {
-                    log.info("[STOMP] topic=/topic/prices productId={} priceVersion={} price={}", dto.getBeverageId(), dto.getPriceVersion(), dto.getCurrentPrice());
+                    log.info("[STOMP] topic=/topic/prices productId={} price={}", dto.getBeverageId(), dto.getCurrentPrice());
                 }
             }
         } catch (Exception e) {

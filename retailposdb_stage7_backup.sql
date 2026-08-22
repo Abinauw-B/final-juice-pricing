@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict AYBkjxlP7Sevt8JHfoGSKhQeMeejpATeGjvrldnGMbjsW9qUwCIipV1cDoXbBgD
+\restrict TQQ57bBhHb9YNd3Ye76MxrDLqtWbwjWITX53OaPw9SRalc6n4XXDaYQyttz13mx
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -6407,6 +6407,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14544	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 82500 ml	2026-08-21 13:30:55.70853
 14810	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 40750 ml	2026-08-21 15:12:33.286431
 17688	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 188000 ml	2026-08-21 16:01:56.409344
+18425	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 172500 ml	2026-08-22 11:25:45.294958
 5819	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 368500 ml	2026-08-21 12:03:38.729995
 5947	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 342000 ml	2026-08-21 12:03:49.278517
 7248	7	87	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 7250 ml	2026-08-21 12:23:22.396776
@@ -6589,6 +6590,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14549	1	45	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 81000 ml	2026-08-21 13:30:58.123727
 14813	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 16500 ml	2026-08-21 15:12:33.307144
 17691	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 84250 ml	2026-08-21 16:01:59.716778
+18426	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 180250 ml	2026-08-22 11:25:45.305025
 16827	5	5	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 10250 ml	2026-08-21 15:48:03.445786
 16828	2	2	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 6000 ml	2026-08-21 15:48:03.450093
 16829	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 191250 ml	2026-08-21 15:48:03.454624
@@ -6716,6 +6718,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17702	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 194250 ml	2026-08-21 16:02:10.54227
 16837	2	2	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 5000 ml	2026-08-21 15:48:05.318404
 17727	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 133250 ml	2026-08-21 16:02:35.738934
+18427	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 53000 ml	2026-08-22 11:25:45.310904
+18439	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 113000 ml	2026-08-22 11:25:45.326365
 5824	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 367250 ml	2026-08-21 12:03:39.303131
 5827	1	77	BATCH_CREATED	250000	Registered new 20L juice container batch: BATCH-MAN-3FEF7	2026-08-21 12:03:39.754636
 5858	7	7	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 7250 ml	2026-08-21 12:03:41.512793
@@ -7355,6 +7359,10 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17756	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 75000 ml	2026-08-21 16:03:05.081603
 17757	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 132000 ml	2026-08-21 16:03:06.245245
 17758	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 193750 ml	2026-08-21 16:03:07.020082
+18429	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 172000 ml	2026-08-22 11:25:45.330899
+18431	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 184500 ml	2026-08-22 11:25:45.343979
+18437	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 179750 ml	2026-08-22 11:25:45.371188
+18442	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 180750 ml	2026-08-22 11:25:45.399698
 16981	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 180750 ml	2026-08-21 15:50:30.963206
 16983	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 180250 ml	2026-08-21 15:50:32.933449
 16984	5	5	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 7500 ml	2026-08-21 15:50:33.775303
@@ -7537,6 +7545,9 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17776	2	152	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 192750 ml	2026-08-21 17:03:38.518311
 17777	8	158	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 185000 ml	2026-08-21 17:03:38.537358
 17782	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 131500 ml	2026-08-21 17:06:39.748671
+18432	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 184250 ml	2026-08-22 11:25:45.356058
+18436	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 181000 ml	2026-08-22 11:25:45.366067
+18444	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 217750 ml	2026-08-22 11:25:45.39648
 17016	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 152250 ml	2026-08-21 15:51:06.200694
 17017	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 152000 ml	2026-08-21 15:51:07.147867
 17018	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 151750 ml	2026-08-21 15:51:08.156014
@@ -7601,6 +7612,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14558	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 78750 ml	2026-08-21 13:31:01.34005
 14828	8	8	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 18250 ml	2026-08-21 15:12:33.80607
 17783	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 5500 ml	2026-08-22 10:42:48.074834
+18435	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 184000 ml	2026-08-22 11:25:45.364606
+18445	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 167500 ml	2026-08-22 11:25:45.416542
 5844	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 364000 ml	2026-08-21 12:03:40.701711
 5927	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 347000 ml	2026-08-21 12:03:47.435425
 7278	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 26750 ml	2026-08-21 12:23:27.48746
@@ -7638,6 +7651,14 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14542	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 83000 ml	2026-08-21 13:30:54.689664
 14829	6	81	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 10750 ml	2026-08-21 15:12:33.821728
 17784	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 5250 ml	2026-08-22 10:42:48.178281
+18446	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 217500 ml	2026-08-22 11:25:48.050806
+18447	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 112500 ml	2026-08-22 11:31:43.92244
+18449	1	46	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 217000 ml	2026-08-22 11:34:44.012966
+18450	2	152	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 171250 ml	2026-08-22 11:34:44.017799
+18451	3	153	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 112000 ml	2026-08-22 11:34:44.023214
+18452	4	154	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 179000 ml	2026-08-22 11:34:44.029527
+18453	5	155	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 183500 ml	2026-08-22 11:34:44.03439
+18454	6	156	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 52250 ml	2026-08-22 11:34:44.038097
 17027	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 177250 ml	2026-08-21 15:51:17.409137
 17028	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 150750 ml	2026-08-21 15:51:18.356823
 17029	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 150500 ml	2026-08-21 15:51:19.28868
@@ -7703,6 +7724,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14566	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 76750 ml	2026-08-21 13:31:04.37671
 14830	2	2	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 12750 ml	2026-08-21 15:12:33.841211
 17785	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 5000 ml	2026-08-22 10:42:48.217944
+18448	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 179500 ml	2026-08-22 11:31:47.360238
 17058	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 146500 ml	2026-08-21 15:51:48.481867
 17059	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 174500 ml	2026-08-21 15:51:49.395453
 17060	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 7000 ml	2026-08-21 15:51:50.44709
@@ -7760,6 +7782,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14579	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 73500 ml	2026-08-21 13:31:09.118157
 14831	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 16250 ml	2026-08-21 15:12:33.872145
 17786	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 4750 ml	2026-08-22 10:42:48.246438
+18455	7	157	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 180250 ml	2026-08-22 11:34:44.042311
+18456	23	247	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 19000 ml	2026-08-22 11:34:44.047061
 17072	5	5	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 7000 ml	2026-08-21 15:52:02.657357
 17073	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 173000 ml	2026-08-21 15:52:03.586231
 17074	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 15500 ml	2026-08-21 15:52:04.579549
@@ -7819,6 +7843,13 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14600	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 68250 ml	2026-08-21 13:31:16.558422
 14832	5	5	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 18500 ml	2026-08-21 15:12:33.877278
 17787	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 4500 ml	2026-08-22 10:42:48.282466
+18457	1	46	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 216500 ml	2026-08-22 11:35:38.511062
+18458	2	152	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 170750 ml	2026-08-22 11:35:38.530375
+18459	3	153	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 111500 ml	2026-08-22 11:35:38.541757
+18460	4	154	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 178500 ml	2026-08-22 11:35:38.552354
+18461	5	155	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 183000 ml	2026-08-22 11:35:38.565362
+18462	6	156	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 51750 ml	2026-08-22 11:35:38.574821
+18463	7	157	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 179750 ml	2026-08-22 11:35:38.584628
 17083	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 145000 ml	2026-08-21 15:52:13.69953
 17084	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 171750 ml	2026-08-21 15:52:14.718389
 17085	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 6500 ml	2026-08-21 15:52:15.693255
@@ -7874,6 +7905,19 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14609	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 66000 ml	2026-08-21 13:31:19.143177
 14833	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 15750 ml	2026-08-21 15:12:33.993423
 17788	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 4250 ml	2026-08-22 10:42:48.307
+18464	23	247	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 18500 ml	2026-08-22 11:35:38.592792
+18465	1	46	POS_SALE	-1250	Deducted 1250 ml for sale. Remaining: 215250 ml	2026-08-22 11:35:42.239975
+18466	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 215000 ml	2026-08-22 11:35:43.451269
+18468	1	46	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 214000 ml	2026-08-22 11:35:47.684309
+18475	7	287	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-LYC-715AF	2026-08-22 11:35:47.793075
+18477	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 213750 ml	2026-08-22 11:35:47.828015
+18499	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 179000 ml	2026-08-22 11:35:47.943761
+18500	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 178750 ml	2026-08-22 11:35:47.950352
+18503	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 213000 ml	2026-08-22 11:35:47.959439
+18510	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 177250 ml	2026-08-22 11:35:47.982488
+18512	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 169750 ml	2026-08-22 11:35:47.989557
+18521	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 110000 ml	2026-08-22 11:35:48.02032
+18524	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 169000 ml	2026-08-22 11:35:48.031441
 17093	8	8	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 1000 ml	2026-08-21 15:52:23.761959
 17094	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 144250 ml	2026-08-21 15:52:24.880864
 17095	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 144000 ml	2026-08-21 15:52:25.749939
@@ -7934,6 +7978,9 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14412	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 115250 ml	2026-08-21 13:29:50.949195
 14621	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 63000 ml	2026-08-21 13:31:23.386791
 17789	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 4000 ml	2026-08-22 10:42:48.330217
+18467	1	46	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 214500 ml	2026-08-22 11:35:47.507693
+18491	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 111000 ml	2026-08-22 11:35:47.901734
+18495	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 170000 ml	2026-08-22 11:35:47.936733
 17098	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 170500 ml	2026-08-21 15:52:28.827299
 17099	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 170250 ml	2026-08-21 15:52:30.006108
 17100	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 170000 ml	2026-08-21 15:52:30.890797
@@ -7978,6 +8025,15 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14488	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 96500 ml	2026-08-21 13:30:20.205975
 14551	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 80500 ml	2026-08-21 13:30:58.818051
 17790	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 3750 ml	2026-08-22 10:42:48.349883
+18469	1	281	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-MAN-77821	2026-08-22 11:35:47.720592
+18470	2	282	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-LEM-CC81D	2026-08-22 11:35:47.735721
+18471	3	283	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-MIN-3F8B0	2026-08-22 11:35:47.748092
+18472	4	284	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-ORA-8FD45	2026-08-22 11:35:47.758622
+18473	5	285	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-STR-FB463	2026-08-22 11:35:47.770062
+18474	6	286	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-GRA-0CFDB	2026-08-22 11:35:47.779917
+18476	8	288	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-PIN-3FC18	2026-08-22 11:35:47.803398
+18490	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 178000 ml	2026-08-22 11:35:47.901734
+18516	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 50500 ml	2026-08-22 11:35:48.008213
 17101	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 169750 ml	2026-08-21 15:52:31.975379
 17102	2	2	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 3250 ml	2026-08-21 15:52:32.826779
 17103	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 169500 ml	2026-08-21 15:52:33.960598
@@ -8100,6 +8156,20 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14527	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 86750 ml	2026-08-21 13:30:45.221856
 14572	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 75250 ml	2026-08-21 13:31:06.602815
 17791	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 3500 ml	2026-08-22 10:42:48.375442
+18478	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 178250 ml	2026-08-22 11:35:47.856691
+18479	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 170500 ml	2026-08-22 11:35:47.856691
+18482	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 167250 ml	2026-08-22 11:35:47.871338
+18484	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 213500 ml	2026-08-22 11:35:47.874864
+18485	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 51250 ml	2026-08-22 11:35:47.879427
+18487	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 179500 ml	2026-08-22 11:35:47.888497
+18492	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 170250 ml	2026-08-22 11:35:47.904757
+18494	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 51000 ml	2026-08-22 11:35:47.915453
+18498	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 166750 ml	2026-08-22 11:35:47.939199
+18507	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 212750 ml	2026-08-22 11:35:47.972604
+18514	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 169500 ml	2026-08-22 11:35:47.999654
+18515	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 178500 ml	2026-08-22 11:35:48.006701
+18519	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 169250 ml	2026-08-22 11:35:48.015776
+18526	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 181500 ml	2026-08-22 11:35:48.025372
 17115	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 142250 ml	2026-08-21 15:52:45.943304
 17116	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 142000 ml	2026-08-21 15:52:47.186756
 17117	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 141750 ml	2026-08-21 15:52:48.072871
@@ -8213,6 +8283,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14452	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 105500 ml	2026-08-21 13:30:03.003686
 14582	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 72750 ml	2026-08-21 13:31:10.163046
 17792	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 3250 ml	2026-08-22 10:42:48.395975
+18480	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 182750 ml	2026-08-22 11:35:47.863308
 17122	8	8	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 500 ml	2026-08-21 15:52:53.173312
 17123	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 141000 ml	2026-08-21 15:52:54.289535
 17124	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 6500 ml	2026-08-21 15:52:55.069392
@@ -8280,6 +8351,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 18029	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 176750 ml	2026-08-22 10:45:00.236501
 18036	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 190000 ml	2026-08-22 10:45:00.279201
 18049	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 124000 ml	2026-08-22 10:45:00.374142
+18481	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 51500 ml	2026-08-22 11:35:47.866836
+18486	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 182500 ml	2026-08-22 11:35:47.888497
 5863	7	7	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 6000 ml	2026-08-21 12:03:42.164459
 5876	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 359750 ml	2026-08-21 12:03:43.209423
 7290	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 23750 ml	2026-08-21 12:23:30.515151
@@ -8397,6 +8470,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17891	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 188500 ml	2026-08-22 10:44:59.237467
 17990	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 245250 ml	2026-08-22 10:44:59.852023
 18019	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 193750 ml	2026-08-22 10:45:00.149131
+18483	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 111250 ml	2026-08-22 11:35:47.869768
+18488	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 213250 ml	2026-08-22 11:35:47.893049
 17132	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 140000 ml	2026-08-21 15:53:03.174272
 17133	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 14750 ml	2026-08-21 15:53:04.198429
 17134	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 168250 ml	2026-08-21 15:53:05.361601
@@ -8453,6 +8528,11 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17894	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 194500 ml	2026-08-22 10:44:59.240564
 17906	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 180750 ml	2026-08-22 10:44:59.270326
 17997	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 185000 ml	2026-08-22 10:44:59.953446
+18489	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 167000 ml	2026-08-22 11:35:47.90022
+18497	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 110750 ml	2026-08-22 11:35:47.939199
+18506	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 110250 ml	2026-08-22 11:35:47.972604
+18511	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 166250 ml	2026-08-22 11:35:47.983486
+18513	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 181750 ml	2026-08-22 11:35:47.992583
 5871	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 361000 ml	2026-08-21 12:03:42.791471
 5929	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 346500 ml	2026-08-21 12:03:47.537548
 7294	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 22750 ml	2026-08-21 12:23:31.625453
@@ -8491,6 +8571,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17808	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 69000 ml	2026-08-22 10:44:57.408819
 17810	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 197000 ml	2026-08-22 10:44:57.423378
 17888	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 248750 ml	2026-08-22 10:44:59.150402
+18493	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 182250 ml	2026-08-22 11:35:47.908289
+18496	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 179250 ml	2026-08-22 11:35:47.939199
 17138	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 139000 ml	2026-08-21 15:53:09.240402
 17139	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 168000 ml	2026-08-21 15:53:10.461906
 17140	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 138750 ml	2026-08-21 15:53:11.162031
@@ -8606,6 +8688,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14583	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 72500 ml	2026-08-21 13:31:10.478697
 14853	1	45	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 38750 ml	2026-08-21 15:13:03.44236
 17811	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 183750 ml	2026-08-22 10:44:57.396684
+18501	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 182000 ml	2026-08-22 11:35:47.954401
+18505	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 50750 ml	2026-08-22 11:35:47.965512
 17162	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 166750 ml	2026-08-21 15:53:33.623001
 17163	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 199750 ml	2026-08-21 15:53:34.525571
 17164	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 166500 ml	2026-08-21 15:53:35.567376
@@ -8755,6 +8839,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 18009	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 190750 ml	2026-08-22 10:45:00.10391
 18026	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 177000 ml	2026-08-22 10:45:00.218878
 18039	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 176500 ml	2026-08-22 10:45:00.291415
+18502	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 177750 ml	2026-08-22 11:35:47.958428
+18518	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 178250 ml	2026-08-22 11:35:48.015776
 5878	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 359250 ml	2026-08-21 12:03:43.315462
 7373	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 3750 ml	2026-08-21 12:24:06.267908
 8019	1	39	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 115250 ml	2026-08-21 12:28:38.752279
@@ -8787,6 +8873,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17987	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 126000 ml	2026-08-22 10:44:59.817253
 18010	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 191000 ml	2026-08-22 10:45:00.10391
 18033	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 190500 ml	2026-08-22 10:45:00.269212
+18504	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 110500 ml	2026-08-22 11:35:47.962496
+18509	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 166500 ml	2026-08-22 11:35:47.974608
 17199	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 164500 ml	2026-08-21 15:54:10.836933
 17200	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 5750 ml	2026-08-21 15:54:11.82152
 17203	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 164250 ml	2026-08-21 15:54:14.789556
@@ -8914,6 +9002,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17931	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 193250 ml	2026-08-22 10:44:59.439198
 17986	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 245750 ml	2026-08-22 10:44:59.812294
 18044	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 243500 ml	2026-08-22 10:45:00.320042
+18508	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 177500 ml	2026-08-22 11:35:47.97159
 17243	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 4750 ml	2026-08-21 15:54:55.234322
 17244	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 4250 ml	2026-08-21 15:54:56.323399
 17245	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 198500 ml	2026-08-21 15:54:57.439876
@@ -8976,6 +9065,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17865	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 189000 ml	2026-08-22 10:44:58.948895
 17900	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 194250 ml	2026-08-22 10:44:59.2648
 17913	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 193750 ml	2026-08-22 10:44:59.320919
+18517	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 177000 ml	2026-08-22 11:35:48.011742
+18522	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 212500 ml	2026-08-22 11:35:48.025372
 17253	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 4250 ml	2026-08-21 15:55:05.349951
 17409	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 151250 ml	2026-08-21 15:57:43.515247
 17411	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 108250 ml	2026-08-21 15:57:45.531957
@@ -9044,6 +9135,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 17257	2	2	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 1000 ml	2026-08-21 15:55:09.291764
 17410	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 198750 ml	2026-08-21 15:57:44.494562
 18027	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 193500 ml	2026-08-22 10:45:00.219918
+18520	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 166000 ml	2026-08-22 11:35:48.016775
+18525	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 212250 ml	2026-08-22 11:35:48.032454
 5884	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 357750 ml	2026-08-21 12:03:43.635969
 5981	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 333750 ml	2026-08-21 12:03:53.08303
 7378	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 2500 ml	2026-08-21 12:24:09.219372
@@ -9083,6 +9176,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14589	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 71000 ml	2026-08-21 13:31:12.423184
 14861	8	166	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-PIN-AF398	2026-08-21 15:13:03.824519
 17836	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 196250 ml	2026-08-22 10:44:58.715307
+18523	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 50250 ml	2026-08-22 11:35:48.028408
 17267	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 125250 ml	2026-08-21 15:55:20.263507
 17268	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 125000 ml	2026-08-21 15:55:21.179402
 17269	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 161500 ml	2026-08-21 15:55:22.258835
@@ -16144,6 +16238,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14497	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 94250 ml	2026-08-21 13:30:26.070763
 14537	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 84250 ml	2026-08-21 13:30:52.351839
 14606	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 66750 ml	2026-08-21 13:31:18.217781
+18374	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 227750 ml	2026-08-22 11:09:59.625751
+18375	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 181250 ml	2026-08-22 11:11:09.255637
 16679	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 181750 ml	2026-08-21 15:45:56.561039
 16682	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 198500 ml	2026-08-21 15:45:59.611572
 16683	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 11500 ml	2026-08-21 15:46:00.558666
@@ -16185,6 +16281,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14322	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 138000 ml	2026-08-21 13:28:49.022486
 14388	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 121500 ml	2026-08-21 13:29:35.006906
 14626	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 61750 ml	2026-08-21 13:31:25.194892
+18376	3	153	POS_SALE	-1500	Deducted 1500 ml for sale. Remaining: 114250 ml	2026-08-22 11:11:37.239756
 16685	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 24000 ml	2026-08-21 15:46:02.640962
 16686	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 23750 ml	2026-08-21 15:46:03.57891
 16688	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 197750 ml	2026-08-21 15:46:05.589402
@@ -16236,6 +16333,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14539	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 83750 ml	2026-08-21 13:30:53.464218
 14543	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 82750 ml	2026-08-21 13:30:55.114417
 14788	6	81	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 11750 ml	2026-08-21 15:12:13.727745
+18377	1	46	POS_SALE	-1250	Deducted 1250 ml for sale. Remaining: 226500 ml	2026-08-22 11:22:38.775713
 16731	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 176250 ml	2026-08-21 15:46:49.068657
 16732	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 195500 ml	2026-08-21 15:46:51.173599
 16733	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 176000 ml	2026-08-21 15:46:52.067892
@@ -16300,6 +16398,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14526	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 87000 ml	2026-08-21 13:30:44.691598
 14634	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 59750 ml	2026-08-21 13:31:27.899583
 14789	8	8	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 19250 ml	2026-08-21 15:12:16.754859
+18378	1	46	POS_SALE	-1250	Deducted 1250 ml for sale. Remaining: 225250 ml	2026-08-22 11:24:38.800425
+18379	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 225000 ml	2026-08-22 11:24:40.863627
 16739	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 195000 ml	2026-08-21 15:46:58.162301
 16743	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 174750 ml	2026-08-21 15:47:02.174779
 16754	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 194500 ml	2026-08-21 15:47:14.426402
@@ -16308,6 +16408,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 16765	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 20250 ml	2026-08-21 15:47:25.445636
 16767	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 193250 ml	2026-08-21 15:47:27.415219
 16769	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 193000 ml	2026-08-21 15:47:29.509337
+18381	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 223500 ml	2026-08-22 11:25:05.518484
 6851	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 125750 ml	2026-08-21 12:07:05.802618
 6866	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 122000 ml	2026-08-21 12:07:06.777629
 6875	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 119750 ml	2026-08-21 12:07:07.373683
@@ -16355,6 +16456,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14790	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 42250 ml	2026-08-21 15:12:19.558511
 14794	2	152	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-LEM-83807	2026-08-21 15:12:32.981753
 14846	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 16000 ml	2026-08-21 15:12:39.619419
+18380	1	46	POS_SALE	-1250	Deducted 1250 ml for sale. Remaining: 223750 ml	2026-08-22 11:25:04.035076
 16768	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 172750 ml	2026-08-21 15:47:28.501915
 16772	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 10750 ml	2026-08-21 15:47:32.448004
 6879	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 118750 ml	2026-08-21 12:07:07.63366
@@ -16454,6 +16556,10 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14367	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 126750 ml	2026-08-21 13:29:15.895486
 14629	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 61000 ml	2026-08-21 13:31:26.140577
 14791	1	45	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 41750 ml	2026-08-21 15:12:32.539865
+18382	1	46	POS_SALE	-1250	Deducted 1250 ml for sale. Remaining: 222250 ml	2026-08-22 11:25:18.947256
+18383	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 222000 ml	2026-08-22 11:25:20.286622
+18384	1	46	POS_SALE	-1250	Deducted 1250 ml for sale. Remaining: 220750 ml	2026-08-22 11:25:40.086539
+18385	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 220500 ml	2026-08-22 11:25:41.314347
 16773	1	45	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 19500 ml	2026-08-21 15:47:59.276583
 16775	1	207	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-MAN-29783	2026-08-21 15:47:59.875281
 16776	2	208	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-LEM-94C75	2026-08-21 15:47:59.90613
@@ -16534,10 +16640,19 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14513	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 90250 ml	2026-08-21 13:30:36.433537
 14614	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 64750 ml	2026-08-21 13:31:20.992611
 14792	1	45	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 41250 ml	2026-08-21 15:12:32.82428
+18386	1	46	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 220000 ml	2026-08-22 11:25:44.744378
+18388	1	273	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-MAN-FCFC6	2026-08-22 11:25:44.962361
+18389	2	274	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-LEM-D783F	2026-08-22 11:25:44.975785
+18390	3	275	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-MIN-E0665	2026-08-22 11:25:44.987793
 16774	1	45	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 19000 ml	2026-08-21 15:47:59.648984
 16779	5	211	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-STR-F34BE	2026-08-21 15:47:59.94561
 16781	7	213	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-LYC-D989A	2026-08-21 15:47:59.973583
 16782	8	214	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-PIN-B9010	2026-08-21 15:47:59.987268
+18391	4	276	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-ORA-BCE6B	2026-08-22 11:25:44.999123
+18392	5	277	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-STR-AAAA9	2026-08-22 11:25:45.012034
+18393	6	278	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-GRA-DF070	2026-08-22 11:25:45.024084
+18394	7	279	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-LYC-AA94B	2026-08-22 11:25:45.034491
+18395	8	280	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-PIN-FBF02	2026-08-22 11:25:45.044417
 7028	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 82750 ml	2026-08-21 12:08:16.146214
 7856	1	39	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 149750 ml	2026-08-21 12:27:35.190905
 7906	7	97	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 6750 ml	2026-08-21 12:27:54.80822
@@ -16577,6 +16692,9 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14378	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 124000 ml	2026-08-21 13:29:25.455006
 14597	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 69000 ml	2026-08-21 13:31:15.505446
 14793	1	151	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-MAN-F93EF	2026-08-21 15:12:32.970076
+18387	1	46	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 219500 ml	2026-08-22 11:25:44.916258
+18396	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 219250 ml	2026-08-22 11:25:45.064278
+18421	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 218500 ml	2026-08-22 11:25:45.27558
 16783	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 18750 ml	2026-08-21 15:48:00.017725
 16784	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 192750 ml	2026-08-21 15:48:00.034569
 7038	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 80250 ml	2026-08-21 12:08:20.093443
@@ -16631,6 +16749,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14795	3	153	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-MIN-554AA	2026-08-21 15:12:32.993204
 14796	4	154	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-ORA-2AFF2	2026-08-21 15:12:33.004125
 14848	5	5	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 18250 ml	2026-08-21 15:12:43.666607
+18397	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 114000 ml	2026-08-22 11:25:45.089304
+18403	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 54000 ml	2026-08-22 11:25:45.112318
 16785	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 11000 ml	2026-08-21 15:48:00.038834
 16970	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 157500 ml	2026-08-21 15:50:19.696018
 16971	5	5	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 7750 ml	2026-08-21 15:50:20.589458
@@ -16684,6 +16804,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14570	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 75750 ml	2026-08-21 13:31:05.837149
 14797	5	155	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-STR-5B33E	2026-08-21 15:12:33.013854
 14849	6	81	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 10500 ml	2026-08-21 15:12:45.715784
+18398	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 182000 ml	2026-08-22 11:25:45.089304
 16786	2	2	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 7000 ml	2026-08-21 15:48:00.54117
 7059	1	37	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 74750 ml	2026-08-21 12:21:45.040017
 7107	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 63750 ml	2026-08-21 12:21:52.563541
@@ -16727,7 +16848,13 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14447	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 106750 ml	2026-08-21 13:30:00.911412
 14624	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 62250 ml	2026-08-21 13:31:24.43095
 14798	6	156	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-GRA-9418B	2026-08-21 15:12:33.027726
+18400	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 168750 ml	2026-08-22 11:25:45.097389
+18411	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 53750 ml	2026-08-22 11:25:45.165733
+18415	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 181500 ml	2026-08-22 11:25:45.178417
+18416	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 181250 ml	2026-08-22 11:25:45.187082
 16787	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 18500 ml	2026-08-21 15:48:01.056917
+18430	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 218250 ml	2026-08-22 11:25:45.339436
+18440	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 167750 ml	2026-08-22 11:25:45.359566
 7067	7	83	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 3500 ml	2026-08-21 12:21:47.714217
 7101	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 65250 ml	2026-08-21 12:21:51.572249
 7171	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 48750 ml	2026-08-21 12:22:18.624746
@@ -16898,6 +17025,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14639	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 58500 ml	2026-08-21 13:31:29.524264
 14799	7	157	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-LYC-887CD	2026-08-21 15:12:33.041998
 14850	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 40000 ml	2026-08-21 15:12:46.724998
+18399	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 173250 ml	2026-08-22 11:25:45.097389
+18443	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 52750 ml	2026-08-22 11:25:45.387135
 16788	8	8	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 7500 ml	2026-08-21 15:48:01.228948
 7139	7	87	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 19750 ml	2026-08-21 12:22:05.867092
 7163	1	37	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 50750 ml	2026-08-21 12:22:14.728224
@@ -16930,7 +17059,11 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14337	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 134250 ml	2026-08-21 13:28:56.935414
 14633	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 60000 ml	2026-08-21 13:31:27.663359
 14800	8	158	BATCH_CREATED	200000	Registered new 20L juice container batch: BATCH-PIN-48B34	2026-08-21 15:12:33.057932
+18401	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 185250 ml	2026-08-22 11:25:45.098518
+18428	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 172250 ml	2026-08-22 11:25:45.320962
+18434	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 180000 ml	2026-08-22 11:25:45.360078
 16789	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 10750 ml	2026-08-21 15:48:01.399965
+18438	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 218000 ml	2026-08-22 11:25:45.372718
 7141	7	87	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 19250 ml	2026-08-21 12:22:06.416646
 7166	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 50000 ml	2026-08-21 12:22:16.191158
 7865	1	39	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 147500 ml	2026-08-21 12:27:37.319663
@@ -16960,6 +17093,9 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14372	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 125500 ml	2026-08-21 13:29:19.909443
 14548	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 81500 ml	2026-08-21 13:30:57.762262
 14801	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 41000 ml	2026-08-21 15:12:33.084051
+18402	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 113750 ml	2026-08-22 11:25:45.101029
+18404	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 168500 ml	2026-08-22 11:25:45.122566
+18406	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 181000 ml	2026-08-22 11:25:45.135416
 16790	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 172250 ml	2026-08-21 15:48:01.800755
 7144	7	87	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 18500 ml	2026-08-21 12:22:07.230635
 7167	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 49750 ml	2026-08-21 12:22:16.693389
@@ -16991,6 +17127,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14335	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 134750 ml	2026-08-21 13:28:54.000155
 14547	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 81750 ml	2026-08-21 13:30:57.203233
 14802	3	22	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 14000 ml	2026-08-21 15:12:33.098741
+18405	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 168250 ml	2026-08-22 11:25:45.13189
+18417	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 173000 ml	2026-08-22 11:25:45.205812
 16791	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 172000 ml	2026-08-21 15:48:01.888666
 16792	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 18250 ml	2026-08-21 15:48:01.900199
 7150	7	87	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 17000 ml	2026-08-21 12:22:09.693151
@@ -17017,6 +17155,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14342	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 133000 ml	2026-08-21 13:28:59.244611
 14541	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 83250 ml	2026-08-21 13:30:54.277986
 14803	2	2	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 13500 ml	2026-08-21 15:12:33.100758
+18407	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 185000 ml	2026-08-22 11:25:45.142113
+18419	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 180750 ml	2026-08-22 11:25:45.241168
 16793	8	8	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 7250 ml	2026-08-21 15:48:02.000092
 16794	5	5	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 11500 ml	2026-08-21 15:48:02.01245
 7153	7	87	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 16250 ml	2026-08-21 12:22:10.827622
@@ -17047,6 +17187,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14522	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 88000 ml	2026-08-21 13:30:42.626551
 14608	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 66250 ml	2026-08-21 13:31:18.837288
 14804	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 16750 ml	2026-08-21 15:12:33.101772
+18408	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 219000 ml	2026-08-22 11:25:45.119288
 16795	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 18000 ml	2026-08-21 15:48:02.100363
 16796	2	2	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 6750 ml	2026-08-21 15:48:02.11535
 7162	1	37	POS_SALE	-500	Deducted 500 ml for sale. Remaining: 51250 ml	2026-08-21 12:22:14.352865
@@ -17096,7 +17237,11 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14346	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 132000 ml	2026-08-21 13:29:01.290007
 14625	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 62000 ml	2026-08-21 13:31:24.800936
 14805	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 17000 ml	2026-08-21 15:12:33.104287
+18409	7	157	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 181750 ml	2026-08-22 11:25:45.153816
+18412	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 113500 ml	2026-08-22 11:25:45.166739
+18414	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 53500 ml	2026-08-22 11:25:45.172286
 16797	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 17750 ml	2026-08-21 15:48:02.317375
+18441	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 112750 ml	2026-08-22 11:25:45.392798
 7172	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 48500 ml	2026-08-21 12:22:18.997632
 7872	1	39	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 145750 ml	2026-08-21 12:27:39.147996
 7936	1	39	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 130500 ml	2026-08-21 12:28:03.132841
@@ -17120,6 +17265,9 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14531	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 85750 ml	2026-08-21 13:30:48.396919
 14613	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 65000 ml	2026-08-21 13:31:20.724828
 14806	5	5	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 19250 ml	2026-08-21 15:12:33.104287
+18410	1	46	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 218750 ml	2026-08-22 11:25:45.160085
+18422	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 53250 ml	2026-08-22 11:25:45.27558
+18433	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 171750 ml	2026-08-22 11:25:45.359566
 16798	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 10500 ml	2026-08-21 15:48:02.577445
 7195	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 42750 ml	2026-08-21 12:22:27.62589
 7874	1	39	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 145250 ml	2026-08-21 12:27:39.699493
@@ -17164,6 +17312,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14462	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 103000 ml	2026-08-21 13:30:07.013274
 14602	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 67750 ml	2026-08-21 13:31:17.116556
 14807	6	81	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 11500 ml	2026-08-21 15:12:33.105301
+18413	5	155	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 184750 ml	2026-08-22 11:25:45.169263
+18420	4	154	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 180500 ml	2026-08-22 11:25:45.258386
 16799	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 192500 ml	2026-08-21 15:48:02.669002
 7201	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 41250 ml	2026-08-21 12:22:30.051781
 7207	1	37	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 39750 ml	2026-08-21 12:22:32.831115
@@ -17222,6 +17372,7 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14441	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 108250 ml	2026-08-21 13:29:58.928884
 14584	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 72250 ml	2026-08-21 13:31:10.832128
 14808	8	8	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 19000 ml	2026-08-21 15:12:33.136084
+18418	2	152	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 172750 ml	2026-08-22 11:25:45.238145
 16800	6	156	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 171750 ml	2026-08-21 15:48:03.009977
 16801	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 10500 ml	2026-08-21 15:48:03.019116
 16802	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 192250 ml	2026-08-21 15:48:03.034489
@@ -17274,6 +17425,8 @@ COPY public.inventory_transactions (id, product_id, batch_id, transaction_type, 
 14460	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 103500 ml	2026-08-21 13:30:06.492826
 14616	1	45	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 64250 ml	2026-08-21 13:31:21.689234
 14809	4	4	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 16750 ml	2026-08-21 15:12:33.258449
+18423	3	153	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 113250 ml	2026-08-22 11:25:45.279318
+18424	8	158	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 168000 ml	2026-08-22 11:25:45.291407
 16805	8	8	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 6750 ml	2026-08-21 15:48:03.052882
 16806	7	148	POS_SALE	-250	Deducted 250 ml for sale. Remaining: 10250 ml	2026-08-21 15:48:03.062513
 \.
@@ -17338,13 +17491,21 @@ COPY public.juice_batches (id, product_id, batch_code, container_capacity_ml, in
 237	7	BATCH-LYC-76CD1	200000	200000	200000	250	ACTIVE	2026-08-22 10:45:43.585881	2026-08-22 10:45:43.586128
 50	6	BATCH-GRA-0D40F	20000	20000	0	250	DEPLETED	2026-08-21 11:41:53.711217	2026-08-21 11:52:22.738305
 238	8	BATCH-PIN-A0518	200000	200000	200000	250	ACTIVE	2026-08-22 10:45:43.602879	2026-08-22 10:45:43.603229
+46	1	BATCH-MAN-C62B3	250000	250000	212250	250	ACTIVE	2026-08-21 11:40:37.097375	2026-08-22 11:35:48.032454
 21	1	BATCH-MAN-0DFD5	20000	20000	0	250	DEPLETED	2026-08-21 10:53:13.291808	2026-08-21 11:10:03.723616
 87	7	BATCH-LYC-86F8C	20000	20000	0	250	DEPLETED	2026-08-21 12:22:05.863096	2026-08-21 12:24:19.199556
-46	1	BATCH-MAN-C62B3	250000	250000	228000	250	ACTIVE	2026-08-21 11:40:37.097375	2026-08-22 11:09:57.065765
 7	7	BATCH-LYC-001	20000	20000	0	250	DEPLETED	2026-08-20 16:56:16.680915	2026-08-21 12:05:47.969505
+273	1	BATCH-MAN-FCFC6	200000	200000	200000	250	ACTIVE	2026-08-22 11:25:44.958456	2026-08-22 11:25:44.96032
+274	2	BATCH-LEM-D783F	200000	200000	200000	250	ACTIVE	2026-08-22 11:25:44.973914	2026-08-22 11:25:44.973968
+275	3	BATCH-MIN-E0665	200000	200000	200000	250	ACTIVE	2026-08-22 11:25:44.986437	2026-08-22 11:25:44.986668
 102	7	BATCH-LYC-E0EA5	20000	20000	0	250	DEPLETED	2026-08-21 12:30:35.585626	2026-08-21 12:37:42.947985
+276	4	BATCH-ORA-BCE6B	200000	200000	200000	250	ACTIVE	2026-08-22 11:25:44.997468	2026-08-22 11:25:44.997482
 163	5	BATCH-STR-50091	200000	200000	200000	250	ACTIVE	2026-08-21 15:13:03.783475	2026-08-21 15:13:03.784351
+277	5	BATCH-STR-AAAA9	200000	200000	200000	250	ACTIVE	2026-08-22 11:25:45.010416	2026-08-22 11:25:45.010957
+278	6	BATCH-GRA-DF070	200000	200000	200000	250	ACTIVE	2026-08-22 11:25:45.022392	2026-08-22 11:25:45.022475
 22	3	BATCH-MIN-3279E	20000	20000	0	250	DEPLETED	2026-08-21 10:57:55.184367	2026-08-21 15:45:31.218218
+279	7	BATCH-LYC-AA94B	200000	200000	200000	250	ACTIVE	2026-08-22 11:25:45.03328	2026-08-22 11:25:45.033388
+280	8	BATCH-PIN-FBF02	200000	200000	200000	250	ACTIVE	2026-08-22 11:25:45.043141	2026-08-22 11:25:45.043348
 65	1	BATCH-MAN-18201	500000	500000	500000	250	ACTIVE	2026-08-21 11:58:35.571977	2026-08-21 11:58:35.572238
 88	1	BATCH-MAN-BBB44	250000	250000	250000	250	ACTIVE	2026-08-21 12:22:41.523638	2026-08-21 12:22:41.523757
 16	1	BATCH-MAN-7BA76	20000	20000	750	250	DEPLETED	2026-08-21 10:53:13.20712	2026-08-21 10:57:55.336353
@@ -17384,16 +17545,23 @@ COPY public.juice_batches (id, product_id, batch_code, container_capacity_ml, in
 222	8	BATCH-PIN-7F240	200000	200000	200000	250	ACTIVE	2026-08-21 15:59:56.87929	2026-08-21 15:59:56.879495
 239	1	BATCH-MAN-40B0B	200000	200000	200000	250	ACTIVE	2026-08-22 10:46:01.350294	2026-08-22 10:46:01.350711
 242	4	BATCH-ORA-CC5FF	200000	200000	200000	250	ACTIVE	2026-08-22 10:46:01.404654	2026-08-22 10:46:01.404949
-158	8	BATCH-PIN-48B34	200000	200000	169000	250	ACTIVE	2026-08-21 15:12:33.053965	2026-08-22 11:09:57.044874
 224	2	BATCH-LEM-9F61F	200000	200000	200000	250	ACTIVE	2026-08-22 10:44:57.232693	2026-08-22 10:44:57.233188
 111	1	BATCH-MAN-3F252	250000	250000	250000	250	ACTIVE	2026-08-21 12:42:09.633786	2026-08-21 12:42:09.634069
 226	4	BATCH-ORA-5BAD8	200000	200000	200000	250	ACTIVE	2026-08-22 10:44:57.258634	2026-08-22 10:44:57.258618
 29	1	BATCH-MAN-0A68F	20000	20000	0	250	DEPLETED	2026-08-21 11:14:03.782967	2026-08-21 11:16:10.207469
 230	8	BATCH-PIN-72F2A	200000	200000	200000	250	ACTIVE	2026-08-22 10:44:57.306145	2026-08-22 10:44:57.306356
+281	1	BATCH-MAN-77821	200000	200000	200000	250	ACTIVE	2026-08-22 11:35:47.71735	2026-08-22 11:35:47.716884
 60	1	BATCH-MAN-4098B	500000	500000	500000	250	ACTIVE	2026-08-21 11:56:44.234131	2026-08-21 11:56:44.234261
+282	2	BATCH-LEM-CC81D	200000	200000	200000	250	ACTIVE	2026-08-22 11:35:47.734256	2026-08-22 11:35:47.733689
 25	1	BATCH-MAN-57F9A	20000	20000	0	250	DEPLETED	2026-08-21 11:14:03.560846	2026-08-21 11:14:25.680348
+283	3	BATCH-MIN-3F8B0	200000	200000	200000	250	ACTIVE	2026-08-22 11:35:47.746443	2026-08-22 11:35:47.747066
+284	4	BATCH-ORA-8FD45	200000	200000	200000	250	ACTIVE	2026-08-22 11:35:47.757129	2026-08-22 11:35:47.757054
+285	5	BATCH-STR-FB463	200000	200000	200000	250	ACTIVE	2026-08-22 11:35:47.768247	2026-08-22 11:35:47.767976
+286	6	BATCH-GRA-0CFDB	200000	200000	200000	250	ACTIVE	2026-08-22 11:35:47.77924	2026-08-22 11:35:47.778891
 32	1	BATCH-MAN-1D7E4	20000	20000	0	250	DEPLETED	2026-08-21 11:14:03.970349	2026-08-21 11:18:24.243147
+288	8	BATCH-PIN-3FC18	200000	200000	200000	250	ACTIVE	2026-08-22 11:35:47.802428	2026-08-22 11:35:47.802345
 146	7	BATCH-LYC-382E1	20000	20000	0	250	DEPLETED	2026-08-21 13:25:00.210352	2026-08-21 13:28:37.023071
+158	8	BATCH-PIN-48B34	200000	200000	166000	250	ACTIVE	2026-08-21 15:12:33.053965	2026-08-22 11:35:48.016775
 240	2	BATCH-LEM-95690	200000	200000	200000	250	ACTIVE	2026-08-22 10:46:01.366174	2026-08-22 10:46:01.366532
 141	1	BATCH-MAN-408D4	20000	20000	20000	250	ACTIVE	2026-08-21 13:06:24.693255	2026-08-21 13:06:24.693807
 48	1	BATCH-MAN-A29B0	500000	500000	500000	250	ACTIVE	2026-08-21 11:40:52.176694	2026-08-21 11:40:52.177151
@@ -17415,6 +17583,7 @@ COPY public.juice_batches (id, product_id, batch_code, container_capacity_ml, in
 147	1	BATCH-MAN-38151	250000	250000	250000	250	ACTIVE	2026-08-21 13:28:29.442516	2026-08-21 13:28:29.442323
 244	6	BATCH-GRA-A5F6F	200000	200000	200000	250	ACTIVE	2026-08-22 10:46:01.425988	2026-08-22 10:46:01.426194
 10	1	BATCH-MAN-D2BCE	20000	20000	0	250	DEPLETED	2026-08-21 10:49:03.120619	2026-08-21 10:51:39.615226
+287	7	BATCH-LYC-715AF	200000	200000	200000	250	ACTIVE	2026-08-22 11:35:47.790653	2026-08-22 11:35:47.790566
 123	7	BATCH-LYC-8CA94	20000	20000	0	250	DEPLETED	2026-08-21 12:54:00.661389	2026-08-21 12:56:43.8866
 83	7	BATCH-LYC-98F08	20000	20000	0	250	DEPLETED	2026-08-21 12:06:11.364481	2026-08-21 12:21:48.98787
 89	1	BATCH-MAN-0FF60	250000	250000	250000	250	ACTIVE	2026-08-21 12:24:16.983362	2026-08-21 12:24:16.984172
@@ -17438,18 +17607,18 @@ COPY public.juice_batches (id, product_id, batch_code, container_capacity_ml, in
 120	7	BATCH-LYC-0D3BD	20000	20000	0	250	DEPLETED	2026-08-21 12:51:41.218723	2026-08-21 12:53:59.058619
 72	6	BATCH-GRA-63E42	20000	20000	0	250	DEPLETED	2026-08-21 12:01:18.402778	2026-08-21 12:04:45.57138
 18	1	BATCH-MAN-F02FB	20000	20000	0	250	DEPLETED	2026-08-21 10:53:13.221241	2026-08-21 10:58:43.115246
-153	3	BATCH-MIN-554AA	200000	200000	115750	250	ACTIVE	2026-08-21 15:12:32.990672	2026-08-22 11:09:57.01817
 19	1	BATCH-MAN-D63B0	20000	20000	0	250	DEPLETED	2026-08-21 10:53:13.253769	2026-08-21 11:05:34.099301
 41	1	BATCH-MAN-41D54	250000	250000	0	250	DEPLETED	2026-08-21 11:18:18.324313	2026-08-21 12:42:33.856362
-154	4	BATCH-ORA-2AFF2	200000	200000	181500	250	ACTIVE	2026-08-21 15:12:33.002988	2026-08-22 11:09:57.027247
 45	1	BATCH-MAN-610E6	250000	250000	0	250	DEPLETED	2026-08-21 11:19:24.135791	2026-08-22 10:44:58.819286
 20	1	BATCH-MAN-E8E60	20000	20000	0	250	DEPLETED	2026-08-21 10:53:13.268862	2026-08-21 11:09:41.920078
 23	1	BATCH-MAN-6E26A	20000	20000	0	250	DEPLETED	2026-08-21 10:57:55.430876	2026-08-21 11:14:04.108547
 166	8	BATCH-PIN-AF398	200000	200000	200000	250	ACTIVE	2026-08-21 15:13:03.822167	2026-08-21 15:13:03.822364
-155	5	BATCH-STR-5B33E	200000	200000	185500	250	ACTIVE	2026-08-21 15:12:33.011872	2026-08-22 11:09:57.063743
-156	6	BATCH-GRA-9418B	200000	200000	54250	250	ACTIVE	2026-08-21 15:12:33.024536	2026-08-22 11:09:57.065765
 114	7	BATCH-LYC-CD1D8	20000	20000	0	250	DEPLETED	2026-08-21 12:43:25.71969	2026-08-21 12:49:33.657088
 30	1	BATCH-MAN-1B749	20000	20000	0	250	DEPLETED	2026-08-21 11:14:03.840565	2026-08-21 11:16:26.147601
+154	4	BATCH-ORA-2AFF2	200000	200000	177000	250	ACTIVE	2026-08-21 15:12:33.002988	2026-08-22 11:35:48.011742
+153	3	BATCH-MIN-554AA	200000	200000	110000	250	ACTIVE	2026-08-21 15:12:32.990672	2026-08-22 11:35:48.02032
+156	6	BATCH-GRA-9418B	200000	200000	50250	250	ACTIVE	2026-08-21 15:12:33.024536	2026-08-22 11:35:48.028408
+155	5	BATCH-STR-5B33E	200000	200000	181500	250	ACTIVE	2026-08-21 15:12:33.011872	2026-08-22 11:35:48.025372
 243	5	BATCH-STR-4CC62	200000	200000	200000	250	ACTIVE	2026-08-22 10:46:01.416001	2026-08-22 10:46:01.415571
 245	7	BATCH-LYC-8B0C5	200000	200000	200000	250	ACTIVE	2026-08-22 10:46:01.436964	2026-08-22 10:46:01.437238
 246	8	BATCH-PIN-2D3B9	200000	200000	200000	250	ACTIVE	2026-08-22 10:46:01.44709	2026-08-22 10:46:01.447366
@@ -17462,7 +17631,7 @@ COPY public.juice_batches (id, product_id, batch_code, container_capacity_ml, in
 67	1	BATCH-MAN-3D57B	20000	20000	20000	250	ACTIVE	2026-08-21 11:59:41.207876	2026-08-21 11:59:41.207601
 80	1	BATCH-MAN-EB84D	20000	20000	20000	250	ACTIVE	2026-08-21 12:04:23.425345	2026-08-21 12:04:23.425184
 86	1	BATCH-MAN-AC622	20000	20000	20000	250	ACTIVE	2026-08-21 12:07:33.922278	2026-08-21 12:07:33.922122
-247	23	BATCH-THU-001	20000	20000	19500	250	ACTIVE	2026-08-22 10:54:33.493967	2026-08-22 11:03:13.211805
+247	23	BATCH-THU-001	20000	20000	18500	250	ACTIVE	2026-08-22 10:54:33.493967	2026-08-22 11:35:38.59224
 180	6	BATCH-GRA-05FE7	200000	200000	200000	250	ACTIVE	2026-08-21 15:17:09.131045	2026-08-21 15:17:09.131297
 91	7	BATCH-LYC-4B1A2	20000	20000	0	250	DEPLETED	2026-08-21 12:24:51.154611	2026-08-21 12:26:17.761859
 43	1	BATCH-MAN-A4B37	500000	500000	0	250	DEPLETED	2026-08-21 11:18:32.193056	2026-08-21 13:22:41.163548
@@ -17495,9 +17664,9 @@ COPY public.juice_batches (id, product_id, batch_code, container_capacity_ml, in
 254	7	BATCH-LYC-4E37D	200000	200000	200000	250	ACTIVE	2026-08-22 10:54:47.719441	2026-08-22 10:54:47.719983
 255	8	BATCH-PIN-34A3A	200000	200000	200000	250	ACTIVE	2026-08-22 10:54:47.731979	2026-08-22 10:54:47.732328
 135	1	BATCH-MAN-FA7CA	500000	500000	500000	250	ACTIVE	2026-08-21 13:00:15.816957	2026-08-21 13:00:15.817044
+157	7	BATCH-LYC-887CD	200000	200000	178250	250	ACTIVE	2026-08-21 15:12:33.038781	2026-08-22 11:35:48.015776
 128	7	BATCH-LYC-D8E17	20000	20000	0	250	DEPLETED	2026-08-21 12:56:44.731391	2026-08-21 13:08:09.94009
 81	6	BATCH-GRA-3E4F8	20000	20000	0	250	DEPLETED	2026-08-21 12:04:46.135472	2026-08-21 15:43:09.695565
-157	7	BATCH-LYC-887CD	200000	200000	182250	250	ACTIVE	2026-08-21 15:12:33.038781	2026-08-22 11:09:57.035802
 2	2	BATCH-LMN-001	20000	20000	0	250	DEPLETED	2026-08-20 16:56:16.680915	2026-08-21 15:56:18.756353
 256	11	BATCH-WAT-EC999	20000	20000	19750	250	ACTIVE	2026-08-22 10:55:01.65442	2026-08-22 10:55:01.664538
 168	2	BATCH-LEM-CBD44	200000	200000	200000	250	ACTIVE	2026-08-21 15:15:25.939301	2026-08-21 15:15:25.939712
@@ -17547,7 +17716,7 @@ COPY public.juice_batches (id, product_id, batch_code, container_capacity_ml, in
 196	6	BATCH-GRA-6D48A	200000	200000	200000	250	ACTIVE	2026-08-21 15:33:11.780854	2026-08-21 15:33:11.781352
 197	7	BATCH-LYC-1AA7E	200000	200000	200000	250	ACTIVE	2026-08-21 15:33:11.792271	2026-08-21 15:33:11.792884
 198	8	BATCH-PIN-EC4D9	200000	200000	200000	250	ACTIVE	2026-08-21 15:33:11.803475	2026-08-21 15:33:11.804027
-152	2	BATCH-LEM-83807	200000	200000	173500	250	ACTIVE	2026-08-21 15:12:32.979379	2026-08-22 11:09:57.052077
+152	2	BATCH-LEM-83807	200000	200000	169000	250	ACTIVE	2026-08-21 15:12:32.979379	2026-08-22 11:35:48.031441
 162	4	BATCH-ORA-5CD76	200000	200000	200000	250	ACTIVE	2026-08-21 15:13:03.769782	2026-08-21 15:13:03.770214
 194	4	BATCH-ORA-3B02F	200000	200000	200000	250	ACTIVE	2026-08-21 15:33:11.751142	2026-08-21 15:33:11.751664
 172	6	BATCH-GRA-03A03	200000	200000	200000	250	ACTIVE	2026-08-21 15:15:25.988965	2026-08-21 15:15:25.988877
@@ -17571,6 +17740,16 @@ COPY public.juice_market_crashes (id, crash_code, started_at, ends_at, affected_
 --
 
 COPY public.juice_market_settlements (id, settlement_window_start, settlement_window_end, idempotency_key, status, created_at) FROM stdin;
+1	2026-08-22 11:20:39.575966	2026-08-22 11:22:39.575966	SETTLEMENT_FORCE_1787377959576_9d52	COMPLETED	2026-08-22 11:22:39.579296
+2	2026-08-22 11:22:39.496611	2026-08-22 11:24:39.496611	SETTLEMENT_FORCE_1787378079496_a08c	COMPLETED	2026-08-22 11:24:39.4999
+3	2026-08-22 11:23:04.627816	2026-08-22 11:25:04.627816	SETTLEMENT_FORCE_1787378104628_96bf	COMPLETED	2026-08-22 11:25:04.629979
+4	2026-08-22 11:23:19.542762	2026-08-22 11:25:19.542762	SETTLEMENT_FORCE_1787378119543_b043	COMPLETED	2026-08-22 11:25:19.544897
+5	2026-08-22 11:23:40.661492	2026-08-22 11:25:40.661492	SETTLEMENT_FORCE_1787378140661_9af9	COMPLETED	2026-08-22 11:25:40.662965
+6	2026-08-22 11:23:44.444732	2026-08-22 11:25:44.444732	SETTLEMENT_FORCE_1787378144445_5acf	COMPLETED	2026-08-22 11:25:44.447319
+7	2026-08-22 11:32:44.295274	2026-08-22 11:34:44.295274	SETTLEMENT_FORCE_1787378684295_afca	COMPLETED	2026-08-22 11:34:44.297014
+8	2026-08-22 11:33:38.872637	2026-08-22 11:35:38.872637	SETTLEMENT_FORCE_1787378738872_def4	COMPLETED	2026-08-22 11:35:38.875136
+9	2026-08-22 11:33:42.803084	2026-08-22 11:35:42.803084	SETTLEMENT_FORCE_1787378742803_10a9	COMPLETED	2026-08-22 11:35:42.804801
+10	2026-08-22 11:33:47.276794	2026-08-22 11:35:47.276794	SETTLEMENT_FORCE_1787378747276_8b90	COMPLETED	2026-08-22 11:35:47.278888
 \.
 
 
@@ -39817,12 +39996,84 @@ COPY public.price_history (id, product_id, old_price, new_price, demand_score, s
 45905	6	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:09:56.374867	2.00	1	1	1	2026-08-22 11:09:56.374867	2026-08-22 11:09:56.374867	DAILY_MARKET_RESET
 45906	7	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:09:56.374867	2.00	1	1	1	2026-08-22 11:09:56.374867	2026-08-22 11:09:56.374867	DAILY_MARKET_RESET
 45907	23	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:09:56.374867	2.00	1	1	1	2026-08-22 11:09:56.374867	2026-08-22 11:09:56.374867	DAILY_MARKET_RESET
+45908	1	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:22:38.466412	0.00	1	1	1	2026-08-22 11:22:38.466412	2026-08-22 11:22:38.466412	DAILY_MARKET_RESET
+45909	2	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:22:38.466412	0.00	1	1	1	2026-08-22 11:22:38.466412	2026-08-22 11:22:38.466412	DAILY_MARKET_RESET
+45910	3	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:22:38.466412	0.00	1	1	1	2026-08-22 11:22:38.466412	2026-08-22 11:22:38.466412	DAILY_MARKET_RESET
+45911	4	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:22:38.466412	0.00	1	1	1	2026-08-22 11:22:38.466412	2026-08-22 11:22:38.466412	DAILY_MARKET_RESET
+45912	5	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:22:38.466412	0.00	1	1	1	2026-08-22 11:22:38.466412	2026-08-22 11:22:38.466412	DAILY_MARKET_RESET
+45913	6	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:22:38.466412	0.00	1	1	1	2026-08-22 11:22:38.466412	2026-08-22 11:22:38.466412	DAILY_MARKET_RESET
+45914	7	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:22:38.466412	0.00	1	1	1	2026-08-22 11:22:38.466412	2026-08-22 11:22:38.466412	DAILY_MARKET_RESET
+45915	23	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:22:38.466412	0.00	1	1	1	2026-08-22 11:22:38.466412	2026-08-22 11:22:38.466412	DAILY_MARKET_RESET
+45916	1	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.27, Weighted Sales: 2.50 [W0=5, W1=0, W2=0], Target: 1.10). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:22:39.575966	2.00	2.2727272727272725	2.5	1.1	2026-08-22 11:16:39.575966	2026-08-22 11:22:39.575966	EXTREMELY_HIGH
+45917	2	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:22:39.575966	-2.00	0	0	0.8	2026-08-22 11:16:39.575966	2026-08-22 11:22:39.575966	EXTREMELY_LOW
+45918	3	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:22:39.575966	-2.00	0	0	0.8	2026-08-22 11:16:39.575966	2026-08-22 11:22:39.575966	EXTREMELY_LOW
+45919	4	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 1.10). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:22:39.575966	-2.00	0	0	1.1	2026-08-22 11:16:39.575966	2026-08-22 11:22:39.575966	EXTREMELY_LOW
+45920	5	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.70). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:22:39.575966	-2.00	0	0	0.7	2026-08-22 11:16:39.575966	2026-08-22 11:22:39.575966	EXTREMELY_LOW
+45921	6	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:22:39.575966	-2.00	0	0	0.9	2026-08-22 11:16:39.575966	2026-08-22 11:22:39.575966	EXTREMELY_LOW
+45922	7	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:22:39.575966	-2.00	0	0	0.9	2026-08-22 11:16:39.575966	2026-08-22 11:22:39.575966	EXTREMELY_LOW
+45923	23	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:22:39.575966	-2.00	0	0	0.9	2026-08-22 11:16:39.575966	2026-08-22 11:22:39.575966	EXTREMELY_LOW
 22528	3	21.00	22.00	100	0	1	Surge Pricing for MINT: High order velocity (Current Qty=3 vs Prev=0, Demand Score 100.0). Price adjusted +₹1 to ₹22.00.	2026-08-21 15:12:34.053468	\N	\N	\N	\N	\N	\N	\N
 22531	8	20.00	21.00	100	0	1	Surge Pricing for PINEAPPLE: High order velocity (Current Qty=4 vs Prev=0, Demand Score 100.0). Price adjusted +₹1 to ₹21.00.	2026-08-21 15:12:34.152302	\N	\N	\N	\N	\N	\N	\N
 22534	7	21.00	22.00	100	0	1	Surge Pricing for LYCHEE: High order velocity (Current Qty=4 vs Prev=0, Demand Score 100.0). Price adjusted +₹1 to ₹22.00.	2026-08-21 15:12:34.159839	\N	\N	\N	\N	\N	\N	\N
+45924	1	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:24:38.529268	-2.00	1	1	1	2026-08-22 11:24:38.529268	2026-08-22 11:24:38.529268	DAILY_MARKET_RESET
+45925	2	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:24:38.529268	2.00	1	1	1	2026-08-22 11:24:38.529268	2026-08-22 11:24:38.529268	DAILY_MARKET_RESET
+45926	3	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:24:38.529268	2.00	1	1	1	2026-08-22 11:24:38.529268	2026-08-22 11:24:38.529268	DAILY_MARKET_RESET
+45927	4	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:24:38.529268	2.00	1	1	1	2026-08-22 11:24:38.529268	2026-08-22 11:24:38.529268	DAILY_MARKET_RESET
+45928	5	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:24:38.529268	2.00	1	1	1	2026-08-22 11:24:38.529268	2026-08-22 11:24:38.529268	DAILY_MARKET_RESET
+45929	6	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:24:38.529268	2.00	1	1	1	2026-08-22 11:24:38.529268	2026-08-22 11:24:38.529268	DAILY_MARKET_RESET
+45930	7	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:24:38.529268	2.00	1	1	1	2026-08-22 11:24:38.529268	2026-08-22 11:24:38.529268	DAILY_MARKET_RESET
+45931	23	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:24:38.529268	2.00	1	1	1	2026-08-22 11:24:38.529268	2026-08-22 11:24:38.529268	DAILY_MARKET_RESET
+45932	1	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 3.64, Weighted Sales: 4.00 [W0=5, W1=5, W2=0], Target: 1.10). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:24:39.496611	2.00	3.6363636363636362	4	1.1	2026-08-22 11:18:39.496611	2026-08-22 11:24:39.496611	EXTREMELY_HIGH
+45933	2	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:24:39.496611	-2.00	0	0	0.8	2026-08-22 11:18:39.496611	2026-08-22 11:24:39.496611	EXTREMELY_LOW
+45934	3	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:24:39.496611	-2.00	0	0	0.8	2026-08-22 11:18:39.496611	2026-08-22 11:24:39.496611	EXTREMELY_LOW
+45935	4	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 1.10). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:24:39.496611	-2.00	0	0	1.1	2026-08-22 11:18:39.496611	2026-08-22 11:24:39.496611	EXTREMELY_LOW
+45936	5	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.70). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:24:39.496611	-2.00	0	0	0.7	2026-08-22 11:18:39.496611	2026-08-22 11:24:39.496611	EXTREMELY_LOW
+45937	6	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:24:39.496611	-2.00	0	0	0.9	2026-08-22 11:18:39.496611	2026-08-22 11:24:39.496611	EXTREMELY_LOW
+45938	7	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:24:39.496611	-2.00	0	0	0.9	2026-08-22 11:18:39.496611	2026-08-22 11:24:39.496611	EXTREMELY_LOW
+45939	23	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:24:39.496611	-2.00	0	0	0.9	2026-08-22 11:18:39.496611	2026-08-22 11:24:39.496611	EXTREMELY_LOW
+45940	1	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:03.937276	-2.00	1	1	1	2026-08-22 11:25:03.937276	2026-08-22 11:25:03.937276	DAILY_MARKET_RESET
+45941	2	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:03.937276	2.00	1	1	1	2026-08-22 11:25:03.937276	2026-08-22 11:25:03.937276	DAILY_MARKET_RESET
+45942	3	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:03.937276	2.00	1	1	1	2026-08-22 11:25:03.937276	2026-08-22 11:25:03.937276	DAILY_MARKET_RESET
+45943	4	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:03.937276	2.00	1	1	1	2026-08-22 11:25:03.937276	2026-08-22 11:25:03.937276	DAILY_MARKET_RESET
+45944	5	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:03.937276	2.00	1	1	1	2026-08-22 11:25:03.937276	2026-08-22 11:25:03.937276	DAILY_MARKET_RESET
+45945	6	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:03.937276	2.00	1	1	1	2026-08-22 11:25:03.937276	2026-08-22 11:25:03.937276	DAILY_MARKET_RESET
+45946	7	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:03.937276	2.00	1	1	1	2026-08-22 11:25:03.937276	2026-08-22 11:25:03.937276	DAILY_MARKET_RESET
+45947	23	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:03.937276	2.00	1	1	1	2026-08-22 11:25:03.937276	2026-08-22 11:25:03.937276	DAILY_MARKET_RESET
+45948	1	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 6.36, Weighted Sales: 7.00 [W0=11, W1=5, W2=0], Target: 1.10). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:25:04.627816	2.00	6.363636363636363	7	1.1	2026-08-22 11:19:04.627816	2026-08-22 11:25:04.627816	EXTREMELY_HIGH
+45949	2	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:04.627816	-2.00	0	0	0.8	2026-08-22 11:19:04.627816	2026-08-22 11:25:04.627816	EXTREMELY_LOW
+45950	3	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:04.627816	-2.00	0	0	0.8	2026-08-22 11:19:04.627816	2026-08-22 11:25:04.627816	EXTREMELY_LOW
+45951	4	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 1.10). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:04.627816	-2.00	0	0	1.1	2026-08-22 11:19:04.627816	2026-08-22 11:25:04.627816	EXTREMELY_LOW
 22533	3	21.00	22.00	100	0	1	Surge Pricing for MINT: High order velocity (Current Qty=3 vs Prev=0, Demand Score 100.0). Price adjusted +₹1 to ₹22.00.	2026-08-21 15:12:34.008354	\N	\N	\N	\N	\N	\N	\N
+45952	5	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.70). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:04.627816	-2.00	0	0	0.7	2026-08-22 11:19:04.627816	2026-08-22 11:25:04.627816	EXTREMELY_LOW
+45953	6	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:04.627816	-2.00	0	0	0.9	2026-08-22 11:19:04.627816	2026-08-22 11:25:04.627816	EXTREMELY_LOW
+45954	7	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:04.627816	-2.00	0	0	0.9	2026-08-22 11:19:04.627816	2026-08-22 11:25:04.627816	EXTREMELY_LOW
 22537	8	21.00	22.00	100	0	1	Surge Pricing for PINEAPPLE: High order velocity (Current Qty=3 vs Prev=0, Demand Score 100.0). Price adjusted +₹1 to ₹22.00.	2026-08-21 15:12:34.16663	\N	\N	\N	\N	\N	\N	\N
+45955	23	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:04.627816	-2.00	0	0	0.9	2026-08-22 11:19:04.627816	2026-08-22 11:25:04.627816	EXTREMELY_LOW
+45956	1	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:18.756092	-2.00	1	1	1	2026-08-22 11:25:18.756092	2026-08-22 11:25:18.756092	DAILY_MARKET_RESET
+45957	2	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:18.756092	2.00	1	1	1	2026-08-22 11:25:18.756092	2026-08-22 11:25:18.756092	DAILY_MARKET_RESET
+45958	3	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:18.756092	2.00	1	1	1	2026-08-22 11:25:18.756092	2026-08-22 11:25:18.756092	DAILY_MARKET_RESET
 22543	7	21.00	22.00	100	0	1	Surge Pricing for LYCHEE: High order velocity (Current Qty=4 vs Prev=0, Demand Score 100.0). Price adjusted +₹1 to ₹22.00.	2026-08-21 15:12:34.174553	\N	\N	\N	\N	\N	\N	\N
+45959	4	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:18.756092	2.00	1	1	1	2026-08-22 11:25:18.756092	2026-08-22 11:25:18.756092	DAILY_MARKET_RESET
+45960	5	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:18.756092	2.00	1	1	1	2026-08-22 11:25:18.756092	2026-08-22 11:25:18.756092	DAILY_MARKET_RESET
+45961	6	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:18.756092	2.00	1	1	1	2026-08-22 11:25:18.756092	2026-08-22 11:25:18.756092	DAILY_MARKET_RESET
+45962	7	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:18.756092	2.00	1	1	1	2026-08-22 11:25:18.756092	2026-08-22 11:25:18.756092	DAILY_MARKET_RESET
+45963	23	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:18.756092	2.00	1	1	1	2026-08-22 11:25:18.756092	2026-08-22 11:25:18.756092	DAILY_MARKET_RESET
+45964	1	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 9.09, Weighted Sales: 10.00 [W0=17, W1=5, W2=0], Target: 1.10). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:25:19.542762	2.00	9.09090909090909	10	1.1	2026-08-22 11:19:19.542762	2026-08-22 11:25:19.542762	EXTREMELY_HIGH
+45965	2	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:19.542762	-2.00	0	0	0.8	2026-08-22 11:19:19.542762	2026-08-22 11:25:19.542762	EXTREMELY_LOW
+45966	3	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:19.542762	-2.00	0	0	0.8	2026-08-22 11:19:19.542762	2026-08-22 11:25:19.542762	EXTREMELY_LOW
+45967	4	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 1.10). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:19.542762	-2.00	0	0	1.1	2026-08-22 11:19:19.542762	2026-08-22 11:25:19.542762	EXTREMELY_LOW
+45968	5	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.70). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:19.542762	-2.00	0	0	0.7	2026-08-22 11:19:19.542762	2026-08-22 11:25:19.542762	EXTREMELY_LOW
+45969	6	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:19.542762	-2.00	0	0	0.9	2026-08-22 11:19:19.542762	2026-08-22 11:25:19.542762	EXTREMELY_LOW
+45970	7	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:19.542762	-2.00	0	0	0.9	2026-08-22 11:19:19.542762	2026-08-22 11:25:19.542762	EXTREMELY_LOW
+45971	23	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:19.542762	-2.00	0	0	0.9	2026-08-22 11:19:19.542762	2026-08-22 11:25:19.542762	EXTREMELY_LOW
+45972	1	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:39.91909	-2.00	1	1	1	2026-08-22 11:25:39.91909	2026-08-22 11:25:39.91909	DAILY_MARKET_RESET
+45973	2	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:39.91909	2.00	1	1	1	2026-08-22 11:25:39.91909	2026-08-22 11:25:39.91909	DAILY_MARKET_RESET
+45974	3	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:39.91909	2.00	1	1	1	2026-08-22 11:25:39.91909	2026-08-22 11:25:39.91909	DAILY_MARKET_RESET
+45975	4	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:39.91909	2.00	1	1	1	2026-08-22 11:25:39.91909	2026-08-22 11:25:39.91909	DAILY_MARKET_RESET
+45976	5	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:39.91909	2.00	1	1	1	2026-08-22 11:25:39.91909	2026-08-22 11:25:39.91909	DAILY_MARKET_RESET
+45977	6	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:39.91909	2.00	1	1	1	2026-08-22 11:25:39.91909	2026-08-22 11:25:39.91909	DAILY_MARKET_RESET
+45978	7	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:39.91909	2.00	1	1	1	2026-08-22 11:25:39.91909	2026-08-22 11:25:39.91909	DAILY_MARKET_RESET
+45979	23	23.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹23.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:39.91909	2.00	1	1	1	2026-08-22 11:25:39.91909	2026-08-22 11:25:39.91909	DAILY_MARKET_RESET
 24728	6	24.00	25.00	50	0	1	Surge Pricing for GRAPE: High order velocity (Current Qty=2 vs Prev=2, Demand Score 50.0). Price adjusted +₹1 to ₹25.00.	2026-08-21 15:17:09.291428	\N	\N	\N	\N	\N	\N	\N
 24729	2	20.00	19.00	20	0	1	Price Decay for LEMON: Low/no order velocity (Current Qty=0 vs Prev=0, Demand Score 20.0). Price adjusted -₹1 to ₹19.00.	2026-08-21 15:17:09.35883	\N	\N	\N	\N	\N	\N	\N
 24730	8	20.00	19.00	37.5	0	1	Price Decay for PINEAPPLE: Low/no order velocity (Current Qty=1 vs Prev=2, Demand Score 37.5). Price adjusted -₹1 to ₹19.00.	2026-08-21 15:17:09.367301	\N	\N	\N	\N	\N	\N	\N
@@ -39830,8 +40081,45 @@ COPY public.price_history (id, product_id, old_price, new_price, demand_score, s
 24742	1	24.00	25.00	100	0	1	Surge Pricing for MANGO: High order velocity (Current Qty=7 vs Prev=2, Demand Score 100.0). Price adjusted +₹1 to ₹25.00.	2026-08-21 15:17:09.383097	\N	\N	\N	\N	\N	\N	\N
 24752	5	20.00	19.00	25	0	1	Price Decay for STRAWBERRY: Low/no order velocity (Current Qty=0 vs Prev=1, Demand Score 25.0). Price adjusted -₹1 to ₹19.00.	2026-08-21 15:17:09.407583	\N	\N	\N	\N	\N	\N	\N
 24762	7	20.00	19.00	41.666666666666664	0	1	Price Decay for LYCHEE: Low/no order velocity (Current Qty=2 vs Prev=3, Demand Score 41.7). Price adjusted -₹1 to ₹19.00.	2026-08-21 15:17:09.421879	\N	\N	\N	\N	\N	\N	\N
+45980	1	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 11.82, Weighted Sales: 13.00 [W0=23, W1=5, W2=0], Target: 1.10). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:25:40.661492	2.00	11.818181818181817	13	1.1	2026-08-22 11:19:40.661492	2026-08-22 11:25:40.661492	EXTREMELY_HIGH
+45981	2	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:40.661492	-2.00	0	0	0.8	2026-08-22 11:19:40.661492	2026-08-22 11:25:40.661492	EXTREMELY_LOW
+45982	3	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:40.661492	-2.00	0	0	0.8	2026-08-22 11:19:40.661492	2026-08-22 11:25:40.661492	EXTREMELY_LOW
+45983	4	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 1.10). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:40.661492	-2.00	0	0	1.1	2026-08-22 11:19:40.661492	2026-08-22 11:25:40.661492	EXTREMELY_LOW
+45984	5	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.70). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:40.661492	-2.00	0	0	0.7	2026-08-22 11:19:40.661492	2026-08-22 11:25:40.661492	EXTREMELY_LOW
+45985	6	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:40.661492	-2.00	0	0	0.9	2026-08-22 11:19:40.661492	2026-08-22 11:25:40.661492	EXTREMELY_LOW
+45986	7	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:40.661492	-2.00	0	0	0.9	2026-08-22 11:19:40.661492	2026-08-22 11:25:40.661492	EXTREMELY_LOW
+45987	23	25.00	23.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹25.00 -> ₹23.00.	2026-08-22 11:25:40.661492	-2.00	0	0	0.9	2026-08-22 11:19:40.661492	2026-08-22 11:25:40.661492	EXTREMELY_LOW
+45996	11	25.00	18.00	50	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Temporary promotional crash price set to ₹18.00 (Normal price: ₹25.00 held)	2026-08-22 11:25:44.589275	-7.00	\N	\N	\N	\N	\N	MARKET_CRASH_START
+45997	13	25.00	18.00	50	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Temporary promotional crash price set to ₹18.00 (Normal price: ₹25.00 held)	2026-08-22 11:25:44.589275	-7.00	\N	\N	\N	\N	\N	MARKET_CRASH_START
+45998	11	18.00	25.00	50	0	1	🟢 Market Crash ended. Normal calculated price of ₹25.00 restored.	2026-08-22 11:25:44.613916	7.00	\N	\N	\N	\N	\N	MARKET_CRASH_END
+45999	13	18.00	25.00	50	0	1	🟢 Market Crash ended. Normal calculated price of ₹25.00 restored.	2026-08-22 11:25:44.613916	7.00	\N	\N	\N	\N	\N	MARKET_CRASH_END
+46000	1	29.00	29.00	50	0	1	Admin deployed product config updates.	2026-08-22 11:25:44.668451	0.00	\N	\N	\N	\N	\N	ADMIN_DEPLOY
+46001	1	29.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹29.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:44.704188	-4.00	1	1	1	2026-08-22 11:25:44.704188	2026-08-22 11:25:44.704188	DAILY_MARKET_RESET
+46002	2	21.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹21.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:44.704188	4.00	1	1	1	2026-08-22 11:25:44.704188	2026-08-22 11:25:44.704188	DAILY_MARKET_RESET
+46003	3	21.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹21.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:44.704188	4.00	1	1	1	2026-08-22 11:25:44.704188	2026-08-22 11:25:44.704188	DAILY_MARKET_RESET
+46004	4	21.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹21.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:44.704188	4.00	1	1	1	2026-08-22 11:25:44.704188	2026-08-22 11:25:44.704188	DAILY_MARKET_RESET
+46005	5	21.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹21.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:44.704188	4.00	1	1	1	2026-08-22 11:25:44.704188	2026-08-22 11:25:44.704188	DAILY_MARKET_RESET
+46006	6	21.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹21.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:44.704188	4.00	1	1	1	2026-08-22 11:25:44.704188	2026-08-22 11:25:44.704188	DAILY_MARKET_RESET
+46007	7	21.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹21.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:44.704188	4.00	1	1	1	2026-08-22 11:25:44.704188	2026-08-22 11:25:44.704188	DAILY_MARKET_RESET
+46008	23	21.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹21.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:25:44.704188	4.00	1	1	1	2026-08-22 11:25:44.704188	2026-08-22 11:25:44.704188	DAILY_MARKET_RESET
+45988	1	27.00	29.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 12.27, Weighted Sales: 13.50 [W0=24, W1=5, W2=0], Target: 1.10). Price movement +2 => ₹27.00 -> ₹29.00.	2026-08-22 11:25:44.444732	2.00	12.272727272727272	13.5	1.1	2026-08-22 11:19:44.444732	2026-08-22 11:25:44.444732	EXTREMELY_HIGH
+45989	2	23.00	21.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹23.00 -> ₹21.00.	2026-08-22 11:25:44.444732	-2.00	0	0	0.8	2026-08-22 11:19:44.444732	2026-08-22 11:25:44.444732	EXTREMELY_LOW
+45990	3	23.00	21.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.80). Price movement -2 => ₹23.00 -> ₹21.00.	2026-08-22 11:25:44.444732	-2.00	0	0	0.8	2026-08-22 11:19:44.444732	2026-08-22 11:25:44.444732	EXTREMELY_LOW
+45991	4	23.00	21.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 1.10). Price movement -2 => ₹23.00 -> ₹21.00.	2026-08-22 11:25:44.444732	-2.00	0	0	1.1	2026-08-22 11:19:44.444732	2026-08-22 11:25:44.444732	EXTREMELY_LOW
+45992	5	23.00	21.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.70). Price movement -2 => ₹23.00 -> ₹21.00.	2026-08-22 11:25:44.444732	-2.00	0	0	0.7	2026-08-22 11:19:44.444732	2026-08-22 11:25:44.444732	EXTREMELY_LOW
+45993	6	23.00	21.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹23.00 -> ₹21.00.	2026-08-22 11:25:44.444732	-2.00	0	0	0.9	2026-08-22 11:19:44.444732	2026-08-22 11:25:44.444732	EXTREMELY_LOW
+45994	7	23.00	21.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹23.00 -> ₹21.00.	2026-08-22 11:25:44.444732	-2.00	0	0	0.9	2026-08-22 11:19:44.444732	2026-08-22 11:25:44.444732	EXTREMELY_LOW
+45995	23	23.00	21.00	50	0	1	Demand EXTREMELY_LOW (Ratio: 0.00, Weighted Sales: 0.00 [W0=0, W1=0, W2=0], Target: 0.90). Price movement -2 => ₹23.00 -> ₹21.00.	2026-08-22 11:25:44.444732	-2.00	0	0	0.9	2026-08-22 11:19:44.444732	2026-08-22 11:25:44.444732	EXTREMELY_LOW
 30308	1	25.00	25.00	50	0	1	ATOMIC_ADMIN_DEPLOYMENT: Set default=₹22.00, current=₹25.00, min=₹18.00, max=₹25.00	2026-08-21 15:31:43.94949	\N	\N	\N	\N	\N	\N	\N
 30325	1	22.00	22.00	50	0	1	ATOMIC_ADMIN_DEPLOYMENT: Set default=₹22.00, current=₹22.00, min=₹18.00, max=₹25.00	2026-08-21 15:32:22.193813	\N	\N	\N	\N	\N	\N	\N
+46009	1	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:34:43.97297	0.00	1	1	1	2026-08-22 11:34:43.97297	2026-08-22 11:34:43.97297	DAILY_MARKET_RESET
+46010	2	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:34:43.97297	0.00	1	1	1	2026-08-22 11:34:43.97297	2026-08-22 11:34:43.97297	DAILY_MARKET_RESET
+46011	3	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:34:43.97297	0.00	1	1	1	2026-08-22 11:34:43.97297	2026-08-22 11:34:43.97297	DAILY_MARKET_RESET
+46012	4	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:34:43.97297	0.00	1	1	1	2026-08-22 11:34:43.97297	2026-08-22 11:34:43.97297	DAILY_MARKET_RESET
+46013	5	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:34:43.97297	0.00	1	1	1	2026-08-22 11:34:43.97297	2026-08-22 11:34:43.97297	DAILY_MARKET_RESET
+46014	6	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:34:43.97297	0.00	1	1	1	2026-08-22 11:34:43.97297	2026-08-22 11:34:43.97297	DAILY_MARKET_RESET
+46015	7	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:34:43.97297	0.00	1	1	1	2026-08-22 11:34:43.97297	2026-08-22 11:34:43.97297	DAILY_MARKET_RESET
+46016	23	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:34:43.97297	0.00	1	1	1	2026-08-22 11:34:43.97297	2026-08-22 11:34:43.97297	DAILY_MARKET_RESET
 22616	4	20.00	21.00	100	0	1	Surge Pricing for ORANGE: High order velocity (Current Qty=5 vs Prev=0, Demand Score 100.0). Price adjusted +₹1 to ₹21.00.	2026-08-21 15:12:39.643766	\N	\N	\N	\N	\N	\N	\N
 22617	2	23.00	24.00	100	0	1	Surge Pricing for LEMON: High order velocity (Current Qty=4 vs Prev=0, Demand Score 100.0). Price adjusted +₹1 to ₹24.00.	2026-08-21 15:12:39.652144	\N	\N	\N	\N	\N	\N	\N
 22618	3	23.00	24.00	100	0	1	Surge Pricing for MINT: High order velocity (Current Qty=4 vs Prev=0, Demand Score 100.0). Price adjusted +₹1 to ₹24.00.	2026-08-21 15:12:39.657032	\N	\N	\N	\N	\N	\N	\N
@@ -39962,6 +40250,14 @@ COPY public.price_history (id, product_id, old_price, new_price, demand_score, s
 30331	1	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:32:22.228543	\N	\N	\N	\N	\N	\N	\N
 30332	5	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:32:22.228543	\N	\N	\N	\N	\N	\N	\N
 30333	7	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:32:22.228543	\N	\N	\N	\N	\N	\N	\N
+46017	1	25.00	25.00	50	0	1	Demand NORMAL (Ratio: 0.91, Weighted Sales: 1.00 [W0=2, W1=0, W2=0], Target: 1.10). Price movement +0 => ₹25.00 -> ₹25.00.	2026-08-22 11:34:44.295274	0.00	0.9090909090909091	1	1.1	2026-08-22 11:28:44.295274	2026-08-22 11:34:44.295274	NORMAL
+46018	2	25.00	26.00	50	0	1	Demand ABOVE_NORMAL (Ratio: 1.25, Weighted Sales: 1.00 [W0=2, W1=0, W2=0], Target: 0.80). Price movement +1 => ₹25.00 -> ₹26.00.	2026-08-22 11:34:44.295274	1.00	1.25	1	0.8	2026-08-22 11:28:44.295274	2026-08-22 11:34:44.295274	ABOVE_NORMAL
+46019	3	25.00	26.00	50	0	1	Demand ABOVE_NORMAL (Ratio: 1.25, Weighted Sales: 1.00 [W0=2, W1=0, W2=0], Target: 0.80). Price movement +1 => ₹25.00 -> ₹26.00.	2026-08-22 11:34:44.295274	1.00	1.25	1	0.8	2026-08-22 11:28:44.295274	2026-08-22 11:34:44.295274	ABOVE_NORMAL
+46020	4	25.00	25.00	50	0	1	Demand NORMAL (Ratio: 0.91, Weighted Sales: 1.00 [W0=2, W1=0, W2=0], Target: 1.10). Price movement +0 => ₹25.00 -> ₹25.00.	2026-08-22 11:34:44.295274	0.00	0.9090909090909091	1	1.1	2026-08-22 11:28:44.295274	2026-08-22 11:34:44.295274	NORMAL
+46021	5	25.00	26.00	50	0	1	Demand HIGH (Ratio: 1.43, Weighted Sales: 1.00 [W0=2, W1=0, W2=0], Target: 0.70). Price movement +1 => ₹25.00 -> ₹26.00.	2026-08-22 11:34:44.295274	1.00	1.4285714285714286	1	0.7	2026-08-22 11:28:44.295274	2026-08-22 11:34:44.295274	HIGH
+46022	6	25.00	26.00	50	0	1	Demand ABOVE_NORMAL (Ratio: 1.11, Weighted Sales: 1.00 [W0=2, W1=0, W2=0], Target: 0.90). Price movement +1 => ₹25.00 -> ₹26.00.	2026-08-22 11:34:44.295274	1.00	1.1111111111111112	1	0.9	2026-08-22 11:28:44.295274	2026-08-22 11:34:44.295274	ABOVE_NORMAL
+46023	7	25.00	26.00	50	0	1	Demand ABOVE_NORMAL (Ratio: 1.11, Weighted Sales: 1.00 [W0=2, W1=0, W2=0], Target: 0.90). Price movement +1 => ₹25.00 -> ₹26.00.	2026-08-22 11:34:44.295274	1.00	1.1111111111111112	1	0.9	2026-08-22 11:28:44.295274	2026-08-22 11:34:44.295274	ABOVE_NORMAL
+46024	23	25.00	26.00	50	0	1	Demand ABOVE_NORMAL (Ratio: 1.11, Weighted Sales: 1.00 [W0=2, W1=0, W2=0], Target: 0.90). Price movement +1 => ₹25.00 -> ₹26.00.	2026-08-22 11:34:44.295274	1.00	1.1111111111111112	1	0.9	2026-08-22 11:28:44.295274	2026-08-22 11:34:44.295274	ABOVE_NORMAL
 30338	4	18.00	22.00	50	0	1	🟢 Market Crash ended. Price restored from ₹18.00 to default base price ₹22.00.	2026-08-21 15:32:22.290824	\N	\N	\N	\N	\N	\N	\N
 30339	1	18.00	22.00	50	0	1	🟢 Market Crash ended. Price restored from ₹18.00 to default base price ₹22.00.	2026-08-21 15:32:22.290824	\N	\N	\N	\N	\N	\N	\N
 30340	5	18.00	22.00	50	0	1	🟢 Market Crash ended. Price restored from ₹18.00 to default base price ₹22.00.	2026-08-21 15:32:22.290824	\N	\N	\N	\N	\N	\N	\N
@@ -40030,6 +40326,16 @@ COPY public.price_history (id, product_id, old_price, new_price, demand_score, s
 30365	1	18.00	22.00	50	0	1	🟢 Market Crash ended. Price restored from ₹18.00 to default base price ₹22.00.	2026-08-21 15:33:07.607549	\N	\N	\N	\N	\N	\N	\N
 30366	7	18.00	22.00	50	0	1	🟢 Market Crash ended. Price restored from ₹18.00 to default base price ₹22.00.	2026-08-21 15:33:07.607549	\N	\N	\N	\N	\N	\N	\N
 34660	1	22.00	22.00	50	0	1	ATOMIC_ADMIN_DEPLOYMENT: Set default=₹22.00, current=₹22.00, min=₹18.00, max=₹25.00	2026-08-21 15:42:03.435327	\N	\N	\N	\N	\N	\N	\N
+46025	1	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:38.33453	0.00	1	1	1	2026-08-22 11:35:38.33453	2026-08-22 11:35:38.33453	DAILY_MARKET_RESET
+46026	2	26.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹26.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:38.33453	-1.00	1	1	1	2026-08-22 11:35:38.33453	2026-08-22 11:35:38.33453	DAILY_MARKET_RESET
+46027	3	26.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹26.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:38.33453	-1.00	1	1	1	2026-08-22 11:35:38.33453	2026-08-22 11:35:38.33453	DAILY_MARKET_RESET
+46028	4	25.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹25.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:38.33453	0.00	1	1	1	2026-08-22 11:35:38.33453	2026-08-22 11:35:38.33453	DAILY_MARKET_RESET
+46029	5	26.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹26.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:38.33453	-1.00	1	1	1	2026-08-22 11:35:38.33453	2026-08-22 11:35:38.33453	DAILY_MARKET_RESET
+46030	6	26.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹26.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:38.33453	-1.00	1	1	1	2026-08-22 11:35:38.33453	2026-08-22 11:35:38.33453	DAILY_MARKET_RESET
+46031	7	26.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹26.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:38.33453	-1.00	1	1	1	2026-08-22 11:35:38.33453	2026-08-22 11:35:38.33453	DAILY_MARKET_RESET
+46032	23	26.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹26.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:38.33453	-1.00	1	1	1	2026-08-22 11:35:38.33453	2026-08-22 11:35:38.33453	DAILY_MARKET_RESET
+46033	1	25.00	27.00	50	0	1	Demand VERY_HIGH (Ratio: 1.82, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 1.10). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:38.872637	2.00	1.8181818181818181	2	1.1	2026-08-22 11:29:38.872637	2026-08-22 11:35:38.872637	VERY_HIGH
+46034	2	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.50, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.80). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:38.872637	2.00	2.5	2	0.8	2026-08-22 11:29:38.872637	2026-08-22 11:35:38.872637	EXTREMELY_HIGH
 30350	1	22.00	22.00	50	0	1	ATOMIC_ADMIN_DEPLOYMENT: Set default=₹22.00, current=₹22.00, min=₹18.00, max=₹25.00	2026-08-21 15:33:07.44876	\N	\N	\N	\N	\N	\N	\N
 34661	3	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:42:03.518911	\N	\N	\N	\N	\N	\N	\N
 34662	6	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:42:03.518911	\N	\N	\N	\N	\N	\N	\N
@@ -40039,6 +40345,25 @@ COPY public.price_history (id, product_id, old_price, new_price, demand_score, s
 34666	5	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:42:03.518911	\N	\N	\N	\N	\N	\N	\N
 34667	1	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:42:03.518911	\N	\N	\N	\N	\N	\N	\N
 34668	7	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:42:03.518911	\N	\N	\N	\N	\N	\N	\N
+46035	3	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.50, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.80). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:38.872637	2.00	2.5	2	0.8	2026-08-22 11:29:38.872637	2026-08-22 11:35:38.872637	EXTREMELY_HIGH
+46036	4	25.00	27.00	50	0	1	Demand VERY_HIGH (Ratio: 1.82, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 1.10). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:38.872637	2.00	1.8181818181818181	2	1.1	2026-08-22 11:29:38.872637	2026-08-22 11:35:38.872637	VERY_HIGH
+46037	5	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.86, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.70). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:38.872637	2.00	2.857142857142857	2	0.7	2026-08-22 11:29:38.872637	2026-08-22 11:35:38.872637	EXTREMELY_HIGH
+46038	6	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.22, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.90). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:38.872637	2.00	2.2222222222222223	2	0.9	2026-08-22 11:29:38.872637	2026-08-22 11:35:38.872637	EXTREMELY_HIGH
+46039	7	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.22, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.90). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:38.872637	2.00	2.2222222222222223	2	0.9	2026-08-22 11:29:38.872637	2026-08-22 11:35:38.872637	EXTREMELY_HIGH
+46040	23	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.22, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.90). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:38.872637	2.00	2.2222222222222223	2	0.9	2026-08-22 11:29:38.872637	2026-08-22 11:35:38.872637	EXTREMELY_HIGH
+46041	1	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:42.078269	-2.00	1	1	1	2026-08-22 11:35:42.078269	2026-08-22 11:35:42.078269	DAILY_MARKET_RESET
+46042	2	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:42.078269	-2.00	1	1	1	2026-08-22 11:35:42.078269	2026-08-22 11:35:42.078269	DAILY_MARKET_RESET
+46043	3	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:42.078269	-2.00	1	1	1	2026-08-22 11:35:42.078269	2026-08-22 11:35:42.078269	DAILY_MARKET_RESET
+46044	4	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:42.078269	-2.00	1	1	1	2026-08-22 11:35:42.078269	2026-08-22 11:35:42.078269	DAILY_MARKET_RESET
+46045	5	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:42.078269	-2.00	1	1	1	2026-08-22 11:35:42.078269	2026-08-22 11:35:42.078269	DAILY_MARKET_RESET
+46046	6	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:42.078269	-2.00	1	1	1	2026-08-22 11:35:42.078269	2026-08-22 11:35:42.078269	DAILY_MARKET_RESET
+46047	7	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:42.078269	-2.00	1	1	1	2026-08-22 11:35:42.078269	2026-08-22 11:35:42.078269	DAILY_MARKET_RESET
+46048	23	27.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹27.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:42.078269	-2.00	1	1	1	2026-08-22 11:35:42.078269	2026-08-22 11:35:42.078269	DAILY_MARKET_RESET
+46049	1	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 4.09, Weighted Sales: 4.50 [W0=9, W1=0, W2=0], Target: 1.10). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:42.803084	2.00	4.090909090909091	4.5	1.1	2026-08-22 11:29:42.803084	2026-08-22 11:35:42.803084	EXTREMELY_HIGH
+46050	2	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.50, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.80). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:42.803084	2.00	2.5	2	0.8	2026-08-22 11:29:42.803084	2026-08-22 11:35:42.803084	EXTREMELY_HIGH
+46051	3	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.50, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.80). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:42.803084	2.00	2.5	2	0.8	2026-08-22 11:29:42.803084	2026-08-22 11:35:42.803084	EXTREMELY_HIGH
+46052	4	25.00	27.00	50	0	1	Demand VERY_HIGH (Ratio: 1.82, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 1.10). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:42.803084	2.00	1.8181818181818181	2	1.1	2026-08-22 11:29:42.803084	2026-08-22 11:35:42.803084	VERY_HIGH
+46053	5	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.86, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.70). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:42.803084	2.00	2.857142857142857	2	0.7	2026-08-22 11:29:42.803084	2026-08-22 11:35:42.803084	EXTREMELY_HIGH
 30351	3	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:33:07.530144	\N	\N	\N	\N	\N	\N	\N
 30352	6	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:33:07.530144	\N	\N	\N	\N	\N	\N	\N
 30353	8	22.00	18.00	0	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Price dropped from ₹22.00 to floor limit ₹18.00.	2026-08-21 15:33:07.530144	\N	\N	\N	\N	\N	\N	\N
@@ -40063,6 +40388,17 @@ COPY public.price_history (id, product_id, old_price, new_price, demand_score, s
 34674	5	18.00	22.00	50	0	1	🟢 Market Crash ended. Price restored from ₹18.00 to default base price ₹22.00.	2026-08-21 15:42:03.594263	\N	\N	\N	\N	\N	\N	\N
 34675	1	18.00	22.00	50	0	1	🟢 Market Crash ended. Price restored from ₹18.00 to default base price ₹22.00.	2026-08-21 15:42:03.594263	\N	\N	\N	\N	\N	\N	\N
 34676	7	18.00	22.00	50	0	1	🟢 Market Crash ended. Price restored from ₹18.00 to default base price ₹22.00.	2026-08-21 15:42:03.594263	\N	\N	\N	\N	\N	\N	\N
+46054	6	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.22, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.90). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:42.803084	2.00	2.2222222222222223	2	0.9	2026-08-22 11:29:42.803084	2026-08-22 11:35:42.803084	EXTREMELY_HIGH
+46055	7	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.22, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.90). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:42.803084	2.00	2.2222222222222223	2	0.9	2026-08-22 11:29:42.803084	2026-08-22 11:35:42.803084	EXTREMELY_HIGH
+46056	23	25.00	27.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.22, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.90). Price movement +2 => ₹25.00 -> ₹27.00.	2026-08-22 11:35:42.803084	2.00	2.2222222222222223	2	0.9	2026-08-22 11:29:42.803084	2026-08-22 11:35:42.803084	EXTREMELY_HIGH
+46057	1	27.00	29.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 4.55, Weighted Sales: 5.00 [W0=10, W1=0, W2=0], Target: 1.10). Price movement +2 => ₹27.00 -> ₹29.00.	2026-08-22 11:35:47.276794	2.00	4.545454545454545	5	1.1	2026-08-22 11:29:47.276794	2026-08-22 11:35:47.276794	EXTREMELY_HIGH
+46058	2	27.00	29.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.50, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.80). Price movement +2 => ₹27.00 -> ₹29.00.	2026-08-22 11:35:47.276794	2.00	2.5	2	0.8	2026-08-22 11:29:47.276794	2026-08-22 11:35:47.276794	EXTREMELY_HIGH
+46059	3	27.00	29.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.50, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.80). Price movement +2 => ₹27.00 -> ₹29.00.	2026-08-22 11:35:47.276794	2.00	2.5	2	0.8	2026-08-22 11:29:47.276794	2026-08-22 11:35:47.276794	EXTREMELY_HIGH
+46060	4	27.00	29.00	50	0	1	Demand VERY_HIGH (Ratio: 1.82, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 1.10). Price movement +2 => ₹27.00 -> ₹29.00.	2026-08-22 11:35:47.276794	2.00	1.8181818181818181	2	1.1	2026-08-22 11:29:47.276794	2026-08-22 11:35:47.276794	VERY_HIGH
+46061	5	27.00	29.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.86, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.70). Price movement +2 => ₹27.00 -> ₹29.00.	2026-08-22 11:35:47.276794	2.00	2.857142857142857	2	0.7	2026-08-22 11:29:47.276794	2026-08-22 11:35:47.276794	EXTREMELY_HIGH
+46062	6	27.00	29.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.22, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.90). Price movement +2 => ₹27.00 -> ₹29.00.	2026-08-22 11:35:47.276794	2.00	2.2222222222222223	2	0.9	2026-08-22 11:29:47.276794	2026-08-22 11:35:47.276794	EXTREMELY_HIGH
+46063	7	27.00	29.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.22, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.90). Price movement +2 => ₹27.00 -> ₹29.00.	2026-08-22 11:35:47.276794	2.00	2.2222222222222223	2	0.9	2026-08-22 11:29:47.276794	2026-08-22 11:35:47.276794	EXTREMELY_HIGH
+46064	23	27.00	29.00	50	0	1	Demand EXTREMELY_HIGH (Ratio: 2.22, Weighted Sales: 2.00 [W0=4, W1=0, W2=0], Target: 0.90). Price movement +2 => ₹27.00 -> ₹29.00.	2026-08-22 11:35:47.276794	2.00	2.2222222222222223	2	0.9	2026-08-22 11:29:47.276794	2026-08-22 11:35:47.276794	EXTREMELY_HIGH
 30367	3	22.00	21.00	20	0	1	Price Decay for MINT: Low/no order velocity (Current Qty=0 vs Prev=0, Demand Score 20.0). Price adjusted -₹1 to ₹21.00.	2026-08-21 15:33:10.760645	\N	\N	\N	\N	\N	\N	\N
 30368	6	22.00	21.00	20	0	1	Price Decay for GRAPE: Low/no order velocity (Current Qty=0 vs Prev=0, Demand Score 20.0). Price adjusted -₹1 to ₹21.00.	2026-08-21 15:33:10.815836	\N	\N	\N	\N	\N	\N	\N
 30369	8	22.00	21.00	20	0	1	Price Decay for PINEAPPLE: Low/no order velocity (Current Qty=0 vs Prev=0, Demand Score 20.0). Price adjusted -₹1 to ₹21.00.	2026-08-21 15:33:10.828493	\N	\N	\N	\N	\N	\N	\N
@@ -40149,6 +40485,19 @@ COPY public.price_history (id, product_id, old_price, new_price, demand_score, s
 34715	5	22.00	21.00	20	0	1	Price Decay for STRAWBERRY: Low/no order velocity (Current Qty=0 vs Prev=0, Demand Score 20.0). Price adjusted -₹1 to ₹21.00.	2026-08-21 15:42:07.019205	\N	\N	\N	\N	\N	\N	\N
 34716	1	22.00	23.00	75	0	1	Surge Pricing for MANGO: High order velocity (Current Qty=2 vs Prev=0, Demand Score 75.0). Price adjusted +₹1 to ₹23.00.	2026-08-21 15:42:07.032225	\N	\N	\N	\N	\N	\N	\N
 34717	7	22.00	21.00	20	0	1	Price Decay for LYCHEE: Low/no order velocity (Current Qty=0 vs Prev=0, Demand Score 20.0). Price adjusted -₹1 to ₹21.00.	2026-08-21 15:42:07.049251	\N	\N	\N	\N	\N	\N	\N
+46065	14	25.00	18.00	50	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Temporary promotional crash price set to ₹18.00 (Normal price: ₹25.00 held)	2026-08-22 11:35:47.388201	-7.00	\N	\N	\N	\N	\N	MARKET_CRASH_START
+46066	2	29.00	18.00	50	0	1	🚨 MARKET CRASH (MANUAL_ADMIN)! Temporary promotional crash price set to ₹18.00 (Normal price: ₹29.00 held)	2026-08-22 11:35:47.388201	-11.00	\N	\N	\N	\N	\N	MARKET_CRASH_START
+46067	14	18.00	25.00	50	0	1	🟢 Market Crash ended. Normal calculated price of ₹25.00 restored.	2026-08-22 11:35:47.407937	7.00	\N	\N	\N	\N	\N	MARKET_CRASH_END
+46068	2	18.00	29.00	50	0	1	🟢 Market Crash ended. Normal calculated price of ₹29.00 restored.	2026-08-22 11:35:47.407937	11.00	\N	\N	\N	\N	\N	MARKET_CRASH_END
+46069	1	29.00	29.00	50	0	1	Admin deployed product config updates.	2026-08-22 11:35:47.445614	0.00	\N	\N	\N	\N	\N	ADMIN_DEPLOY
+46070	1	29.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹29.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:47.469069	-4.00	1	1	1	2026-08-22 11:35:47.469069	2026-08-22 11:35:47.469069	DAILY_MARKET_RESET
+46071	2	29.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹29.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:47.469069	-4.00	1	1	1	2026-08-22 11:35:47.469069	2026-08-22 11:35:47.469069	DAILY_MARKET_RESET
+46072	3	29.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹29.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:47.469069	-4.00	1	1	1	2026-08-22 11:35:47.469069	2026-08-22 11:35:47.469069	DAILY_MARKET_RESET
+46073	4	29.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹29.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:47.469069	-4.00	1	1	1	2026-08-22 11:35:47.469069	2026-08-22 11:35:47.469069	DAILY_MARKET_RESET
+46074	5	29.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹29.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:47.469069	-4.00	1	1	1	2026-08-22 11:35:47.469069	2026-08-22 11:35:47.469069	DAILY_MARKET_RESET
+46075	6	29.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹29.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:47.469069	-4.00	1	1	1	2026-08-22 11:35:47.469069	2026-08-22 11:35:47.469069	DAILY_MARKET_RESET
+46076	7	29.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹29.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:47.469069	-4.00	1	1	1	2026-08-22 11:35:47.469069	2026-08-22 11:35:47.469069	DAILY_MARKET_RESET
+46077	23	29.00	25.00	50	0	1	DAILY_MARKET_RESET: Reset from ₹29.00 to base ₹25.00. Actor: ADMIN	2026-08-22 11:35:47.469069	-4.00	1	1	1	2026-08-22 11:35:47.469069	2026-08-22 11:35:47.469069	DAILY_MARKET_RESET
 23800	6	21.00	20.00	20	0	1	Price Decay for GRAPE: Low/no order velocity (Current Qty=0 vs Prev=0, Demand Score 20.0). Price adjusted -₹1 to ₹20.00.	2026-08-21 15:15:14.218537	\N	\N	\N	\N	\N	\N	\N
 23801	2	21.00	20.00	20	0	1	Price Decay for LEMON: Low/no order velocity (Current Qty=0 vs Prev=0, Demand Score 20.0). Price adjusted -₹1 to ₹20.00.	2026-08-21 15:15:14.227459	\N	\N	\N	\N	\N	\N	\N
 23802	3	21.00	20.00	20	0	1	Price Decay for MINT: Low/no order velocity (Current Qty=0 vs Prev=0, Demand Score 20.0). Price adjusted -₹1 to ₹20.00.	2026-08-21 15:15:14.233428	\N	\N	\N	\N	\N	\N	\N
@@ -40406,15 +40755,15 @@ COPY public.products (id, name, flavour, description, default_cup_size_ml, defau
 14	Royal Apple Juice	APPLE	Crisp fresh red apple juice	250	25.00	25.00	18.00	35.00	2026-08-22 10:46:01.05284	2026-08-22 10:42:38.40839	2026-08-22 10:42:38.40839	8	0.7	f
 15	Pomegranate Burst	POMEGRANATE	Rich antioxidant pomegranate extract	250	25.00	25.00	18.00	35.00	2026-08-22 10:46:01.05284	2026-08-22 10:42:38.40839	2026-08-22 10:42:38.40839	8	0.7	f
 16	Mixed Fruit Punch	MIXED_FRUIT	Delicious blend of seasonal fresh fruits	250	25.00	25.00	18.00	35.00	2026-08-22 10:46:01.05284	2026-08-22 10:42:38.40839	2026-08-22 10:42:38.40839	8	0.9	f
-23	Thunder	THUNDER	Electrifying energy fruit punch juice	250	25.00	25.00	18.00	35.00	2026-08-22 11:09:56.374867	2026-08-22 10:54:33.493967	2026-08-22 10:54:33.493967	6	0.9	t
-3	Cool Mint Cooler	MINT	Chilled mint and lime mocktail blend	250	25.00	25.00	18.00	35.00	2026-08-22 11:09:56.374867	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1150	0.8	t
-6	Royal Grape Juice	GRAPE	Rich black grape extract cooler	250	25.00	25.00	18.00	35.00	2026-08-22 11:09:56.374867	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1321	0.9	t
+23	Thunder	THUNDER	Electrifying energy fruit punch juice	250	25.00	25.00	18.00	35.00	2026-08-22 11:35:47.469069	2026-08-22 10:54:33.493967	2026-08-22 10:54:33.493967	26	0.9	t
+3	Cool Mint Cooler	MINT	Chilled mint and lime mocktail blend	250	25.00	25.00	18.00	35.00	2026-08-22 11:35:47.469069	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1170	0.8	t
+6	Royal Grape Juice	GRAPE	Rich black grape extract cooler	250	25.00	25.00	18.00	35.00	2026-08-22 11:35:47.469069	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1341	0.9	t
 8	Pineapple Express	PINEAPPLE	Fresh tropical crushed pineapple nectar	250	25.00	25.00	18.00	35.00	2026-08-22 10:46:01.05284	2026-08-20 16:56:16.810204	2026-08-20 16:56:16.810204	1418	0.9	f
-2	Zesty Lemon Juice	LEMON	Refreshing squeezed lemonade with mint touch	250	25.00	25.00	18.00	35.00	2026-08-22 11:09:56.374867	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1176	0.8	t
-4	Valencia Orange Juice	ORANGE	Pure Valencia orange juice loaded with vitamin C	250	25.00	25.00	18.00	35.00	2026-08-22 11:09:56.374867	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1146	1.1	t
-1	Fresh Mango Juice	MANGO	Sweet fresh Alphonso mango pulp juice	250	25.00	25.00	18.00	35.00	2026-08-22 11:09:56.374867	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1873	1.1	t
-5	Strawberry Delight	STRAWBERRY	Fresh strawberry nectar crush	250	25.00	25.00	18.00	35.00	2026-08-22 11:09:56.374867	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1134	0.7	t
-7	Lychee Mist	LYCHEE	Exotic lychee fruit punch	250	25.00	25.00	18.00	35.00	2026-08-22 11:09:56.374867	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1717	0.9	t
+2	Zesty Lemon Juice	LEMON	Refreshing squeezed lemonade with mint touch	250	25.00	25.00	18.00	35.00	2026-08-22 11:35:47.469069	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1196	0.8	t
+4	Valencia Orange Juice	ORANGE	Pure Valencia orange juice loaded with vitamin C	250	25.00	25.00	18.00	35.00	2026-08-22 11:35:47.469069	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1165	1.1	t
+1	Fresh Mango Juice	MANGO	Sweet fresh Alphonso mango pulp juice	250	25.00	25.00	18.00	35.00	2026-08-22 11:35:47.469069	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1894	1.1	t
+5	Strawberry Delight	STRAWBERRY	Fresh strawberry nectar crush	250	25.00	25.00	18.00	35.00	2026-08-22 11:35:47.469069	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1154	0.7	t
+7	Lychee Mist	LYCHEE	Exotic lychee fruit punch	250	25.00	25.00	18.00	35.00	2026-08-22 11:35:47.469069	2026-08-20 16:56:16.680915	2026-08-20 16:56:16.680915	1737	0.9	t
 \.
 
 
@@ -40444,58 +40793,76 @@ COPY public.roles (id, name, description, created_at) FROM stdin;
 --
 
 COPY public.sales_order_items (id, order_id, product_id, product_name, cup_size_ml, unit_price, quantity, total_price, volume_deducted_ml, locked_price, price_version, created_at) FROM stdin;
-17912	18051	1	Fresh Mango Juice	250	25.00	2	50.00	500	25.00	1873	2026-08-22 11:09:56.429028
-17913	18052	1	Fresh Mango Juice	250	25.00	2	50.00	500	25.00	1873	2026-08-22 11:09:56.621385
-17914	18053	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1873	2026-08-22 11:09:56.827479
-17915	18055	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1321	2026-08-22 11:09:56.850465
-17916	18054	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1176	2026-08-22 11:09:56.848135
-17917	18056	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1146	2026-08-22 11:09:56.849497
-17919	18058	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1321	2026-08-22 11:09:56.883552
-17918	18057	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1134	2026-08-22 11:09:56.85341
-17920	18059	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1176	2026-08-22 11:09:56.862857
-17921	18061	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1146	2026-08-22 11:09:56.865148
-17922	18060	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:09:56.86391
-17923	18062	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1717	2026-08-22 11:09:56.891803
-17924	18064	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1873	2026-08-22 11:09:56.902722
-17925	18063	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1717	2026-08-22 11:09:56.90276
-17926	18065	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1176	2026-08-22 11:09:56.913565
-17928	18067	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1146	2026-08-22 11:09:56.91832
-17929	18068	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1134	2026-08-22 11:09:56.920862
-17927	18066	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:09:56.906277
-17930	18069	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1150	2026-08-22 11:09:56.914385
-17931	18070	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1321	2026-08-22 11:09:56.923262
-17932	18071	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:09:56.939571
-17933	18072	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1146	2026-08-22 11:09:56.946268
-17934	18073	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1873	2026-08-22 11:09:56.938374
-17935	18074	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1134	2026-08-22 11:09:56.947302
-17936	18075	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1150	2026-08-22 11:09:56.945384
-17937	18076	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1176	2026-08-22 11:09:56.940092
-17938	18077	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1321	2026-08-22 11:09:56.949013
-17939	18078	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1176	2026-08-22 11:09:56.973795
-17940	18079	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1150	2026-08-22 11:09:56.973631
-17941	18080	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1873	2026-08-22 11:09:56.974491
-17942	18081	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1146	2026-08-22 11:09:56.977745
-17943	18082	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1134	2026-08-22 11:09:56.978397
-17944	18083	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:09:56.996647
-17945	18084	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1717	2026-08-22 11:09:56.992558
-17946	18085	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1873	2026-08-22 11:09:56.997827
-17947	18086	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1150	2026-08-22 11:09:56.996328
-17949	18087	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1150	2026-08-22 11:09:57.004344
-17948	18088	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1176	2026-08-22 11:09:57.003664
-17950	18089	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1717	2026-08-22 11:09:57.013457
-17951	18090	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:09:57.022411
-17952	18091	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1146	2026-08-22 11:09:57.023666
-17953	18093	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1321	2026-08-22 11:09:56.989173
-17954	18092	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1150	2026-08-22 11:09:56.865071
-17955	18095	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1717	2026-08-22 11:09:57.032806
-17956	18094	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1717	2026-08-22 11:09:57.025377
-17957	18096	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1134	2026-08-22 11:09:57.006167
-17958	18097	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1873	2026-08-22 11:09:57.021686
-17959	18098	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:09:57.041424
-17960	18099	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1176	2026-08-22 11:09:57.039599
-17961	18100	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1134	2026-08-22 11:09:57.039583
-17962	18102	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1321	2026-08-22 11:09:57.062506
-17963	18101	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1873	2026-08-22 11:09:57.021518
+18039	18171	1	Fresh Mango Juice	250	25.00	2	50.00	500	25.00	1888	2026-08-22 11:35:38.481286
+18040	18171	2	Zesty Lemon Juice	250	25.00	2	50.00	500	25.00	1191	2026-08-22 11:35:38.481286
+18041	18171	3	Cool Mint Cooler	250	25.00	2	50.00	500	25.00	1165	2026-08-22 11:35:38.481286
+18042	18171	4	Valencia Orange Juice	250	25.00	2	50.00	500	25.00	1160	2026-08-22 11:35:38.481286
+18043	18171	5	Strawberry Delight	250	25.00	2	50.00	500	25.00	1149	2026-08-22 11:35:38.481286
+18044	18171	6	Royal Grape Juice	250	25.00	2	50.00	500	25.00	1336	2026-08-22 11:35:38.481286
+18045	18171	7	Lychee Mist	250	25.00	2	50.00	500	25.00	1732	2026-08-22 11:35:38.481286
+18046	18171	23	Thunder	250	25.00	2	50.00	500	25.00	21	2026-08-22 11:35:38.481286
+18047	18172	1	Fresh Mango Juice	250	25.00	5	125.00	1250	25.00	1890	2026-08-22 11:35:42.23338
+18048	18173	1	Fresh Mango Juice	250	27.00	1	27.00	250	27.00	1891	2026-08-22 11:35:43.446152
+18049	18174	1	Fresh Mango Juice	250	25.00	2	50.00	500	25.00	1894	2026-08-22 11:35:47.498263
+18050	18175	1	Fresh Mango Juice	250	25.00	2	50.00	500	25.00	1894	2026-08-22 11:35:47.680555
+18051	18176	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1894	2026-08-22 11:35:47.823471
+18052	18177	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1196	2026-08-22 11:35:47.849075
+18055	18181	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1341	2026-08-22 11:35:47.853795
+18058	18183	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1341	2026-08-22 11:35:47.876753
+18059	18184	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1170	2026-08-22 11:35:47.851258
+18063	18188	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1165	2026-08-22 11:35:47.895821
+18066	18190	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1196	2026-08-22 11:35:47.898573
+18070	18195	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1737	2026-08-22 11:35:47.94056
+18073	18198	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1341	2026-08-22 11:35:47.957227
+18078	18203	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1165	2026-08-22 11:35:47.962373
+18081	18207	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1170	2026-08-22 11:35:47.935911
+18083	18205	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:35:47.935054
+18088	18214	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1737	2026-08-22 11:35:47.984385
+18089	18211	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1894	2026-08-22 11:35:47.952224
+18091	18216	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:35:48.002013
+18093	18218	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1196	2026-08-22 11:35:48.013294
+18095	18221	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1894	2026-08-22 11:35:47.985239
+18053	18178	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1165	2026-08-22 11:35:47.849284
+18057	18182	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1894	2026-08-22 11:35:47.866391
+18060	18186	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1737	2026-08-22 11:35:47.885069
+18062	18187	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1894	2026-08-22 11:35:47.885617
+18064	18189	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1170	2026-08-22 11:35:47.895867
+18067	18192	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1154	2026-08-22 11:35:47.904641
+18068	18193	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1341	2026-08-22 11:35:47.912783
+18072	18197	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1154	2026-08-22 11:35:47.946283
+18074	18199	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1165	2026-08-22 11:35:47.950209
+18077	18202	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1165	2026-08-22 11:35:47.94886
+18079	18204	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:35:47.980263
+18082	18208	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1196	2026-08-22 11:35:47.972265
+18086	18212	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1196	2026-08-22 11:35:47.996983
+18090	18215	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:35:47.971862
+18092	18217	4	Valencia Orange Juice	250	25.00	1	25.00	250	25.00	1165	2026-08-22 11:35:48.001191
+18098	18224	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1894	2026-08-22 11:35:47.986126
+18097	18222	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1196	2026-08-22 11:35:48.000018
+18054	18179	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:35:47.865004
+18056	18180	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1154	2026-08-22 11:35:47.851617
+18061	18185	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1154	2026-08-22 11:35:47.886081
+18065	18191	8	Pineapple Express	250	25.00	1	25.00	250	25.00	1418	2026-08-22 11:35:47.89218
+18069	18194	2	Zesty Lemon Juice	250	25.00	1	25.00	250	25.00	1196	2026-08-22 11:35:47.916935
+18071	18196	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1737	2026-08-22 11:35:47.947553
+18075	18201	1	Fresh Mango Juice	250	25.00	1	25.00	250	25.00	1894	2026-08-22 11:35:47.96606
+18076	18200	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1170	2026-08-22 11:35:47.956793
+18080	18206	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1737	2026-08-22 11:35:47.935303
+18084	18209	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1154	2026-08-22 11:35:47.989264
+18085	18210	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1170	2026-08-22 11:35:47.952406
+18087	18213	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1341	2026-08-22 11:35:48.001232
+18094	18219	3	Cool Mint Cooler	250	25.00	1	25.00	250	25.00	1170	2026-08-22 11:35:48.002705
+18096	18223	6	Royal Grape Juice	250	25.00	1	25.00	250	25.00	1341	2026-08-22 11:35:48.002572
+18099	18225	5	Strawberry Delight	250	25.00	1	25.00	250	25.00	1154	2026-08-22 11:35:48.02229
+18100	18220	7	Lychee Mist	250	25.00	1	25.00	250	25.00	1737	2026-08-22 11:35:48.001519
+18031	18170	1	Fresh Mango Juice	250	25.00	2	50.00	500	25.00	1887	2026-08-22 11:34:44.008927
+18032	18170	2	Zesty Lemon Juice	250	25.00	2	50.00	500	25.00	1189	2026-08-22 11:34:44.008927
+18033	18170	3	Cool Mint Cooler	250	25.00	2	50.00	500	25.00	1163	2026-08-22 11:34:44.008927
+18034	18170	4	Valencia Orange Juice	250	25.00	2	50.00	500	25.00	1159	2026-08-22 11:34:44.008927
+18035	18170	5	Strawberry Delight	250	25.00	2	50.00	500	25.00	1147	2026-08-22 11:34:44.008927
+18036	18170	6	Royal Grape Juice	250	25.00	2	50.00	500	25.00	1334	2026-08-22 11:34:44.008927
+18037	18170	7	Lychee Mist	250	25.00	2	50.00	500	25.00	1730	2026-08-22 11:34:44.008927
+18038	18170	23	Thunder	250	25.00	2	50.00	500	25.00	19	2026-08-22 11:34:44.008927
 \.
 
 
@@ -40504,58 +40871,62 @@ COPY public.sales_order_items (id, order_id, product_id, product_name, cup_size_
 --
 
 COPY public.sales_orders (id, order_number, total_amount, payment_method, payment_status, created_at, idempotency_key, subtotal, discount_amount, tax_amount) FROM stdin;
-18051	ORD-1787377196424-C033	50.00	CASH	COMPLETED	2026-08-22 11:09:56.427661	\N	50.00	0.00	0.00
-18052	ORD-1787377196620-06EB	50.00	CASH	COMPLETED	2026-08-22 11:09:56.620197	IDEMP-KEY-STAGE7-1787377196608	50.00	0.00	0.00
-18053	ORD-1787377196825-0CDA	25.00	CARD	COMPLETED	2026-08-22 11:09:56.826438	\N	25.00	0.00	0.00
-18054	ORD-1787377196847-CA70	25.00	CARD	COMPLETED	2026-08-22 11:09:56.847156	\N	25.00	0.00	0.00
-18056	ORD-1787377196847-CFD8	25.00	CARD	COMPLETED	2026-08-22 11:09:56.847156	\N	25.00	0.00	0.00
-18055	ORD-1787377196848-1C16	25.00	CARD	COMPLETED	2026-08-22 11:09:56.848689	\N	25.00	0.00	0.00
-18057	ORD-1787377196852-96B3	25.00	CARD	COMPLETED	2026-08-22 11:09:56.852218	\N	25.00	0.00	0.00
-18058	ORD-1787377196880-6418	25.00	CARD	COMPLETED	2026-08-22 11:09:56.881047	\N	25.00	0.00	0.00
-18059	ORD-1787377196860-6D45	25.00	CARD	COMPLETED	2026-08-22 11:09:56.860367	\N	25.00	0.00	0.00
-18060	ORD-1787377196862-578B	25.00	CARD	COMPLETED	2026-08-22 11:09:56.862366	\N	25.00	0.00	0.00
-18061	ORD-1787377196863-0F73	25.00	CARD	COMPLETED	2026-08-22 11:09:56.863882	\N	25.00	0.00	0.00
-18062	ORD-1787377196879-15F0	25.00	CARD	COMPLETED	2026-08-22 11:09:56.879044	\N	25.00	0.00	0.00
-18064	ORD-1787377196900-33BE	25.00	CARD	COMPLETED	2026-08-22 11:09:56.901214	\N	25.00	0.00	0.00
-18063	ORD-1787377196900-F4B0	25.00	CARD	COMPLETED	2026-08-22 11:09:56.90022	\N	25.00	0.00	0.00
-18065	ORD-1787377196910-4D3D	25.00	CARD	COMPLETED	2026-08-22 11:09:56.910788	\N	25.00	0.00	0.00
-18066	ORD-1787377196904-635A	25.00	CARD	COMPLETED	2026-08-22 11:09:56.904761	\N	25.00	0.00	0.00
-18067	ORD-1787377196916-7ECC	25.00	CARD	COMPLETED	2026-08-22 11:09:56.916836	\N	25.00	0.00	0.00
-18068	ORD-1787377196918-DF67	25.00	CARD	COMPLETED	2026-08-22 11:09:56.91836	\N	25.00	0.00	0.00
-18069	ORD-1787377196912-4E8F	25.00	CARD	COMPLETED	2026-08-22 11:09:56.912301	\N	25.00	0.00	0.00
-18070	ORD-1787377196921-B737	25.00	CARD	COMPLETED	2026-08-22 11:09:56.921372	\N	25.00	0.00	0.00
-18071	ORD-1787377196938-24C1	25.00	CARD	COMPLETED	2026-08-22 11:09:56.938111	\N	25.00	0.00	0.00
-18072	ORD-1787377196945-631E	25.00	CARD	COMPLETED	2026-08-22 11:09:56.945102	\N	25.00	0.00	0.00
-18073	ORD-1787377196934-438B	25.00	CARD	COMPLETED	2026-08-22 11:09:56.934486	\N	25.00	0.00	0.00
-18074	ORD-1787377196945-8808	25.00	CARD	COMPLETED	2026-08-22 11:09:56.945102	\N	25.00	0.00	0.00
-18075	ORD-1787377196942-77C0	25.00	CARD	COMPLETED	2026-08-22 11:09:56.942121	\N	25.00	0.00	0.00
-18076	ORD-1787377196937-6758	25.00	CARD	COMPLETED	2026-08-22 11:09:56.937098	\N	25.00	0.00	0.00
-18077	ORD-1787377196947-68CA	25.00	CARD	COMPLETED	2026-08-22 11:09:56.947627	\N	25.00	0.00	0.00
-18078	ORD-1787377196972-B510	25.00	CARD	COMPLETED	2026-08-22 11:09:56.972301	\N	25.00	0.00	0.00
-18079	ORD-1787377196972-2EB9	25.00	CARD	COMPLETED	2026-08-22 11:09:56.972301	\N	25.00	0.00	0.00
-18080	ORD-1787377196972-CEFA	25.00	CARD	COMPLETED	2026-08-22 11:09:56.972301	\N	25.00	0.00	0.00
-18081	ORD-1787377196974-0E32	25.00	CARD	COMPLETED	2026-08-22 11:09:56.974836	\N	25.00	0.00	0.00
-18082	ORD-1787377196976-AD91	25.00	CARD	COMPLETED	2026-08-22 11:09:56.97683	\N	25.00	0.00	0.00
-18083	ORD-1787377196995-5AE7	25.00	CARD	COMPLETED	2026-08-22 11:09:56.995497	\N	25.00	0.00	0.00
-18084	ORD-1787377196990-0ADD	25.00	CARD	COMPLETED	2026-08-22 11:09:56.990446	\N	25.00	0.00	0.00
-18085	ORD-1787377196997-E425	25.00	CARD	COMPLETED	2026-08-22 11:09:56.997008	\N	25.00	0.00	0.00
-18086	ORD-1787377196991-687F	25.00	CARD	COMPLETED	2026-08-22 11:09:56.991957	\N	25.00	0.00	0.00
-18087	ORD-1787377197002-4799	25.00	CARD	COMPLETED	2026-08-22 11:09:57.002033	\N	25.00	0.00	0.00
-18088	ORD-1787377197002-F9E6	25.00	CARD	COMPLETED	2026-08-22 11:09:57.002033	\N	25.00	0.00	0.00
-18089	ORD-1787377197012-7C77	25.00	CARD	COMPLETED	2026-08-22 11:09:57.012109	\N	25.00	0.00	0.00
-18090	ORD-1787377197018-8D1A	25.00	CARD	COMPLETED	2026-08-22 11:09:57.01817	\N	25.00	0.00	0.00
-18091	ORD-1787377197022-55CE	25.00	CARD	COMPLETED	2026-08-22 11:09:57.022195	\N	25.00	0.00	0.00
-18092	ORD-1787377196850-295C	25.00	CARD	COMPLETED	2026-08-22 11:09:56.852218	\N	25.00	0.00	0.00
-18093	ORD-1787377196987-627A	25.00	CARD	COMPLETED	2026-08-22 11:09:56.987419	\N	25.00	0.00	0.00
-18095	ORD-1787377197023-6765	25.00	CARD	COMPLETED	2026-08-22 11:09:57.02371	\N	25.00	0.00	0.00
-18094	ORD-1787377197023-51D6	25.00	CARD	COMPLETED	2026-08-22 11:09:57.024732	\N	25.00	0.00	0.00
-18096	ORD-1787377197004-5FD2	25.00	CARD	COMPLETED	2026-08-22 11:09:57.00457	\N	25.00	0.00	0.00
-18097	ORD-1787377197020-4B40	25.00	CARD	COMPLETED	2026-08-22 11:09:57.020193	\N	25.00	0.00	0.00
-18098	ORD-1787377197038-7FB3	25.00	CARD	COMPLETED	2026-08-22 11:09:57.038327	\N	25.00	0.00	0.00
-18099	ORD-1787377197038-DB00	25.00	CARD	COMPLETED	2026-08-22 11:09:57.038327	\N	25.00	0.00	0.00
-18100	ORD-1787377197036-CAEB	25.00	CARD	COMPLETED	2026-08-22 11:09:57.036805	\N	25.00	0.00	0.00
-18101	ORD-1787377197018-66DB	25.00	CARD	COMPLETED	2026-08-22 11:09:57.01817	\N	25.00	0.00	0.00
-18102	ORD-1787377197058-741B	25.00	CARD	COMPLETED	2026-08-22 11:09:57.058152	\N	25.00	0.00	0.00
+18171	ORD-1787378738469-067D	400.00	CASH	COMPLETED	2026-08-22 11:35:38.470693	BUY-2-EACH-1787378738435	400.00	0.00	0.00
+18172	ORD-1787378742232-63B5	125.00	CASH	COMPLETED	2026-08-22 11:35:42.232325	STAGE7-TEST-1787378742049	125.00	0.00	0.00
+18173	ORD-1787378743445-0360	27.00	CASH	COMPLETED	2026-08-22 11:35:43.445359	\N	27.00	0.00	0.00
+18174	ORD-1787378747497-67A8	50.00	CASH	COMPLETED	2026-08-22 11:35:47.497311	\N	50.00	0.00	0.00
+18175	ORD-1787378747679-3379	50.00	CASH	COMPLETED	2026-08-22 11:35:47.679385	IDEMP-KEY-STAGE7-1787378747672	50.00	0.00	0.00
+18176	ORD-1787378747821-2540	25.00	CARD	COMPLETED	2026-08-22 11:35:47.821343	\N	25.00	0.00	0.00
+18177	ORD-1787378747847-8482	25.00	CARD	COMPLETED	2026-08-22 11:35:47.84796	\N	25.00	0.00	0.00
+18181	ORD-1787378747851-4D30	25.00	CARD	COMPLETED	2026-08-22 11:35:47.851489	\N	25.00	0.00	0.00
+18183	ORD-1787378747875-BB48	25.00	CARD	COMPLETED	2026-08-22 11:35:47.875879	\N	25.00	0.00	0.00
+18187	ORD-1787378747883-5353	25.00	CARD	COMPLETED	2026-08-22 11:35:47.88498	\N	25.00	0.00	0.00
+18188	ORD-1787378747894-23D3	25.00	CARD	COMPLETED	2026-08-22 11:35:47.89405	\N	25.00	0.00	0.00
+18195	ORD-1787378747938-78CE	25.00	CARD	COMPLETED	2026-08-22 11:35:47.938689	\N	25.00	0.00	0.00
+18197	ORD-1787378747944-BA71	25.00	CARD	COMPLETED	2026-08-22 11:35:47.945285	\N	25.00	0.00	0.00
+18198	ORD-1787378747955-2307	25.00	CARD	COMPLETED	2026-08-22 11:35:47.9554	\N	25.00	0.00	0.00
+18204	ORD-1787378747978-9DE2	25.00	CARD	COMPLETED	2026-08-22 11:35:47.97839	\N	25.00	0.00	0.00
+18205	ORD-1787378747934-09BE	25.00	CARD	COMPLETED	2026-08-22 11:35:47.934199	\N	25.00	0.00	0.00
+18208	ORD-1787378747970-5469	25.00	CARD	COMPLETED	2026-08-22 11:35:47.970072	\N	25.00	0.00	0.00
+18214	ORD-1787378747982-723A	25.00	CARD	COMPLETED	2026-08-22 11:35:47.982488	\N	25.00	0.00	0.00
+18178	ORD-1787378747847-1BF8	25.00	CARD	COMPLETED	2026-08-22 11:35:47.84796	\N	25.00	0.00	0.00
+18182	ORD-1787378747864-CA2B	25.00	CARD	COMPLETED	2026-08-22 11:35:47.864319	\N	25.00	0.00	0.00
+18186	ORD-1787378747883-63B6	25.00	CARD	COMPLETED	2026-08-22 11:35:47.883982	\N	25.00	0.00	0.00
+18189	ORD-1787378747894-8AC8	25.00	CARD	COMPLETED	2026-08-22 11:35:47.89405	\N	25.00	0.00	0.00
+18190	ORD-1787378747897-3529	25.00	CARD	COMPLETED	2026-08-22 11:35:47.897182	\N	25.00	0.00	0.00
+18193	ORD-1787378747911-41AC	25.00	CARD	COMPLETED	2026-08-22 11:35:47.91142	\N	25.00	0.00	0.00
+18199	ORD-1787378747946-D4BB	25.00	CARD	COMPLETED	2026-08-22 11:35:47.946798	\N	25.00	0.00	0.00
+18203	ORD-1787378747949-5B49	25.00	CARD	COMPLETED	2026-08-22 11:35:47.950352	\N	25.00	0.00	0.00
+18210	ORD-1787378747951-10D2	25.00	CARD	COMPLETED	2026-08-22 11:35:47.951352	\N	25.00	0.00	0.00
+18212	ORD-1787378747995-1380	25.00	CARD	COMPLETED	2026-08-22 11:35:47.9956	\N	25.00	0.00	0.00
+18215	ORD-1787378747969-4D30	25.00	CARD	COMPLETED	2026-08-22 11:35:47.96905	\N	25.00	0.00	0.00
+18216	ORD-1787378747995-BD15	25.00	CARD	COMPLETED	2026-08-22 11:35:47.996624	\N	25.00	0.00	0.00
+18224	ORD-1787378747984-2BD9	25.00	CARD	COMPLETED	2026-08-22 11:35:47.9845	\N	25.00	0.00	0.00
+18179	ORD-1787378747864-F421	25.00	CARD	COMPLETED	2026-08-22 11:35:47.864319	\N	25.00	0.00	0.00
+18184	ORD-1787378747849-E4F2	25.00	CARD	COMPLETED	2026-08-22 11:35:47.849977	\N	25.00	0.00	0.00
+18191	ORD-1787378747890-D220	25.00	CARD	COMPLETED	2026-08-22 11:35:47.890516	\N	25.00	0.00	0.00
+18192	ORD-1787378747902-FED0	25.00	CARD	COMPLETED	2026-08-22 11:35:47.902749	\N	25.00	0.00	0.00
+18200	ORD-1787378747954-D156	25.00	CARD	COMPLETED	2026-08-22 11:35:47.954401	\N	25.00	0.00	0.00
+18202	ORD-1787378747938-CE6B	25.00	CARD	COMPLETED	2026-08-22 11:35:47.939199	\N	25.00	0.00	0.00
+18211	ORD-1787378747941-CA66	25.00	CARD	COMPLETED	2026-08-22 11:35:47.941726	\N	25.00	0.00	0.00
+18213	ORD-1787378747999-E1D7	25.00	CARD	COMPLETED	2026-08-22 11:35:47.999654	\N	25.00	0.00	0.00
+18217	ORD-1787378747999-ECC8	25.00	CARD	COMPLETED	2026-08-22 11:35:47.999654	\N	25.00	0.00	0.00
+18220	ORD-1787378747999-10F1	25.00	CARD	COMPLETED	2026-08-22 11:35:47.999654	\N	25.00	0.00	0.00
+18221	ORD-1787378747982-634F	25.00	CARD	COMPLETED	2026-08-22 11:35:47.982488	\N	25.00	0.00	0.00
+18180	ORD-1787378747850-8381	25.00	CARD	COMPLETED	2026-08-22 11:35:47.850978	\N	25.00	0.00	0.00
+18185	ORD-1787378747883-8F57	25.00	CARD	COMPLETED	2026-08-22 11:35:47.88498	\N	25.00	0.00	0.00
+18194	ORD-1787378747863-9FE7	25.00	CARD	COMPLETED	2026-08-22 11:35:47.863308	\N	25.00	0.00	0.00
+18196	ORD-1787378747945-7403	25.00	CARD	COMPLETED	2026-08-22 11:35:47.945285	\N	25.00	0.00	0.00
+18201	ORD-1787378747961-2475	25.00	CARD	COMPLETED	2026-08-22 11:35:47.964508	\N	25.00	0.00	0.00
+18206	ORD-1787378747934-E8F0	25.00	CARD	COMPLETED	2026-08-22 11:35:47.934199	\N	25.00	0.00	0.00
+18207	ORD-1787378747934-F70E	25.00	CARD	COMPLETED	2026-08-22 11:35:47.934199	\N	25.00	0.00	0.00
+18209	ORD-1787378747987-E4F2	25.00	CARD	COMPLETED	2026-08-22 11:35:47.987018	\N	25.00	0.00	0.00
+18218	ORD-1787378748010-A669	25.00	CARD	COMPLETED	2026-08-22 11:35:48.010229	\N	25.00	0.00	0.00
+18219	ORD-1787378747998-CE09	25.00	CARD	COMPLETED	2026-08-22 11:35:47.998648	\N	25.00	0.00	0.00
+18222	ORD-1787378747990-2D5C	25.00	CARD	COMPLETED	2026-08-22 11:35:47.990557	\N	25.00	0.00	0.00
+18223	ORD-1787378748001-A26E	25.00	CARD	COMPLETED	2026-08-22 11:35:48.001165	\N	25.00	0.00	0.00
+18225	ORD-1787378748020-24BE	25.00	CARD	COMPLETED	2026-08-22 11:35:48.02032	\N	25.00	0.00	0.00
+18170	ORD-1787378684008-B8F5	400.00	CASH	COMPLETED	2026-08-22 11:34:44.00802	BUY-2-EACH-1787378684000	400.00	0.00	0.00
 \.
 
 
@@ -40616,14 +40987,14 @@ SELECT pg_catalog.setval('public.audit_logs_id_seq', 45, true);
 -- Name: inventory_transactions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.inventory_transactions_id_seq', 18373, true);
+SELECT pg_catalog.setval('public.inventory_transactions_id_seq', 18526, true);
 
 
 --
 -- Name: juice_batches_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.juice_batches_id_seq', 272, true);
+SELECT pg_catalog.setval('public.juice_batches_id_seq', 288, true);
 
 
 --
@@ -40637,14 +41008,14 @@ SELECT pg_catalog.setval('public.juice_market_crashes_id_seq', 1, false);
 -- Name: juice_market_settlements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.juice_market_settlements_id_seq', 1, false);
+SELECT pg_catalog.setval('public.juice_market_settlements_id_seq', 10, true);
 
 
 --
 -- Name: price_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.price_history_id_seq', 45907, true);
+SELECT pg_catalog.setval('public.price_history_id_seq', 46077, true);
 
 
 --
@@ -40672,14 +41043,14 @@ SELECT pg_catalog.setval('public.roles_id_seq', 1, false);
 -- Name: sales_order_items_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sales_order_items_id_seq', 17963, true);
+SELECT pg_catalog.setval('public.sales_order_items_id_seq', 18100, true);
 
 
 --
 -- Name: sales_orders_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sales_orders_id_seq', 18102, true);
+SELECT pg_catalog.setval('public.sales_orders_id_seq', 18225, true);
 
 
 --
@@ -40976,5 +41347,5 @@ ALTER TABLE ONLY public.users
 -- PostgreSQL database dump complete
 --
 
-\unrestrict AYBkjxlP7Sevt8JHfoGSKhQeMeejpATeGjvrldnGMbjsW9qUwCIipV1cDoXbBgD
+\unrestrict TQQ57bBhHb9YNd3Ye76MxrDLqtWbwjWITX53OaPw9SRalc6n4XXDaYQyttz13mx
 
