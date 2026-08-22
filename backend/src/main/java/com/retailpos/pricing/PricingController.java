@@ -187,7 +187,7 @@ public class PricingController {
         return ResponseEntity.ok(marketCrashService.stopMarketCrash());
     }
 
-    @PostMapping({"/reset-all", "/admin/reset-all"})
+    @PostMapping({"/reset-all", "/admin/reset-all", "/reset", "/admin/reset"})
     public ResponseEntity<PriceAdjustmentService.ResetAllResponse> resetAllPrices(
             @RequestHeader(value = "X-Request-ID", required = false) String headerReqId,
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {

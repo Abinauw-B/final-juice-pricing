@@ -315,7 +315,22 @@ public class POSService {
             }
         }
 
-        return transactionTemplate.execute(status -> doProcessCheckout(request));
+        int maxAttempts = 5;
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                return transactionTemplate.execute(status -> doProcessCheckout(request));
+            } catch (Exception ex) {
+                lastException = ex;
+                if (attempt < maxAttempts) {
+                    try { Thread.sleep(30L * attempt); } catch (InterruptedException ignored) {}
+                }
+            }
+        }
+        if (lastException instanceof RuntimeException) {
+            throw (RuntimeException) lastException;
+        }
+        throw new RuntimeException("Checkout failed after " + maxAttempts + " attempts: " + (lastException != null ? lastException.getMessage() : "Lock contention"));
     }
 
     private CheckoutResponse doProcessCheckout(CheckoutRequest request) {
