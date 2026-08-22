@@ -785,9 +785,13 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <div>
               <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Pub Exchange Dynamic Pricing Engine</h1>
-              <p style="color: var(--text-muted);">Real-time demand scoring, stock pressure monitoring, and step-change evaluation.</p>
+              <p style="color: var(--text-muted);">Real-time weighted demand scoring, 2-minute market settlement cycles, and step-change evaluation.</p>
             </div>
-            <button class="btn-primary" id="btnRunPriceEngine" onclick="triggerPriceEngine()">⚡ Run Price Engine Evaluation</button>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-primary" id="btnPauseMarket" style="background: #eab308; color: #000; font-weight: 800;" onclick="pauseMarketExchange()">⏸️ Pause Exchange</button>
+              <button class="btn-primary" id="btnResumeMarket" style="background: #22c55e; color: #fff; font-weight: 800; display: none;" onclick="resumeMarketExchange()">▶️ Resume Exchange</button>
+              <button class="btn-primary" id="btnRunPriceEngine" onclick="triggerPriceEngine()">⚡ Run Settlement Cycle</button>
+            </div>
           </div>
 
           <div class="section-card">
@@ -853,7 +857,7 @@
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
                 <div>
                   <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Start Price (₹)</label>
-                  <input type="number" id="simStartPrice" value="20" style="width: 100%; padding: 8px;">
+                  <input type="number" id="simStartPrice" value="25" style="width: 100%; padding: 8px;">
                 </div>
                 <div>
                   <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Cups / Step</label>
@@ -867,7 +871,7 @@
                 </div>
                 <div>
                   <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Max Limit (₹)</label>
-                  <input type="number" id="simMaxPrice" value="25" style="width: 100%; padding: 8px;">
+                  <input type="number" id="simMaxPrice" value="35" style="width: 100%; padding: 8px;">
                 </div>
               </div>
               <div style="margin-bottom: 18px; padding: 12px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px;">
@@ -879,7 +883,7 @@
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button class="btn-primary" id="btnRunSimulation" style="width: 100%; padding: 12px;" onclick="runSimulation()">▶️ Run Sandbox Simulation</button>
                 <button class="btn-primary" id="btnDeploySim" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #059669, #047857);" onclick="deploySimParametersToLivePOS()">🚀 Deploy Parameters to Live POS</button>
-                <button class="btn-primary" id="btnResetLivePrices" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #d97706, #b45309);" onclick="resetLiveMarketPrices()">↺ Reset Live Market Prices (₹22 Base)</button>
+                <button class="btn-primary" id="btnResetLivePrices" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #d97706, #b45309);" onclick="resetLiveMarketPrices()">↺ Reset Live Market Prices (₹25 Base)</button>
               </div>
             </div>
 
@@ -1421,7 +1425,7 @@
     }
 
     // Flavours Mapping & Synchronization
-    const defaultFlavoursMap = { 1: 'Fresh Mango', 2: 'Zesty Lemon', 3: 'Cool Mint', 4: 'Orange Sunrise', 5: 'Strawberry Delight', 6: 'Royal Grape', 7: 'Lychee Mist' };
+    const defaultFlavoursMap = { 1: 'Fresh Mango Juice', 2: 'Zesty Lemon Juice', 3: 'Valencia Orange Juice', 4: 'Cool Mint Cooler', 5: 'Royal Grape Juice', 6: 'Strawberry Delight', 7: 'Thunder', 8: 'Lychee Mist' };
     let flavoursMap = { ...defaultFlavoursMap };
 
     function syncFlavoursMap() {
@@ -2815,6 +2819,32 @@
         showToast(`🔴 Deployment Failed: ${err.message}`, 'danger');
       } finally {
         if (btn) setButtonLoading(btn, false);
+      }
+    }
+
+    async function pauseMarketExchange() {
+      try {
+        const res = await apiFetch('/pricing/pause', { method: 'POST' });
+        if (res.ok) {
+          showToast('⏸️ Juice Market Exchange Engine Paused!', 'warning');
+          document.getElementById('btnPauseMarket').style.display = 'none';
+          document.getElementById('btnResumeMarket').style.display = 'inline-flex';
+        }
+      } catch (e) {
+        showToast('Failed to pause market exchange', 'danger');
+      }
+    }
+
+    async function resumeMarketExchange() {
+      try {
+        const res = await apiFetch('/pricing/resume', { method: 'POST' });
+        if (res.ok) {
+          showToast('▶️ Juice Market Exchange Engine Resumed!', 'success');
+          document.getElementById('btnResumeMarket').style.display = 'none';
+          document.getElementById('btnPauseMarket').style.display = 'inline-flex';
+        }
+      } catch (e) {
+        showToast('Failed to resume market exchange', 'danger');
       }
     }
 

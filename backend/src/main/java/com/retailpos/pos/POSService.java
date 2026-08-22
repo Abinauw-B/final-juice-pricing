@@ -315,7 +315,25 @@ public class POSService {
             }
         }
 
-        return transactionTemplate.execute(status -> doProcessCheckout(request));
+        int maxAttempts = 10;
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                return transactionTemplate.execute(status -> doProcessCheckout(request));
+            } catch (Exception ex) {
+                lastException = ex;
+                if (attempt < maxAttempts) {
+                    try {
+                        long sleepTime = 40L * attempt + (long)(Math.random() * 40);
+                        Thread.sleep(sleepTime);
+                    } catch (InterruptedException ignored) {}
+                }
+            }
+        }
+        if (lastException instanceof RuntimeException) {
+            throw (RuntimeException) lastException;
+        }
+        throw new RuntimeException("Checkout failed after " + maxAttempts + " attempts: " + (lastException != null ? lastException.getMessage() : "Lock contention"));
     }
 
     private CheckoutResponse doProcessCheckout(CheckoutRequest request) {
@@ -351,14 +369,14 @@ public class POSService {
             int totalVolumeMl = cupSize * qty;
 
             // 100% Server Authoritative Price Determination
-            BigDecimal effectivePrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
+            BigDecimal effectivePrice = (marketCrashService != null) ? marketCrashService.getEffectivePrice(product) : (product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice());
             int effectiveVersion = product.getPriceVersion() != null ? product.getPriceVersion() : 1;
 
             if (itemReq.getPriceLockToken() != null && !itemReq.getPriceLockToken().isBlank() && priceLockService != null) {
                 com.retailpos.pricing.PriceLockService.LockedPriceVersion lock = priceLockService.validateAndRedeemLock(itemReq.getPriceLockToken());
                 effectivePrice = lock.getLockedPrice();
                 effectiveVersion = lock.getPriceVersion();
-            } else if (itemReq.getPriceVersion() != null && product.getPriceVersion() != null) {
+            } else if (itemReq.getPriceVersion() != null && product.getPriceVersion() != null && !marketCrashService.isProductCrashed(product.getId())) {
                 if (!itemReq.getPriceVersion().equals(product.getPriceVersion())) {
                     throw new IllegalStateException("PRICE_CHANGED: Price version mismatch for '" + product.getName() + "'. Server current price is ₹" + effectivePrice + ". Please refresh cart.");
                 }
@@ -370,6 +388,8 @@ public class POSService {
             // Atomically deduct volume from active batch using pessimistic lock
             JuiceBatch updatedBatch = juiceBatchService.deductBatchVolume(product.getId(), totalVolumeMl);
             log.info("Inventory updated: ProductId={}, Deducted={}ml, Remaining={}ml", product.getId(), totalVolumeMl, updatedBatch.getRemainingVolumeMl());
+
+            log.info("[CHECKOUT] productId={} productName={} quantity={} unitPrice={}", product.getId(), product.getName(), qty, effectivePrice);
 
             SalesOrderItem orderItem = SalesOrderItem.builder()
                     .salesOrder(salesOrder)
@@ -443,20 +463,10 @@ public class POSService {
             throw dive;
         }
 
-        // Authoritative Bar Stock Exchange dynamic price recalculation across all products
-        if (marketCrashService == null || !marketCrashService.isCrashActive()) {
-            try {
-                priceAdjustmentService.evaluateAllProducts();
-                log.info("Pricing recalculated for order {}", savedOrder.getOrderNumber());
-                if (messagingTemplate != null) {
-                    messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
-                    log.info("Price broadcast to /topic/prices");
-                }
-            } catch (Exception e) {
-                log.warn("Non-fatal dynamic pricing evaluation error during checkout: {}", e.getMessage());
-            }
-        }
+        // Note: Prices update ONLY at scheduled 2-minute settlement cycles (Spec Section 9).
+        // Individual sales recorded above will be processed in the next settlement calculation.
 
+        log.info("[ORDER COMMITTED] orderId={} orderNumber={}", savedOrder.getId(), savedOrder.getOrderNumber());
         log.info("POS checkout completed successfully for Order #{}", savedOrder.getOrderNumber());
 
         return CheckoutResponse.builder()

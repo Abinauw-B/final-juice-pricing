@@ -73,7 +73,7 @@ public class JuiceBatchService {
         return savedBatch;
     }
 
-    @Transactional
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public JuiceBatch deductBatchVolume(Long productId, int mlToDeduct) {
         List<JuiceBatch> activeBatches = batchRepository.findActiveBatchesForProductWithLock(productId);
         JuiceBatch activeBatch;
@@ -83,7 +83,6 @@ public class JuiceBatchService {
         } else {
             activeBatch = activeBatches.get(0);
             if (activeBatch.getRemainingVolumeMl() < mlToDeduct) {
-                // Active batch depleted below requirement: mark current as DEPLETED and register a new batch
                 activeBatch.setStatus(JuiceBatch.BatchStatus.DEPLETED);
                 batchRepository.save(activeBatch);
                 activeBatch = registerNewBatch(productId, 20000);

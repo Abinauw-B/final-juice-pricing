@@ -28,21 +28,48 @@ public class PricingController {
     private final ProductRepository productRepository;
     private final MarketCrashService marketCrashService;
 
+    private final PricingEngineService pricingEngineService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, ProductRepository productRepository, MarketCrashService marketCrashService, SimpMessagingTemplate messagingTemplate) {
+    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, ProductRepository productRepository, MarketCrashService marketCrashService, PricingEngineService pricingEngineService, SimpMessagingTemplate messagingTemplate) {
         this.priceAdjustmentService = priceAdjustmentService;
         this.pricingSimulationService = pricingSimulationService;
         this.priceHistoryRepository = priceHistoryRepository;
         this.systemConfigRepository = systemConfigRepository;
         this.productRepository = productRepository;
         this.marketCrashService = marketCrashService;
+        this.pricingEngineService = pricingEngineService;
         this.messagingTemplate = messagingTemplate;
+    }
+
+    @GetMapping({"/market", "/status", "/admin/status"})
+    public ResponseEntity<PricingEngineService.PriceEvaluationCycleResult> getMarketState() {
+        return ResponseEntity.ok(pricingEngineService.getCurrentMarketState());
+    }
+
+    @PostMapping({"/admin/pause", "/pause"})
+    public ResponseEntity<Map<String, Object>> pauseExchange() {
+        PriceAdjustmentService.setMarketPaused(true);
+        Map<String, Object> res = new HashMap<>();
+        res.put("success", true);
+        res.put("status", "PAUSED");
+        res.put("message", "Juice Exchange algorithm paused.");
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping({"/admin/resume", "/resume"})
+    public ResponseEntity<Map<String, Object>> resumeExchange() {
+        PriceAdjustmentService.setMarketPaused(false);
+        Map<String, Object> res = new HashMap<>();
+        res.put("success", true);
+        res.put("status", "OPEN");
+        res.put("message", "Juice Exchange algorithm resumed.");
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping({"/live", "/products"})
     public ResponseEntity<List<Product>> getLivePrices() {
-        return ResponseEntity.ok(productRepository.findAll());
+        return ResponseEntity.ok(productRepository.findByIsActiveTrueOrderByIdAsc());
     }
 
     @GetMapping("/products/{productId}")
@@ -149,7 +176,7 @@ public class PricingController {
                 wsPayload.put("timestamp", LocalDateTime.now().toString());
 
                 messagingTemplate.convertAndSend("/topic/prices", wsPayload);
-                messagingTemplate.convertAndSend("/topic/products", productRepository.findAll());
+                messagingTemplate.convertAndSend("/topic/products", productRepository.findByIsActiveTrueOrderByIdAsc());
             }
         } catch (Exception e) {}
 
@@ -187,7 +214,7 @@ public class PricingController {
         return ResponseEntity.ok(marketCrashService.stopMarketCrash());
     }
 
-    @PostMapping({"/reset-all", "/admin/reset-all"})
+    @PostMapping({"/reset-all", "/admin/reset-all", "/reset", "/admin/reset"})
     public ResponseEntity<PriceAdjustmentService.ResetAllResponse> resetAllPrices(
             @RequestHeader(value = "X-Request-ID", required = false) String headerReqId,
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
@@ -210,14 +237,9 @@ public class PricingController {
     }
 
     @RequestMapping(value = {"/evaluate", "/admin/evaluate"}, method = {RequestMethod.GET, RequestMethod.POST})
-    public ResponseEntity<List<PriceAdjustmentService.PriceEvaluationResult>> evaluateAllPrices() {
-        List<PriceAdjustmentService.PriceEvaluationResult> list = priceAdjustmentService.evaluateAllProducts();
-        try {
-            if (messagingTemplate != null) {
-                messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
-            }
-        } catch (Exception e) {}
-        return ResponseEntity.ok(list);
+    public ResponseEntity<PricingEngineService.PriceEvaluationCycleResult> evaluateAllPrices() {
+        PricingEngineService.PriceEvaluationCycleResult cycleResult = pricingEngineService.executeSettlementCycle(true);
+        return ResponseEntity.ok(cycleResult);
     }
 
     @PostMapping("/evaluate/{productId}")
@@ -225,10 +247,20 @@ public class PricingController {
         PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.evaluateAndAdjustPrice(productId);
         try {
             if (messagingTemplate != null) {
-                messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+                messagingTemplate.convertAndSend("/topic/prices", productRepository.findByIsActiveTrueOrderByIdAsc());
             }
         } catch (Exception e) {}
         return ResponseEntity.ok(res);
+    }
+
+    @GetMapping({"/debug", "/admin/debug"})
+    public ResponseEntity<List<PriceAdjustmentService.PriceDebugDTO>> getDebugEvaluationAll() {
+        return ResponseEntity.ok(priceAdjustmentService.getDebugEvaluationAll());
+    }
+
+    @GetMapping({"/debug/{productId}", "/admin/debug/{productId}"})
+    public ResponseEntity<PriceAdjustmentService.PriceDebugDTO> getDebugEvaluation(@PathVariable Long productId) {
+        return ResponseEntity.ok(priceAdjustmentService.getDebugEvaluation(productId));
     }
 
     @PostMapping("/simulate")

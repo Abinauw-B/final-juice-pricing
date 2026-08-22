@@ -40,7 +40,7 @@ public class POSController {
 
     private void broadcastProductUpdate() {
         try {
-            List<Product> allProducts = productRepository.findAll();
+            List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
             messagingTemplate.convertAndSend("/topic/prices", allProducts);
             messagingTemplate.convertAndSend("/topic/products", allProducts);
         } catch (Exception e) {}
@@ -48,7 +48,7 @@ public class POSController {
 
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAvailableProducts() {
-        return ResponseEntity.ok(productRepository.findAll());
+        return ResponseEntity.ok(productRepository.findByIsActiveTrueOrderByIdAsc());
     }
 
     @GetMapping("/products/{id}")

@@ -498,16 +498,16 @@
       <span class="summary-val" id="sumActiveCount">8 Products</span>
     </div>
     <div class="summary-card">
-      <span class="summary-title">Ticker Price</span>
-      <span class="summary-val" style="color: #38BDF8;">₹22.00</span>
+      <span class="summary-title">Market Base</span>
+      <span class="summary-val" style="color: #38BDF8;">₹25.00</span>
     </div>
     <div class="summary-card">
       <span class="summary-title">Market Mode</span>
-      <span class="summary-val" style="color: var(--accent-gold);">Static LED Node</span>
+      <span class="summary-val" style="color: var(--accent-gold);" id="engineModeBadge">🟢 2-Min Settlement Cycle</span>
     </div>
     <div class="summary-card">
       <span class="summary-title">Average Price</span>
-      <span class="summary-val">₹22.00</span>
+      <span class="summary-val" id="sumAvgPrice">₹25.00</span>
     </div>
   </div>
 
@@ -517,10 +517,10 @@
       <div class="panel-header">
         <div>
           <div class="panel-title">📊 Beverage Stock Market LED Board</div>
-          <div class="panel-sub">STATIC TICKER MODE &bull; ALL BEVERAGES FIXED PRICE</div>
+          <div class="panel-sub">LIVE TICKER MODE &bull; 2-MINUTE DYNAMIC SETTLEMENT ENGINE</div>
         </div>
         <div style="font-size: 13px; font-weight: 800; color: #38BDF8;">
-          Fixed Rate: ₹22.00
+          Base Rate: ₹25.00
         </div>
       </div>
 
@@ -550,10 +550,10 @@
         </div>
 
         <div class="info-card">
-          <div class="info-title">Fixed Ticker Price</div>
-          <div class="info-price-highlight" style="color: #38BDF8;">₹22.00</div>
+          <div class="info-title">Base Exchange Price</div>
+          <div class="info-price-highlight" style="color: #38BDF8;">₹25.00</div>
           <div class="info-detail">
-            All active drinks are currently listed at a fixed market rate of ₹22.00.
+            All 8 active juices start at ₹25.00 base, dynamically adjusting between ₹18 (Floor) and ₹35 (Ceiling) based on 2-minute sales demand.
           </div>
         </div>
 
@@ -589,19 +589,40 @@
 
   <script>
     const fruitIcons = {
-      1: '🥭', 2: '🍋', 3: '🌿', 4: '🍊', 5: '🍓', 6: '🍇', 7: '🍹', 8: '🍍'
+      1: '🥭',
+      2: '🍋',
+      3: '🍊',
+      4: '🌿',
+      5: '🍇',
+      6: '🍓',
+      7: '⚡',
+      8: '🍹'
     };
 
-    // Default static fallback products array
+    function getFruitIcon(p) {
+      if (!p) return '🍹';
+      if (fruitIcons[p.id]) return fruitIcons[p.id];
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return '🥭';
+      if (f.includes('LEMON')) return '🍋';
+      if (f.includes('ORANGE')) return '🍊';
+      if (f.includes('MINT')) return '🌿';
+      if (f.includes('GRAPE')) return '🍇';
+      if (f.includes('STRAWBERRY')) return '🍓';
+      if (f.includes('THUNDER')) return '⚡';
+      if (f.includes('LYCHEE')) return '🍹';
+      return '🍹';
+    }
+
     let products = [
-      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', defaultCupSizeMl: 250 },
-      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', defaultCupSizeMl: 250 },
-      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', defaultCupSizeMl: 250 },
-      { id: 4, name: 'Orange Sunrise', flavour: 'ORANGE', defaultCupSizeMl: 250 },
-      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', defaultCupSizeMl: 250 },
-      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', defaultCupSizeMl: 250 },
-      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', defaultCupSizeMl: 250 },
-      { id: 8, name: 'Pineapple Express', flavour: 'PINEAPPLE', defaultCupSizeMl: 250 }
+      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 3, name: 'Valencia Orange Juice', flavour: 'ORANGE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 4, name: 'Cool Mint Cooler', flavour: 'MINT', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 5, name: 'Royal Grape Juice', flavour: 'GRAPE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 6, name: 'Strawberry Delight', flavour: 'STRAWBERRY', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 7, name: 'Thunder', flavour: 'THUNDER', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 8, name: 'Lychee Mist', flavour: 'LYCHEE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 }
     ];
 
     function updateClock() {

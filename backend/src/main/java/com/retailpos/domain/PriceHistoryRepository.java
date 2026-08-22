@@ -8,5 +8,6 @@ import java.util.List;
 @Repository
 public interface PriceHistoryRepository extends JpaRepository<PriceHistory, Long> {
     List<PriceHistory> findByProductIdOrderByCreatedAtDesc(Long productId);
+    java.util.Optional<PriceHistory> findFirstByProductIdOrderByCreatedAtDesc(Long productId);
     List<PriceHistory> findAllByOrderByCreatedAtDesc();
 }

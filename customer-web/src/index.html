@@ -330,13 +330,16 @@
       <strong>Market Open</strong>
     </div>
     <div class="summary-metric">
-      <span>Catalog: <strong id="summaryTotalProds">7 Products</strong></span>
+      <span>Catalog: <strong id="summaryTotalProds">8 Products</strong></span>
     </div>
     <div class="summary-metric">
-      <span>Price Dynamics: <strong id="summaryRisingCount" style="color:var(--success);">1 Price Rising</strong> &bull; <strong id="summaryStableCount" style="color:var(--text-muted);">6 Stable/Discounted</strong></span>
+      <span>Price Dynamics: <strong id="summaryRisingCount" style="color:var(--success);">0 Price Rising</strong> &bull; <strong id="summaryStableCount" style="color:var(--text-muted);">8 Stable/Discounted</strong></span>
     </div>
     <div class="summary-metric">
-      <span>Market Velocity: <strong style="color:var(--accent-gold);">30s Rolling Window</strong></span>
+      <span>Cycle: <strong style="color:var(--accent-gold);">2-Min Settlement</strong></span>
+    </div>
+    <div class="summary-metric" id="settlementCountdownTimer" style="font-weight:700; color:#3b82f6;">
+      ⏳ Next Settlement: <strong>02:00</strong>
     </div>
     <div class="summary-metric" style="margin-left:auto;">
       <span>Last Sync: <strong id="summaryLastSync" style="font-family:monospace; color:var(--text-primary);">--:--:--</strong></span>
@@ -380,8 +383,13 @@
     <!-- Product Flavour Grid -->
     <main>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h2 style="font-size: 20px; font-weight: 700; color: var(--text-primary);">Live Juice Market &amp; Dynamic Pricing</h2>
-        <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); background: var(--bg-surface); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid var(--border);">Base: ₹20 &bull; Floor: ₹18 &bull; Ceiling: ₹25</span>
+        <h2 style="font-size: 20px; font-weight: 700; color: var(--text-primary);">Live Juice Exchange Market</h2>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 13px; font-weight: 700; color: var(--info); background: rgba(59, 130, 246, 0.1); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid rgba(59, 130, 246, 0.25);">
+            ⏳ Next Settlement: <strong id="settlementCountdown" style="font-family: monospace; font-size: 14px;">02:00</strong>
+          </span>
+          <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); background: var(--bg-surface); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid var(--border);">Base: ₹25 &bull; Floor: ₹18 &bull; Ceiling: ₹35</span>
+        </div>
       </div>
       <div class="flavour-grid" id="productGrid">
         <!-- Rendered dynamically -->
@@ -460,33 +468,49 @@
     const fruitIcons = {
       1: '🥭',
       2: '🍋',
-      3: '🌿',
-      4: '🍊',
-      5: '🍓',
-      6: '🍇',
-      7: '🍹'
+      3: '🍊',
+      4: '🌿',
+      5: '🍇',
+      6: '🍓',
+      7: '⚡',
+      8: '🍹'
     };
 
-    const fruitCardClasses = {
-      1: 'card-mango',
-      2: 'card-lemon',
-      3: 'card-mint',
-      4: 'card-orange',
-      5: 'card-strawberry',
-      6: 'card-grape',
-      7: 'card-lychee',
-      8: 'card-pineapple'
+    function getFruitIcon(p) {
+      if (!p) return '🍹';
+      if (fruitIcons[p.id]) return fruitIcons[p.id];
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return '🥭';
+      if (f.includes('LEMON')) return '🍋';
+      if (f.includes('ORANGE')) return '🍊';
+      if (f.includes('MINT')) return '🌿';
+      if (f.includes('GRAPE')) return '🍇';
+      if (f.includes('STRAWBERRY')) return '🍓';
+      if (f.includes('THUNDER')) return '⚡';
+      if (f.includes('LYCHEE')) return '🍹';
+      return '🍹';
+    }
+
+    const targetSalesMap = {
+      'MANGO': 1.1,
+      'LEMON': 0.8,
+      'ORANGE': 1.1,
+      'MINT': 0.8,
+      'GRAPE': 0.9,
+      'STRAWBERRY': 0.7,
+      'THUNDER': 0.9,
+      'LYCHEE': 0.9
     };
 
     let products = [
-      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp', defaultCupSizeMl: 250, currentCupPrice: 22, minCupPrice: 18, maxCupPrice: 25, basePrice: 22, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint', defaultCupSizeMl: 250, currentCupPrice: 22, minCupPrice: 18, maxCupPrice: 25, basePrice: 22, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint & lime mocktail', defaultCupSizeMl: 250, currentCupPrice: 22, minCupPrice: 18, maxCupPrice: 25, basePrice: 22, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 4, name: 'Orange Sunrise', flavour: 'ORANGE', description: 'Pure Valencia orange juice', defaultCupSizeMl: 250, currentCupPrice: 22, minCupPrice: 18, maxCupPrice: 25, basePrice: 22, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 22, minCupPrice: 18, maxCupPrice: 25, basePrice: 22, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 22, minCupPrice: 18, maxCupPrice: 25, basePrice: 22, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 22, minCupPrice: 18, maxCupPrice: 25, basePrice: 22, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 8, name: 'Pineapple Express', flavour: 'PINEAPPLE', description: 'Fresh tropical crushed pineapple nectar', defaultCupSizeMl: 250, currentCupPrice: 22, minCupPrice: 18, maxCupPrice: 25, basePrice: 22, trend: '+0%', trendDirection: 'FLAT' }
+      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 1.1, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.8, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 3, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice loaded with vitamin C', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 1.1, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 4, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.8, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 5, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 6, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.7, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 7, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 8, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' }
     ];
 
     let cart = [];
@@ -645,22 +669,23 @@
     }
 
     const defaultProducts = [
-      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'UP' },
-      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint & lime mocktail', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 4, name: 'Orange Sunrise', flavour: 'ORANGE', description: 'Pure Valencia orange juice', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'UP' },
-      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'DOWN' },
-      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 20, minCupPrice: 18, maxCupPrice: 25, basePrice: 20, trend: '+0%', trendDirection: 'FLAT' }
+      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'UP' },
+      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint & lime mocktail', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 4, name: 'Orange Sunrise', flavour: 'ORANGE', description: 'Pure Valencia orange juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'UP' },
+      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'DOWN' },
+      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
+      { id: 8, name: 'Pineapple Express', flavour: 'PINEAPPLE', description: 'Fresh tropical crushed pineapple nectar', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' }
     ];
 
     function normalizeProduct(p) {
       if (!p) return null;
       const id = p.id || p.beverageId || p.productId;
-      const currentCupPrice = p.currentCupPrice !== undefined ? Math.round(p.currentCupPrice) : (p.currentPrice !== undefined ? Math.round(p.currentPrice) : 20);
+      const currentCupPrice = p.currentCupPrice !== undefined ? Math.round(p.currentCupPrice) : (p.currentPrice !== undefined ? Math.round(p.currentPrice) : 25);
       const minCupPrice = p.minCupPrice !== undefined ? Math.round(p.minCupPrice) : (p.minPrice !== undefined ? Math.round(p.minPrice) : 18);
-      const maxCupPrice = p.maxCupPrice !== undefined ? Math.round(p.maxCupPrice) : (p.maxPrice !== undefined ? Math.round(p.maxPrice) : 25);
-      const basePrice = p.basePrice !== undefined ? Math.round(p.basePrice) : (p.defaultCupPrice !== undefined ? Math.round(p.defaultCupPrice) : 20);
+      const maxCupPrice = p.maxCupPrice !== undefined ? Math.round(p.maxCupPrice) : (p.maxPrice !== undefined ? Math.round(p.maxPrice) : 35);
+      const basePrice = p.basePrice !== undefined ? Math.round(p.basePrice) : (p.defaultCupPrice !== undefined ? Math.round(p.defaultCupPrice) : 25);
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
       const flavour = p.flavour || p.name || 'JUICE';
@@ -889,10 +914,13 @@
       const grid = document.getElementById('productGrid');
       if (!grid) return;
       grid.innerHTML = products.map(p => {
-        const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 20));
-        const baseP = Math.round(p.basePrice || p.defaultCupPrice || 20);
+        const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 25));
+        const baseP = Math.round(p.basePrice || p.defaultCupPrice || 25);
         const diff = activePrice - baseP;
-        const icon = fruitIcons[p.id] || '🍹';
+        const icon = getFruitIcon(p);
+
+        const pctVal = ((activePrice - baseP) / baseP) * 100;
+        const pctStr = (pctVal >= 0 ? '+' : '') + pctVal.toFixed(1) + '%';
 
         let badgeClass = 'badge-stable';
         let badgeText = '— 0.0% STABLE';
@@ -901,16 +929,15 @@
           badgeText = `▼ CRASH ₹${Math.round(p.minCupPrice || 18)}`;
         } else if (diff > 0) {
           badgeClass = 'badge-up';
-          const pct = Math.round(((activePrice - baseP) / baseP) * 100);
-          badgeText = `▲ +${pct}% SURGE`;
+          badgeText = `▲ ${pctStr} RISING`;
         } else if (diff < 0) {
           badgeClass = 'badge-down';
-          const pct = Math.round(((activePrice - baseP) / baseP) * 100);
-          badgeText = `▼ ${pct}% DISCOUNT`;
+          badgeText = `▼ ${pctStr} FALLING`;
         }
 
-        const demandLevel = (activePrice > baseP) ? 'HIGH SURGE' : (activePrice < baseP ? 'DISCOUNTED' : 'NORMAL');
-        const demandColor = (activePrice > baseP) ? 'var(--warning)' : (activePrice < baseP ? 'var(--info)' : 'var(--text-muted)');
+        const targetSales = p.targetSalesPer2Minute || targetSalesMap[p.flavour] || 1.0;
+        const demandCategory = p.demandLevelCategory || (diff > 0 ? 'HIGH' : (diff < 0 ? 'LOW' : 'NORMAL'));
+        const demandColor = (diff > 0) ? 'var(--warning)' : (diff < 0 ? 'var(--info)' : 'var(--text-muted)');
 
         return `
           <div class="flavour-card ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}">
@@ -932,13 +959,13 @@
                 <div class="price-bounds">
                   <span>Base ₹${baseP}.00</span>
                   <span>Floor ₹${Math.round(p.minCupPrice || 18)}.00</span>
-                  <span>Ceiling ₹${Math.round(p.maxCupPrice || 25)}.00</span>
+                  <span>Ceiling ₹${Math.round(p.maxCupPrice || 35)}.00</span>
                 </div>
               </div>
 
-              <div class="demand-text">
-                <span>Market Demand</span>
-                <strong style="color: ${demandColor};">${demandLevel}</strong>
+              <div class="demand-text" style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 12px;">
+                <span>Target: <strong>${targetSales.toFixed(1)} / 2 min</strong></span>
+                <strong style="color: ${demandColor};">${demandCategory}</strong>
               </div>
             </div>
 
@@ -1186,10 +1213,28 @@
       }
     }
 
+    function startSettlementCountdown() {
+      const updateTimer = () => {
+        const now = new Date();
+        const secondsInCycle = (now.getMinutes() % 2) * 60 + now.getSeconds();
+        const remaining = 120 - secondsInCycle;
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        const countdownEl = document.getElementById('settlementCountdownTimer');
+        if (countdownEl) {
+          countdownEl.innerHTML = `⏳ Next Settlement: <strong>${timeStr}</strong>`;
+        }
+      };
+      updateTimer();
+      setInterval(updateTimer, 1000);
+    }
+
     checkBackendHealth();
     fetchProducts();
     checkMarketCrashStatus();
     connectWebSocket();
+    startSettlementCountdown();
     setInterval(checkBackendHealth, 5000);
 
     function toggleThemeMode() {
