@@ -325,6 +325,7 @@ public class POSService {
             }
         }
 
+<<<<<<< HEAD
         Set<Long> purchasedProductIds = new HashSet<>();
         if (request.getItems() != null) {
             for (CartItemRequest item : request.getItems()) {
@@ -346,6 +347,17 @@ public class POSService {
                         long sleepTime = 40L * attempt + (long)(Math.random() * 40);
                         Thread.sleep(sleepTime);
                     } catch (InterruptedException ignored) {}
+=======
+        int maxAttempts = 5;
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                return transactionTemplate.execute(status -> doProcessCheckout(request));
+            } catch (Exception ex) {
+                lastException = ex;
+                if (attempt < maxAttempts) {
+                    try { Thread.sleep(30L * attempt); } catch (InterruptedException ignored) {}
+>>>>>>> 220a2ee366f33ff02714de09697291bc625c86b3
                 }
             }
         }
@@ -353,6 +365,7 @@ public class POSService {
             throw (RuntimeException) lastException;
         }
         throw new RuntimeException("Checkout failed after " + maxAttempts + " attempts: " + (lastException != null ? lastException.getMessage() : "Lock contention"));
+<<<<<<< HEAD
     }
 
     private void triggerPostCheckoutSettlement(CheckoutResponse res, Set<Long> purchasedProductIds) {
@@ -363,6 +376,8 @@ public class POSService {
         } catch (Exception e) {
             log.warn("[POST-CHECKOUT] Post-checkout pricing settlement execution failed gracefully: {}", e.getMessage());
         }
+=======
+>>>>>>> 220a2ee366f33ff02714de09697291bc625c86b3
     }
 
     private CheckoutResponse doProcessCheckout(CheckoutRequest request) {

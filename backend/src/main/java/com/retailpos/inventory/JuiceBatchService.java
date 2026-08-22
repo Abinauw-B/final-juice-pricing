@@ -75,9 +75,13 @@ public class JuiceBatchService {
 
     @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public JuiceBatch deductBatchVolume(Long productId, int mlToDeduct) {
-        List<JuiceBatch> activeBatches = batchRepository.findActiveBatchesForProductWithLock(productId);
-        JuiceBatch activeBatch;
+        int maxAttempts = 3;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                List<JuiceBatch> activeBatches = batchRepository.findActiveBatchesForProductWithLock(productId);
+                JuiceBatch activeBatch;
 
+<<<<<<< HEAD
         if (activeBatches.isEmpty()) {
             activeBatch = registerNewBatch(productId, 20000);
         } else {
@@ -86,25 +90,41 @@ public class JuiceBatchService {
                 activeBatch.setStatus(JuiceBatch.BatchStatus.DEPLETED);
                 batchRepository.save(activeBatch);
                 activeBatch = registerNewBatch(productId, 20000);
+=======
+                if (activeBatches.isEmpty()) {
+                    activeBatch = registerNewBatch(productId, 20000);
+                } else {
+                    activeBatch = activeBatches.get(0);
+                    if (activeBatch.getRemainingVolumeMl() < mlToDeduct) {
+                        activeBatch.setStatus(JuiceBatch.BatchStatus.DEPLETED);
+                        batchRepository.save(activeBatch);
+                        activeBatch = registerNewBatch(productId, 20000);
+                    }
+                }
+
+                activeBatch.deductVolume(mlToDeduct);
+
+                JuiceBatch updatedBatch = batchRepository.save(activeBatch);
+
+                // Log transaction
+                InventoryTransaction tx = InventoryTransaction.builder()
+                        .productId(productId)
+                        .batchId(updatedBatch.getId())
+                        .transactionType("POS_SALE")
+                        .volumeChangeMl(-mlToDeduct)
+                        .notes("Deducted " + mlToDeduct + " ml for sale. Remaining: " + updatedBatch.getRemainingVolumeMl() + " ml")
+                        .createdAt(LocalDateTime.now())
+                        .build();
+                transactionRepository.save(tx);
+
+                return updatedBatch;
+            } catch (org.springframework.dao.PessimisticLockingFailureException e) {
+                if (attempt == maxAttempts) throw e;
+                try { Thread.sleep(25L * attempt); } catch (InterruptedException ignored) {}
+>>>>>>> 220a2ee366f33ff02714de09697291bc625c86b3
             }
         }
-
-        activeBatch.deductVolume(mlToDeduct);
-
-        JuiceBatch updatedBatch = batchRepository.save(activeBatch);
-
-        // Log transaction
-        InventoryTransaction tx = InventoryTransaction.builder()
-                .productId(productId)
-                .batchId(updatedBatch.getId())
-                .transactionType("POS_SALE")
-                .volumeChangeMl(-mlToDeduct)
-                .notes("Deducted " + mlToDeduct + " ml for sale. Remaining: " + updatedBatch.getRemainingVolumeMl() + " ml")
-                .createdAt(LocalDateTime.now())
-                .build();
-        transactionRepository.save(tx);
-
-        return updatedBatch;
+        throw new IllegalStateException("Failed to deduct volume after retries");
     }
 
     @Transactional
