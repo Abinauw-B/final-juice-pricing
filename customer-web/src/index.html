@@ -335,12 +335,6 @@
     <div class="summary-metric">
       <span>Price Dynamics: <strong id="summaryRisingCount" style="color:var(--success);">0 Price Rising</strong> &bull; <strong id="summaryStableCount" style="color:var(--text-muted);">8 Stable/Discounted</strong></span>
     </div>
-    <div class="summary-metric">
-      <span>Cycle: <strong style="color:var(--accent-gold);">2-Min Settlement</strong></span>
-    </div>
-    <div class="summary-metric" id="settlementCountdownTimer" style="font-weight:700; color:#3b82f6;">
-      ⏳ Next Settlement: <strong>02:00</strong>
-    </div>
     <div class="summary-metric" style="margin-left:auto;">
       <span>Last Sync: <strong id="summaryLastSync" style="font-family:monospace; color:var(--text-primary);">--:--:--</strong></span>
     </div>
@@ -385,9 +379,6 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h2 style="font-size: 20px; font-weight: 700; color: var(--text-primary);">Live Juice Exchange Market</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 13px; font-weight: 700; color: var(--info); background: rgba(59, 130, 246, 0.1); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid rgba(59, 130, 246, 0.25);">
-            ⏳ Next Settlement: <strong id="settlementCountdown" style="font-family: monospace; font-size: 14px;">02:00</strong>
-          </span>
           <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); background: var(--bg-surface); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid var(--border);">Base: ₹25 &bull; Floor: ₹18 &bull; Ceiling: ₹35</span>
         </div>
       </div>
@@ -468,12 +459,12 @@
     const fruitIcons = {
       1: '🥭',
       2: '🍋',
-      3: '🍊',
-      4: '🌿',
-      5: '🍇',
-      6: '🍓',
+      3: '🌿',
+      4: '🍊',
+      5: '🍓',
+      6: '🍇',
       7: '⚡',
-      8: '🍹'
+      23: '🍹'
     };
 
     function getFruitIcon(p) {
@@ -494,23 +485,23 @@
     const targetSalesMap = {
       'MANGO': 1.1,
       'LEMON': 0.8,
-      'ORANGE': 1.1,
       'MINT': 0.8,
-      'GRAPE': 0.9,
+      'ORANGE': 1.1,
       'STRAWBERRY': 0.7,
-      'THUNDER': 0.9,
-      'LYCHEE': 0.9
+      'GRAPE': 0.9,
+      'LYCHEE': 0.9,
+      'THUNDER': 0.9
     };
 
     let products = [
       { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 1.1, trend: '+0.0%', trendDirection: 'FLAT' },
       { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.8, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 3, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice loaded with vitamin C', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 1.1, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 4, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.8, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 5, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 6, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.7, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 7, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 8, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' }
+      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.8, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice loaded with vitamin C', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 1.1, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.7, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 23, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' }
     ];
 
     let cart = [];
@@ -601,14 +592,13 @@
       if (!wasActive) playMarketCrashSiren();
 
       products.forEach(p => {
-        p.currentCupPrice = p.minCupPrice || crashFloor;
         p.trendDirection = 'DOWN';
-        p.trend = '-10% [CRASH]';
+        p.trend = 'CRASH';
       });
 
       const bannerMsg = document.getElementById('marketCrashBannerMsg');
       if (bannerMsg) {
-        bannerMsg.textContent = `All Juice Flavours Dropped to Absolute Floor Limit ₹${crashFloor}!`;
+        bannerMsg.textContent = `🚨 MARKET CRASH ACTIVE! Dynamic promotional crash prices in effect!`;
       }
 
       const crashBanner = document.getElementById('marketCrashBanner');
@@ -672,20 +662,20 @@
       { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'UP' },
       { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
       { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint & lime mocktail', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 4, name: 'Orange Sunrise', flavour: 'ORANGE', description: 'Pure Valencia orange juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'UP' },
+      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'UP' },
       { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
       { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'DOWN' },
       { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 8, name: 'Pineapple Express', flavour: 'PINEAPPLE', description: 'Fresh tropical crushed pineapple nectar', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' }
+      { id: 23, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' }
     ];
 
     function normalizeProduct(p) {
       if (!p) return null;
       const id = p.id || p.beverageId || p.productId;
-      const currentCupPrice = p.currentCupPrice !== undefined ? Math.round(p.currentCupPrice) : (p.currentPrice !== undefined ? Math.round(p.currentPrice) : 25);
-      const minCupPrice = p.minCupPrice !== undefined ? Math.round(p.minCupPrice) : (p.minPrice !== undefined ? Math.round(p.minPrice) : 18);
-      const maxCupPrice = p.maxCupPrice !== undefined ? Math.round(p.maxCupPrice) : (p.maxPrice !== undefined ? Math.round(p.maxPrice) : 35);
-      const basePrice = p.basePrice !== undefined ? Math.round(p.basePrice) : (p.defaultCupPrice !== undefined ? Math.round(p.defaultCupPrice) : 25);
+      const currentCupPrice = p.currentCupPrice !== undefined ? Number(p.currentCupPrice) : (p.currentPrice !== undefined ? Number(p.currentPrice) : 25.0);
+      const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : 18.0);
+      const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 35.0);
+      const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25.0);
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
       const flavour = p.flavour || p.name || 'JUICE';
@@ -800,7 +790,7 @@
                 incoming = res.updatedPrices;
               } else if (Array.isArray(res)) {
                 incoming = res;
-              } else if (res && (res.id || res.productId)) {
+              } else if (res && (res.id || res.beverageId || res.productId)) {
                 incoming = [res];
               }
 
@@ -820,6 +810,7 @@
                     products.push(np);
                   }
                 });
+                products.sort((a, b) => (a.id || 0) - (b.id || 0));
                 renderProducts();
                 renderTicker();
                 renderCart();
@@ -859,6 +850,7 @@
       if (!products || products.length === 0) {
         products = JSON.parse(JSON.stringify(defaultProducts));
       }
+      products.sort((a, b) => (a.id || 0) - (b.id || 0));
       const container = document.getElementById('stockTickerContent');
       if (!container) return;
 
@@ -866,8 +858,8 @@
       let stableOrDiscounted = 0;
 
       container.innerHTML = products.map(p => {
-        const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 20));
-        const baseP = Math.round(p.basePrice || p.defaultCupPrice || 20);
+        const activePrice = Number(p.currentCupPrice || p.currentPrice || 20);
+        const baseP = Number(p.basePrice || p.defaultCupPrice || 20);
         const diff = activePrice - baseP;
         const pct = Math.round(((activePrice - baseP) / baseP) * 100);
 
@@ -889,7 +881,7 @@
         return `
           <div class="ticker-item">
             <span>${icon} ${p.flavour || p.name}:</span>
-            <span style="color: ${color}; font-weight: 700;">₹${activePrice}.00 ${sign}${Math.abs(pct)}%</span>
+            <span style="color: ${color}; font-weight: 700;">₹${activePrice.toFixed(2)} ${sign}${Math.abs(pct)}%</span>
           </div>
         `;
       }).join('');
@@ -911,14 +903,16 @@
       if (!products || products.length === 0) {
         products = JSON.parse(JSON.stringify(defaultProducts));
       }
+      products.sort((a, b) => (a.id || 0) - (b.id || 0));
       const grid = document.getElementById('productGrid');
       if (!grid) return;
       grid.innerHTML = products.map(p => {
-        const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 25));
-        const baseP = Math.round(p.basePrice || p.defaultCupPrice || 25);
+        const activePrice = Number(p.currentCupPrice || p.currentPrice || 25);
+        const baseP = Number(p.basePrice || p.defaultCupPrice || 25);
         const diff = activePrice - baseP;
         const icon = getFruitIcon(p);
 
+        const trendDir = p.trendDirection || (p.priceChange > 0 ? 'UP' : (p.priceChange < 0 ? 'DOWN' : (diff > 0 ? 'UP' : (diff < 0 ? 'DOWN' : 'FLAT'))));
         const pctVal = ((activePrice - baseP) / baseP) * 100;
         const pctStr = (pctVal >= 0 ? '+' : '') + pctVal.toFixed(1) + '%';
 
@@ -926,18 +920,30 @@
         let badgeText = '— 0.0% STABLE';
         if (isMarketCrashActive) {
           badgeClass = 'badge-down';
-          badgeText = `▼ CRASH ₹${Math.round(p.minCupPrice || 18)}`;
-        } else if (diff > 0) {
+          badgeText = `▼ CRASH ₹${activePrice.toFixed(2)}`;
+        } else if (trendDir === 'UP') {
           badgeClass = 'badge-up';
           badgeText = `▲ ${pctStr} RISING`;
-        } else if (diff < 0) {
+        } else if (trendDir === 'DOWN') {
           badgeClass = 'badge-down';
           badgeText = `▼ ${pctStr} FALLING`;
+        } else {
+          if (diff > 0) {
+            badgeClass = 'badge-up';
+            badgeText = `▲ ${pctStr} HIGH DEMAND`;
+          } else if (diff < 0) {
+            badgeClass = 'badge-down';
+            badgeText = `▼ ${pctStr} DISCOUNT`;
+          } else {
+            badgeClass = 'badge-stable';
+            badgeText = '— 0.0% STABLE';
+          }
         }
 
-        const targetSales = p.targetSalesPer2Minute || targetSalesMap[p.flavour] || 1.0;
-        const demandCategory = p.demandLevelCategory || (diff > 0 ? 'HIGH' : (diff < 0 ? 'LOW' : 'NORMAL'));
-        const demandColor = (diff > 0) ? 'var(--warning)' : (diff < 0 ? 'var(--info)' : 'var(--text-muted)');
+        const targetSales = p.targetOrders || p.targetSalesPer2Minute || targetSalesMap[p.flavour] || 5;
+        const rawCategory = p.demandLevelCategory || (diff > 0 ? 'HIGH' : (diff < 0 ? 'LOW' : 'NORMAL'));
+        const demandCategory = rawCategory.replace('_CONSUMED', '');
+        const demandColor = (demandCategory.includes('HIGH')) ? 'var(--warning)' : (demandCategory.includes('LOW') ? 'var(--info)' : 'var(--text-muted)');
 
         return `
           <div class="flavour-card ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}">
@@ -953,24 +959,24 @@
               
               <div class="price-section">
                 <div>
-                  <span class="price-main">₹${activePrice}.00</span>
+                  <span class="price-main">₹${activePrice.toFixed(2)}</span>
                   <span class="price-unit">/ ${p.defaultCupSizeMl || 250}ml</span>
                 </div>
                 <div class="price-bounds">
-                  <span>Base ₹${baseP}.00</span>
-                  <span>Floor ₹${Math.round(p.minCupPrice || 18)}.00</span>
-                  <span>Ceiling ₹${Math.round(p.maxCupPrice || 35)}.00</span>
+                  <span>Base ₹${baseP.toFixed(2)}</span>
+                  <span>Floor ₹${Number(p.minCupPrice || 18).toFixed(2)}</span>
+                  <span>Ceiling ₹${Number(p.maxCupPrice || 35).toFixed(2)}</span>
                 </div>
               </div>
 
               <div class="demand-text" style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 12px;">
-                <span>Target: <strong>${targetSales.toFixed(1)} / 2 min</strong></span>
+                <span>Target: <strong>${targetSales} / round</strong></span>
                 <strong style="color: ${demandColor};">${demandCategory}</strong>
               </div>
             </div>
 
             <button class="add-to-cart-btn" ${!isBackendOnline ? 'disabled="disabled" style="opacity:0.5; cursor:not-allowed; background:#64748b;"' : ''} onclick="addToCart(${p.id})">
-              ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Floor ₹${Math.round(p.minCupPrice || 18)}` : '+ Add to Cart')}
+              ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Floor ₹${Number(p.minCupPrice || 18).toFixed(2)}` : '+ Add to Cart')}
             </button>
           </div>
         `;
@@ -1213,28 +1219,10 @@
       }
     }
 
-    function startSettlementCountdown() {
-      const updateTimer = () => {
-        const now = new Date();
-        const secondsInCycle = (now.getMinutes() % 2) * 60 + now.getSeconds();
-        const remaining = 120 - secondsInCycle;
-        const mins = Math.floor(remaining / 60);
-        const secs = remaining % 60;
-        const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        const countdownEl = document.getElementById('settlementCountdownTimer');
-        if (countdownEl) {
-          countdownEl.innerHTML = `⏳ Next Settlement: <strong>${timeStr}</strong>`;
-        }
-      };
-      updateTimer();
-      setInterval(updateTimer, 1000);
-    }
-
     checkBackendHealth();
     fetchProducts();
     checkMarketCrashStatus();
     connectWebSocket();
-    startSettlementCountdown();
     setInterval(checkBackendHealth, 5000);
 
     function toggleThemeMode() {

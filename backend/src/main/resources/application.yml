@@ -50,6 +50,13 @@ management:
         include: health,info,metrics
 
 pricing:
+  round:
+    interval-ms: 60000
+  default-target-orders: 5
+  default-volatility: 0.08
+  market-crash:
+    duration-ms: 180000
+    floor-buffer-percent: 0.05
   engine:
     enabled: true
     interval-ms: 60000

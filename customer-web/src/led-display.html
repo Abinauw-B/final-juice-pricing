@@ -591,12 +591,12 @@
     const fruitIcons = {
       1: '🥭',
       2: '🍋',
-      3: '🍊',
-      4: '🌿',
-      5: '🍇',
-      6: '🍓',
+      3: '🌿',
+      4: '🍊',
+      5: '🍓',
+      6: '🍇',
       7: '⚡',
-      8: '🍹'
+      23: '🍹'
     };
 
     function getFruitIcon(p) {
@@ -617,12 +617,12 @@
     let products = [
       { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
       { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 3, name: 'Valencia Orange Juice', flavour: 'ORANGE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 4, name: 'Cool Mint Cooler', flavour: 'MINT', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 5, name: 'Royal Grape Juice', flavour: 'GRAPE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 6, name: 'Strawberry Delight', flavour: 'STRAWBERRY', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 7, name: 'Thunder', flavour: 'THUNDER', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 8, name: 'Lychee Mist', flavour: 'LYCHEE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 }
+      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
+      { id: 23, name: 'Thunder', flavour: 'THUNDER', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 }
     ];
 
     function updateClock() {
@@ -779,13 +779,38 @@
       }
     }
 
+    function normalizeProduct(p) {
+      if (!p) return null;
+      const id = p.id || p.beverageId || p.productId;
+      const currentCupPrice = p.currentCupPrice !== undefined ? Math.round(p.currentCupPrice) : (p.currentPrice !== undefined ? Math.round(p.currentPrice) : 25);
+      const minCupPrice = p.minCupPrice !== undefined ? Math.round(p.minCupPrice) : (p.minPrice !== undefined ? Math.round(p.minPrice) : 18);
+      const maxCupPrice = p.maxCupPrice !== undefined ? Math.round(p.maxCupPrice) : (p.maxPrice !== undefined ? Math.round(p.maxPrice) : 35);
+      const basePrice = p.basePrice !== undefined ? Math.round(p.basePrice) : (p.defaultCupPrice !== undefined ? Math.round(p.defaultCupPrice) : 25);
+      const defaultCupSizeMl = p.defaultCupSizeMl || 250;
+      const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
+      const flavour = p.flavour || p.name || 'JUICE';
+
+      return {
+        ...p,
+        id,
+        currentCupPrice,
+        minCupPrice,
+        maxCupPrice,
+        basePrice,
+        defaultCupSizeMl,
+        name,
+        flavour
+      };
+    }
+
     async function fetchProductList() {
       try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/pos/products`);
         if (res.ok) {
           const data = await res.json();
           if (data && Array.isArray(data) && data.length > 0) {
-            products = data;
+            products = data.map(normalizeProduct).filter(Boolean);
+            products.sort((a, b) => (a.id || 0) - (b.id || 0));
           }
         }
       } catch (e) {}
@@ -810,24 +835,30 @@
           stompClient.subscribe('/topic/prices', function (message) {
             if (message.body) {
               const res = JSON.parse(message.body);
-              if (Array.isArray(res)) {
-                products = res;
-              } else if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) {
-                products = res.updatedPrices;
-              } else if (res && (res.id || res.productId)) {
-                const pId = res.id || res.productId;
-                const idx = products.findIndex(p => p.id === pId);
-                if (idx !== -1) {
-                  products[idx] = { ...products[idx], ...res };
-                } else {
-                  fetchProductList();
-                  return;
-                }
+              let incoming = [];
+              if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) {
+                incoming = res.updatedPrices;
+              } else if (Array.isArray(res)) {
+                incoming = res;
+              } else if (res && (res.id || res.beverageId || res.productId)) {
+                incoming = [res];
+              }
+
+              if (incoming.length > 0) {
+                const normList = incoming.map(normalizeProduct).filter(Boolean);
+                normList.forEach(np => {
+                  const idx = products.findIndex(p => p.id === np.id || (p.name && np.name && p.name.toLowerCase() === np.name.toLowerCase()));
+                  if (idx !== -1) {
+                    products[idx] = { ...products[idx], ...np };
+                  } else {
+                    products.push(np);
+                  }
+                });
+                products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                renderExchangeBoard();
               } else {
                 fetchProductList();
-                return;
               }
-              renderExchangeBoard();
             }
           });
           stompClient.subscribe('/topic/market-crash', function (message) {

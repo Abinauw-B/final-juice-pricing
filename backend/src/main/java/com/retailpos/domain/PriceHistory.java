@@ -42,6 +42,24 @@ public class PriceHistory {
     @Column(name = "reason")
     private String reason;
 
+    @Column(name = "raw_w0")
+    private Integer rawW0 = 0;
+
+    @Column(name = "raw_w1")
+    private Integer rawW1 = 0;
+
+    @Column(name = "raw_w2")
+    private Integer rawW2 = 0;
+
+    @Column(name = "unconsumed_w0")
+    private Integer unconsumedW0 = 0;
+
+    @Column(name = "trigger_type")
+    private String triggerType = "SCHEDULED";
+
+    @Column(name = "settlement_id")
+    private String settlementId;
+
     @Column(name = "demand_score", nullable = false)
     private Double demandScore = 50.0;
 
@@ -53,6 +71,27 @@ public class PriceHistory {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String explanation;
+
+    @Column(name = "order_count")
+    private Integer orderCount = 0;
+
+    @Column(name = "raw_price_change_percent")
+    private BigDecimal rawPriceChangePercent;
+
+    @Column(name = "applied_price_change_percent")
+    private BigDecimal appliedPriceChangePercent;
+
+    @Column(name = "volatility")
+    private BigDecimal volatility;
+
+    @Column(name = "floor_price")
+    private BigDecimal floorPrice;
+
+    @Column(name = "ceiling_price")
+    private BigDecimal ceilingPrice;
+
+    @Column(name = "price_version")
+    private Integer priceVersion;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -111,6 +150,34 @@ public class PriceHistory {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
+    public Integer getRawW0() { return rawW0; }
+    public void setRawW0(Integer rawW0) { this.rawW0 = rawW0; }
+    public Integer getRawW1() { return rawW1; }
+    public void setRawW1(Integer rawW1) { this.rawW1 = rawW1; }
+    public Integer getRawW2() { return rawW2; }
+    public void setRawW2(Integer rawW2) { this.rawW2 = rawW2; }
+    public Integer getUnconsumedW0() { return unconsumedW0; }
+    public void setUnconsumedW0(Integer unconsumedW0) { this.unconsumedW0 = unconsumedW0; }
+    public String getTriggerType() { return triggerType; }
+    public void setTriggerType(String triggerType) { this.triggerType = triggerType; }
+    public String getSettlementId() { return settlementId; }
+    public void setSettlementId(String settlementId) { this.settlementId = settlementId; }
+
+    public Integer getOrderCount() { return orderCount; }
+    public void setOrderCount(Integer orderCount) { this.orderCount = orderCount; }
+    public BigDecimal getRawPriceChangePercent() { return rawPriceChangePercent; }
+    public void setRawPriceChangePercent(BigDecimal rawPriceChangePercent) { this.rawPriceChangePercent = rawPriceChangePercent; }
+    public BigDecimal getAppliedPriceChangePercent() { return appliedPriceChangePercent; }
+    public void setAppliedPriceChangePercent(BigDecimal appliedPriceChangePercent) { this.appliedPriceChangePercent = appliedPriceChangePercent; }
+    public BigDecimal getVolatility() { return volatility; }
+    public void setVolatility(BigDecimal volatility) { this.volatility = volatility; }
+    public BigDecimal getFloorPrice() { return floorPrice; }
+    public void setFloorPrice(BigDecimal floorPrice) { this.floorPrice = floorPrice; }
+    public BigDecimal getCeilingPrice() { return ceilingPrice; }
+    public void setCeilingPrice(BigDecimal ceilingPrice) { this.ceilingPrice = ceilingPrice; }
+    public Integer getPriceVersion() { return priceVersion; }
+    public void setPriceVersion(Integer priceVersion) { this.priceVersion = priceVersion; }
+
     public static PriceHistoryBuilder builder() { return new PriceHistoryBuilder(); }
 
     public static class PriceHistoryBuilder {
@@ -125,10 +192,23 @@ public class PriceHistory {
         private LocalDateTime calculationWindowStart;
         private LocalDateTime calculationWindowEnd;
         private String reason;
+        private Integer rawW0 = 0;
+        private Integer rawW1 = 0;
+        private Integer rawW2 = 0;
+        private Integer unconsumedW0 = 0;
+        private String triggerType = "SCHEDULED";
+        private String settlementId;
         private Double demandScore = 50.0;
         private Double stockPressurePct = 0.0;
         private Double timeFactorMultiplier = 1.0;
         private String explanation;
+        private Integer orderCount = 0;
+        private BigDecimal rawPriceChangePercent;
+        private BigDecimal appliedPriceChangePercent;
+        private BigDecimal volatility;
+        private BigDecimal floorPrice;
+        private BigDecimal ceilingPrice;
+        private Integer priceVersion;
         private LocalDateTime createdAt = LocalDateTime.now();
 
         public PriceHistoryBuilder id(Long id) { this.id = id; return this; }
@@ -142,14 +222,41 @@ public class PriceHistory {
         public PriceHistoryBuilder calculationWindowStart(LocalDateTime calculationWindowStart) { this.calculationWindowStart = calculationWindowStart; return this; }
         public PriceHistoryBuilder calculationWindowEnd(LocalDateTime calculationWindowEnd) { this.calculationWindowEnd = calculationWindowEnd; return this; }
         public PriceHistoryBuilder reason(String reason) { this.reason = reason; return this; }
+        public PriceHistoryBuilder rawW0(Integer rawW0) { this.rawW0 = rawW0; return this; }
+        public PriceHistoryBuilder rawW1(Integer rawW1) { this.rawW1 = rawW1; return this; }
+        public PriceHistoryBuilder rawW2(Integer rawW2) { this.rawW2 = rawW2; return this; }
+        public PriceHistoryBuilder unconsumedW0(Integer unconsumedW0) { this.unconsumedW0 = unconsumedW0; return this; }
+        public PriceHistoryBuilder triggerType(String triggerType) { this.triggerType = triggerType; return this; }
+        public PriceHistoryBuilder settlementId(String settlementId) { this.settlementId = settlementId; return this; }
         public PriceHistoryBuilder demandScore(Double demandScore) { this.demandScore = demandScore; return this; }
         public PriceHistoryBuilder stockPressurePct(Double stockPressurePct) { this.stockPressurePct = stockPressurePct; return this; }
         public PriceHistoryBuilder timeFactorMultiplier(Double timeFactorMultiplier) { this.timeFactorMultiplier = timeFactorMultiplier; return this; }
         public PriceHistoryBuilder explanation(String explanation) { this.explanation = explanation; return this; }
+        public PriceHistoryBuilder orderCount(Integer orderCount) { this.orderCount = orderCount; return this; }
+        public PriceHistoryBuilder rawPriceChangePercent(BigDecimal rawPriceChangePercent) { this.rawPriceChangePercent = rawPriceChangePercent; return this; }
+        public PriceHistoryBuilder appliedPriceChangePercent(BigDecimal appliedPriceChangePercent) { this.appliedPriceChangePercent = appliedPriceChangePercent; return this; }
+        public PriceHistoryBuilder volatility(BigDecimal volatility) { this.volatility = volatility; return this; }
+        public PriceHistoryBuilder floorPrice(BigDecimal floorPrice) { this.floorPrice = floorPrice; return this; }
+        public PriceHistoryBuilder ceilingPrice(BigDecimal ceilingPrice) { this.ceilingPrice = ceilingPrice; return this; }
+        public PriceHistoryBuilder priceVersion(Integer priceVersion) { this.priceVersion = priceVersion; return this; }
         public PriceHistoryBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
 
         public PriceHistory build() {
-            return new PriceHistory(id, productId, oldPrice, newPrice, priceChange, demandRatio, weightedSales, targetSales, calculationWindowStart, calculationWindowEnd, reason, demandScore, stockPressurePct, timeFactorMultiplier, explanation, createdAt);
+            PriceHistory ph = new PriceHistory(id, productId, oldPrice, newPrice, priceChange, demandRatio, weightedSales, targetSales, calculationWindowStart, calculationWindowEnd, reason, demandScore, stockPressurePct, timeFactorMultiplier, explanation, createdAt);
+            ph.setRawW0(rawW0);
+            ph.setRawW1(rawW1);
+            ph.setRawW2(rawW2);
+            ph.setUnconsumedW0(unconsumedW0);
+            ph.setTriggerType(triggerType);
+            ph.setSettlementId(settlementId);
+            ph.setOrderCount(orderCount);
+            ph.setRawPriceChangePercent(rawPriceChangePercent);
+            ph.setAppliedPriceChangePercent(appliedPriceChangePercent);
+            ph.setVolatility(volatility);
+            ph.setFloorPrice(floorPrice);
+            ph.setCeilingPrice(ceilingPrice);
+            ph.setPriceVersion(priceVersion);
+            return ph;
         }
     }
 }

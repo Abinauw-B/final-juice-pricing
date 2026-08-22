@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PriceAdjustmentService {
@@ -23,11 +23,12 @@ public class PriceAdjustmentService {
     private final JuiceBatchRepository juiceBatchRepository;
     private final MarketCrashService marketCrashService;
     private final AuditLogRepository auditLogRepository;
+    private final PricingProcessedSaleRepository pricingProcessedSaleRepository;
 
     private static LocalDateTime marketStartTime = LocalDateTime.now();
     private static boolean marketPaused = false;
 
-    public PriceAdjustmentService(ProductRepository productRepository, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, SalesOrderItemRepository salesOrderItemRepository, JuiceBatchRepository juiceBatchRepository, MarketCrashService marketCrashService, AuditLogRepository auditLogRepository) {
+    public PriceAdjustmentService(ProductRepository productRepository, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, SalesOrderItemRepository salesOrderItemRepository, JuiceBatchRepository juiceBatchRepository, MarketCrashService marketCrashService, AuditLogRepository auditLogRepository, PricingProcessedSaleRepository pricingProcessedSaleRepository) {
         this.productRepository = productRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.systemConfigRepository = systemConfigRepository;
@@ -35,6 +36,7 @@ public class PriceAdjustmentService {
         this.juiceBatchRepository = juiceBatchRepository;
         this.marketCrashService = marketCrashService;
         this.auditLogRepository = auditLogRepository;
+        this.pricingProcessedSaleRepository = pricingProcessedSaleRepository;
     }
 
     public static boolean isMarketPaused() {
@@ -59,6 +61,10 @@ public class PriceAdjustmentService {
         private double demandRatio;
         private double weightedSales;
         private double targetSales;
+        private int rawW0;
+        private int rawW1;
+        private int rawW2;
+        private int unconsumedW0;
         private String demandLevelCategory; // VERY_LOW, LOW, NORMAL, HIGH, VERY_HIGH
         private String explanation;
         private String statusReason;
@@ -98,6 +104,14 @@ public class PriceAdjustmentService {
         public void setWeightedSales(double weightedSales) { this.weightedSales = weightedSales; }
         public double getTargetSales() { return targetSales; }
         public void setTargetSales(double targetSales) { this.targetSales = targetSales; }
+        public int getRawW0() { return rawW0; }
+        public void setRawW0(int rawW0) { this.rawW0 = rawW0; }
+        public int getRawW1() { return rawW1; }
+        public void setRawW1(int rawW1) { this.rawW1 = rawW1; }
+        public int getRawW2() { return rawW2; }
+        public void setRawW2(int rawW2) { this.rawW2 = rawW2; }
+        public int getUnconsumedW0() { return unconsumedW0; }
+        public void setUnconsumedW0(int unconsumedW0) { this.unconsumedW0 = unconsumedW0; }
         public String getDemandLevelCategory() { return demandLevelCategory; }
         public void setDemandLevelCategory(String demandLevelCategory) { this.demandLevelCategory = demandLevelCategory; }
         public double getDemandScore() { return demandRatio * 50.0; } // Backwards compatibility for existing UI
@@ -120,6 +134,10 @@ public class PriceAdjustmentService {
             private double demandRatio;
             private double weightedSales;
             private double targetSales;
+            private int rawW0;
+            private int rawW1;
+            private int rawW2;
+            private int unconsumedW0;
             private String demandLevelCategory;
             private String explanation;
             private String statusReason;
@@ -133,12 +151,21 @@ public class PriceAdjustmentService {
             public PriceEvaluationResultBuilder demandRatio(double demandRatio) { this.demandRatio = demandRatio; return this; }
             public PriceEvaluationResultBuilder weightedSales(double weightedSales) { this.weightedSales = weightedSales; return this; }
             public PriceEvaluationResultBuilder targetSales(double targetSales) { this.targetSales = targetSales; return this; }
+            public PriceEvaluationResultBuilder rawW0(int rawW0) { this.rawW0 = rawW0; return this; }
+            public PriceEvaluationResultBuilder rawW1(int rawW1) { this.rawW1 = rawW1; return this; }
+            public PriceEvaluationResultBuilder rawW2(int rawW2) { this.rawW2 = rawW2; return this; }
+            public PriceEvaluationResultBuilder unconsumedW0(int unconsumedW0) { this.unconsumedW0 = unconsumedW0; return this; }
             public PriceEvaluationResultBuilder demandLevelCategory(String demandLevelCategory) { this.demandLevelCategory = demandLevelCategory; return this; }
             public PriceEvaluationResultBuilder explanation(String explanation) { this.explanation = explanation; return this; }
             public PriceEvaluationResultBuilder statusReason(String statusReason) { this.statusReason = statusReason; return this; }
 
             public PriceEvaluationResult build() {
-                return new PriceEvaluationResult(productId, flavour, oldPrice, newPrice, priceChange, priceChanged, demandRatio, weightedSales, targetSales, demandLevelCategory, explanation, statusReason);
+                PriceEvaluationResult r = new PriceEvaluationResult(productId, flavour, oldPrice, newPrice, priceChange, priceChanged, demandRatio, weightedSales, targetSales, demandLevelCategory, explanation, statusReason);
+                r.setRawW0(rawW0);
+                r.setRawW1(rawW1);
+                r.setRawW2(rawW2);
+                r.setUnconsumedW0(unconsumedW0);
+                return r;
             }
         }
     }
@@ -158,7 +185,9 @@ public class PriceAdjustmentService {
         BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : (product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("25.00"));
         BigDecimal floor = product.getMinCupPrice() != null ? product.getMinCupPrice() : new BigDecimal("18.00");
         BigDecimal ceiling = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : new BigDecimal("35.00");
-        double targetSales = product.getTargetSalesPer2Minute() != null ? product.getTargetSalesPer2Minute() : 1.0;
+        int orderCount = product.getOrderCount() != null ? product.getOrderCount() : 0;
+        int targetOrders = product.getTargetOrders() != null ? product.getTargetOrders() : 5;
+        BigDecimal volatility = product.getVolatility() != null ? product.getVolatility() : new BigDecimal("0.0800");
 
         // Check Market Paused
         if (marketPaused) {
@@ -170,97 +199,144 @@ public class PriceAdjustmentService {
                     .priceChange(BigDecimal.ZERO)
                     .priceChanged(false)
                     .demandRatio(1.0)
-                    .weightedSales(targetSales)
-                    .targetSales(targetSales)
+                    .weightedSales((double) orderCount)
+                    .targetSales((double) targetOrders)
                     .demandLevelCategory("NORMAL")
                     .explanation("Exchange is currently PAUSED by Admin. Prices held stable.")
                     .statusReason("MARKET_PAUSED")
                     .build();
         }
 
-        // 1. Calculate sales across three 2-minute windows
-        // W0 = current 2-min window (now-2m to now)
-        // W1 = previous 2-min window (now-4m to now-2m)
-        // W2 = previous previous 2-min window (now-6m to now-4m)
-        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusMinutes(2), now);
-        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusMinutes(4), now.minusMinutes(2));
-        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusMinutes(6), now.minusMinutes(4));
+        // Check Market Crash
+        if (marketCrashService != null && marketCrashService.isCrashActive()) {
+            BigDecimal crashPrice = floor.multiply(new BigDecimal("1.05")).setScale(2, java.math.RoundingMode.HALF_UP).max(floor).min(ceiling);
+            BigDecimal priceChange = crashPrice.subtract(oldPrice);
+            boolean changed = oldPrice.compareTo(crashPrice) != 0;
 
-        // 2. Weighted Sales Calculation: 0.50*W0 + 0.30*W1 + 0.20*W2
-        double weightedSales = 0.50 * w0 + 0.30 * w1 + 0.20 * w2;
+            product.setCurrentCupPrice(crashPrice);
+            if (changed) {
+                product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
+                product.setLastPriceChangeTimestamp(now);
+            }
+            // DO NOT reset order_count during crash!
+            productRepository.saveAndFlush(product);
 
-        // 3. Demand Ratio Calculation: weighted_sales / target_sales
-        double demandRatio = (targetSales > 0) ? (weightedSales / targetSales) : 0.0;
+            PriceHistory history = PriceHistory.builder()
+                    .productId(productId)
+                    .oldPrice(oldPrice)
+                    .newPrice(crashPrice)
+                    .priceChange(priceChange)
+                    .demandRatio(1.0)
+                    .orderCount(orderCount)
+                    .rawPriceChangePercent(BigDecimal.ZERO)
+                    .appliedPriceChangePercent(BigDecimal.ZERO)
+                    .volatility(volatility)
+                    .floorPrice(floor)
+                    .ceilingPrice(ceiling)
+                    .priceVersion(product.getPriceVersion())
+                    .triggerType("MARKET_CRASH_ROUND")
+                    .reason("MARKET_CRASH_HOLD")
+                    .explanation("🚨 Market crash active: Price set to floor + 5% (₹" + crashPrice + ")")
+                    .createdAt(now)
+                    .build();
+            priceHistoryRepository.save(history);
 
-        log.info("[PRICING WINDOW] productId={} W0={} W1={} W2={}", productId, w0, w1, w2);
-        log.info("[DEMAND] productId={} weightedSales={} targetSales={} demandRatio={}", productId, weightedSales, targetSales, demandRatio);
-
-        // 4. Exact Symmetric Price Movement Rules
-        int priceMovement = 0;
-        String demandCategory = "NORMAL";
-
-        if (demandRatio < 0.20) {
-            priceMovement = -2;
-            demandCategory = "EXTREMELY_LOW";
-        } else if (demandRatio < 0.50) {
-            priceMovement = -2;
-            demandCategory = "VERY_LOW";
-        } else if (demandRatio < 0.70) {
-            priceMovement = -1;
-            demandCategory = "LOW";
-        } else if (demandRatio < 0.90) {
-            priceMovement = -1;
-            demandCategory = "BELOW_NORMAL";
-        } else if (demandRatio < 1.10) {
-            priceMovement = 0;
-            demandCategory = "NORMAL";
-        } else if (demandRatio < 1.30) {
-            priceMovement = 1;
-            demandCategory = "ABOVE_NORMAL";
-        } else if (demandRatio < 1.70) {
-            priceMovement = 1;
-            demandCategory = "HIGH";
-        } else if (demandRatio < 2.00) {
-            priceMovement = 2;
-            demandCategory = "VERY_HIGH";
-        } else {
-            priceMovement = 2;
-            demandCategory = "EXTREMELY_HIGH";
+            return PriceEvaluationResult.builder()
+                    .productId(productId)
+                    .flavour(product.getFlavour())
+                    .oldPrice(oldPrice)
+                    .newPrice(crashPrice)
+                    .priceChange(priceChange)
+                    .priceChanged(changed)
+                    .demandRatio(1.0)
+                    .weightedSales((double) orderCount)
+                    .targetSales((double) targetOrders)
+                    .rawW0(orderCount)
+                    .demandLevelCategory("CRASH")
+                    .explanation("Market Crash Active: Price held at ₹" + crashPrice)
+                    .statusReason("MARKET_CRASH_HOLD")
+                    .build();
         }
 
-        // 5. Constrain Price between Floor (₹18) and Ceiling (₹35)
-        BigDecimal rawNewPrice = oldPrice.add(BigDecimal.valueOf(priceMovement));
-        BigDecimal newPrice = rawNewPrice.max(floor).min(ceiling);
-        BigDecimal priceChange = newPrice.subtract(oldPrice);
-        boolean changed = priceChange.compareTo(BigDecimal.ZERO) != 0;
+        // --- MASTER VOLATILITY-BASED ROUND PRICING MODEL ---
+        double demandRatio;
+        BigDecimal rawChangePct;
+        BigDecimal appliedChangePct;
+        String reason;
 
-        log.info("[PRICE MOVEMENT] productId={} oldPrice={} movement={} newPrice={}", productId, oldPrice, priceMovement, newPrice);
+        if (orderCount == 0) {
+            // Rule: 0 orders in round -> decay by exact negative volatility (-V)
+            demandRatio = 0.0;
+            rawChangePct = volatility.negate();
+            appliedChangePct = rawChangePct;
+            reason = "ZERO_DEMAND_DECAY";
+        } else {
+            // Rule: Demand Ratio = (Order Count - Target Orders) / Target Orders
+            demandRatio = (double) (orderCount - targetOrders) / (double) targetOrders;
+            rawChangePct = BigDecimal.valueOf(demandRatio).multiply(volatility);
+            // Clamp applied percentage change between -V and +V
+            appliedChangePct = rawChangePct.max(volatility.negate()).min(volatility);
+            reason = (demandRatio >= 0.0) ? "HIGH_DEMAND_SURGE" : "BELOW_TARGET_DECAY";
+        }
+
+        // Multiplier & Raw Price Calculation: New Price = Current Price * (1 + Clamped Change %)
+        BigDecimal multiplier = BigDecimal.ONE.add(appliedChangePct);
+        BigDecimal calculatedPrice = oldPrice.multiply(multiplier);
+
+        // Strict Bound Clamping: Floor <= New Price <= Ceiling
+        BigDecimal newPrice = calculatedPrice.max(floor).min(ceiling).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal priceChange = newPrice.subtract(oldPrice);
+        boolean changed = oldPrice.compareTo(newPrice) != 0;
+
+        String settlementKey = "SETTLEMENT_" + System.currentTimeMillis();
+
+        log.info("[VOLATILITY PRICING ROUND] ProductId={} ({}) | Orders={} Target={} Volatility={} DemandRatio={} RawChange%={} AppliedChange%={} OldPrice=₹{} NewPrice=₹{} Changed={}",
+                productId, product.getName(), orderCount, targetOrders, volatility,
+                String.format("%.4f", demandRatio),
+                rawChangePct.setScale(4, java.math.RoundingMode.HALF_UP),
+                appliedChangePct.setScale(4, java.math.RoundingMode.HALF_UP),
+                oldPrice, newPrice, changed);
 
         String explanation = String.format(
-                "Demand %s (Ratio: %.2f, Weighted Sales: %.2f [W0=%d, W1=%d, W2=%d], Target: %.2f). Price movement %+d => ₹%s -> ₹%s.",
-                demandCategory, demandRatio, weightedSales, w0, w1, w2, targetSales, priceMovement, oldPrice, newPrice
+                "Round Settlement: Orders=%d, Target=%d, DemandRatio=%.2f, Volatility=%.4f. Change: raw=%.2f%%, applied=%.2f%%. Price: ₹%s -> ₹%s (%s)",
+                orderCount, targetOrders, demandRatio, volatility.doubleValue(),
+                rawChangePct.multiply(BigDecimal.valueOf(100)).doubleValue(),
+                appliedChangePct.multiply(BigDecimal.valueOf(100)).doubleValue(),
+                oldPrice, newPrice, reason
         );
 
+        // Update product state
+        product.setCurrentCupPrice(newPrice);
         if (changed) {
-            product.setCurrentCupPrice(newPrice);
             product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
             product.setLastPriceChangeTimestamp(now);
-            productRepository.save(product);
-            log.info("[DB PRICE SAVED] productId={} price={} priceVersion={}", productId, newPrice, product.getPriceVersion());
         }
+        // RESET order count for the next live round
+        product.setOrderCount(0);
+        productRepository.saveAndFlush(product);
 
-        // Always log Price History record for each settlement execution audit
+        // Save authoritative audit record in PriceHistory
         PriceHistory history = PriceHistory.builder()
                 .productId(productId)
                 .oldPrice(oldPrice)
                 .newPrice(newPrice)
                 .priceChange(priceChange)
                 .demandRatio(demandRatio)
-                .weightedSales(weightedSales)
-                .targetSales(targetSales)
-                .calculationWindowStart(now.minusMinutes(6))
+                .weightedSales((double) orderCount)
+                .targetSales((double) targetOrders)
+                .rawW0(orderCount)
+                .orderCount(orderCount)
+                .rawPriceChangePercent(rawChangePct)
+                .appliedPriceChangePercent(appliedChangePct)
+                .volatility(volatility)
+                .floorPrice(floor)
+                .ceilingPrice(ceiling)
+                .priceVersion(product.getPriceVersion())
+                .triggerType("SCHEDULED_ROUND")
+                .settlementId(settlementKey)
+                .calculationWindowStart(now.minusSeconds(60))
                 .calculationWindowEnd(now)
-                .reason(demandCategory)
+                .reason(reason)
                 .explanation(explanation)
                 .createdAt(now)
                 .build();
@@ -274,9 +350,10 @@ public class PriceAdjustmentService {
                 .priceChange(priceChange)
                 .priceChanged(changed)
                 .demandRatio(demandRatio)
-                .weightedSales(weightedSales)
-                .targetSales(targetSales)
-                .demandLevelCategory(demandCategory)
+                .weightedSales((double) orderCount)
+                .targetSales((double) targetOrders)
+                .rawW0(orderCount)
+                .demandLevelCategory(reason)
                 .explanation(explanation)
                 .statusReason(changed ? "PRICE_SETTLED" : "PRICE_STABLE")
                 .build();
@@ -392,6 +469,7 @@ public class PriceAdjustmentService {
             marketCrashService.stopMarketCrash();
         }
 
+        pricingProcessedSaleRepository.deleteAll();
         List<Product> products = productRepository.findByIsActiveTrueOrderByIdAsc();
         LocalDateTime now = LocalDateTime.now();
         resetMarketStartTime();
@@ -407,7 +485,7 @@ public class PriceAdjustmentService {
             p.setMaxCupPrice(new BigDecimal("35.00"));
             p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
             p.setLastPriceChangeTimestamp(now);
-            productRepository.save(p);
+            productRepository.saveAndFlush(p);
             resetCount++;
 
             PriceHistory history = PriceHistory.builder()
@@ -420,8 +498,8 @@ public class PriceAdjustmentService {
                     .targetSales(1.0)
                     .calculationWindowStart(now)
                     .calculationWindowEnd(now)
-                    .reason("DAILY_MARKET_RESET")
-                    .explanation(String.format("DAILY_MARKET_RESET: Reset from ₹%s to base ₹25.00. Actor: %s", oldPrice, userActor))
+                    .reason("ADMIN_RESET_TO_DEFAULT")
+                    .explanation(String.format("ADMIN_RESET_TO_DEFAULT: Reset from ₹%s to base ₹25.00. Actor: %s", oldPrice, userActor))
                     .createdAt(now)
                     .build();
             priceHistoryRepository.save(history);

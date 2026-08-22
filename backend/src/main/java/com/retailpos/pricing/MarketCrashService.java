@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class MarketCrashService {
     private String triggerSource = "MANUAL_ADMIN";
 
     private final Set<Long> crashedProductIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private BigDecimal crashPrice = new BigDecimal("18.00");
+    private static final BigDecimal CRASH_BUFFER_PERCENT = new BigDecimal("0.05");
 
     public MarketCrashService(ProductRepository productRepository, PriceHistoryRepository priceHistoryRepository, SimpMessagingTemplate messagingTemplate) {
         this.productRepository = productRepository;
@@ -118,6 +118,14 @@ public class MarketCrashService {
             remaining = Math.max(0, crashEndTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
         }
 
+        BigDecimal displayCrashPrice = new BigDecimal("18.90");
+        if (!crashedProductIds.isEmpty()) {
+            Product first = productRepository.findById(crashedProductIds.iterator().next()).orElse(null);
+            if (first != null) {
+                displayCrashPrice = getEffectivePrice(first);
+            }
+        }
+
         return MarketCrashStatus.builder()
                 .active(crashActive)
                 .eventCode(currentCrashCode)
@@ -126,8 +134,8 @@ public class MarketCrashService {
                 .startTime(crashStartedTime)
                 .endTime(crashEndTime)
                 .affectedProductIds(new ArrayList<>(crashedProductIds))
-                .crashPrice(crashPrice)
-                .message(crashActive ? "🚨 MARKET CRASH IN PROGRESS! Selected juices temporarily set to ₹" + crashPrice + "!" : "Trading normal. Dynamic price algorithm active.")
+                .crashPrice(displayCrashPrice)
+                .message(crashActive ? "🚨 MARKET CRASH IN PROGRESS! Selected juices temporarily set to ₹" + displayCrashPrice + "!" : "Trading normal. Dynamic price algorithm active.")
                 .build();
     }
 
@@ -138,10 +146,18 @@ public class MarketCrashService {
         return crashedProductIds.contains(productId);
     }
 
+    public BigDecimal calculateCrashPrice(Product product) {
+        if (product == null) return new BigDecimal("18.90");
+        BigDecimal floor = product.getMinCupPrice() != null ? product.getMinCupPrice() : new BigDecimal("18.00");
+        BigDecimal ceiling = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : new BigDecimal("35.00");
+        BigDecimal crashPriceVal = floor.multiply(BigDecimal.ONE.add(CRASH_BUFFER_PERCENT)).setScale(2, RoundingMode.HALF_UP);
+        return crashPriceVal.max(floor).min(ceiling);
+    }
+
     public BigDecimal getEffectivePrice(Product product) {
         if (product == null) return BigDecimal.ZERO;
         if (isProductCrashed(product.getId())) {
-            return crashPrice;
+            return calculateCrashPrice(product);
         }
         return product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
     }
@@ -152,89 +168,65 @@ public class MarketCrashService {
     @Scheduled(fixedRate = 1200000) // Every 20 minutes
     public void checkForRandomAlgorithmCrash() {
         if (crashActive) return;
-        // 15% probability during scheduled window
         if (new Random().nextDouble() < 0.15) {
             log.info("🎲 Random Algorithmic Market Crash Event Triggered!");
-            triggerMarketCrash(3, 2, new BigDecimal("18.00"), "RANDOM_ALGORITHM");
+            triggerMarketCrash(3, "RANDOM_ALGORITHM");
         }
     }
 
     @Transactional
     public synchronized MarketCrashStatus triggerMarketCrash(int durationMinutes, String triggerType) {
-        return triggerMarketCrash(durationMinutes, 2, new BigDecimal("18.00"), triggerType);
-    }
-
-    @Transactional
-    public synchronized MarketCrashStatus triggerMarketCrash(int durationMinutes, int juiceCount, BigDecimal crashPriceVal, String triggerType) {
         int duration = (durationMinutes > 0) ? durationMinutes : 3;
-        int targetCount = (juiceCount > 0) ? juiceCount : 2;
-        this.crashPrice = (crashPriceVal != null) ? crashPriceVal : new BigDecimal("18.00");
         this.crashActive = true;
         this.crashStartedTime = LocalDateTime.now();
         this.crashEndTime = crashStartedTime.plusMinutes(duration);
         this.currentCrashCode = "CRASH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         this.triggerSource = (triggerType != null) ? triggerType : "MANUAL_ADMIN";
 
-        List<Product> allProducts = productRepository.findAll();
+        List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
         crashedProductIds.clear();
 
-        if (!allProducts.isEmpty()) {
-            // Prefer juices currently priced at ₹25 or above (Section 18)
-            List<Product> highPricedJuices = allProducts.stream()
-                    .filter(p -> p.getCurrentCupPrice() != null && p.getCurrentCupPrice().compareTo(new BigDecimal("25.00")) >= 0)
-                    .collect(Collectors.toList());
+        for (Product p : allProducts) {
+            crashedProductIds.add(p.getId());
+            BigDecimal floor = p.getMinCupPrice() != null ? p.getMinCupPrice() : new BigDecimal("18.00");
+            BigDecimal ceiling = p.getMaxCupPrice() != null ? p.getMaxCupPrice() : new BigDecimal("35.00");
+            BigDecimal calculatedCrashPrice = calculateCrashPrice(p);
+            
+            BigDecimal oldPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
+            p.setCurrentCupPrice(calculatedCrashPrice);
+            p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
+            p.setLastPriceChangeTimestamp(crashStartedTime);
+            productRepository.save(p);
 
-            List<Product> selected = new ArrayList<>();
-            Collections.shuffle(highPricedJuices);
-
-            for (Product p : highPricedJuices) {
-                if (selected.size() < targetCount) {
-                    selected.add(p);
-                }
-            }
-
-            if (selected.size() < targetCount) {
-                List<Product> remaining = new ArrayList<>(allProducts);
-                remaining.removeAll(selected);
-                Collections.shuffle(remaining);
-                for (Product p : remaining) {
-                    if (selected.size() < targetCount) {
-                        selected.add(p);
-                    }
-                }
-            }
-
-            // If juiceCount was set to all or fallback
-            if (selected.isEmpty()) {
-                selected.addAll(allProducts);
-            }
-
-            for (Product p : selected) {
-                crashedProductIds.add(p.getId());
-
-                PriceHistory history = PriceHistory.builder()
-                        .productId(p.getId())
-                        .oldPrice(p.getCurrentCupPrice())
-                        .newPrice(crashPrice)
-                        .priceChange(crashPrice.subtract(p.getCurrentCupPrice()))
-                        .reason("MARKET_CRASH_START")
-                        .explanation(String.format("🚨 MARKET CRASH (%s)! Temporary promotional crash price set to ₹%s (Normal price: ₹%s held)", triggerSource, crashPrice, p.getCurrentCupPrice()))
-                        .createdAt(crashStartedTime)
-                        .build();
-                priceHistoryRepository.save(history);
-            }
+            PriceHistory history = PriceHistory.builder()
+                    .productId(p.getId())
+                    .oldPrice(oldPrice)
+                    .newPrice(calculatedCrashPrice)
+                    .priceChange(calculatedCrashPrice.subtract(oldPrice))
+                    .reason("MARKET_CRASH")
+                    .explanation(String.format("🚨 MARKET CRASH (%s)! Price set to floor + 5%% buffer (₹%s, Floor: ₹%s, Ceiling: ₹%s)", triggerSource, calculatedCrashPrice, floor, ceiling))
+                    .createdAt(crashStartedTime)
+                    .build();
+            priceHistoryRepository.save(history);
         }
 
         MarketCrashStatus status = getStatus();
 
         try {
-            messagingTemplate.convertAndSend("/topic/market-crash", status);
-            messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/market-crash", status);
+                messagingTemplate.convertAndSend("/topic/prices", productRepository.findByIsActiveTrueOrderByIdAsc());
+            }
         } catch (Exception e) {
             log.debug("WebSocket broadcast bypass: {}", e.getMessage());
         }
 
         return status;
+    }
+
+    @Transactional
+    public synchronized MarketCrashStatus triggerMarketCrash(int durationMinutes, int juiceCount, BigDecimal crashPriceVal, String triggerType) {
+        return triggerMarketCrash(durationMinutes, triggerType);
     }
 
     @Transactional
@@ -252,9 +244,9 @@ public class MarketCrashService {
             if (crashedProductIds.contains(p.getId())) {
                 PriceHistory history = PriceHistory.builder()
                         .productId(p.getId())
-                        .oldPrice(crashPrice)
+                        .oldPrice(p.getCurrentCupPrice())
                         .newPrice(p.getCurrentCupPrice())
-                        .priceChange(p.getCurrentCupPrice().subtract(crashPrice))
+                        .priceChange(BigDecimal.ZERO)
                         .reason("MARKET_CRASH_END")
                         .explanation(String.format("🟢 Market Crash ended. Normal calculated price of ₹%s restored.", p.getCurrentCupPrice()))
                         .createdAt(now)
@@ -283,3 +275,4 @@ public class MarketCrashService {
         return crashActive;
     }
 }
+

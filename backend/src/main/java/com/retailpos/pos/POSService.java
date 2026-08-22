@@ -27,17 +27,19 @@ public class POSService {
     private final JuiceBatchService juiceBatchService;
     private final MarketCrashService marketCrashService;
     private final com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService;
+    private final com.retailpos.pricing.PricingEngineService pricingEngineService;
     private final com.retailpos.pricing.PriceLockService priceLockService;
     private final SimpMessagingTemplate messagingTemplate;
     private final TransactionTemplate transactionTemplate;
 
-    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService, com.retailpos.pricing.PriceLockService priceLockService, SimpMessagingTemplate messagingTemplate, PlatformTransactionManager transactionManager) {
+    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService, com.retailpos.pricing.PricingEngineService pricingEngineService, com.retailpos.pricing.PriceLockService priceLockService, SimpMessagingTemplate messagingTemplate, PlatformTransactionManager transactionManager) {
         this.productRepository = productRepository;
         this.salesOrderRepository = salesOrderRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.juiceBatchService = juiceBatchService;
         this.marketCrashService = marketCrashService;
         this.priceAdjustmentService = priceAdjustmentService;
+        this.pricingEngineService = pricingEngineService;
         this.priceLockService = priceLockService;
         this.messagingTemplate = messagingTemplate;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
@@ -303,9 +305,17 @@ public class POSService {
                 }
             }
 
+            Set<Long> purchasedProductIds = new HashSet<>();
+            if (request.getItems() != null) {
+                for (CartItemRequest item : request.getItems()) {
+                    if (item.getProductId() != null) purchasedProductIds.add(item.getProductId());
+                }
+            }
+
             try {
                 CheckoutResponse res = transactionTemplate.execute(status -> doProcessCheckout(request));
                 future.complete(res);
+                triggerPostCheckoutSettlement(res, purchasedProductIds);
                 return res;
             } catch (Exception ex) {
                 future.completeExceptionally(ex);
@@ -315,11 +325,20 @@ public class POSService {
             }
         }
 
+        Set<Long> purchasedProductIds = new HashSet<>();
+        if (request.getItems() != null) {
+            for (CartItemRequest item : request.getItems()) {
+                if (item.getProductId() != null) purchasedProductIds.add(item.getProductId());
+            }
+        }
+
         int maxAttempts = 10;
         Exception lastException = null;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
-                return transactionTemplate.execute(status -> doProcessCheckout(request));
+                CheckoutResponse res = transactionTemplate.execute(status -> doProcessCheckout(request));
+                triggerPostCheckoutSettlement(res, purchasedProductIds);
+                return res;
             } catch (Exception ex) {
                 lastException = ex;
                 if (attempt < maxAttempts) {
@@ -334,6 +353,16 @@ public class POSService {
             throw (RuntimeException) lastException;
         }
         throw new RuntimeException("Checkout failed after " + maxAttempts + " attempts: " + (lastException != null ? lastException.getMessage() : "Lock contention"));
+    }
+
+    private void triggerPostCheckoutSettlement(CheckoutResponse res, Set<Long> purchasedProductIds) {
+        if (res == null || !res.isSuccess() || purchasedProductIds == null || purchasedProductIds.isEmpty()) return;
+        try {
+            log.info("[POST-CHECKOUT] Order #{} committed to DB. Triggering targeted live pricing settlement for productIds={}...", res.getOrderNumber(), purchasedProductIds);
+            pricingEngineService.executeSettlementForProducts(purchasedProductIds);
+        } catch (Exception e) {
+            log.warn("[POST-CHECKOUT] Post-checkout pricing settlement execution failed gracefully: {}", e.getMessage());
+        }
     }
 
     private CheckoutResponse doProcessCheckout(CheckoutRequest request) {
@@ -384,6 +413,9 @@ public class POSService {
 
             BigDecimal itemTotal = effectivePrice.multiply(BigDecimal.valueOf(qty));
             subtotal = subtotal.add(itemTotal);
+
+            // Atomically increment order_count for demand tracking in the current live round
+            productRepository.incrementOrderCount(product.getId(), qty);
 
             // Atomically deduct volume from active batch using pessimistic lock
             JuiceBatch updatedBatch = juiceBatchService.deductBatchVolume(product.getId(), totalVolumeMl);
@@ -463,11 +495,31 @@ public class POSService {
             throw dive;
         }
 
-        // Note: Prices update ONLY at scheduled 2-minute settlement cycles (Spec Section 9).
-        // Individual sales recorded above will be processed in the next settlement calculation.
-
         log.info("[ORDER COMMITTED] orderId={} orderNumber={}", savedOrder.getId(), savedOrder.getOrderNumber());
         log.info("POS checkout completed successfully for Order #{}", savedOrder.getOrderNumber());
+
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        try {
+                            log.info("[POST-CHECKOUT] Order #{} committed. Broadcasting updated order_count and market state...", savedOrder.getOrderNumber());
+                            pricingEngineService.broadcastCurrentState();
+                        } catch (Exception e) {
+                            log.warn("[POST-CHECKOUT] Post-checkout broadcast failed gracefully: {}", e.getMessage());
+                        }
+                    }
+                }
+            );
+        } else {
+            try {
+                log.info("[POST-CHECKOUT] Direct checkout committed. Broadcasting updated order_count and market state...");
+                pricingEngineService.broadcastCurrentState();
+            } catch (Exception e) {
+                log.warn("[POST-CHECKOUT] Post-checkout broadcast failed gracefully: {}", e.getMessage());
+            }
+        }
 
         return CheckoutResponse.builder()
                 .success(true)

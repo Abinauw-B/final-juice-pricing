@@ -106,19 +106,28 @@ public class PricingEngineService {
         private BigDecimal effectivePrice;
         private BigDecimal previousPrice;
         private BigDecimal priceDelta;
+        private BigDecimal priceChange;
+        private Integer priceVersion;
         private double priceChangePct;
         private String trendDirection;
         private double demandRatio;
         private double weightedSales;
         private double targetSales;
+        private int rawW0;
+        private int rawW1;
+        private int rawW2;
+        private int unconsumedW0;
         private String demandLevelCategory;
         private boolean isCrashed;
         private BigDecimal minCupPrice;
         private BigDecimal maxCupPrice;
+        private Integer orderCount;
+        private Integer targetOrders;
+        private BigDecimal volatility;
 
         public ProductPriceDTO() {}
 
-        public ProductPriceDTO(Long beverageId, String name, String flavour, BigDecimal currentPrice, BigDecimal effectivePrice, BigDecimal previousPrice, BigDecimal priceDelta, double priceChangePct, String trendDirection, double demandRatio, double weightedSales, double targetSales, String demandLevelCategory, boolean isCrashed, BigDecimal minCupPrice, BigDecimal maxCupPrice) {
+        public ProductPriceDTO(Long beverageId, String name, String flavour, BigDecimal currentPrice, BigDecimal effectivePrice, BigDecimal previousPrice, BigDecimal priceDelta, BigDecimal priceChange, Integer priceVersion, double priceChangePct, String trendDirection, double demandRatio, double weightedSales, double targetSales, String demandLevelCategory, boolean isCrashed, BigDecimal minCupPrice, BigDecimal maxCupPrice) {
             this.beverageId = beverageId;
             this.name = name;
             this.flavour = flavour;
@@ -126,6 +135,8 @@ public class PricingEngineService {
             this.effectivePrice = effectivePrice;
             this.previousPrice = previousPrice;
             this.priceDelta = priceDelta;
+            this.priceChange = priceChange;
+            this.priceVersion = priceVersion;
             this.priceChangePct = priceChangePct;
             this.trendDirection = trendDirection;
             this.demandRatio = demandRatio;
@@ -155,6 +166,10 @@ public class PricingEngineService {
         public void setPreviousPrice(BigDecimal previousPrice) { this.previousPrice = previousPrice; }
         public BigDecimal getPriceDelta() { return priceDelta; }
         public void setPriceDelta(BigDecimal priceDelta) { this.priceDelta = priceDelta; }
+        public BigDecimal getPriceChange() { return priceChange; }
+        public void setPriceChange(BigDecimal priceChange) { this.priceChange = priceChange; }
+        public Integer getPriceVersion() { return priceVersion; }
+        public void setPriceVersion(Integer priceVersion) { this.priceVersion = priceVersion; }
         public double getPriceChangePct() { return priceChangePct; }
         public void setPriceChangePct(double priceChangePct) { this.priceChangePct = priceChangePct; }
         public String getTrendDirection() { return trendDirection; }
@@ -165,6 +180,14 @@ public class PricingEngineService {
         public void setWeightedSales(double weightedSales) { this.weightedSales = weightedSales; }
         public double getTargetSales() { return targetSales; }
         public void setTargetSales(double targetSales) { this.targetSales = targetSales; }
+        public int getRawW0() { return rawW0; }
+        public void setRawW0(int rawW0) { this.rawW0 = rawW0; }
+        public int getRawW1() { return rawW1; }
+        public void setRawW1(int rawW1) { this.rawW1 = rawW1; }
+        public int getRawW2() { return rawW2; }
+        public void setRawW2(int rawW2) { this.rawW2 = rawW2; }
+        public int getUnconsumedW0() { return unconsumedW0; }
+        public void setUnconsumedW0(int unconsumedW0) { this.unconsumedW0 = unconsumedW0; }
         public String getDemandLevelCategory() { return demandLevelCategory; }
         public void setDemandLevelCategory(String demandLevelCategory) { this.demandLevelCategory = demandLevelCategory; }
         public double getDemandScore() { return demandRatio * 50.0; }
@@ -174,6 +197,12 @@ public class PricingEngineService {
         public void setMinCupPrice(BigDecimal minCupPrice) { this.minCupPrice = minCupPrice; }
         public BigDecimal getMaxCupPrice() { return maxCupPrice; }
         public void setMaxCupPrice(BigDecimal maxCupPrice) { this.maxCupPrice = maxCupPrice; }
+        public Integer getOrderCount() { return orderCount; }
+        public void setOrderCount(Integer orderCount) { this.orderCount = orderCount; }
+        public Integer getTargetOrders() { return targetOrders; }
+        public void setTargetOrders(Integer targetOrders) { this.targetOrders = targetOrders; }
+        public BigDecimal getVolatility() { return volatility; }
+        public void setVolatility(BigDecimal volatility) { this.volatility = volatility; }
 
         public static ProductPriceDTOBuilder builder() { return new ProductPriceDTOBuilder(); }
 
@@ -185,15 +214,24 @@ public class PricingEngineService {
             private BigDecimal effectivePrice;
             private BigDecimal previousPrice;
             private BigDecimal priceDelta;
+            private BigDecimal priceChange;
+            private Integer priceVersion;
             private double priceChangePct;
             private String trendDirection;
             private double demandRatio;
             private double weightedSales;
             private double targetSales;
+            private int rawW0;
+            private int rawW1;
+            private int rawW2;
+            private int unconsumedW0;
             private String demandLevelCategory;
             private boolean isCrashed;
             private BigDecimal minCupPrice;
             private BigDecimal maxCupPrice;
+            private Integer orderCount;
+            private Integer targetOrders;
+            private BigDecimal volatility;
 
             public ProductPriceDTOBuilder beverageId(Long beverageId) { this.beverageId = beverageId; return this; }
             public ProductPriceDTOBuilder name(String name) { this.name = name; return this; }
@@ -202,26 +240,52 @@ public class PricingEngineService {
             public ProductPriceDTOBuilder effectivePrice(BigDecimal effectivePrice) { this.effectivePrice = effectivePrice; return this; }
             public ProductPriceDTOBuilder previousPrice(BigDecimal previousPrice) { this.previousPrice = previousPrice; return this; }
             public ProductPriceDTOBuilder priceDelta(BigDecimal priceDelta) { this.priceDelta = priceDelta; return this; }
+            public ProductPriceDTOBuilder priceChange(BigDecimal priceChange) { this.priceChange = priceChange; return this; }
+            public ProductPriceDTOBuilder priceVersion(Integer priceVersion) { this.priceVersion = priceVersion; return this; }
             public ProductPriceDTOBuilder priceChangePct(double priceChangePct) { this.priceChangePct = priceChangePct; return this; }
             public ProductPriceDTOBuilder trendDirection(String trendDirection) { this.trendDirection = trendDirection; return this; }
             public ProductPriceDTOBuilder demandRatio(double demandRatio) { this.demandRatio = demandRatio; return this; }
             public ProductPriceDTOBuilder weightedSales(double weightedSales) { this.weightedSales = weightedSales; return this; }
             public ProductPriceDTOBuilder targetSales(double targetSales) { this.targetSales = targetSales; return this; }
+            public ProductPriceDTOBuilder rawW0(int rawW0) { this.rawW0 = rawW0; return this; }
+            public ProductPriceDTOBuilder rawW1(int rawW1) { this.rawW1 = rawW1; return this; }
+            public ProductPriceDTOBuilder rawW2(int rawW2) { this.rawW2 = rawW2; return this; }
+            public ProductPriceDTOBuilder unconsumedW0(int unconsumedW0) { this.unconsumedW0 = unconsumedW0; return this; }
             public ProductPriceDTOBuilder demandLevelCategory(String demandLevelCategory) { this.demandLevelCategory = demandLevelCategory; return this; }
             public ProductPriceDTOBuilder isCrashed(boolean isCrashed) { this.isCrashed = isCrashed; return this; }
             public ProductPriceDTOBuilder minCupPrice(BigDecimal minCupPrice) { this.minCupPrice = minCupPrice; return this; }
             public ProductPriceDTOBuilder maxCupPrice(BigDecimal maxCupPrice) { this.maxCupPrice = maxCupPrice; return this; }
-            public ProductPriceDTO build() { return new ProductPriceDTO(beverageId, name, flavour, currentPrice, effectivePrice, previousPrice, priceDelta, priceChangePct, trendDirection, demandRatio, weightedSales, targetSales, demandLevelCategory, isCrashed, minCupPrice, maxCupPrice); }
+            public ProductPriceDTOBuilder orderCount(Integer orderCount) { this.orderCount = orderCount; return this; }
+            public ProductPriceDTOBuilder targetOrders(Integer targetOrders) { this.targetOrders = targetOrders; return this; }
+            public ProductPriceDTOBuilder volatility(BigDecimal volatility) { this.volatility = volatility; return this; }
+
+            public ProductPriceDTO build() {
+                ProductPriceDTO dto = new ProductPriceDTO(beverageId, name, flavour, currentPrice, effectivePrice, previousPrice, priceDelta, priceChange, priceVersion, priceChangePct, trendDirection, demandRatio, weightedSales, targetSales, demandLevelCategory, isCrashed, minCupPrice, maxCupPrice);
+                dto.setRawW0(rawW0);
+                dto.setRawW1(rawW1);
+                dto.setRawW2(rawW2);
+                dto.setUnconsumedW0(unconsumedW0);
+                dto.setOrderCount(orderCount);
+                dto.setTargetOrders(targetOrders);
+                dto.setVolatility(volatility);
+                return dto;
+            }
         }
     }
 
     /**
-     * 2-Minute Dynamic Pricing Exchange Settlement Cycle
+     * Scheduled Volatility Round Pricing Cycle (Configurable interval, default 60s)
      */
-    @Scheduled(fixedRate = 120000) // 2 Minutes
+    @Scheduled(fixedRateString = "${pricing.round.interval-ms:60000}")
     @Transactional
     public PriceEvaluationCycleResult executeSettlementCycle() {
         return executeSettlementCycle(false);
+    }
+
+    @Transactional
+    public PriceEvaluationCycleResult executeSettlementForProducts(Set<Long> productIds) {
+        broadcastCurrentState();
+        return getCurrentMarketState();
     }
 
     @Transactional
@@ -255,10 +319,10 @@ public class PricingEngineService {
             PriceAdjustmentService.PriceEvaluationResult evalResult = priceAdjustmentService.evaluateAndAdjustPrice(product.getId(), now);
 
             Product reloadedProduct = productRepository.findById(product.getId()).orElse(product);
-            BigDecimal newPrice = reloadedProduct.getCurrentCupPrice();
+            BigDecimal newPrice = evalResult.getNewPrice() != null ? evalResult.getNewPrice() : reloadedProduct.getCurrentCupPrice();
             BigDecimal basePrice = reloadedProduct.getDefaultCupPrice() != null ? reloadedProduct.getDefaultCupPrice() : BigDecimal.valueOf(25);
             BigDecimal effectivePrice = marketCrashService.getEffectivePrice(reloadedProduct);
-            BigDecimal priceDelta = newPrice.subtract(oldPrice);
+            BigDecimal priceDelta = evalResult.getPriceChange() != null ? evalResult.getPriceChange() : newPrice.subtract(oldPrice);
             double changePct = (basePrice.doubleValue() > 0) ? ((newPrice.subtract(basePrice)).doubleValue() / basePrice.doubleValue()) * 100.0 : 0.0;
             String trendDirection = priceDelta.compareTo(BigDecimal.ZERO) > 0 ? "UP" : (priceDelta.compareTo(BigDecimal.ZERO) < 0 ? "DOWN" : "FLAT");
 
@@ -272,11 +336,17 @@ public class PricingEngineService {
                     .effectivePrice(effectivePrice)
                     .previousPrice(oldPrice)
                     .priceDelta(priceDelta)
+                    .priceChange(priceDelta)
+                    .priceVersion(reloadedProduct.getPriceVersion() != null ? reloadedProduct.getPriceVersion() : 1)
                     .priceChangePct(BigDecimal.valueOf(changePct).setScale(1, RoundingMode.HALF_UP).doubleValue())
                     .trendDirection(trendDirection)
                     .demandRatio(evalResult.getDemandRatio())
                     .weightedSales(evalResult.getWeightedSales())
                     .targetSales(evalResult.getTargetSales())
+                    .rawW0(evalResult.getRawW0())
+                    .rawW1(evalResult.getRawW1())
+                    .rawW2(evalResult.getRawW2())
+                    .unconsumedW0(evalResult.getUnconsumedW0())
                     .demandLevelCategory(evalResult.getDemandLevelCategory())
                     .isCrashed(crashed)
                     .minCupPrice(reloadedProduct.getMinCupPrice())
@@ -383,6 +453,19 @@ public class PricingEngineService {
                 .updatedPrices(dtoList)
                 .marketStatus(currentStatus)
                 .build();
+    }
+
+    public void broadcastCurrentState() {
+        try {
+            if (messagingTemplate != null) {
+                PriceEvaluationCycleResult state = getCurrentMarketState();
+                messagingTemplate.convertAndSend("/topic/prices", state);
+                messagingTemplate.convertAndSend("/topic/products", productRepository.findByIsActiveTrueOrderByIdAsc());
+                messagingTemplate.convertAndSend("/topic/led-display", state);
+            }
+        } catch (Exception e) {
+            log.debug("WebSocket broadcast bypass: {}", e.getMessage());
+        }
     }
 
     public PriceEvaluationCycleResult execute60SecondPricingEngine() {
