@@ -29,9 +29,11 @@ public class PricingController {
     private final MarketCrashService marketCrashService;
 
     private final PricingEngineService pricingEngineService;
+    private final PriceLockService priceLockService;
+    private final com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, ProductRepository productRepository, MarketCrashService marketCrashService, PricingEngineService pricingEngineService, SimpMessagingTemplate messagingTemplate) {
+    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, ProductRepository productRepository, MarketCrashService marketCrashService, PricingEngineService pricingEngineService, PriceLockService priceLockService, com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService, SimpMessagingTemplate messagingTemplate) {
         this.priceAdjustmentService = priceAdjustmentService;
         this.pricingSimulationService = pricingSimulationService;
         this.priceHistoryRepository = priceHistoryRepository;
@@ -39,6 +41,8 @@ public class PricingController {
         this.productRepository = productRepository;
         this.marketCrashService = marketCrashService;
         this.pricingEngineService = pricingEngineService;
+        this.priceLockService = priceLockService;
+        this.marketCorrelationService = marketCorrelationService;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -302,6 +306,41 @@ public class PricingController {
             }
         } catch (Exception e) {}
         return ResponseEntity.ok(systemConfigRepository.findAll());
+    }
+
+    @PostMapping({"/quote", "/lock"})
+    public ResponseEntity<com.retailpos.pricing.model.PriceQuote> requestPriceQuote(
+            @RequestParam Long productId,
+            @RequestParam(required = false, defaultValue = "1") Integer quantity) {
+        int qty = (quantity != null && quantity > 0) ? quantity : 1;
+        return ResponseEntity.ok(priceLockService.createQuote(productId, qty));
+    }
+
+    @GetMapping({"/correlations", "/admin/correlations"})
+    public ResponseEntity<List<com.retailpos.domain.ProductCorrelation>> getCorrelations() {
+        return ResponseEntity.ok(marketCorrelationService.getAllCorrelations());
+    }
+
+    public static class UpdateCorrelationRequest {
+        private Long sourceProductId;
+        private Long targetProductId;
+        private BigDecimal coefficient;
+        private Boolean enabled;
+
+        public UpdateCorrelationRequest() {}
+        public Long getSourceProductId() { return sourceProductId; }
+        public void setSourceProductId(Long sourceProductId) { this.sourceProductId = sourceProductId; }
+        public Long getTargetProductId() { return targetProductId; }
+        public void setTargetProductId(Long targetProductId) { this.targetProductId = targetProductId; }
+        public BigDecimal getCoefficient() { return coefficient; }
+        public void setCoefficient(BigDecimal coefficient) { this.coefficient = coefficient; }
+        public Boolean getEnabled() { return enabled; }
+        public void setEnabled(Boolean enabled) { this.enabled = enabled; }
+    }
+
+    @PutMapping({"/correlations", "/admin/correlations"})
+    public ResponseEntity<com.retailpos.domain.ProductCorrelation> updateCorrelation(@RequestBody UpdateCorrelationRequest req) {
+        return ResponseEntity.ok(marketCorrelationService.updateCorrelation(req.getSourceProductId(), req.getTargetProductId(), req.getCoefficient(), req.getEnabled()));
     }
 }
 

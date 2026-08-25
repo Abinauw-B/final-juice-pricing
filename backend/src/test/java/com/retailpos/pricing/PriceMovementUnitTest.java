@@ -165,7 +165,7 @@ public class PriceMovementUnitTest {
     @Test
     @DisplayName("Verify Null Floor/Ceiling Throws IllegalArgumentException in MarketCrashService")
     void testNullFloorOrCeilingRejection() {
-        MarketCrashService service = new MarketCrashService(null, null, null);
+        MarketCrashService service = new MarketCrashService(null, null, null, null, null);
         
         com.retailpos.domain.Product nullFloorProduct = new com.retailpos.domain.Product();
         nullFloorProduct.setId(99L);

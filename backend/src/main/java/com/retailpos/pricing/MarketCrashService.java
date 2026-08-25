@@ -1,6 +1,9 @@
 package com.retailpos.pricing;
 
 import com.retailpos.domain.*;
+import com.retailpos.pricing.redis.PricingRedisRepository;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -10,6 +13,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +27,8 @@ public class MarketCrashService {
 
     private final ProductRepository productRepository;
     private final PriceHistoryRepository priceHistoryRepository;
+    private final MarketCrashSnapshotRepository snapshotRepository;
+    private final PricingRedisRepository redisRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     private boolean crashActive = false;
@@ -32,12 +38,53 @@ public class MarketCrashService {
     private String triggerSource = "MANUAL_ADMIN";
 
     private final Set<Long> crashedProductIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private static final BigDecimal CRASH_BUFFER_PERCENT = new BigDecimal("0.05");
 
-    public MarketCrashService(ProductRepository productRepository, PriceHistoryRepository priceHistoryRepository, SimpMessagingTemplate messagingTemplate) {
+    public MarketCrashService(ProductRepository productRepository, 
+                              PriceHistoryRepository priceHistoryRepository,
+                              MarketCrashSnapshotRepository snapshotRepository,
+                              PricingRedisRepository redisRepository,
+                              SimpMessagingTemplate messagingTemplate) {
         this.productRepository = productRepository;
         this.priceHistoryRepository = priceHistoryRepository;
+        this.snapshotRepository = snapshotRepository;
+        this.redisRepository = redisRepository;
         this.messagingTemplate = messagingTemplate;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void initCrashStateFromStorage() {
+        try {
+            boolean activeInRedis = redisRepository.isCrashActiveInRedis();
+            String codeInRedis = redisRepository.getCrashCodeFromRedis();
+            String endTimeStr = redisRepository.getCrashEndTimeFromRedis();
+
+            if (activeInRedis && codeInRedis != null && endTimeStr != null) {
+                LocalDateTime end = LocalDateTime.parse(endTimeStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                LocalDateTime now = LocalDateTime.now();
+
+                if (now.isBefore(end)) {
+                    log.info("🚨 [CRASH RECOVERY] Active market crash detected from storage (code={}, endsAt={}). Resuming crash timer.", codeInRedis, end);
+                    this.crashActive = true;
+                    this.currentCrashCode = codeInRedis;
+                    this.crashEndTime = end;
+                    this.crashStartedTime = end.minusSeconds(180);
+                    this.triggerSource = "RECOVERY_RESUME";
+                    
+                    List<Product> products = productRepository.findByIsActiveTrueOrderByIdAsc();
+                    for (Product p : products) {
+                        crashedProductIds.add(p.getId());
+                    }
+                } else {
+                    log.info("🚨 [CRASH RECOVERY] Expired market crash detected on startup. Triggering automatic price restoration.");
+                    this.crashActive = true;
+                    this.currentCrashCode = codeInRedis;
+                    this.crashEndTime = end;
+                    stopMarketCrash();
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to initialize crash state on startup: {}", e.getMessage());
+        }
     }
 
     public static class MarketCrashStatus {
@@ -118,13 +165,7 @@ public class MarketCrashService {
             remaining = Math.max(0, crashEndTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
         }
 
-        BigDecimal displayCrashPrice = new BigDecimal("18.90");
-        if (!crashedProductIds.isEmpty()) {
-            Product first = productRepository.findById(crashedProductIds.iterator().next()).orElse(null);
-            if (first != null) {
-                displayCrashPrice = getEffectivePrice(first);
-            }
-        }
+        BigDecimal displayCrashPrice = new BigDecimal("18.00");
 
         return MarketCrashStatus.builder()
                 .active(crashActive)
@@ -135,7 +176,7 @@ public class MarketCrashService {
                 .endTime(crashEndTime)
                 .affectedProductIds(new ArrayList<>(crashedProductIds))
                 .crashPrice(displayCrashPrice)
-                .message(crashActive ? "🚨 MARKET CRASH IN PROGRESS! Selected juices temporarily set to ₹" + displayCrashPrice + "!" : "Trading normal. Dynamic price algorithm active.")
+                .message(crashActive ? "🚨 MARKET CRASH IN PROGRESS! All juices set to ₹18.00 floor price!" : "Trading normal. Dynamic price algorithm active.")
                 .build();
     }
 
@@ -157,9 +198,7 @@ public class MarketCrashService {
             throw new IllegalArgumentException("Product ceiling price (maxCupPrice) is required for product ID: " + product.getId());
         }
         BigDecimal floor = product.getMinCupPrice();
-        BigDecimal ceiling = product.getMaxCupPrice();
-        BigDecimal rawCrash = floor.multiply(BigDecimal.ONE.add(CRASH_BUFFER_PERCENT)).setScale(2, RoundingMode.HALF_UP);
-        return rawCrash.max(floor).min(ceiling).setScale(2, RoundingMode.HALF_UP);
+        return floor.setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getEffectivePrice(Product product) {
@@ -170,49 +209,56 @@ public class MarketCrashService {
         return product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
     }
 
-    /**
-     * Periodic random check for algorithmic market crash (Runs every 20-30 minutes)
-     */
-    @Scheduled(fixedRate = 1200000) // Every 20 minutes
-    public void checkForRandomAlgorithmCrash() {
-        if (crashActive) return;
-        if (new Random().nextDouble() < 0.15) {
-            log.info("🎲 Random Algorithmic Market Crash Event Triggered!");
-            triggerMarketCrash(3, "RANDOM_ALGORITHM");
-        }
+    @Transactional
+    public synchronized MarketCrashStatus triggerMarketCrash() {
+        return triggerMarketCrash(3, "GLOBAL_VOLUME_TRIGGER");
     }
 
     @Transactional
     public synchronized MarketCrashStatus triggerMarketCrash(int durationMinutes, String triggerType) {
-        int duration = (durationMinutes > 0) ? durationMinutes : 3;
+        // Crash duration is strictly 3 minutes (180 seconds)
+        int duration = 3;
         this.crashActive = true;
         this.crashStartedTime = LocalDateTime.now();
-        this.crashEndTime = crashStartedTime.plusMinutes(duration);
+        this.crashEndTime = crashStartedTime.plusSeconds(180);
         this.currentCrashCode = "CRASH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         this.triggerSource = (triggerType != null) ? triggerType : "MANUAL_ADMIN";
 
         List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
         crashedProductIds.clear();
 
+        // 1. Persist crash metadata in Redis
+        redisRepository.setCrashState(true, currentCrashCode, crashEndTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
         for (Product p : allProducts) {
             crashedProductIds.add(p.getId());
-            BigDecimal floor = p.getMinCupPrice();
-            BigDecimal ceiling = p.getMaxCupPrice();
-            BigDecimal calculatedCrashPrice = calculateCrashPrice(p);
-            
-            BigDecimal oldPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
-            p.setCurrentCupPrice(calculatedCrashPrice);
+            BigDecimal preCrashPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
+            BigDecimal crashPrice = new BigDecimal("18.00");
+
+            // 2. Save immutable pre-crash snapshot in DB & Redis
+            MarketCrashSnapshot snapshot = MarketCrashSnapshot.builder()
+                    .crashCode(currentCrashCode)
+                    .productId(p.getId())
+                    .preCrashPrice(preCrashPrice)
+                    .createdAt(crashStartedTime)
+                    .build();
+            snapshotRepository.save(snapshot);
+            redisRepository.setCrashSnapshot(p.getId(), preCrashPrice);
+
+            // 3. Set live price to crash price ₹18.00
+            p.setCurrentCupPrice(crashPrice);
             p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
             p.setLastPriceChangeTimestamp(crashStartedTime);
             productRepository.save(p);
+            redisRepository.setProductPrice(p.getId(), crashPrice);
 
             PriceHistory history = PriceHistory.builder()
                     .productId(p.getId())
-                    .oldPrice(oldPrice)
-                    .newPrice(calculatedCrashPrice)
-                    .priceChange(calculatedCrashPrice.subtract(oldPrice))
-                    .reason("MARKET_CRASH")
-                    .explanation(String.format("🚨 MARKET CRASH (%s)! Price set to floor + 5%% buffer (₹%s, Floor: ₹%s, Ceiling: ₹%s)", triggerSource, calculatedCrashPrice, floor, ceiling))
+                    .oldPrice(preCrashPrice)
+                    .newPrice(crashPrice)
+                    .priceChange(crashPrice.subtract(preCrashPrice))
+                    .reason("MARKET_CRASH_START")
+                    .explanation(String.format("🚨 MARKET CRASH STARTED! Price snapshot of ₹%s saved; live price set to ₹18.00", preCrashPrice))
                     .createdAt(crashStartedTime)
                     .build();
             priceHistoryRepository.save(history);
@@ -239,7 +285,7 @@ public class MarketCrashService {
 
     @Transactional
     public synchronized MarketCrashStatus stopMarketCrash() {
-        if (!crashActive) {
+        if (!crashActive && currentCrashCode == null) {
             return getStatus();
         }
 
@@ -247,28 +293,53 @@ public class MarketCrashService {
         LocalDateTime now = LocalDateTime.now();
         this.crashEndTime = now;
 
-        List<Product> allProducts = productRepository.findAll();
+        List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+        List<MarketCrashSnapshot> snapshots = (currentCrashCode != null) ? snapshotRepository.findByCrashCode(currentCrashCode) : Collections.emptyList();
+        Map<Long, BigDecimal> snapshotMap = new HashMap<>();
+
+        for (MarketCrashSnapshot s : snapshots) {
+            snapshotMap.put(s.getProductId(), s.getPreCrashPrice());
+        }
+
         for (Product p : allProducts) {
-            if (crashedProductIds.contains(p.getId())) {
-                PriceHistory history = PriceHistory.builder()
-                        .productId(p.getId())
-                        .oldPrice(p.getCurrentCupPrice())
-                        .newPrice(p.getCurrentCupPrice())
-                        .priceChange(BigDecimal.ZERO)
-                        .reason("MARKET_CRASH_END")
-                        .explanation(String.format("🟢 Market Crash ended. Normal calculated price of ₹%s restored.", p.getCurrentCupPrice()))
-                        .createdAt(now)
-                        .build();
-                priceHistoryRepository.save(history);
+            BigDecimal restoredPrice = snapshotMap.get(p.getId());
+            if (restoredPrice == null) {
+                restoredPrice = redisRepository.getCrashSnapshot(p.getId());
             }
+            if (restoredPrice == null) {
+                restoredPrice = p.getDefaultCupPrice() != null ? p.getDefaultCupPrice() : new BigDecimal("25.00");
+            }
+
+            BigDecimal currentPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : new BigDecimal("18.00");
+            p.setCurrentCupPrice(restoredPrice);
+            p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
+            p.setLastPriceChangeTimestamp(now);
+            productRepository.save(p);
+            redisRepository.setProductPrice(p.getId(), restoredPrice);
+
+            PriceHistory history = PriceHistory.builder()
+                    .productId(p.getId())
+                    .oldPrice(currentPrice)
+                    .newPrice(restoredPrice)
+                    .priceChange(restoredPrice.subtract(currentPrice))
+                    .reason("MARKET_CRASH_ENDED")
+                    .explanation(String.format("🟢 Market Crash ended. Pre-crash snapshot price of ₹%s restored.", restoredPrice))
+                    .createdAt(now)
+                    .build();
+            priceHistoryRepository.save(history);
         }
 
         crashedProductIds.clear();
+        redisRepository.clearCrashStateInRedis();
+        currentCrashCode = null;
+
         MarketCrashStatus status = getStatus();
 
         try {
-            messagingTemplate.convertAndSend("/topic/market-crash", status);
-            messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/market-crash", status);
+                messagingTemplate.convertAndSend("/topic/prices", productRepository.findByIsActiveTrueOrderByIdAsc());
+            }
         } catch (Exception e) {
             log.debug("WebSocket broadcast bypass: {}", e.getMessage());
         }
@@ -277,7 +348,7 @@ public class MarketCrashService {
     }
 
     public boolean isCrashActive() {
-        if (crashActive && LocalDateTime.now().isAfter(crashEndTime)) {
+        if (crashActive && crashEndTime != null && LocalDateTime.now().isAfter(crashEndTime)) {
             stopMarketCrash();
         }
         return crashActive;

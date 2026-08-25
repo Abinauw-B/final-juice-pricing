@@ -30,10 +30,11 @@ public class POSService {
     private final com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService;
     private final com.retailpos.pricing.PricingEngineService pricingEngineService;
     private final com.retailpos.pricing.PriceLockService priceLockService;
+    private final com.retailpos.pricing.service.MarketEventService marketEventService;
     private final SimpMessagingTemplate messagingTemplate;
     private final TransactionTemplate transactionTemplate;
 
-    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService, com.retailpos.pricing.PricingEngineService pricingEngineService, com.retailpos.pricing.PriceLockService priceLockService, SimpMessagingTemplate messagingTemplate, PlatformTransactionManager transactionManager) {
+    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService, com.retailpos.pricing.PricingEngineService pricingEngineService, com.retailpos.pricing.PriceLockService priceLockService, com.retailpos.pricing.service.MarketEventService marketEventService, SimpMessagingTemplate messagingTemplate, PlatformTransactionManager transactionManager) {
         this.productRepository = productRepository;
         this.salesOrderRepository = salesOrderRepository;
         this.priceHistoryRepository = priceHistoryRepository;
@@ -42,6 +43,7 @@ public class POSService {
         this.priceAdjustmentService = priceAdjustmentService;
         this.pricingEngineService = pricingEngineService;
         this.priceLockService = priceLockService;
+        this.marketEventService = marketEventService;
         this.messagingTemplate = messagingTemplate;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
@@ -316,7 +318,7 @@ public class POSService {
             try {
                 CheckoutResponse res = transactionTemplate.execute(status -> doProcessCheckout(request));
                 future.complete(res);
-                triggerPostCheckoutSettlement(res, purchasedProductIds);
+                triggerPostCheckoutSettlement(res, purchasedProductIds, request);
                 return res;
             } catch (Exception ex) {
                 future.completeExceptionally(ex);
@@ -338,7 +340,7 @@ public class POSService {
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 CheckoutResponse res = transactionTemplate.execute(status -> doProcessCheckout(request));
-                triggerPostCheckoutSettlement(res, purchasedProductIds);
+                triggerPostCheckoutSettlement(res, purchasedProductIds, request);
                 return res;
             } catch (Exception ex) {
                 lastException = ex;
@@ -356,11 +358,27 @@ public class POSService {
         throw new RuntimeException("Checkout failed after " + maxAttempts + " attempts: " + (lastException != null ? lastException.getMessage() : "Lock contention"));
     }
 
-    private void triggerPostCheckoutSettlement(CheckoutResponse res, Set<Long> purchasedProductIds) {
+    private void triggerPostCheckoutSettlement(CheckoutResponse res, Set<Long> purchasedProductIds, CheckoutRequest request) {
         if (res == null || !res.isSuccess() || purchasedProductIds == null || purchasedProductIds.isEmpty()) return;
         try {
-            log.info("[POST-CHECKOUT] Order #{} committed to DB. Triggering targeted live pricing settlement for productIds={}...", res.getOrderNumber(), purchasedProductIds);
-            pricingEngineService.executeSettlementForProducts(purchasedProductIds);
+            log.info("[POST-CHECKOUT] Order #{} committed to DB. Triggering targeted live market event & correlation pricing for productIds={}...", res.getOrderNumber(), purchasedProductIds);
+            if (request != null && request.getItems() != null && marketEventService != null) {
+                for (CartItemRequest itemReq : request.getItems()) {
+                    if (itemReq.getProductId() != null) {
+                        com.retailpos.pricing.model.PurchaseEvent pEvent = com.retailpos.pricing.model.PurchaseEvent.builder()
+                                .orderId(res.getOrderId())
+                                .orderNumber(res.getOrderNumber())
+                                .productId(itemReq.getProductId())
+                                .quantity(itemReq.getQuantity() != null ? itemReq.getQuantity() : 1)
+                                .executedPrice(res.getTotalAmount())
+                                .timestamp(LocalDateTime.now())
+                                .build();
+                        marketEventService.handlePurchaseEvent(pEvent);
+                    }
+                }
+            } else {
+                pricingEngineService.executeSettlementForProducts(purchasedProductIds);
+            }
         } catch (Exception e) {
             log.warn("[POST-CHECKOUT] Post-checkout pricing settlement execution failed gracefully: {}", e.getMessage());
         }

@@ -2,6 +2,10 @@ package com.retailpos.pricing;
 
 import com.retailpos.domain.Product;
 import com.retailpos.domain.ProductRepository;
+import com.retailpos.pricing.model.PriceQuote;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,9 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class PriceLockService {
@@ -20,10 +22,127 @@ public class PriceLockService {
     private static final Logger log = LoggerFactory.getLogger(PriceLockService.class);
 
     private final ProductRepository productRepository;
-    private final Map<String, LockedPriceVersion> lockRegistry = new ConcurrentHashMap<>();
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final Map<String, PriceQuote> quoteRegistry = new ConcurrentHashMap<>();
 
-    public PriceLockService(ProductRepository productRepository) {
+    public PriceLockService(ProductRepository productRepository, RedisTemplate<String, Object> redisTemplate) {
         this.productRepository = productRepository;
+        this.redisTemplate = redisTemplate;
+    }
+
+    @Transactional(readOnly = true)
+    public PriceQuote createQuote(Long productId, int quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
+
+        String quoteId = "QUOTE-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiresAt = now.plusSeconds(10); // Strict 10-second price guarantee
+
+        BigDecimal lockedPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
+        int version = product.getPriceVersion() != null ? product.getPriceVersion() : 1;
+
+        PriceQuote quote = PriceQuote.builder()
+                .quoteId(quoteId)
+                .productId(product.getId())
+                .productName(product.getName())
+                .quantity(quantity > 0 ? quantity : 1)
+                .lockedPrice(lockedPrice)
+                .priceVersion(version)
+                .createdAt(now)
+                .expiresAt(expiresAt)
+                .redeemed(false)
+                .build();
+
+        quoteRegistry.put(quoteId, quote);
+        try {
+            if (redisTemplate != null) {
+                redisTemplate.opsForValue().set("quote:" + quoteId, quote, 15, TimeUnit.SECONDS);
+            }
+        } catch (Exception e) {
+            log.debug("Redis quote storage bypass: {}", e.getMessage());
+        }
+
+        log.info("🔒 Price Quote Lock Created: QuoteId={} Product='{}' LockedPrice=₹{} Version={} ExpiresAt={}",
+                quoteId, product.getName(), lockedPrice, version, expiresAt);
+
+        return quote;
+    }
+
+    public PriceQuote validateAndRedeemQuote(String quoteId, Long productId) {
+        PriceQuote quote = quoteRegistry.get(quoteId);
+
+        if (quote == null) {
+            try {
+                if (redisTemplate != null) {
+                    Object val = redisTemplate.opsForValue().get("quote:" + quoteId);
+                    if (val instanceof PriceQuote) {
+                        quote = (PriceQuote) val;
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Redis quote fetch bypass: {}", e.getMessage());
+            }
+        }
+
+        if (quote == null) {
+            throw new IllegalArgumentException("Invalid price quote token: " + quoteId);
+        }
+
+        if (productId != null && !quote.getProductId().equals(productId)) {
+            throw new IllegalArgumentException("Quote ID " + quoteId + " belongs to product ID " + quote.getProductId() + ", not " + productId);
+        }
+
+        if (quote.isRedeemed()) {
+            throw new IllegalStateException("Price quote token " + quoteId + " has already been redeemed.");
+        }
+
+        if (LocalDateTime.now().isAfter(quote.getExpiresAt())) {
+            quoteRegistry.remove(quoteId);
+            try {
+                if (redisTemplate != null) redisTemplate.delete("quote:" + quoteId);
+            } catch (Exception ignored) {}
+            throw new IllegalStateException("QUOTE_EXPIRED: Price quote " + quoteId + " expired at " + quote.getExpiresAt() + ". Please request a fresh quote.");
+        }
+
+        quote.setRedeemed(true);
+        quoteRegistry.remove(quoteId);
+        try {
+            if (redisTemplate != null) redisTemplate.delete("quote:" + quoteId);
+        } catch (Exception ignored) {}
+
+        log.info("🔓 Price Quote Token Successfully Redeemed: QuoteId={} Product='{}' Price=₹{}", quoteId, quote.getProductName(), quote.getLockedPrice());
+        return quote;
+    }
+
+    // --- Legacy Backwards-Compatibility Methods ---
+    @Transactional(readOnly = true)
+    public LockedPriceVersion lockPriceForCartItem(Long productId, int quantity) {
+        PriceQuote q = createQuote(productId, quantity);
+        return LockedPriceVersion.builder()
+                .lockToken(q.getQuoteId())
+                .productId(q.getProductId())
+                .productName(q.getProductName())
+                .lockedPrice(q.getLockedPrice())
+                .priceVersion(q.getPriceVersion())
+                .lockedAt(q.getCreatedAt())
+                .expiresAt(q.getExpiresAt())
+                .redeemed(false)
+                .build();
+    }
+
+    public LockedPriceVersion validateAndRedeemLock(String lockToken) {
+        PriceQuote q = validateAndRedeemQuote(lockToken, null);
+        return LockedPriceVersion.builder()
+                .lockToken(q.getQuoteId())
+                .productId(q.getProductId())
+                .productName(q.getProductName())
+                .lockedPrice(q.getLockedPrice())
+                .priceVersion(q.getPriceVersion())
+                .lockedAt(q.getCreatedAt())
+                .expiresAt(q.getExpiresAt())
+                .redeemed(true)
+                .build();
     }
 
     public static class LockedPriceVersion {
@@ -49,21 +168,13 @@ public class PriceLockService {
         }
 
         public String getLockToken() { return lockToken; }
-        public void setLockToken(String lockToken) { this.lockToken = lockToken; }
         public Long getProductId() { return productId; }
-        public void setProductId(Long productId) { this.productId = productId; }
         public String getProductName() { return productName; }
-        public void setProductName(String productName) { this.productName = productName; }
         public BigDecimal getLockedPrice() { return lockedPrice; }
-        public void setLockedPrice(BigDecimal lockedPrice) { this.lockedPrice = lockedPrice; }
         public int getPriceVersion() { return priceVersion; }
-        public void setPriceVersion(int priceVersion) { this.priceVersion = priceVersion; }
         public LocalDateTime getLockedAt() { return lockedAt; }
-        public void setLockedAt(LocalDateTime lockedAt) { this.lockedAt = lockedAt; }
         public LocalDateTime getExpiresAt() { return expiresAt; }
-        public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
         public boolean isRedeemed() { return redeemed; }
-        public void setRedeemed(boolean redeemed) { this.redeemed = redeemed; }
 
         public static LockedPriceVersionBuilder builder() { return new LockedPriceVersionBuilder(); }
         public static class LockedPriceVersionBuilder {
@@ -86,47 +197,5 @@ public class PriceLockService {
             public LockedPriceVersionBuilder redeemed(boolean redeemed) { this.redeemed = redeemed; return this; }
             public LockedPriceVersion build() { return new LockedPriceVersion(lockToken, productId, productName, lockedPrice, priceVersion, lockedAt, expiresAt, redeemed); }
         }
-    }
-
-    @Transactional(readOnly = true)
-    public LockedPriceVersion lockPriceForCartItem(Long productId, int quantity) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
-
-        String token = "LOCK-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expires = now.plusSeconds(120); // 120-second price guarantee lock
-
-        LockedPriceVersion lock = LockedPriceVersion.builder()
-                .lockToken(token)
-                .productId(product.getId())
-                .productName(product.getName())
-                .lockedPrice(product.getCurrentCupPrice())
-                .priceVersion((int) (System.currentTimeMillis() / 1000))
-                .lockedAt(now)
-                .expiresAt(expires)
-                .redeemed(false)
-                .build();
-
-        lockRegistry.put(token, lock);
-        log.info("🔒 Price Locked: Token {} for Product {} at ₹{}", token, product.getName(), product.getCurrentCupPrice());
-
-        return lock;
-    }
-
-    public LockedPriceVersion validateAndRedeemLock(String lockToken) {
-        LockedPriceVersion lock = lockRegistry.get(lockToken);
-        if (lock == null) {
-            throw new IllegalArgumentException("Invalid price lock token: " + lockToken);
-        }
-
-        if (LocalDateTime.now().isAfter(lock.getExpiresAt())) {
-            lockRegistry.remove(lockToken);
-            throw new IllegalStateException("Price lock token expired at " + lock.getExpiresAt());
-        }
-
-        lock.setRedeemed(true);
-        lockRegistry.remove(lockToken);
-        return lock;
     }
 }

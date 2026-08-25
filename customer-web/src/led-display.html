@@ -499,7 +499,7 @@
     </div>
     <div class="summary-card">
       <span class="summary-title">Market Base</span>
-      <span class="summary-val" style="color: #38BDF8;">₹25.00</span>
+      <span class="summary-val" style="color: #38BDF8;">₹25</span>
     </div>
     <div class="summary-card">
       <span class="summary-title">Market Mode</span>
@@ -507,7 +507,7 @@
     </div>
     <div class="summary-card">
       <span class="summary-title">Average Price</span>
-      <span class="summary-val" id="sumAvgPrice">₹25.00</span>
+      <span class="summary-val" id="sumAvgPrice">₹25</span>
     </div>
   </div>
 
@@ -520,7 +520,7 @@
           <div class="panel-sub">LIVE TICKER MODE &bull; 2-MINUTE DYNAMIC SETTLEMENT ENGINE</div>
         </div>
         <div style="font-size: 13px; font-weight: 800; color: #38BDF8;">
-          Base Rate: ₹25.00
+          Base Rate: ₹25
         </div>
       </div>
 
@@ -551,9 +551,9 @@
 
         <div class="info-card">
           <div class="info-title">Base Exchange Price</div>
-          <div class="info-price-highlight" style="color: #38BDF8;">₹25.00</div>
+          <div class="info-price-highlight" style="color: #38BDF8;">₹25</div>
           <div class="info-detail">
-            All 8 active juices start at ₹25.00 base, dynamically adjusting between ₹18 (Floor) and ₹35 (Ceiling) based on 2-minute sales demand.
+            All 8 active juices start at ₹25 base, dynamically adjusting between ₹18 (Floor) and ₹35 (Ceiling) based on 2-minute sales demand.
           </div>
         </div>
 
@@ -714,7 +714,7 @@
           <tr>
             <td style="font-weight: 800; font-size: 18px;">${icon} ${name}</td>
             <td style="color: var(--text-secondary); font-size: 15px;">${cupSize} ml</td>
-            <td style="font-size: 22px; font-weight: 900; color: ${isMarketCrashActive ? '#ef4444' : (diff > 0 ? '#22c55e' : (diff < 0 ? '#38bdf8' : 'var(--text-primary)'))}">₹${activePrice}.00</td>
+            <td style="font-size: 22px; font-weight: 900; color: ${isMarketCrashActive ? '#ef4444' : (diff > 0 ? '#22c55e' : (diff < 0 ? '#38bdf8' : 'var(--text-primary)'))}">₹${activePrice}</td>
             <td>${badgeHtml}</td>
           </tr>
         `;
@@ -724,7 +724,7 @@
       const activeEl = document.getElementById('sumActiveCount');
       if (activeEl) activeEl.textContent = `${count} Products`;
 
-      const avgPrice = count > 0 ? (totalPrices / count).toFixed(2) : '20.00';
+      const avgPrice = count > 0 ? Math.round(totalPrices / count) : 25;
       const avgEl = document.getElementById('sumAvgPrice');
       if (avgEl) avgEl.textContent = `Avg ₹${avgPrice}`;
 
@@ -770,7 +770,7 @@
           return `
             <span class="ticker-item">
               <span style="color: var(--text-primary); font-size: 15px; font-weight: 800;">${icon} ${flavour}:</span>
-              <span style="color: ${priceColor}; font-size: 16px; font-weight: 900;">₹${activePrice}.00 (${signStr})</span>
+              <span style="color: ${priceColor}; font-size: 16px; font-weight: 900;">₹${activePrice} (${signStr})</span>
             </span>
           `;
         }).join(' &bull; ');
@@ -838,6 +838,8 @@
               let incoming = [];
               if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) {
                 incoming = res.updatedPrices;
+              } else if (res && res.changes && Array.isArray(res.changes)) {
+                incoming = res.changes;
               } else if (Array.isArray(res)) {
                 incoming = res;
               } else if (res && (res.id || res.beverageId || res.productId)) {

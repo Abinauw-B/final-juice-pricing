@@ -415,7 +415,7 @@
         </div>
         <div class="summary-row summary-total">
           <span>Total Payable</span>
-          <span style="color: var(--success);" id="totalPayableText">₹0.00</span>
+          <span style="color: var(--success);" id="totalPayableText">₹0</span>
         </div>
       </div>
 
@@ -788,6 +788,8 @@
               let incoming = [];
               if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) {
                 incoming = res.updatedPrices;
+              } else if (res && res.changes && Array.isArray(res.changes)) {
+                incoming = res.changes;
               } else if (Array.isArray(res)) {
                 incoming = res;
               } else if (res && (res.id || res.beverageId || res.productId)) {
@@ -858,10 +860,10 @@
       let stableOrDiscounted = 0;
 
       container.innerHTML = products.map(p => {
-        const activePrice = Number(p.currentCupPrice || p.currentPrice || 20);
-        const baseP = Number(p.basePrice || p.defaultCupPrice || 20);
+        const activePrice = Math.round(Number(p.currentCupPrice || p.currentPrice || 20));
+        const baseP = Math.round(Number(p.basePrice || p.defaultCupPrice || 20));
         const diff = activePrice - baseP;
-        const pct = Math.round(((activePrice - baseP) / baseP) * 100);
+        const pct = Math.round(p.priceChangePct !== undefined ? p.priceChangePct : (((activePrice - baseP) / baseP) * 100));
 
         let color = 'var(--text-muted)';
         let sign = '— ';
@@ -881,7 +883,7 @@
         return `
           <div class="ticker-item">
             <span>${icon} ${p.flavour || p.name}:</span>
-            <span style="color: ${color}; font-weight: 700;">₹${activePrice.toFixed(2)} ${sign}${Math.abs(pct)}%</span>
+            <span style="color: ${color}; font-weight: 700;">₹${activePrice} ${sign}${Math.abs(pct)}%</span>
           </div>
         `;
       }).join('');
@@ -907,20 +909,22 @@
       const grid = document.getElementById('productGrid');
       if (!grid) return;
       grid.innerHTML = products.map(p => {
-        const activePrice = Number(p.currentCupPrice || p.currentPrice || 25);
-        const baseP = Number(p.basePrice || p.defaultCupPrice || 25);
+        const activePrice = Math.round(Number(p.currentCupPrice || p.currentPrice || 25));
+        const baseP = Math.round(Number(p.basePrice || p.defaultCupPrice || 25));
+        const minP = Math.round(Number(p.minCupPrice || 18));
+        const maxP = Math.round(Number(p.maxCupPrice || 35));
         const diff = activePrice - baseP;
         const icon = getFruitIcon(p);
 
         const trendDir = p.trendDirection || (p.priceChange > 0 ? 'UP' : (p.priceChange < 0 ? 'DOWN' : (diff > 0 ? 'UP' : (diff < 0 ? 'DOWN' : 'FLAT'))));
-        const pctVal = ((activePrice - baseP) / baseP) * 100;
-        const pctStr = (pctVal >= 0 ? '+' : '') + pctVal.toFixed(1) + '%';
+        const pctVal = Math.round(p.priceChangePct !== undefined ? p.priceChangePct : (((activePrice - baseP) / baseP) * 100));
+        const pctStr = (pctVal >= 0 ? '+' : '') + Math.abs(pctVal) + '%';
 
         let badgeClass = 'badge-stable';
-        let badgeText = '— 0.0% STABLE';
+        let badgeText = '— 0% STABLE';
         if (isMarketCrashActive) {
           badgeClass = 'badge-down';
-          badgeText = `▼ CRASH ₹${activePrice.toFixed(2)}`;
+          badgeText = `▼ CRASH ₹${activePrice}`;
         } else if (trendDir === 'UP') {
           badgeClass = 'badge-up';
           badgeText = `▲ ${pctStr} RISING`;
@@ -936,7 +940,7 @@
             badgeText = `▼ ${pctStr} DISCOUNT`;
           } else {
             badgeClass = 'badge-stable';
-            badgeText = '— 0.0% STABLE';
+            badgeText = '— 0% STABLE';
           }
         }
 
@@ -959,13 +963,13 @@
               
               <div class="price-section">
                 <div>
-                  <span class="price-main">₹${activePrice.toFixed(2)}</span>
+                  <span class="price-main">₹${activePrice}</span>
                   <span class="price-unit">/ ${p.defaultCupSizeMl || 250}ml</span>
                 </div>
                 <div class="price-bounds">
-                  <span>Base ₹${baseP.toFixed(2)}</span>
-                  <span>Floor ₹${Number(p.minCupPrice || 18).toFixed(2)}</span>
-                  <span>Ceiling ₹${Number(p.maxCupPrice || 35).toFixed(2)}</span>
+                  <span>Base ₹${baseP}</span>
+                  <span>Floor ₹${minP}</span>
+                  <span>Ceiling ₹${maxP}</span>
                 </div>
               </div>
 
@@ -976,7 +980,7 @@
             </div>
 
             <button class="add-to-cart-btn" ${!isBackendOnline ? 'disabled="disabled" style="opacity:0.5; cursor:not-allowed; background:#64748b;"' : ''} onclick="addToCart(${p.id})">
-              ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Price ₹${activePrice.toFixed(2)}` : '+ Add to Cart')}
+              ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Price ₹${activePrice}` : '+ Add to Cart')}
             </button>
           </div>
         `;
@@ -1041,7 +1045,7 @@
               <div>
                 <div class="item-title">${icon} ${liveProduct.name}</div>
                 <div class="item-sub">
-                  ₹${itemPrice}.00 &bull; ${item.cupSizeMl}ml &bull; Sub: ₹${itemTotal}.00
+                  ₹${itemPrice} &bull; ${item.cupSizeMl}ml &bull; Sub: ₹${itemTotal}
                 </div>
               </div>
               <div style="display: flex; align-items: center; gap: 6px;">
@@ -1055,7 +1059,7 @@
 
         summaryBox.style.display = 'block';
         document.getElementById('totalVolumeText').textContent = `${totalVolume} ml (${totalVolume / 250} cups)`;
-        document.getElementById('totalPayableText').textContent = `₹${totalPayable}.00`;
+        document.getElementById('totalPayableText').textContent = `₹${totalPayable}`;
         
         if (!isBackendOnline) {
           checkoutBtn.disabled = true;
@@ -1064,7 +1068,7 @@
         } else {
           checkoutBtn.disabled = false;
           checkoutBtn.style.background = '';
-          checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable}.00)`;
+          checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable})`;
         }
       }
     }
@@ -1181,7 +1185,7 @@
               const p = isMarketCrashActive ? (liveP.minCupPrice || 18) : (liveP.currentCupPrice || 20);
               return sum + (p * i.quantity);
             }, 0));
-            checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable}.00)`;
+            checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable})`;
           } else {
             checkoutBtn.textContent = 'Done / Next POS Order';
           }
