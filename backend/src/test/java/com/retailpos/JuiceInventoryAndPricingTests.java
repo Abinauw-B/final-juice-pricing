@@ -251,6 +251,11 @@ public class JuiceInventoryAndPricingTests {
         PriceAdjustmentService.PriceEvaluationResult res1 = priceAdjustmentService.evaluateAndAdjustPrice(mangoProduct.getId());
         assertEquals(new BigDecimal("27.00"), res1.getNewPrice());
 
+        // Simulate next settlement cycle window with 0 new orders
+        mangoProduct = productRepository.findById(mangoProduct.getId()).orElseThrow();
+        mangoProduct.setLastPriceChangeTimestamp(LocalDateTime.now().minusMinutes(1));
+        mangoProduct = productRepository.save(mangoProduct);
+
         PriceAdjustmentService.PriceEvaluationResult res2 = priceAdjustmentService.evaluateAndAdjustPrice(mangoProduct.getId());
         assertEquals(new BigDecimal("24.84"), res2.getNewPrice());
     }
@@ -296,5 +301,37 @@ public class JuiceInventoryAndPricingTests {
 
         Product refreshedOrange = productRepository.findById(orange.getId()).orElseThrow();
         assertEquals(new BigDecimal("25.00"), refreshedOrange.getCurrentCupPrice(), "Orange price must remain unchanged when Thunder is purchased");
+    }
+
+    @Test
+    @DisplayName("Req 14: Enhanced product isolation with four distinct initial prices")
+    @Transactional
+    void testEnhancedProductIsolationWithDifferentPrices() {
+        Product thunder = productRepository.findByFlavourIgnoreCase("THUNDER").orElseThrow();
+        Product orange = productRepository.findByFlavourIgnoreCase("ORANGE").orElseThrow();
+        Product mint = productRepository.findByFlavourIgnoreCase("MINT").orElseThrow();
+        Product mango = productRepository.findByFlavourIgnoreCase("MANGO").orElseThrow();
+
+        thunder.setCurrentCupPrice(new BigDecimal("25.00"));
+        thunder.setOrderCount(10);
+        thunder.setTargetOrders(5);
+        thunder.setVolatility(new BigDecimal("0.0800"));
+        productRepository.save(thunder);
+
+        orange.setCurrentCupPrice(new BigDecimal("30.00"));
+        productRepository.save(orange);
+
+        mint.setCurrentCupPrice(new BigDecimal("22.00"));
+        productRepository.save(mint);
+
+        mango.setCurrentCupPrice(new BigDecimal("28.00"));
+        productRepository.save(mango);
+
+        priceAdjustmentService.evaluateAndAdjustPrice(thunder.getId());
+
+        assertEquals(new BigDecimal("27.00"), productRepository.findById(thunder.getId()).get().getCurrentCupPrice());
+        assertEquals(new BigDecimal("30.00"), productRepository.findById(orange.getId()).get().getCurrentCupPrice(), "Orange must remain ₹30.00");
+        assertEquals(new BigDecimal("22.00"), productRepository.findById(mint.getId()).get().getCurrentCupPrice(), "Mint must remain ₹22.00");
+        assertEquals(new BigDecimal("28.00"), productRepository.findById(mango.getId()).get().getCurrentCupPrice(), "Mango must remain ₹28.00");
     }
 }

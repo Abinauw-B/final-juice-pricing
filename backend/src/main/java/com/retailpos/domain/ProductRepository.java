@@ -18,11 +18,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByIsActiveTrueOrderByIdAsc();
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Product p SET p.orderCount = COALESCE(p.orderCount, 0) + :quantity WHERE p.id = :productId")
     int incrementOrderCount(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Product p SET p.orderCount = 0 WHERE p.id = :productId")
     int resetOrderCount(@Param("productId") Long productId);
 }

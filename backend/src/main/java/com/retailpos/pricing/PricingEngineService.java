@@ -284,6 +284,11 @@ public class PricingEngineService {
 
     @Transactional
     public PriceEvaluationCycleResult executeSettlementForProducts(Set<Long> productIds) {
+        if (productIds != null && !productIds.isEmpty()) {
+            for (Long productId : productIds) {
+                priceAdjustmentService.evaluateAndAdjustPrice(productId);
+            }
+        }
         broadcastCurrentState();
         return getCurrentMarketState();
     }

@@ -150,4 +150,39 @@ public class PriceMovementUnitTest {
         BigDecimal crashPrice = calculateCrashPrice(floor, ceiling, buffer);
         assertEquals(new BigDecimal("35.00"), crashPrice);
     }
+
+    @Test
+    @DisplayName("Test 4 — Low Ceiling Safety (Floor ₹10 * 1.05 = ₹10.50 -> Clamped to Ceiling ₹10.40)")
+    void testLowCeilingSafetyCrashPrice() {
+        BigDecimal floor = new BigDecimal("10.00");
+        BigDecimal ceiling = new BigDecimal("10.40");
+        BigDecimal buffer = new BigDecimal("0.05");
+
+        BigDecimal crashPrice = calculateCrashPrice(floor, ceiling, buffer);
+        assertEquals(new BigDecimal("10.40"), crashPrice);
+    }
+
+    @Test
+    @DisplayName("Verify Null Floor/Ceiling Throws IllegalArgumentException in MarketCrashService")
+    void testNullFloorOrCeilingRejection() {
+        MarketCrashService service = new MarketCrashService(null, null, null);
+        
+        com.retailpos.domain.Product nullFloorProduct = new com.retailpos.domain.Product();
+        nullFloorProduct.setId(99L);
+        nullFloorProduct.setMinCupPrice(null);
+        nullFloorProduct.setMaxCupPrice(new BigDecimal("35.00"));
+
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            service.calculateCrashPrice(nullFloorProduct);
+        });
+
+        com.retailpos.domain.Product nullCeilingProduct = new com.retailpos.domain.Product();
+        nullCeilingProduct.setId(99L);
+        nullCeilingProduct.setMinCupPrice(new BigDecimal("18.00"));
+        nullCeilingProduct.setMaxCupPrice(null);
+
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            service.calculateCrashPrice(nullCeilingProduct);
+        });
+    }
 }

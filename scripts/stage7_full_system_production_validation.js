@@ -408,15 +408,9 @@ async function runStage7Validation() {
     const restoredProds = Number(execSync(`${PG_BIN}psql.exe" -U postgres -h localhost -p 5432 -d retailposdb_restored -t -A -c "SELECT COUNT(*) FROM products;"`, { env, encoding: 'utf8' }).trim());
     logResult(
       26, 'Restored Database Row Recovery & Integrity Verification',
-<<<<<<< HEAD
       'Restored products count matches production catalog (>= 8)',
       `Restored Products: ${restoredProds}`,
       restoredProds >= 8
-=======
-      'Restored products count matches production (8)',
-      `Restored Products: ${restoredProds}`,
-      restoredProds === 8
->>>>>>> 220a2ee366f33ff02714de09697291bc625c86b3
     );
 
     // 27. Security Error Formatting (No Stack Traces / Credentials Leak)

@@ -976,7 +976,7 @@
             </div>
 
             <button class="add-to-cart-btn" ${!isBackendOnline ? 'disabled="disabled" style="opacity:0.5; cursor:not-allowed; background:#64748b;"' : ''} onclick="addToCart(${p.id})">
-              ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Floor ₹${Number(p.minCupPrice || 18).toFixed(2)}` : '+ Add to Cart')}
+              ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Price ₹${activePrice.toFixed(2)}` : '+ Add to Cart')}
             </button>
           </div>
         `;

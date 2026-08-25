@@ -147,11 +147,19 @@ public class MarketCrashService {
     }
 
     public BigDecimal calculateCrashPrice(Product product) {
-        if (product == null) return new BigDecimal("18.90");
-        BigDecimal floor = product.getMinCupPrice() != null ? product.getMinCupPrice() : new BigDecimal("18.00");
-        BigDecimal ceiling = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : new BigDecimal("35.00");
-        BigDecimal crashPriceVal = floor.multiply(BigDecimal.ONE.add(CRASH_BUFFER_PERCENT)).setScale(2, RoundingMode.HALF_UP);
-        return crashPriceVal.max(floor).min(ceiling);
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null for crash calculation");
+        }
+        if (product.getMinCupPrice() == null) {
+            throw new IllegalArgumentException("Product floor price (minCupPrice) is required for product ID: " + product.getId());
+        }
+        if (product.getMaxCupPrice() == null) {
+            throw new IllegalArgumentException("Product ceiling price (maxCupPrice) is required for product ID: " + product.getId());
+        }
+        BigDecimal floor = product.getMinCupPrice();
+        BigDecimal ceiling = product.getMaxCupPrice();
+        BigDecimal rawCrash = floor.multiply(BigDecimal.ONE.add(CRASH_BUFFER_PERCENT)).setScale(2, RoundingMode.HALF_UP);
+        return rawCrash.max(floor).min(ceiling).setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getEffectivePrice(Product product) {
@@ -188,8 +196,8 @@ public class MarketCrashService {
 
         for (Product p : allProducts) {
             crashedProductIds.add(p.getId());
-            BigDecimal floor = p.getMinCupPrice() != null ? p.getMinCupPrice() : new BigDecimal("18.00");
-            BigDecimal ceiling = p.getMaxCupPrice() != null ? p.getMaxCupPrice() : new BigDecimal("35.00");
+            BigDecimal floor = p.getMinCupPrice();
+            BigDecimal ceiling = p.getMaxCupPrice();
             BigDecimal calculatedCrashPrice = calculateCrashPrice(p);
             
             BigDecimal oldPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();

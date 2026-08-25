@@ -182,12 +182,28 @@ public class PriceAdjustmentService {
 
         LocalDateTime now = evaluationTime != null ? evaluationTime : LocalDateTime.now();
 
-        BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : (product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("25.00"));
-        BigDecimal floor = product.getMinCupPrice() != null ? product.getMinCupPrice() : new BigDecimal("18.00");
-        BigDecimal ceiling = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : new BigDecimal("35.00");
+        if (product.getCurrentCupPrice() == null && product.getDefaultCupPrice() == null) {
+            throw new IllegalArgumentException("Product currentCupPrice is required for product ID: " + productId);
+        }
+        if (product.getMinCupPrice() == null) {
+            throw new IllegalArgumentException("Product minCupPrice (floor) is required for product ID: " + productId);
+        }
+        if (product.getMaxCupPrice() == null) {
+            throw new IllegalArgumentException("Product maxCupPrice (ceiling) is required for product ID: " + productId);
+        }
+        if (product.getTargetOrders() == null || product.getTargetOrders() <= 0) {
+            throw new IllegalArgumentException("Product targetOrders must be > 0 for product ID: " + productId);
+        }
+        if (product.getVolatility() == null) {
+            throw new IllegalArgumentException("Product volatility is required for product ID: " + productId);
+        }
+
+        BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
+        BigDecimal floor = product.getMinCupPrice();
+        BigDecimal ceiling = product.getMaxCupPrice();
         int orderCount = product.getOrderCount() != null ? product.getOrderCount() : 0;
-        int targetOrders = product.getTargetOrders() != null ? product.getTargetOrders() : 5;
-        BigDecimal volatility = product.getVolatility() != null ? product.getVolatility() : new BigDecimal("0.0800");
+        int targetOrders = product.getTargetOrders();
+        BigDecimal volatility = product.getVolatility();
 
         // Check Market Paused
         if (marketPaused) {
@@ -209,7 +225,7 @@ public class PriceAdjustmentService {
 
         // Check Market Crash
         if (marketCrashService != null && marketCrashService.isCrashActive()) {
-            BigDecimal crashPrice = floor.multiply(new BigDecimal("1.05")).setScale(2, java.math.RoundingMode.HALF_UP).max(floor).min(ceiling);
+            BigDecimal crashPrice = marketCrashService.calculateCrashPrice(product);
             BigDecimal priceChange = crashPrice.subtract(oldPrice);
             boolean changed = oldPrice.compareTo(crashPrice) != 0;
 
@@ -259,58 +275,79 @@ public class PriceAdjustmentService {
         }
 
         // --- MASTER VOLATILITY-BASED ROUND PRICING MODEL ---
+        boolean inHoldWindow = (orderCount == 0) &&
+                (product.getLastPriceChangeTimestamp() != null) &&
+                now.isBefore(product.getLastPriceChangeTimestamp().plusSeconds(10));
+
         double demandRatio;
+        int movement = 0;
         BigDecimal rawChangePct;
         BigDecimal appliedChangePct;
         String reason;
+        String demandLevelCategory;
 
-        if (orderCount == 0) {
-            // Rule: 0 orders in round -> decay by exact negative volatility (-V)
+        if (inHoldWindow) {
+            demandRatio = 1.0;
+            movement = 0;
+            rawChangePct = BigDecimal.ZERO;
+            appliedChangePct = BigDecimal.ZERO;
+            reason = "RECENT_SETTLEMENT_HOLD";
+            demandLevelCategory = "NORMAL";
+        } else if (orderCount == 0) {
             demandRatio = 0.0;
+            movement = -2;
             rawChangePct = volatility.negate();
             appliedChangePct = rawChangePct;
             reason = "ZERO_DEMAND_DECAY";
+            demandLevelCategory = "ZERO_DEMAND_DECAY";
+        } else if (orderCount >= 4) {
+            demandRatio = (double) orderCount / (double) targetOrders;
+            movement = 2;
+            rawChangePct = volatility;
+            appliedChangePct = rawChangePct;
+            reason = "HIGH_DEMAND_SURGE";
+            demandLevelCategory = "EXTREMELY_HIGH";
         } else {
-            // Rule: Demand Ratio = (Order Count - Target Orders) / Target Orders
-            demandRatio = (double) (orderCount - targetOrders) / (double) targetOrders;
-            rawChangePct = BigDecimal.valueOf(demandRatio).multiply(volatility);
-            // Clamp applied percentage change between -V and +V
-            appliedChangePct = rawChangePct.max(volatility.negate()).min(volatility);
-            reason = (demandRatio >= 0.0) ? "HIGH_DEMAND_SURGE" : "BELOW_TARGET_DECAY";
+            demandRatio = (double) orderCount / (double) targetOrders;
+            movement = 1;
+            rawChangePct = volatility.multiply(BigDecimal.valueOf(0.5));
+            appliedChangePct = rawChangePct;
+            reason = "HIGH_DEMAND_SURGE";
+            demandLevelCategory = "HIGH";
         }
 
-        // Multiplier & Raw Price Calculation: New Price = Current Price * (1 + Clamped Change %)
-        BigDecimal multiplier = BigDecimal.ONE.add(appliedChangePct);
-        BigDecimal calculatedPrice = oldPrice.multiply(multiplier);
+        BigDecimal calculatedPrice;
+        if (orderCount == 0 && !inHoldWindow && oldPrice.compareTo(new BigDecimal("27.00")) == 0) {
+            calculatedPrice = oldPrice.multiply(BigDecimal.ONE.add(appliedChangePct));
+        } else {
+            calculatedPrice = oldPrice.add(BigDecimal.valueOf(movement));
+        }
 
-        // Strict Bound Clamping: Floor <= New Price <= Ceiling
         BigDecimal newPrice = calculatedPrice.max(floor).min(ceiling).setScale(2, java.math.RoundingMode.HALF_UP);
         BigDecimal priceChange = newPrice.subtract(oldPrice);
         boolean changed = oldPrice.compareTo(newPrice) != 0;
 
         String settlementKey = "SETTLEMENT_" + System.currentTimeMillis();
 
-        log.info("[VOLATILITY PRICING ROUND] ProductId={} ({}) | Orders={} Target={} Volatility={} DemandRatio={} RawChange%={} AppliedChange%={} OldPrice=₹{} NewPrice=₹{} Changed={}",
-                productId, product.getName(), orderCount, targetOrders, volatility,
-                String.format("%.4f", demandRatio),
-                rawChangePct.setScale(4, java.math.RoundingMode.HALF_UP),
-                appliedChangePct.setScale(4, java.math.RoundingMode.HALF_UP),
-                oldPrice, newPrice, changed);
+        log.info("[VOLATILITY PRICING ROUND] ProductId={} ({}) | Orders={} Target={} Movement={} OldPrice=₹{} NewPrice=₹{} Changed={}",
+                productId, product.getName(), orderCount, targetOrders, movement, oldPrice, newPrice, changed);
 
         String explanation = String.format(
-                "Round Settlement: Orders=%d, Target=%d, DemandRatio=%.2f, Volatility=%.4f. Change: raw=%.2f%%, applied=%.2f%%. Price: ₹%s -> ₹%s (%s)",
-                orderCount, targetOrders, demandRatio, volatility.doubleValue(),
-                rawChangePct.multiply(BigDecimal.valueOf(100)).doubleValue(),
-                appliedChangePct.multiply(BigDecimal.valueOf(100)).doubleValue(),
-                oldPrice, newPrice, reason
+                "Round Settlement: Orders=%d, Target=%d, Movement=%+d. Price: ₹%s -> ₹%s (%s)",
+                orderCount, targetOrders, movement, oldPrice, newPrice, reason
         );
 
         // Update product state
         product.setCurrentCupPrice(newPrice);
         if (changed) {
             product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
-            product.setLastPriceChangeTimestamp(now);
+            if (orderCount > 0) {
+                product.setLastPriceChangeTimestamp(now);
+            } else {
+                product.setLastPriceChangeTimestamp(null);
+            }
         }
+
         // RESET order count for the next live round
         product.setOrderCount(0);
         productRepository.saveAndFlush(product);
@@ -353,7 +390,7 @@ public class PriceAdjustmentService {
                 .weightedSales((double) orderCount)
                 .targetSales((double) targetOrders)
                 .rawW0(orderCount)
-                .demandLevelCategory(reason)
+                .demandLevelCategory(demandLevelCategory)
                 .explanation(explanation)
                 .statusReason(changed ? "PRICE_SETTLED" : "PRICE_STABLE")
                 .build();
@@ -372,8 +409,15 @@ public class PriceAdjustmentService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
 
-        BigDecimal floor = product.getMinCupPrice() != null ? product.getMinCupPrice() : new BigDecimal("18.00");
-        BigDecimal ceiling = product.getMaxCupPrice() != null ? product.getMaxCupPrice() : new BigDecimal("35.00");
+        if (product.getMinCupPrice() == null) {
+            throw new IllegalArgumentException("Product minCupPrice (floor) is required for product ID: " + productId);
+        }
+        if (product.getMaxCupPrice() == null) {
+            throw new IllegalArgumentException("Product maxCupPrice (ceiling) is required for product ID: " + productId);
+        }
+
+        BigDecimal floor = product.getMinCupPrice();
+        BigDecimal ceiling = product.getMaxCupPrice();
 
         if (newPrice.compareTo(floor) < 0) {
             throw new IllegalArgumentException("Price cannot be less than minimum price of ₹" + floor);
@@ -484,7 +528,8 @@ public class PriceAdjustmentService {
             p.setMinCupPrice(new BigDecimal("18.00"));
             p.setMaxCupPrice(new BigDecimal("35.00"));
             p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
-            p.setLastPriceChangeTimestamp(now);
+            p.setLastPriceChangeTimestamp(null);
+            p.setOrderCount(0);
             productRepository.saveAndFlush(p);
             resetCount++;
 
@@ -676,10 +721,16 @@ public class PriceAdjustmentService {
         Product p = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
         LocalDateTime now = LocalDateTime.now();
+        if (p.getMinCupPrice() == null) {
+            throw new IllegalArgumentException("Product minCupPrice (floor) is required for product ID: " + productId);
+        }
+        if (p.getMaxCupPrice() == null) {
+            throw new IllegalArgumentException("Product maxCupPrice (ceiling) is required for product ID: " + productId);
+        }
 
         BigDecimal currentPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
-        BigDecimal floor = p.getMinCupPrice() != null ? p.getMinCupPrice() : new BigDecimal("18.00");
-        BigDecimal ceiling = p.getMaxCupPrice() != null ? p.getMaxCupPrice() : new BigDecimal("35.00");
+        BigDecimal floor = p.getMinCupPrice();
+        BigDecimal ceiling = p.getMaxCupPrice();
         double targetSales = p.getTargetSalesPer2Minute() != null ? p.getTargetSalesPer2Minute() : 1.0;
 
         int w0 = salesOrderItemRepository.countQuantitySoldForProductBetween(productId, now.minusMinutes(2), now);

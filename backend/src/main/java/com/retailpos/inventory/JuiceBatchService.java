@@ -81,16 +81,6 @@ public class JuiceBatchService {
                 List<JuiceBatch> activeBatches = batchRepository.findActiveBatchesForProductWithLock(productId);
                 JuiceBatch activeBatch;
 
-<<<<<<< HEAD
-        if (activeBatches.isEmpty()) {
-            activeBatch = registerNewBatch(productId, 20000);
-        } else {
-            activeBatch = activeBatches.get(0);
-            if (activeBatch.getRemainingVolumeMl() < mlToDeduct) {
-                activeBatch.setStatus(JuiceBatch.BatchStatus.DEPLETED);
-                batchRepository.save(activeBatch);
-                activeBatch = registerNewBatch(productId, 20000);
-=======
                 if (activeBatches.isEmpty()) {
                     activeBatch = registerNewBatch(productId, 20000);
                 } else {
@@ -121,7 +111,6 @@ public class JuiceBatchService {
             } catch (org.springframework.dao.PessimisticLockingFailureException e) {
                 if (attempt == maxAttempts) throw e;
                 try { Thread.sleep(25L * attempt); } catch (InterruptedException ignored) {}
->>>>>>> 220a2ee366f33ff02714de09697291bc625c86b3
             }
         }
         throw new IllegalStateException("Failed to deduct volume after retries");
