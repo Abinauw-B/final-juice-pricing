@@ -453,7 +453,12 @@
   </div>
 
   <script>
-    const API_BASE_URL = 'http://localhost:8088/api';
+    const CONFIG = {
+      API_BASE_URL: 'http://localhost:8088/api',
+      WS_URL: 'http://localhost:8088/ws'
+    };
+    const API_BASE_URL = CONFIG.API_BASE_URL;
+    let isBackendOnline = true;
     let isProcessingCheckout = false;
 
     const fruitIcons = {
@@ -477,8 +482,14 @@
       if (f.includes('MINT')) return '🌿';
       if (f.includes('GRAPE')) return '🍇';
       if (f.includes('STRAWBERRY')) return '🍓';
-      if (f.includes('THUNDER')) return '⚡';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return '⚡';
       if (f.includes('LYCHEE')) return '🍹';
+      if (f.includes('PINEAPPLE')) return '🍍';
+      if (f.includes('APPLE')) return '🍏';
+      if (f.includes('WATERMELON')) return '🍉';
+      if (f.includes('PEACH')) return '🍑';
+      if (f.includes('BERRY')) return '🫐';
+      if (f.includes('KIWI')) return '🥝';
       return '🍹';
     }
 
@@ -526,8 +537,10 @@
       } catch (e) { }
     }
 
-    const marketChannel = new BroadcastChannel('pubexchange_market_channel');
-    marketChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
+    const pubExchangeChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
+    const marketChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_market_channel') : null;
+    if (pubExchangeChannel) pubExchangeChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
+    if (marketChannel) marketChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
 
     window.addEventListener('message', (event) => {
       if (event.data && event.data.type) {
@@ -536,30 +549,24 @@
     });
 
     window.addEventListener('storage', (e) => {
-      if (e.key === 'pubexchange_event' && e.newValue) {
+      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event') && e.newValue) {
         try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) {}
       }
       if (e.key === 'pubexchange_custom_products') {
-        loadCustomProducts();
-        renderProducts();
+        fetchProducts();
       }
     });
 
     function handleCrossPanelEvent(msg) {
       if (!msg || !msg.type) return;
-      if (msg.type === 'NEW_FLAVOUR_ADDED' || msg.type === 'PRODUCT_PRICE_UPDATE' || msg.type === 'BATCH_PRODUCT_PRICE_UPDATED' || msg.type === 'PRICE_ENGINE_RUN' || msg.type === 'BATCH_UPDATED') {
+      if (msg.type === 'NEW_FLAVOUR_ADDED' || msg.type === 'PRODUCT_PRICE_UPDATE' || msg.type === 'BATCH_PRODUCT_PRICE_UPDATED' || msg.type === 'PRICE_ENGINE_RUN' || msg.type === 'BATCH_UPDATED' || msg.type === 'PRICES_RECALCULATED' || msg.type === 'REFRESH_PRODUCTS') {
         fetchProducts();
-      } else if (msg.type === 'MARKET_CRASH_TRIGGER') {
+      } else if (msg.type === 'MARKET_CRASH_TRIGGER' || msg.type === 'MARKET_CRASH_START') {
         triggerLocalMarketCrash(msg.payload?.durationSeconds || 180);
       } else if (msg.type === 'MARKET_CRASH_STOP') {
         stopLocalMarketCrash();
       }
     }
-
-    const CONFIG = {
-      API_BASE_URL: 'http://localhost:8088/api',
-      WS_URL: 'http://localhost:8088/ws'
-    };
 
     let stompClient = null;
     let isReconnectingWS = false;
@@ -879,7 +886,7 @@
           stableOrDiscounted++;
         }
 
-        const icon = fruitIcons[p.id] || '🍹';
+        const icon = getFruitIcon(p);
         return `
           <div class="ticker-item">
             <span>${icon} ${p.flavour || p.name}:</span>
@@ -1038,7 +1045,7 @@
         container.innerHTML = cart.map((item, idx) => {
           const liveProduct = products.find(p => p.id === item.product.id) || item.product;
           const itemPrice = Math.round(isMarketCrashActive ? (liveProduct.minCupPrice || 18) : (liveProduct.currentCupPrice || liveProduct.currentPrice || 20));
-          const icon = fruitIcons[liveProduct.id] || '🍹';
+          const icon = getFruitIcon(liveProduct);
           const itemTotal = Math.round(itemPrice * item.quantity);
           return `
             <div class="cart-item">
@@ -1143,7 +1150,7 @@
         const modalItemsHtml = completedCart.map(i => {
           const liveProduct = products.find(p => p.id === i.product.id) || i.product;
           const itemPrice = Math.round(isMarketCrashActive ? (liveProduct.minCupPrice || 18) : (liveProduct.currentCupPrice || 20));
-          const icon = fruitIcons[liveProduct.id] || '🍹';
+          const icon = getFruitIcon(liveProduct);
           const itemTotal = Math.round(itemPrice * i.quantity);
           return `
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #0f172a;">

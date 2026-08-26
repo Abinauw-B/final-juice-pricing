@@ -609,8 +609,14 @@
       if (f.includes('MINT')) return '🌿';
       if (f.includes('GRAPE')) return '🍇';
       if (f.includes('STRAWBERRY')) return '🍓';
-      if (f.includes('THUNDER')) return '⚡';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return '⚡';
       if (f.includes('LYCHEE')) return '🍹';
+      if (f.includes('PINEAPPLE')) return '🍍';
+      if (f.includes('APPLE')) return '🍏';
+      if (f.includes('WATERMELON')) return '🍉';
+      if (f.includes('PEACH')) return '🍑';
+      if (f.includes('BERRY')) return '🫐';
+      if (f.includes('KIWI')) return '🥝';
       return '🍹';
     }
 
@@ -649,6 +655,37 @@
     let crashRemainingSeconds = 0;
     let stompClient = null;
     let isReconnectingWS = false;
+
+    const pubExchangeChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
+    const marketChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_market_channel') : null;
+    if (pubExchangeChannel) pubExchangeChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
+    if (marketChannel) marketChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
+
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type) {
+        handleCrossPanelEvent(event.data);
+      }
+    });
+
+    window.addEventListener('storage', (e) => {
+      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event') && e.newValue) {
+        try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) {}
+      }
+    });
+
+    function handleCrossPanelEvent(msg) {
+      if (!msg || !msg.type) return;
+      if (msg.type === 'NEW_FLAVOUR_ADDED' || msg.type === 'PRODUCT_PRICE_UPDATE' || msg.type === 'BATCH_PRODUCT_PRICE_UPDATED' || msg.type === 'PRICE_ENGINE_RUN' || msg.type === 'BATCH_UPDATED' || msg.type === 'PRICES_RECALCULATED' || msg.type === 'REFRESH_PRODUCTS') {
+        fetchProductList();
+      } else if (msg.type === 'MARKET_CRASH_TRIGGER' || msg.type === 'MARKET_CRASH_START') {
+        isMarketCrashActive = true;
+        crashRemainingSeconds = msg.payload?.durationSeconds || 180;
+        renderExchangeBoard();
+      } else if (msg.type === 'MARKET_CRASH_STOP') {
+        isMarketCrashActive = false;
+        renderExchangeBoard();
+      }
+    }
 
     async function checkBackendHealth() {
       const badge = document.getElementById('backendStatusBadge');
@@ -690,7 +727,7 @@
       let count = products.length;
 
       body.innerHTML = products.map(p => {
-        const icon = fruitIcons[p.id] || '🍹';
+        const icon = getFruitIcon(p);
         const name = p.name || p.flavour || 'Juice';
         const cupSize = p.defaultCupSizeMl || 250;
 
@@ -747,7 +784,7 @@
       const track = document.getElementById('bottomTickerTrack');
       if (track) {
         const tickerHtml = products.map(p => {
-          const icon = fruitIcons[p.id] || '🍹';
+          const icon = getFruitIcon(p);
           const flavour = (p.name || p.flavour || 'JUICE').toUpperCase();
           const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 20));
           const baseP = Math.round(p.basePrice || p.defaultCupPrice || 20);
@@ -879,6 +916,12 @@
             fetchProductList();
           });
           stompClient.subscribe('/topic/batches', function () {
+            fetchProductList();
+          });
+          stompClient.subscribe('/topic/led-display', function () {
+            fetchProductList();
+          });
+          stompClient.subscribe('/topic/settlement', function () {
             fetchProductList();
           });
         }, function () {

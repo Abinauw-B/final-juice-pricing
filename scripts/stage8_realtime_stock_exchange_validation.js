@@ -11,31 +11,55 @@
  * 8. Whole rupee UI presentation
  */
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:8088';
+const http = require('http');
+const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:8088';
 
 let authToken = '';
 
-async function request(path, options = {}) {
-    const url = `${BASE_URL}${path}`;
-    const headers = { 
-        'Content-Type': 'application/json',
-        'X-User-Role': 'ADMIN',
-        'X-Request-ID': 'STAGE8-AUDIT-' + Date.now(),
-        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
-        ...options.headers 
-    };
-    const res = await fetch(url, { ...options, headers });
-    const text = await res.text();
-    let data;
-    try {
-        data = JSON.parse(text);
-    } catch {
-        data = text;
-    }
-    if (!res.ok) {
-        throw new Error(`HTTP ${res.status} on ${path}: ${typeof data === 'object' ? JSON.stringify(data) : data}`);
-    }
-    return data;
+function request(path, options = {}) {
+    return new Promise((resolve, reject) => {
+        const url = new URL(BASE_URL + path);
+        const method = options.method || 'GET';
+        const payload = options.body ? (typeof options.body === 'string' ? options.body : JSON.stringify(options.body)) : null;
+        const headers = {
+            'Content-Type': 'application/json',
+            'X-User-Role': 'ADMIN',
+            'X-Request-ID': 'STAGE8-AUDIT-' + Date.now(),
+            ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+            ...options.headers
+        };
+
+        const req = http.request({
+            hostname: url.hostname,
+            port: url.port,
+            path: url.pathname + url.search,
+            method: method,
+            headers: headers
+        }, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                let parsed;
+                try {
+                    parsed = JSON.parse(data);
+                } catch {
+                    parsed = data;
+                }
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    resolve(parsed);
+                } else {
+                    reject(new Error(`HTTP ${res.statusCode} on ${path}: ${typeof parsed === 'object' ? JSON.stringify(parsed) : parsed}`));
+                }
+            });
+        });
+
+        req.on('error', err => reject(err));
+        if (payload) {
+            req.write(payload);
+        }
+        req.end();
+    });
 }
 
 let passed = 0;
@@ -57,10 +81,11 @@ async function runAudit() {
     console.log('================================================================\n');
 
     try {
+        console.log('📌 Step 0: Requesting Auth Token...');
         // Step 0: Auth Token Acquisition
         const authRes = await request('/api/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ username: 'admin', password: 'adminpassword' })
+            body: JSON.stringify({ username: 'admin', password: 'password' })
         });
         if (authRes && authRes.token) {
             authToken = authRes.token;

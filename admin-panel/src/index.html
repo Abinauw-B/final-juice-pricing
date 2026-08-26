@@ -784,8 +784,8 @@
         <div id="view-pricing" style="display: none;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <div>
-              <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Pub Exchange Dynamic Pricing Engine</h1>
-              <p style="color: var(--text-muted);">Real-time weighted demand scoring, 2-minute market settlement cycles, and step-change evaluation.</p>
+              <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Pub Exchange Dynamic Pricing Engine &amp; Maintenance</h1>
+              <p style="color: var(--text-muted);">Real-time weighted demand scoring, live price overrides, floor/ceiling circuit breakers, and 2-minute market settlement cycles.</p>
             </div>
             <div style="display: flex; gap: 10px;">
               <button class="btn-primary" id="btnPauseMarket" style="background: #eab308; color: #000; font-weight: 800;" onclick="pauseMarketExchange()">⏸️ Pause Exchange</button>
@@ -794,46 +794,180 @@
             </div>
           </div>
 
-          <div class="section-card">
-            <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 16px;">Engine Formula Weights &amp; Rules</h2>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+          <!-- Live Beverage Pricing & Maintenance Table -->
+          <div class="section-card" style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <div>
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Velocity Weight (w_v)</label>
-                <input type="number" step="0.05" value="0.40" style="width: 100%; padding: 8px;">
+                <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 2px;">🍹 Live Beverage Pricing &amp; Market Limits Maintenance</h2>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Admin can maintain and vary baseline prices, circuit breaker floors (₹18), ceilings (₹35), or set manual live price overrides.</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-primary" style="background: linear-gradient(135deg, #059669, #047857); padding: 8px 14px; font-size: 13px;" onclick="loadLivePricingProducts()">🔄 Refresh Prices</button>
+                <button class="btn-primary" style="background: #2563eb; padding: 8px 14px; font-size: 13px;" onclick="showNewFlavourModal()">+ Add New Juice</button>
+              </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Beverage Variety</th>
+                    <th>Live Market Price</th>
+                    <th>Base Price (₹)</th>
+                    <th>Floor Min (₹)</th>
+                    <th>Ceiling Max (₹)</th>
+                    <th>Target / 2-Min</th>
+                    <th>Quick Override (₹)</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="livePricingTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Global Engine Dynamic Configuration Card -->
+          <div class="section-card" style="margin-bottom: 24px; border: 1.5px solid #3b82f6;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <h2 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">⚙️ Authoritative DWMA Engine Global Configuration</h2>
+                  <span id="cfgActiveVersionBadge" style="background: #2563eb; color: #fff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 9999px;">VERSION 1</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 4px 0 0 0;">Persisted in PostgreSQL database with optimistic locking and synced to Redis cache. Applied dynamically on every 2-minute settlement cycle.</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-primary" style="background: #64748b; padding: 7px 12px; font-size: 12px;" onclick="loadPricingConfiguration()">🔄 Reload Config</button>
+                <button class="btn-primary" id="btnSaveGlobalConfig" style="background: linear-gradient(135deg, #059669, #047857); padding: 7px 16px; font-size: 13px; font-weight: 800;" onclick="saveGlobalPricingConfiguration()">💾 Save Global Engine Settings</button>
+              </div>
+            </div>
+
+            <!-- Configuration Form Grid -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 18px;">
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Settlement Interval (Seconds)</label>
+                <input type="number" id="cfgSettlementInterval" value="120" min="10" max="3600" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                <span style="font-size: 11px; color: var(--text-muted);">Cycle frequency (Default: 120s)</span>
               </div>
               <div>
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Stock Pressure Weight (w_s)</label>
-                <input type="number" step="0.05" value="0.40" style="width: 100%; padding: 8px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Market Crash Duration (Sec)</label>
+                <input type="number" id="cfgCrashDuration" value="180" min="30" max="1800" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                <span style="font-size: 11px; color: var(--text-muted);">Active crash period (Default: 180s)</span>
               </div>
               <div>
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Time Factor Weight (w_t)</label>
-                <input type="number" step="0.05" value="0.20" style="width: 100%; padding: 8px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Market Crash Floor Price (₹)</label>
+                <input type="number" id="cfgCrashPrice" value="18.00" step="0.50" min="1" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px; color: #dc2626;">
+                <span style="font-size: 11px; color: var(--text-muted);">Temporary drop price during crash</span>
               </div>
               <div>
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Cooldown (Minutes)</label>
-                <input type="number" value="10" style="width: 100%; padding: 8px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Default Base Price (₹)</label>
+                <input type="number" id="cfgDefaultPrice" value="25.00" step="0.50" min="1" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px; color: #059669;">
+                <span style="font-size: 11px; color: var(--text-muted);">Standard base cup price</span>
+              </div>
+            </div>
+
+            <!-- DWMA Weights Row -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 18px;">
+              <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0 0 10px 0;">📊 DWMA Historical Time-Window Weights (S_w = W0×w0 + W1×w1 + W2×w2)</h3>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Window W0 Weight [0–2 min]</label>
+                  <input type="number" id="cfgWeightW0" value="1.00" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                  <span style="font-size: 11px; color: var(--text-muted);">Multiplier for sales in last 2 minutes (Default: 1.00)</span>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Window W1 Weight [2–4 min]</label>
+                  <input type="number" id="cfgWeightW1" value="0.50" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                  <span style="font-size: 11px; color: var(--text-muted);">Multiplier for sales 2–4 minutes ago (Default: 0.50)</span>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Window W2 Weight [4–6 min]</label>
+                  <input type="number" id="cfgWeightW2" value="0.25" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                  <span style="font-size: 11px; color: var(--text-muted);">Multiplier for sales 4–6 minutes ago (Default: 0.25)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demand Thresholds & Steps Row -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+              <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0 0 10px 0;">🎯 Demand Ratio Thresholds (R_d = S_w / Target) &amp; Movement Steps</h3>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 12px;">
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">High Surge Threshold (R_d ≥)</label>
+                  <input type="number" id="cfgHighThreshold" value="1.10" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Stable Lower Bound (R_d ≥)</label>
+                  <input type="number" id="cfgStableLower" value="0.90" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Stable Upper Bound (R_d &lt;)</label>
+                  <input type="number" id="cfgStableUpper" value="1.10" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Low Decay Threshold (R_d &lt;)</label>
+                  <input type="number" id="cfgLowThreshold" value="0.50" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;">
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Surge Step (+ΔP)</label>
+                  <input type="number" id="cfgIncreaseStep" value="1.00" step="0.50" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px; color: #059669;">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Decay Step 1 (-ΔP₁)</label>
+                  <input type="number" id="cfgDecreaseStep1" value="1.00" step="0.50" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px; color: #d97706;">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Decay Step 2 (-ΔP₂)</label>
+                  <input type="number" id="cfgDecreaseStep2" value="2.00" step="0.50" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px; color: #dc2626;">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Min Circuit Floor (₹)</label>
+                  <input type="number" id="cfgMinPrice" value="18.00" step="0.50" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Max Circuit Ceiling (₹)</label>
+                  <input type="number" id="cfgMaxPrice" value="35.00" step="0.50" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                </div>
               </div>
             </div>
           </div>
 
+          <!-- Configuration Change Audit Log & Price History -->
           <div class="section-card">
-            <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 16px;">Price Change Audit Log &amp; Explanations</h2>
-            <table class="table-custom">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>Product ID</th>
-                  <th>Old Price</th>
-                  <th>New Price</th>
-                  <th>Demand Score</th>
-                  <th>Stock Pressure %</th>
-                  <th>Explanation Log</th>
-                </tr>
-              </thead>
-              <tbody id="pricingHistoryBody">
-                <!-- Rendered dynamically -->
-              </tbody>
-            </table>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 2px 0;">📜 Pricing Configuration Audit Trail &amp; S_w Settlement Log</h2>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Immutable audit records generated for every setting update and scheduled 2-minute settlement.</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; background: #2563eb;" onclick="loadPricingAuditLogs()">🔄 Refresh Audit Trail</button>
+              </div>
+            </div>
+
+            <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Setting / Product</th>
+                    <th>Old Value</th>
+                    <th>New Value</th>
+                    <th>Config Version</th>
+                    <th>Reason / Trigger</th>
+                  </tr>
+                </thead>
+                <tbody id="pricingAuditTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -900,7 +1034,12 @@
                       <th>Time</th>
                       <th>Rem Vol</th>
                       <th>Cups Sold</th>
-                      <th>Demand Score</th>
+                      <th>W0</th>
+                      <th>W1</th>
+                      <th>W2</th>
+                      <th>Weighted Sales</th>
+                      <th>Target Sales</th>
+                      <th>Demand Ratio</th>
                       <th>Movement</th>
                       <th>Current Price</th>
                       <th>Explanation Log</th>
@@ -1133,18 +1272,25 @@
         <input type="text" id="editJuiceDesc" style="width: 100%; padding: 10px;">
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 700; color: #2563eb; margin-bottom: 4px;">Live Price (₹)</label>
+          <input type="number" id="editLivePrice" step="0.5" style="width: 100%; padding: 8px; font-weight: 800; border-color: #93c5fd;">
+        </div>
         <div>
           <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Base Price (₹)</label>
-          <input type="number" id="editBasePrice" style="width: 100%; padding: 8px;">
+          <input type="number" id="editBasePrice" step="0.5" style="width: 100%; padding: 8px; font-weight: 800;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 700; color: #dc2626; margin-bottom: 4px;">Floor Min (₹)</label>
+          <input type="number" id="editMinPrice" step="0.5" style="width: 100%; padding: 8px;">
         </div>
         <div>
-          <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Floor Min (₹)</label>
-          <input type="number" id="editMinPrice" style="width: 100%; padding: 8px;">
-        </div>
-        <div>
-          <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Ceiling Max (₹)</label>
-          <input type="number" id="editMaxPrice" style="width: 100%; padding: 8px;">
+          <label style="display: block; font-size: 11px; font-weight: 700; color: #059669; margin-bottom: 4px;">Ceiling Max (₹)</label>
+          <input type="number" id="editMaxPrice" step="0.5" style="width: 100%; padding: 8px;">
         </div>
       </div>
 
@@ -1164,8 +1310,67 @@
       </div>
 
       <div style="display: flex; gap: 12px; justify-content: flex-end;">
-        <button onclick="closeEditJuiceModal()" style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700;">Cancel</button>
-        <button id="btnSubmitEditJuice" onclick="submitEditJuice()" class="btn-primary" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">💾 Save &amp; Sync Changes</button>
+        <button onclick="closeEditJuiceModal()" style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
+        <button id="btnSubmitEditJuice" onclick="submitEditJuice()" class="btn-primary" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); cursor: pointer;">💾 Save &amp; Sync Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dedicated Edit Product Pricing & Limits Modal -->
+  <div id="editProductPricingModal" style="display: none;" class="modal-overlay">
+    <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; width: 480px; padding: 24px; box-shadow: var(--shadow-lg);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">💰 Edit Beverage Pricing Details</h3>
+        <button onclick="closeEditProductPricingModal()" style="background: transparent; border: none; font-size: 20px; cursor: pointer; color: #64748b;">✕</button>
+      </div>
+      <input type="hidden" id="editPricingProductId">
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Juice Variety / Name</label>
+        <input type="text" id="editPricingJuiceName" style="width: 100%; padding: 10px; font-weight: 700;">
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Description</label>
+        <input type="text" id="editPricingJuiceDesc" style="width: 100%; padding: 10px;">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: #2563eb; margin-bottom: 4px;">⚡ Current Live Price (₹)</label>
+          <input type="number" id="editPricingCurrentPrice" step="0.5" style="width: 100%; padding: 10px; font-size: 16px; font-weight: 800; border-color: #93c5fd;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">🎯 Baseline Base Price (₹)</label>
+          <input type="number" id="editPricingBasePrice" step="0.5" style="width: 100%; padding: 10px; font-size: 16px; font-weight: 800;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: #dc2626; margin-bottom: 4px;">🛡️ Circuit Breaker Floor (₹)</label>
+          <input type="number" id="editPricingMinPrice" step="0.5" style="width: 100%; padding: 10px; font-weight: 700;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: #059669; margin-bottom: 4px;">🚀 Circuit Breaker Ceiling (₹)</label>
+          <input type="number" id="editPricingMaxPrice" step="0.5" style="width: 100%; padding: 10px; font-weight: 700;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Target Sales (2-min window)</label>
+          <input type="number" id="editPricingTargetSales" step="0.1" style="width: 100%; padding: 10px; font-weight: 700;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Volatility Factor</label>
+          <input type="number" id="editPricingVolatility" step="0.01" style="width: 100%; padding: 10px; font-weight: 700;">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button onclick="closeEditProductPricingModal()" style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
+        <button id="btnSavePricingDetails" onclick="submitProductPricingDetails()" class="btn-primary" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 10px 20px; font-weight: 800; cursor: pointer;">💾 Save &amp; Broadcast to POS</button>
       </div>
     </div>
   </div>
@@ -1238,6 +1443,8 @@
         <button id="btnUpdatePassword" onclick="updateProfilePassword()" class="btn-primary">Update Password</button>
       </div>
     </div>
+  </div>
+
   <!-- 7. Confirm Market Crash Modal -->
   <div id="confirmCrashModal" style="display: none;" class="modal-overlay">
     <div style="background: var(--bg-card); border: 2px solid #dc2626; border-radius: 20px; width: 520px; padding: 32px; box-shadow: 0 25px 60px rgba(220, 38, 38, 0.3); color: var(--text-main);">
@@ -1272,6 +1479,34 @@
     </div>
   </div>
 
+  <!-- 8. Confirm Reset Live Market Prices Modal -->
+  <div id="confirmResetPricesModal" style="display: none;" class="modal-overlay">
+    <div style="background: var(--bg-card); border: 2px solid #d97706; border-radius: 20px; width: 480px; padding: 28px; box-shadow: 0 25px 60px rgba(217, 119, 6, 0.3); color: var(--text-main);">
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
+        <div style="font-size: 28px; background: rgba(217, 119, 6, 0.15); border-radius: 12px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; color: #d97706;">↺</div>
+        <div>
+          <h3 style="font-size: 20px; font-weight: 900; color: #d97706;">Confirm Reset</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">Reset Live Market Prices</p>
+        </div>
+      </div>
+
+      <div style="background: rgba(217, 119, 6, 0.08); border-left: 4px solid #d97706; padding: 16px; border-radius: 10px; margin-bottom: 22px; font-size: 14px; line-height: 1.6;">
+        This will reset all 8 live market prices to <strong>₹25.00</strong>.
+        <br><br>
+        <strong>Production market state will be changed.</strong>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button onclick="closeResetConfirmationModal()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; font-weight: 700; cursor: pointer;">
+          Cancel
+        </button>
+        <button id="btnConfirmResetExecute" onclick="executeResetLiveMarketPrices()" style="padding: 10px 22px; background: linear-gradient(135deg, #d97706, #b45309); border: none; border-radius: 8px; color: white; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);">
+          Confirm Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
   <iframe id="posBridgeFrame" src="http://localhost:8000/bridge.html" style="display:none;"></iframe>
 
   <script>
@@ -1281,16 +1516,43 @@
     };
     const API_BASE_URL = CONFIG.API_BASE_URL;
 
+    async function ensureAdminAuthenticated() {
+      let token = localStorage.getItem('pubexchange_jwt_token');
+      if (!token) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: 'superadmin', password: 'password' })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.token) {
+              localStorage.setItem('pubexchange_jwt_token', data.token);
+              if (data.refreshToken) localStorage.setItem('pubexchange_refresh_token', data.refreshToken);
+              if (data.user) {
+                currentUser = data.user;
+                localStorage.setItem('pubexchange_user', JSON.stringify(data.user));
+              }
+              console.log('[AUTH] SuperAdmin authenticated with valid backend JWT session.');
+            }
+          }
+        } catch (e) {
+          console.warn('[AUTH] Authentication bootstrap:', e);
+        }
+      }
+    }
+
     async function apiFetch(endpoint, options = {}) {
       const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
-      const token = localStorage.getItem('pubexchange_jwt_token');
+      let token = localStorage.getItem('pubexchange_jwt_token');
       
       const headers = {
         'Content-Type': 'application/json',
         ...(options.headers || {})
       };
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
       }
       
       const config = {
@@ -1301,7 +1563,8 @@
       try {
         const response = await fetch(url, config);
         if (response.status === 401) {
-          console.warn('Unauthorized request to API: 401');
+          console.warn('[API 401] Unauthorized response from API. Clearing stale token.');
+          localStorage.removeItem('pubexchange_jwt_token');
         }
         return response;
       } catch (err) {
@@ -1430,6 +1693,11 @@
 
     function syncFlavoursMap() {
       Object.assign(flavoursMap, defaultFlavoursMap);
+      if (liveProductsCache && liveProductsCache.length > 0) {
+        liveProductsCache.forEach(p => {
+          if (p.id && p.name) flavoursMap[p.id] = p.name;
+        });
+      }
       const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
       customProds.forEach(p => {
         if (p.id && p.name) flavoursMap[p.id] = p.name;
@@ -1816,10 +2084,10 @@
           if (view) view.style.display = (t === tabName) ? 'block' : 'none';
         });
 
-        if (tabName === 'dashboard') { refreshDashboard(); }
+        if (tabName === 'dashboard') { refreshDashboard(); loadLivePricingProducts(); }
         if (tabName === 'crash') { loadMarketCrashEventHistory(); checkMarketCrashStatus(); }
-        if (tabName === 'batches') { loadBatches(); }
-        if (tabName === 'pricing') { loadHistory(); }
+        if (tabName === 'batches') { loadBatches(); loadLivePricingProducts(); }
+        if (tabName === 'pricing') { loadLivePricingProducts(); loadHistory(); }
         if (tabName === 'simulator') { restoreSimulatorParams(); runSimulation(); }
         if (tabName === 'users') { loadUsers(); }
         if (tabName === 'reports') { renderReports(); }
@@ -2283,19 +2551,447 @@
       }
     }
 
+    let liveProductsCache = [];
+
+    function getFruitIconAdmin(p) {
+      if (!p) return '🍹';
+      const fruitIcons = { 1: '🥭', 2: '🍋', 3: '🌿', 4: '🍊', 5: '🍓', 6: '🍇', 7: '🍹', 23: '⚡' };
+      if (fruitIcons[p.id]) return fruitIcons[p.id];
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return '🥭';
+      if (f.includes('LEMON')) return '🍋';
+      if (f.includes('ORANGE')) return '🍊';
+      if (f.includes('MINT')) return '🌿';
+      if (f.includes('GRAPE')) return '🍇';
+      if (f.includes('STRAWBERRY')) return '🍓';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return '⚡';
+      if (f.includes('LYCHEE')) return '🍹';
+      if (f.includes('PINEAPPLE')) return '🍍';
+      if (f.includes('APPLE')) return '🍏';
+      if (f.includes('WATERMELON')) return '🍉';
+      if (f.includes('PEACH')) return '🍑';
+      if (f.includes('BERRY')) return '🫐';
+      if (f.includes('KIWI')) return '🥝';
+      return '🍹';
+    }
+
+    // Dynamic Global Engine Configuration Functions
+    let currentPricingConfig = null;
+
+    async function loadPricingConfiguration() {
+      try {
+        const res = await apiFetch('/admin/pricing/config');
+        if (res.ok) {
+          const config = await res.json();
+          currentPricingConfig = config;
+          applyPricingConfigToUI(config);
+        }
+      } catch (err) {
+        console.warn('Failed to load pricing config:', err);
+      }
+    }
+
+    function applyPricingConfigToUI(config) {
+      if (!config || !config.global) return;
+      const g = config.global;
+
+      const badge = document.getElementById('cfgActiveVersionBadge');
+      if (badge && config.version) {
+        badge.textContent = `VERSION ${config.version}`;
+      }
+
+      if (document.getElementById('cfgSettlementInterval')) document.getElementById('cfgSettlementInterval').value = g.settlementIntervalSeconds || 120;
+      if (document.getElementById('cfgCrashDuration')) document.getElementById('cfgCrashDuration').value = g.marketCrashDurationSeconds || 180;
+      if (document.getElementById('cfgCrashPrice')) document.getElementById('cfgCrashPrice').value = Number(g.marketCrashPrice || 18).toFixed(2);
+      if (document.getElementById('cfgDefaultPrice')) document.getElementById('cfgDefaultPrice').value = Number(g.defaultCupPrice || 25).toFixed(2);
+
+      if (document.getElementById('cfgWeightW0')) document.getElementById('cfgWeightW0').value = Number(g.weightW0 || 1.00).toFixed(2);
+      if (document.getElementById('cfgWeightW1')) document.getElementById('cfgWeightW1').value = Number(g.weightW1 || 0.50).toFixed(2);
+      if (document.getElementById('cfgWeightW2')) document.getElementById('cfgWeightW2').value = Number(g.weightW2 || 0.25).toFixed(2);
+
+      if (document.getElementById('cfgHighThreshold')) document.getElementById('cfgHighThreshold').value = Number(g.highDemandThreshold || 1.10).toFixed(2);
+      if (document.getElementById('cfgStableLower')) document.getElementById('cfgStableLower').value = Number(g.stableDemandLowerThreshold || 0.90).toFixed(2);
+      if (document.getElementById('cfgStableUpper')) document.getElementById('cfgStableUpper').value = Number(g.stableDemandUpperThreshold || 1.10).toFixed(2);
+      if (document.getElementById('cfgLowThreshold')) document.getElementById('cfgLowThreshold').value = Number(g.lowDemandThreshold || 0.50).toFixed(2);
+
+      if (document.getElementById('cfgIncreaseStep')) document.getElementById('cfgIncreaseStep').value = Number(g.increaseStep || 1.00).toFixed(2);
+      if (document.getElementById('cfgDecreaseStep1')) document.getElementById('cfgDecreaseStep1').value = Number(g.decreaseStep1 || 1.00).toFixed(2);
+      if (document.getElementById('cfgDecreaseStep2')) document.getElementById('cfgDecreaseStep2').value = Number(g.decreaseStep2 || 2.00).toFixed(2);
+      if (document.getElementById('cfgMinPrice')) document.getElementById('cfgMinPrice').value = Number(g.minCupPrice || 18.00).toFixed(2);
+      if (document.getElementById('cfgMaxPrice')) document.getElementById('cfgMaxPrice').value = Number(g.maxCupPrice || 35.00).toFixed(2);
+
+      if (config.products && Array.isArray(config.products)) {
+        liveProductsCache = config.products.map(p => ({
+          id: p.productId || p.id,
+          name: p.productName || p.name,
+          flavour: p.flavour,
+          currentCupPrice: p.currentCupPrice,
+          defaultCupPrice: p.defaultCupPrice,
+          minCupPrice: p.minCupPrice,
+          maxCupPrice: p.maxCupPrice,
+          targetSalesPer2Minute: p.targetSales || p.targetSalesPer2Minute || 1.0
+        }));
+        renderLivePricingTable();
+      }
+    }
+
+    async function saveGlobalPricingConfiguration() {
+      const btn = document.getElementById('btnSaveGlobalConfig');
+      if (btn) setButtonLoading(btn, true, '💾 Saving to DB & Redis...');
+
+      const settlementInterval = parseInt(document.getElementById('cfgSettlementInterval').value) || 120;
+      const crashDuration = parseInt(document.getElementById('cfgCrashDuration').value) || 180;
+      const crashPrice = parseFloat(document.getElementById('cfgCrashPrice').value) || 18.00;
+      const defaultPrice = parseFloat(document.getElementById('cfgDefaultPrice').value) || 25.00;
+
+      const weightW0 = parseFloat(document.getElementById('cfgWeightW0').value) || 1.00;
+      const weightW1 = parseFloat(document.getElementById('cfgWeightW1').value) || 0.50;
+      const weightW2 = parseFloat(document.getElementById('cfgWeightW2').value) || 0.25;
+
+      const highThresh = parseFloat(document.getElementById('cfgHighThreshold').value) || 1.10;
+      const stableLower = parseFloat(document.getElementById('cfgStableLower').value) || 0.90;
+      const stableUpper = parseFloat(document.getElementById('cfgStableUpper').value) || 1.10;
+      const lowThresh = parseFloat(document.getElementById('cfgLowThreshold').value) || 0.50;
+
+      const incStep = parseFloat(document.getElementById('cfgIncreaseStep').value) || 1.00;
+      const decStep1 = parseFloat(document.getElementById('cfgDecreaseStep1').value) || 1.00;
+      const decStep2 = parseFloat(document.getElementById('cfgDecreaseStep2').value) || 2.00;
+      const minPrice = parseFloat(document.getElementById('cfgMinPrice').value) || 18.00;
+      const maxPrice = parseFloat(document.getElementById('cfgMaxPrice').value) || 35.00;
+
+      // Validation
+      if (settlementInterval <= 0) {
+        showToast('Settlement interval must be strictly positive', 'warning');
+        if (btn) setButtonLoading(btn, false);
+        return;
+      }
+      if (minPrice >= maxPrice) {
+        showToast('Max price must be strictly greater than min price', 'warning');
+        if (btn) setButtonLoading(btn, false);
+        return;
+      }
+      if (lowThresh >= stableLower) {
+        showToast('Low demand threshold must be less than stable demand lower bound', 'warning');
+        if (btn) setButtonLoading(btn, false);
+        return;
+      }
+
+      const payload = {
+        settlementIntervalSeconds: settlementInterval,
+        weightW0, weightW1, weightW2,
+        highDemandThreshold: highThresh,
+        stableDemandLowerThreshold: stableLower,
+        stableDemandUpperThreshold: stableUpper,
+        lowDemandThreshold: lowThresh,
+        increaseStep: incStep,
+        decreaseStep1: decStep1,
+        decreaseStep2: decStep2,
+        marketCrashDurationSeconds: crashDuration,
+        marketCrashPrice: crashPrice,
+        defaultCupPrice: defaultPrice,
+        minCupPrice: minPrice,
+        maxCupPrice: maxPrice
+      };
+
+      try {
+        const res = await apiFetch('/admin/pricing/config', {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Failed to update configuration (HTTP ${res.status})`);
+        }
+
+        const updated = await res.json();
+        currentPricingConfig = updated;
+        applyPricingConfigToUI(updated);
+        await loadPricingAuditLogs();
+        showToast(`✅ Global DWMA Engine Configuration Saved & Synced! (Version ${updated.version})`, 'success');
+      } catch (err) {
+        showToast(`🔴 Failed to save configuration: ${err.message}`, 'danger');
+      } finally {
+        if (btn) setButtonLoading(btn, false);
+      }
+    }
+
+    async function loadPricingAuditLogs() {
+      try {
+        const res = await apiFetch('/admin/pricing/config/audit');
+        if (res.ok) {
+          const logs = await res.json();
+          renderPricingAuditLogs(logs);
+        }
+      } catch (err) {
+        console.warn('Failed to load pricing audit logs:', err);
+      }
+    }
+
+    function renderPricingAuditLogs(logs) {
+      const tbody = document.getElementById('pricingAuditTableBody');
+      if (!tbody) return;
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No configuration audit entries yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(l => {
+        const timeStr = l.createdAt ? new Date(l.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Recent';
+        const user = l.adminUser || 'ADMIN';
+        const key = l.settingKey || (l.productId ? `PRODUCT #${l.productId}` : 'GLOBAL');
+        const oldVal = l.oldValue || '—';
+        const newVal = l.newValue || '—';
+        const ver = (l.versionBefore && l.versionAfter) ? `v${l.versionBefore} → v${l.versionAfter}` : `v${l.versionAfter || 1}`;
+        const reason = l.reason || 'MANUAL_UPDATE';
+
+        return `
+          <tr>
+            <td style="font-family: monospace; font-size: 12px; color: var(--text-muted);">${timeStr}</td>
+            <td style="font-weight: 700; color: #0f172a;">${user}</td>
+            <td style="font-weight: 700; font-family: monospace; color: #2563eb;">${key}</td>
+            <td style="color: #64748b; font-family: monospace;">${oldVal}</td>
+            <td style="color: #059669; font-weight: 700; font-family: monospace;">${newVal}</td>
+            <td><span style="background: rgba(37,99,235,0.1); color: #2563eb; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${ver}</span></td>
+            <td style="font-size: 12px; color: var(--text-muted);">${reason}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function saveProductTargetSales(productId) {
+      const input = document.getElementById('targetInput_' + productId);
+      if (!input) return;
+      const newTarget = parseFloat(input.value);
+      if (isNaN(newTarget) || newTarget <= 0) {
+        showToast('Target sales must be greater than 0', 'warning');
+        return;
+      }
+
+      try {
+        const res = await apiFetch(`/admin/pricing/products/${productId}/config`, {
+          method: 'PUT',
+          body: JSON.stringify({ targetSales: newTarget })
+        });
+        if (!res.ok) throw new Error('Failed to update product config');
+        const updated = await res.json();
+        showToast(`✅ Saved Target Sales for "${updated.productName || 'Product'}": ${newTarget} cups/2-min`, 'success');
+        await loadPricingConfiguration();
+        await loadPricingAuditLogs();
+      } catch (err) {
+        showToast(`🔴 Failed to save product target: ${err.message}`, 'danger');
+      }
+    }
+
+    // Load Live Pricing Products for Pricing Maintenance Tab
+    async function loadLivePricingProducts() {
+      try {
+        const res = await apiFetch('/admin/pricing/config');
+        if (res.ok) {
+          const config = await res.json();
+          currentPricingConfig = config;
+          applyPricingConfigToUI(config);
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        const res = await apiFetch('/pos/products');
+        if (res.ok) {
+          const prods = await res.json();
+          if (Array.isArray(prods) && prods.length > 0) {
+            liveProductsCache = prods;
+            prods.forEach(p => {
+              if (p.id && p.name) flavoursMap[p.id] = p.name;
+            });
+            saveFlavoursMap();
+            renderLivePricingTable();
+            return;
+          }
+        }
+      } catch (e) {}
+
+      if (!liveProductsCache || liveProductsCache.length === 0) {
+        liveProductsCache = Object.keys(flavoursMap).map(id => ({
+          id: parseInt(id),
+          name: flavoursMap[id],
+          currentCupPrice: 25.00,
+          defaultCupPrice: 25.00,
+          minCupPrice: 18.00,
+          maxCupPrice: 35.00,
+          targetSalesPer2Minute: 1.0,
+          volatility: 0.08
+        }));
+      }
+      renderLivePricingTable();
+    }
+
+    function renderLivePricingTable() {
+      const tbody = document.getElementById('livePricingTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = liveProductsCache.map(p => {
+        const icon = getFruitIconAdmin(p);
+        const pid = p.productId || p.id;
+        const livePrice = Number(p.currentCupPrice || p.currentPrice || 25).toFixed(2);
+        const basePrice = Number(p.defaultCupPrice || p.basePrice || 25).toFixed(2);
+        const minPrice = Number(p.minCupPrice || 18).toFixed(2);
+        const maxPrice = Number(p.maxCupPrice || 35).toFixed(2);
+        const target = p.targetSalesPer2Minute || p.targetSales || p.targetOrders || 1.0;
+        
+        return `
+          <tr>
+            <td style="font-weight: 700; color: var(--text-muted); font-family: monospace;">#${pid}</td>
+            <td style="font-weight: 700; color: #0f172a;">${icon} ${p.name || p.productName}</td>
+            <td><span style="font-weight: 900; color: #059669; font-size: 15px; background: rgba(5,150,105,0.1); padding: 4px 10px; border-radius: 6px;">₹${livePrice}</span></td>
+            <td style="font-weight: 700;">₹${basePrice}</td>
+            <td style="color: #dc2626; font-weight: 700;">₹${minPrice}</td>
+            <td style="color: #2563eb; font-weight: 700;">₹${maxPrice}</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <input id="targetInput_${pid}" type="number" step="0.1" min="0.1" value="${target}" style="width: 65px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #3b82f6; border-radius: 6px; font-size: 13px;">
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669;" onclick="saveProductTargetSales(${pid})">💾</button>
+              </div>
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <input id="quickPriceInput_${pid}" type="number" step="0.5" value="${Math.round(Number(livePrice))}" style="width: 65px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 12px;" onclick="quickPriceOverride(${pid})">Set</button>
+              </div>
+            </td>
+            <td>
+              <button class="btn-primary" style="padding: 5px 12px; font-size: 12px; background: linear-gradient(135deg, #2563eb, #1d4ed8);" onclick="editProductPricing(${pid})">✏️ Edit Details</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function editProductPricing(productId) {
+      const p = liveProductsCache.find(prod => prod.id === productId) || {
+        id: productId, name: flavoursMap[productId] || `Product #${productId}`, description: 'Fresh handcrafted juice', currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, targetSalesPer2Minute: 1.0, volatility: 0.08
+      };
+
+      document.getElementById('editPricingProductId').value = p.id;
+      document.getElementById('editPricingJuiceName').value = p.name;
+      document.getElementById('editPricingJuiceDesc').value = p.description || 'Fresh handcrafted juice cooler';
+      document.getElementById('editPricingCurrentPrice').value = p.currentCupPrice || 25;
+      document.getElementById('editPricingBasePrice').value = p.defaultCupPrice || 25;
+      document.getElementById('editPricingMinPrice').value = p.minCupPrice || 18;
+      document.getElementById('editPricingMaxPrice').value = p.maxCupPrice || 35;
+      document.getElementById('editPricingTargetSales').value = p.targetSalesPer2Minute || 1.0;
+      document.getElementById('editPricingVolatility').value = p.volatility || 0.08;
+
+      document.getElementById('editProductPricingModal').style.display = 'flex';
+    }
+
+    function closeEditProductPricingModal() {
+      document.getElementById('editProductPricingModal').style.display = 'none';
+    }
+
+    async function submitProductPricingDetails() {
+      const btn = document.getElementById('btnSavePricingDetails');
+      setButtonLoading(btn, true, 'Saving & Broadcasting...');
+
+      const productId = parseInt(document.getElementById('editPricingProductId').value);
+      const name = document.getElementById('editPricingJuiceName').value.trim();
+      const desc = document.getElementById('editPricingJuiceDesc').value.trim();
+      const currentPrice = parseFloat(document.getElementById('editPricingCurrentPrice').value) || 25;
+      const basePrice = parseFloat(document.getElementById('editPricingBasePrice').value) || 25;
+      const minPrice = parseFloat(document.getElementById('editPricingMinPrice').value) || 18;
+      const maxPrice = parseFloat(document.getElementById('editPricingMaxPrice').value) || 35;
+      const targetSales = parseFloat(document.getElementById('editPricingTargetSales').value) || 1.0;
+      const volatility = parseFloat(document.getElementById('editPricingVolatility').value) || 0.08;
+
+      const payload = {
+        name,
+        flavour: name.toUpperCase().replace(/\s+/g, '_'),
+        description: desc,
+        currentCupPrice: currentPrice,
+        defaultCupPrice: basePrice,
+        minCupPrice: minPrice,
+        maxCupPrice: maxPrice,
+        targetSalesPer2Minute: targetSales,
+        volatility: volatility
+      };
+
+      try {
+        const res = await apiFetch(`/pos/products/${productId}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+
+        await apiFetch(`/pricing/products/${productId}/price?newPrice=${currentPrice}&reason=MANUAL_ADMIN_OVERRIDE`, {
+          method: 'POST'
+        });
+
+        if (res.ok) {
+          const updated = await res.json();
+          flavoursMap[productId] = name;
+          saveFlavoursMap();
+        }
+
+        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, name, currentPrice, basePrice, minPrice, maxPrice });
+        showToast(`✅ Updated "${name}": Live ₹${currentPrice.toFixed(2)}, Base ₹${basePrice.toFixed(2)}, Floor ₹${minPrice.toFixed(2)}, Ceiling ₹${maxPrice.toFixed(2)}`, 'success');
+      } catch (err) {
+        showToast(`Error updating pricing: ${err.message}`, 'danger');
+      } finally {
+        closeEditProductPricingModal();
+        await loadLivePricingProducts();
+        await loadBatches();
+        await refreshDashboard();
+        setButtonLoading(btn, false);
+      }
+    }
+
+    async function quickPriceOverride(productId) {
+      const input = document.getElementById('quickPriceInput_' + productId);
+      if (!input) return;
+      const newPrice = parseFloat(input.value);
+      if (isNaN(newPrice) || newPrice <= 0) {
+        showToast('Please enter a valid price amount', 'warning');
+        return;
+      }
+
+      try {
+        await apiFetch(`/pos/products/${productId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ currentCupPrice: newPrice })
+        });
+        await apiFetch(`/pricing/products/${productId}/price?newPrice=${newPrice}&reason=MANUAL_QUICK_OVERRIDE`, {
+          method: 'POST'
+        });
+
+        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, currentPrice: newPrice });
+        showToast(`⚡ Set Live Price for Product #${productId} to ₹${newPrice.toFixed(2)}`, 'success');
+      } catch (err) {
+        showToast(`Error setting live price: ${err.message}`, 'danger');
+      } finally {
+        await loadLivePricingProducts();
+        await loadBatches();
+        await refreshDashboard();
+      }
+    }
+
     // Batch & Flavour Modals Logic (Section 7)
-    function editJuiceBatch(batchCode, productId) {
+    async function editJuiceBatch(batchCode, productId) {
       const batch = batchesData.find(b => b.batchCode === batchCode) || {
         batchCode, productId, remainingVolumeMl: 17500, status: 'ACTIVE'
       };
       
+      const prod = liveProductsCache.find(p => p.id === productId) || {
+        id: productId, name: flavoursMap[productId] || `Product #${productId}`, description: 'Fresh handcrafted juice cooler',
+        currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 18, maxCupPrice: 35
+      };
+      
       document.getElementById('editBatchCode').value = batchCode;
       document.getElementById('editProductId').value = productId;
-      document.getElementById('editJuiceName').value = flavoursMap[productId] || `Product #${productId}`;
-      document.getElementById('editJuiceDesc').value = 'Fresh handcrafted juice cooler';
-      document.getElementById('editBasePrice').value = 20;
-      document.getElementById('editMinPrice').value = 18;
-      document.getElementById('editMaxPrice').value = 25;
+      document.getElementById('editJuiceName').value = prod.name || flavoursMap[productId] || `Product #${productId}`;
+      document.getElementById('editJuiceDesc').value = prod.description || 'Fresh handcrafted juice cooler';
+      document.getElementById('editLivePrice').value = prod.currentCupPrice || prod.defaultCupPrice || 25;
+      document.getElementById('editBasePrice').value = prod.defaultCupPrice || 25;
+      document.getElementById('editMinPrice').value = prod.minCupPrice || 18;
+      document.getElementById('editMaxPrice').value = prod.maxCupPrice || 35;
       document.getElementById('editRemainingVol').value = batch.remainingVolumeMl || 20000;
       document.getElementById('editStatus').value = batch.status || 'ACTIVE';
 
@@ -2402,9 +3098,11 @@
       const batchCode = document.getElementById('editBatchCode').value;
       const productId = parseInt(document.getElementById('editProductId').value);
       const name = document.getElementById('editJuiceName').value.trim();
-      const basePrice = parseFloat(document.getElementById('editBasePrice').value) || 20;
+      const desc = document.getElementById('editJuiceDesc').value.trim();
+      const livePrice = parseFloat(document.getElementById('editLivePrice').value) || 25;
+      const basePrice = parseFloat(document.getElementById('editBasePrice').value) || 25;
       const minPrice = parseFloat(document.getElementById('editMinPrice').value) || 18;
-      const maxPrice = parseFloat(document.getElementById('editMaxPrice').value) || 25;
+      const maxPrice = parseFloat(document.getElementById('editMaxPrice').value) || 35;
       const remainingVol = parseInt(document.getElementById('editRemainingVol').value) || 20000;
       const status = document.getElementById('editStatus').value;
 
@@ -2416,7 +3114,7 @@
       try {
         await apiFetch(`/pos/products/${productId}`, {
           method: 'PUT',
-          body: JSON.stringify({ name, flavour: name.toUpperCase().replace(/\s+/g, '_'), defaultCupPrice: basePrice, minCupPrice: minPrice, maxCupPrice: maxPrice, currentCupPrice: basePrice })
+          body: JSON.stringify({ name, flavour: name.toUpperCase().replace(/\s+/g, '_'), description: desc, defaultCupPrice: basePrice, minCupPrice: minPrice, maxCupPrice: maxPrice, currentCupPrice: livePrice })
         });
 
         await apiFetch(`/batches/${batchCode}`, {
@@ -2424,16 +3122,17 @@
           body: JSON.stringify({ remainingVolumeMl: remainingVol, status })
         });
         
-        await apiFetch(`/pricing/products/${productId}/price?newPrice=${basePrice}&reason=MANUAL_ADMIN_UPDATE`, {
+        await apiFetch(`/pricing/products/${productId}/price?newPrice=${livePrice}&reason=MANUAL_ADMIN_UPDATE`, {
           method: 'POST'
         });
       } catch (err) {}
 
-      broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, name, basePrice, minPrice, maxPrice });
+      broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, name, basePrice, minPrice, maxPrice, currentPrice: livePrice });
       broadcastEvent('BATCH_UPDATED', { batchCode, remainingVol, status });
 
       closeEditJuiceModal();
       await loadBatches();
+      await loadLivePricingProducts();
       setButtonLoading(btn, false);
       showToast(`Updated "${name}" details & synced live!`, 'success');
     }
@@ -2594,10 +3293,10 @@
       const params = {
         flavourName: document.getElementById('simFlavour')?.value || 'Fresh Mango Juice',
         initialVolumeMl: document.getElementById('simVolume')?.value || '20000',
-        initialPrice: document.getElementById('simStartPrice')?.value || '20',
+        initialPrice: document.getElementById('simStartPrice')?.value || '25',
         cupsPerInterval: document.getElementById('simCupsPerStep')?.value || '4',
         minPrice: document.getElementById('simMinPrice')?.value || '18',
-        maxPrice: document.getElementById('simMaxPrice')?.value || '25',
+        maxPrice: document.getElementById('simMaxPrice')?.value || '35',
         includeCrash: document.getElementById('simIncludeCrash')?.checked || false
       };
       try {
@@ -2612,10 +3311,16 @@
           const p = JSON.parse(saved);
           if (p.flavourName !== undefined && document.getElementById('simFlavour')) document.getElementById('simFlavour').value = p.flavourName;
           if (p.initialVolumeMl !== undefined && document.getElementById('simVolume')) document.getElementById('simVolume').value = p.initialVolumeMl;
-          if (p.initialPrice !== undefined && document.getElementById('simStartPrice')) document.getElementById('simStartPrice').value = p.initialPrice;
+          if (p.initialPrice !== undefined && document.getElementById('simStartPrice')) {
+            const val = parseFloat(p.initialPrice);
+            document.getElementById('simStartPrice').value = (val <= 20) ? '25' : p.initialPrice;
+          }
           if (p.cupsPerInterval !== undefined && document.getElementById('simCupsPerStep')) document.getElementById('simCupsPerStep').value = p.cupsPerInterval;
           if (p.minPrice !== undefined && document.getElementById('simMinPrice')) document.getElementById('simMinPrice').value = p.minPrice;
-          if (p.maxPrice !== undefined && document.getElementById('simMaxPrice')) document.getElementById('simMaxPrice').value = p.maxPrice;
+          if (p.maxPrice !== undefined && document.getElementById('simMaxPrice')) {
+            const valMax = parseFloat(p.maxPrice);
+            document.getElementById('simMaxPrice').value = (valMax <= 25) ? '35' : p.maxPrice;
+          }
           if (p.includeCrash !== undefined && document.getElementById('simIncludeCrash')) {
             document.getElementById('simIncludeCrash').checked = !!p.includeCrash;
           }
@@ -2632,10 +3337,12 @@
       const req = {
         flavourName: document.getElementById('simFlavour').value,
         initialVolumeMl: parseInt(document.getElementById('simVolume').value) || 20000,
-        initialPrice: parseFloat(document.getElementById('simStartPrice').value) || 20,
+        initialPrice: parseFloat(document.getElementById('simStartPrice').value) || 25,
         minPrice: parseFloat(document.getElementById('simMinPrice').value) || 18,
-        maxPrice: parseFloat(document.getElementById('simMaxPrice').value) || 25,
+        maxPrice: parseFloat(document.getElementById('simMaxPrice').value) || 35,
         cupsPerInterval: parseInt(document.getElementById('simCupsPerStep').value) || 4,
+        intervalMinutes: 2,
+        targetSales: 1.00,
         includeCrash: document.getElementById('simIncludeCrash')?.checked || false
       };
 
@@ -2647,7 +3354,7 @@
         if (res.ok) {
           const simData = await res.json();
           renderSimulationData(simData);
-          showToast('▶️ Sandbox Simulation Executed by Backend Service!', 'success');
+          showToast('▶️ Sandbox Simulation Executed by Authoritative Pricing Service!', 'success');
           return;
         }
       } catch (e) {} finally {
@@ -2659,27 +3366,32 @@
 
     function renderSimulationData(sim) {
       const grid = document.getElementById('simMetricsGrid');
-      const startP = sim.initialPrice !== undefined ? sim.initialPrice : (sim.startPrice || 20);
-      const endP = sim.finalPrice !== undefined ? sim.finalPrice : (sim.endPrice || 22);
-      window.lastSimulatedFinalPrice = Math.round(endP);
+      const startP = sim.initialPrice !== undefined ? sim.initialPrice : 25;
+      const endP = sim.finalPrice !== undefined ? sim.finalPrice : 25;
+      window.lastSimulatedFinalPrice = Number(endP).toFixed(2);
       if (grid) {
         grid.innerHTML = `
           <div class="metric-card"><div class="metric-label">Simulated Flavour</div><div class="metric-val" style="font-size: 18px;">${sim.flavourName || 'Fresh Juice'}</div></div>
-          <div class="metric-card"><div class="metric-label">Start / End Price</div><div class="metric-val" style="font-size: 18px; color: #059669;">₹${Math.round(startP)} &rarr; ₹${Math.round(endP)}</div></div>
-          <div class="metric-card"><div class="metric-label">Total Cups Sold</div><div class="metric-val" style="font-size: 18px; color: #2563eb;">${sim.totalCupsSold || 40} cups</div></div>
+          <div class="metric-card"><div class="metric-label">Start / End Price</div><div class="metric-val" style="font-size: 18px; color: #059669;">₹${Number(startP).toFixed(2)} &rarr; ₹${Number(endP).toFixed(2)}</div></div>
+          <div class="metric-card"><div class="metric-label">Total Cups Sold</div><div class="metric-val" style="font-size: 18px; color: #2563eb;">${sim.totalCupsSold || 0} cups</div></div>
         `;
       }
       const timeline = document.getElementById('simTimelineBody');
       if (timeline && sim.steps) {
         timeline.innerHTML = sim.steps.map((s, idx) => {
           const stepNum = s.stepIndex !== undefined ? s.stepIndex : (idx + 1);
-          const timeLabel = s.timeStr || `T+${idx * 5}m`;
+          const timeLabel = s.timeStr || `T+${idx * 2}m`;
           const remVol = s.remainingVolumeMl !== undefined ? s.remainingVolumeMl : 20000;
-          const cupsSold = s.cupsSoldThisStep !== undefined ? s.cupsSoldThisStep : (s.cupsSold !== undefined ? s.cupsSold : 4);
-          const demand = s.demandScore !== undefined ? (Math.round(s.demandScore * 10) / 10) : 65;
-          const movement = s.priceMovement || 'UNCHANGED';
-          const stepPrice = s.price !== undefined ? s.price : (s.currentPrice !== undefined ? s.currentPrice : 20);
-          
+          const cupsSold = s.cupsSoldThisStep !== undefined ? s.cupsSoldThisStep : 4;
+          const w0 = s.w0 !== undefined ? s.w0 : cupsSold;
+          const w1 = s.w1 !== undefined ? s.w1 : 0;
+          const w2 = s.w2 !== undefined ? s.w2 : 0;
+          const sw = s.weightedSales !== undefined ? Number(s.weightedSales).toFixed(2) : '0.00';
+          const target = s.targetSales !== undefined ? Number(s.targetSales).toFixed(2) : '1.00';
+          const rd = s.demandRatio !== undefined ? Number(s.demandRatio).toFixed(2) : '0.00';
+          const movement = s.priceMovement || '₹0';
+          const stepPrice = s.price !== undefined ? Number(s.price).toFixed(2) : '25.00';
+
           let tagClass = 'tag-active';
           if (movement.includes('-') || movement === 'DOWN' || movement === 'CRASH') {
             tagClass = 'tag-crash';
@@ -2691,10 +3403,15 @@
               <td>${timeLabel}</td>
               <td>${remVol} ml</td>
               <td>${cupsSold} cups</td>
-              <td>${demand} / 100</td>
+              <td>${w0}</td>
+              <td>${w1}</td>
+              <td>${w2}</td>
+              <td>${sw}</td>
+              <td>${target}</td>
+              <td>${rd}</td>
               <td><span class="status-tag ${tagClass}">${movement}</span></td>
-              <td style="font-weight: 800;">₹${Math.round(stepPrice)}</td>
-              <td style="font-size: 12px;">${s.explanation || 'Dynamic price evaluation step.'}</td>
+              <td style="font-weight: 800;">₹${stepPrice}</td>
+              <td style="font-size: 12px;">${s.explanation || 'Authoritative DWMA evaluation step.'}</td>
             </tr>
           `;
         }).join('');
@@ -2703,42 +3420,97 @@
 
     function renderSimulationFallback(req) {
       const grid = document.getElementById('simMetricsGrid');
-      let currPrice = req.initialPrice;
+      let currPrice = req.initialPrice || 25.00;
+      const minPrice = req.minPrice || 18.00;
+      const maxPrice = req.maxPrice || 35.00;
+      const cupsPerStep = req.cupsPerInterval || 4;
+      const targetSales = 1.00;
+
+      let vol = req.initialVolumeMl || 20000;
+      const salesHistory = [];
+      const steps = [];
+      let crashInjected = false;
+      let preCrashSnapshot = null;
+
+      for (let i = 1; i <= 10 && vol > 0; i++) {
+        const cups = Math.min(cupsPerStep, Math.floor(vol / 250));
+        vol -= cups * 250;
+        salesHistory.push(cups);
+
+        const w0 = cups;
+        const w1 = salesHistory.length >= 2 ? salesHistory[salesHistory.length - 2] : 0;
+        const w2 = salesHistory.length >= 3 ? salesHistory[salesHistory.length - 3] : 0;
+
+        const sw = (1.00 * w0) + (0.50 * w1) + (0.25 * w2);
+        const rd = sw / targetSales;
+
+        let movement = '₹0';
+        let explanation = '';
+        const oldP = currPrice;
+
+        if (i === 5 && req.includeCrash && !crashInjected) {
+          crashInjected = true;
+          preCrashSnapshot = currPrice;
+          currPrice = minPrice;
+          movement = 'CRASH';
+          explanation = `Step ${i}: 🚨 Market Crash Injected! Price dropped to floor limit ₹${minPrice.toFixed(2)} (Snapshot: ₹${preCrashSnapshot.toFixed(2)}).`;
+        } else if (i === 6 && preCrashSnapshot !== null) {
+          currPrice = preCrashSnapshot;
+          preCrashSnapshot = null;
+          movement = 'RESTORED';
+          explanation = `Step ${i}: Market Crash expired. Exact pre-crash snapshot restored to ₹${currPrice.toFixed(2)}.`;
+        } else {
+          let delta = 0;
+          if (rd >= 1.10) {
+            delta = (w0 > 0) ? 1 : 0;
+            movement = (w0 > 0) ? '+₹1' : '₹0';
+          } else if (rd >= 0.90) {
+            delta = 0;
+            movement = '₹0';
+          } else if (rd >= 0.50) {
+            delta = -1;
+            movement = '-₹1';
+          } else {
+            delta = -2;
+            movement = '-₹2';
+          }
+          currPrice = Math.min(maxPrice, Math.max(minPrice, currPrice + delta));
+          explanation = `Step ${i} (T+${(i-1)*2}m): W0=${w0}, W1=${w1}, W2=${w2} | S_w=${sw.toFixed(2)}, Target=${targetSales.toFixed(2)}, R_d=${rd.toFixed(2)} => ${movement} (₹${oldP.toFixed(2)} -> ₹${currPrice.toFixed(2)})`;
+        }
+
+        const tagClass = (movement.includes('-') || movement === 'CRASH') ? 'tag-crash' : 'tag-active';
+        steps.push(`
+          <tr>
+            <td>Step ${i}</td>
+            <td>T+${(i-1)*2}m</td>
+            <td>${vol} ml</td>
+            <td>${cups} cups</td>
+            <td>${w0}</td>
+            <td>${w1}</td>
+            <td>${w2}</td>
+            <td>${sw.toFixed(2)}</td>
+            <td>${targetSales.toFixed(2)}</td>
+            <td>${rd.toFixed(2)}</td>
+            <td><span class="status-tag ${tagClass}">${movement}</span></td>
+            <td style="font-weight: 800;">₹${currPrice.toFixed(2)}</td>
+            <td style="font-size: 12px;">${explanation}</td>
+          </tr>
+        `);
+      }
+
+      window.lastSimulatedFinalPrice = currPrice;
+
       if (grid) {
         grid.innerHTML = `
           <div class="metric-card"><div class="metric-label">Simulated Flavour</div><div class="metric-val" style="font-size: 18px;">${req.flavourName}</div></div>
-          <div class="metric-card"><div class="metric-label">Price Trajectory</div><div class="metric-val" style="font-size: 18px; color: #059669;">₹${req.initialPrice} &rarr; ₹${Math.min(req.maxPrice, req.initialPrice + 3)}</div></div>
+          <div class="metric-card"><div class="metric-label">Price Trajectory</div><div class="metric-val" style="font-size: 18px; color: #059669;">₹${Number(req.initialPrice).toFixed(2)} &rarr; ₹${Number(currPrice).toFixed(2)}</div></div>
           <div class="metric-card"><div class="metric-label">Simulated Cups</div><div class="metric-val" style="font-size: 18px; color: #2563eb;">40 cups</div></div>
         `;
       }
       const timeline = document.getElementById('simTimelineBody');
       if (timeline) {
-        const steps = [];
-        let currVol = req.initialVolumeMl;
-        for (let i = 1; i <= 10; i++) {
-          currVol = Math.max(0, currVol - (req.cupsPerInterval * 250));
-          if (i === 5 && req.includeCrash) {
-            currPrice = req.minPrice;
-          } else {
-            currPrice = Math.min(req.maxPrice, Math.max(req.minPrice, currPrice + (i % 2 === 0 ? 1 : 0)));
-          }
-          const movement = (i === 5 && req.includeCrash) ? 'CRASH' : (i % 2 === 0 ? '+₹1' : 'UNCHANGED');
-          steps.push(`
-            <tr>
-              <td>Step ${i}</td>
-              <td>T+${i * 5}m</td>
-              <td>${currVol} ml</td>
-              <td>${req.cupsPerInterval} cups</td>
-              <td>${Math.min(100, 50 + i * 2)} / 100</td>
-              <td><span class="status-tag ${movement === 'CRASH' ? 'tag-crash' : 'tag-active'}">${movement}</span></td>
-              <td style="font-weight: 800;">₹${Math.round(currPrice)}</td>
-              <td style="font-size: 12px;">${movement === 'CRASH' ? '🚨 Market Crash event injected!' : (i % 2 === 0 ? `Step ${i}: Demand triggers +₹1 increase to ₹${Math.round(currPrice)}.` : `Step ${i}: Cooldown window active. Price held at ₹${Math.round(currPrice)}.`)}</td>
-            </tr>
-          `);
-        }
         timeline.innerHTML = steps.join('');
       }
-      window.lastSimulatedFinalPrice = Math.round(currPrice);
     }
 
     async function deploySimParametersToLivePOS() {
@@ -2747,9 +3519,9 @@
       if (btn) setButtonLoading(btn, true, 'Deploying to Backend...');
 
       const flavourName = document.getElementById('simFlavour').value.trim();
-      const startPrice = parseFloat(document.getElementById('simStartPrice').value) || 20;
+      const startPrice = parseFloat(document.getElementById('simStartPrice').value) || 25;
       const minPrice = parseFloat(document.getElementById('simMinPrice').value) || 18;
-      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 25;
+      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 35;
       const targetPrice = window.lastSimulatedFinalPrice !== undefined ? window.lastSimulatedFinalPrice : startPrice;
 
       try {
@@ -2848,30 +3620,48 @@
       }
     }
 
-    async function resetLiveMarketPrices() {
-      const confirmed = window.confirm(
-        '🚨 RESET LIVE MARKET PRICES\n\n' +
-        'This will reset all active beverage market prices to their configured default prices across POS terminals and LED displays.\n\n' +
-        'Current dynamic prices will be overwritten.\n\n' +
-        'Are you sure you want to continue?'
-      );
-      if (!confirmed) return;
+    function resetLiveMarketPrices() {
+      const modal = document.getElementById('confirmResetPricesModal');
+      if (modal) {
+        modal.style.display = 'flex';
+      } else {
+        if (confirm("Confirm Reset\n\nThis will reset all 8 live market prices to ₹25.00.\n\nProduction market state will be changed.")) {
+          executeResetLiveMarketPrices();
+        }
+      }
+    }
 
+    function closeResetConfirmationModal() {
+      const modal = document.getElementById('confirmResetPricesModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function executeResetLiveMarketPrices() {
+      closeResetConfirmationModal();
       const btn = document.getElementById('btnResetLivePrices');
       if (btn) setButtonLoading(btn, true, '⏳ Resetting Market Prices...');
 
       const reqId = 'REQ-' + Date.now();
-      const token = localStorage.getItem('jwt_token') || 'mock-admin-token';
 
       try {
         const res = await apiFetch('/pricing/reset-all', {
           method: 'POST',
           headers: {
-            'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-            'X-User-Role': 'ADMIN',
+            'X-User-Role': 'SUPER_ADMIN',
             'X-Request-ID': reqId
           }
         });
+
+        if (res.status === 401) {
+          localStorage.removeItem('pubexchange_jwt_token');
+          showToast('🔴 Authentication expired. Please log in again.', 'danger');
+          return;
+        }
+
+        if (res.status === 403) {
+          showToast('🔴 Access Denied: Requires SUPER_ADMIN privileges.', 'danger');
+          return;
+        }
 
         let data = {};
         if (res.ok) {
@@ -2883,10 +3673,14 @@
 
         broadcastEvent('PRODUCT_PRICE_UPDATE', { reset: true, timestamp: new Date().toISOString() });
         await refreshDashboard();
-        showToast(`🟢 ${data.message || 'All live market prices reset successfully.'}\nProducts Reset: ${data.productsReset || 8}\nRequest ID: ${data.requestId || reqId}`, 'success');
+        showToast('✅ Live market prices reset to ₹25.00', 'success');
       } catch (err) {
         console.error('[RESET] Failed to reset market prices:', err);
-        showToast(`🔴 Failed to reset prices: ${err.message}`, 'danger');
+        if (err.message && err.message.includes('401')) {
+          showToast('🔴 Authentication expired. Please log in again.', 'danger');
+        } else {
+          showToast(`🔴 Failed to reset prices: ${err.message}`, 'danger');
+        }
       } finally {
         if (btn) setButtonLoading(btn, false);
       }
@@ -2940,6 +3734,7 @@
           stompClient.subscribe('/topic/products', function (message) {
             if (message.body) {
               loadBatches();
+              loadLivePricingProducts();
               refreshDashboard();
             }
           });
@@ -2954,12 +3749,24 @@
               refreshDashboard();
               loadBatches();
               loadHistory();
+              loadLivePricingProducts();
             }
           });
           stompClient.subscribe('/topic/market-crash', function (message) {
             if (message.body) {
               loadTelemetry();
               loadBatches();
+              checkMarketCrashStatus();
+            }
+          });
+          stompClient.subscribe('/topic/pricing-config', function (message) {
+            if (message.body) {
+              try {
+                const cfg = JSON.parse(message.body);
+                currentPricingConfig = cfg;
+                applyPricingConfigToUI(cfg);
+                loadPricingAuditLogs();
+              } catch (e) {}
             }
           });
         }, function () {
@@ -2969,22 +3776,29 @@
     }
 
     // System Initialization
-    checkAdminBackendHealth();
-    setInterval(checkAdminBackendHealth, 5000);
-    refreshDashboard();
-    loadNotifications();
-    restoreSimulatorParams();
-    
-    const savedActiveTab = localStorage.getItem('pubexchange_active_tab');
-    if (savedActiveTab) {
-      switchTab(savedActiveTab);
-    } else {
-      runSimulation();
+    async function initAdminApp() {
+      await ensureAdminAuthenticated();
+      checkAdminBackendHealth();
+      setInterval(checkAdminBackendHealth, 5000);
+      refreshDashboard();
+      loadNotifications();
+      restoreSimulatorParams();
+      loadPricingConfiguration();
+      loadLivePricingProducts();
+      loadPricingAuditLogs();
+      
+      const savedActiveTab = localStorage.getItem('pubexchange_active_tab');
+      if (savedActiveTab) {
+        switchTab(savedActiveTab);
+      } else {
+        runSimulation();
+      }
+      
+      renderReports();
+      connectAdminWebSocket();
+      setTimeout(renderCharts, 500);
     }
-    
-    renderReports();
-    connectAdminWebSocket();
-    setTimeout(renderCharts, 500);
+    initAdminApp();
 
     // Attach immediate auto-save listeners to simulator input fields
     ['simFlavour', 'simVolume', 'simStartPrice', 'simCupsPerStep', 'simMinPrice', 'simMaxPrice'].forEach(id => {

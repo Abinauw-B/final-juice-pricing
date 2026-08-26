@@ -240,28 +240,44 @@ public class JuiceInventoryAndPricingTests {
         }
     }
 
+    @Autowired
+    private SalesOrderRepository salesOrderRepository;
+
+    @Autowired
+    private SalesOrderItemRepository salesOrderItemRepository;
+
     @Test
-    @DisplayName("Req 10 & 11: Repeated settlement idempotency and new purchase recognition")
+    @DisplayName("Req 10 & 11: Repeated settlement idempotency and new purchase recognition with DWMA")
     @Transactional
     void testRepeatedSettlementIdempotency() {
         mangoProduct.setCurrentCupPrice(new BigDecimal("25.00"));
-        mangoProduct.setOrderCount(10);
+        mangoProduct.setTargetSalesPer2Minute(1.10);
         mangoProduct = productRepository.save(mangoProduct);
 
+        // Record a sale of 3 cups in W0
+        POSService.CartItemRequest item = new POSService.CartItemRequest();
+        item.setProductId(mangoProduct.getId());
+        item.setQuantity(3);
+        item.setCupSizeMl(250);
+
+        POSService.CheckoutRequest req = new POSService.CheckoutRequest();
+        req.setItems(List.of(item));
+        req.setPaymentMethod("CASH");
+        posService.processCheckout(req);
+
+        // W0=3, W1=0, W2=0 => Sw=3.00, Target=1.10 => Rd=2.7272 >= 1.10 and W0>0 => +1 => 26.00
         PriceAdjustmentService.PriceEvaluationResult res1 = priceAdjustmentService.evaluateAndAdjustPrice(mangoProduct.getId());
-        assertEquals(new BigDecimal("27.00"), res1.getNewPrice());
+        assertEquals(new BigDecimal("26.00"), res1.getNewPrice());
 
-        // Simulate next settlement cycle window with 0 new orders
-        mangoProduct = productRepository.findById(mangoProduct.getId()).orElseThrow();
-        mangoProduct.setLastPriceChangeTimestamp(LocalDateTime.now().minusMinutes(1));
-        mangoProduct = productRepository.save(mangoProduct);
-
-        PriceAdjustmentService.PriceEvaluationResult res2 = priceAdjustmentService.evaluateAndAdjustPrice(mangoProduct.getId());
-        assertEquals(new BigDecimal("24.84"), res2.getNewPrice());
+        // In the future (say 10 minutes later with 0 sales in W0, W1, W2):
+        // W0=0, W1=0, W2=0 => Sw=0, Rd=0 < 0.50 => -2 => 26.00 -> 24.00
+        LocalDateTime futureTime = LocalDateTime.now().plusMinutes(10);
+        PriceAdjustmentService.PriceEvaluationResult res2 = priceAdjustmentService.evaluateAndAdjustPrice(mangoProduct.getId(), futureTime);
+        assertEquals(new BigDecimal("24.00"), res2.getNewPrice());
     }
 
     @Test
-    @DisplayName("Req 12 & 13: Cross-product dynamic pricing isolation")
+    @DisplayName("Req 12 & 13: Cross-product dynamic pricing isolation with DWMA")
     @Transactional
     void testCrossProductIsolation() {
         Product thunder = productRepository.findByFlavourIgnoreCase("THUNDER")
@@ -272,9 +288,7 @@ public class JuiceInventoryAndPricingTests {
                         .currentCupPrice(new BigDecimal("25.00"))
                         .minCupPrice(new BigDecimal("18.00"))
                         .maxCupPrice(new BigDecimal("35.00"))
-                        .orderCount(0)
-                        .targetOrders(5)
-                        .volatility(new BigDecimal("0.0800"))
+                        .targetSalesPer2Minute(0.90)
                         .build()));
 
         Product orange = productRepository.findByFlavourIgnoreCase("ORANGE")
@@ -285,22 +299,35 @@ public class JuiceInventoryAndPricingTests {
                         .currentCupPrice(new BigDecimal("25.00"))
                         .minCupPrice(new BigDecimal("18.00"))
                         .maxCupPrice(new BigDecimal("35.00"))
-                        .orderCount(0)
-                        .targetOrders(5)
-                        .volatility(new BigDecimal("0.0800"))
+                        .targetSalesPer2Minute(1.10)
                         .build()));
 
         orange.setCurrentCupPrice(new BigDecimal("25.00"));
         orange = productRepository.save(orange);
 
         thunder.setCurrentCupPrice(new BigDecimal("25.00"));
-        thunder.setOrderCount(10);
+        thunder.setTargetSalesPer2Minute(0.90);
         thunder = productRepository.save(thunder);
 
+        // Checkout Thunder only
+        POSService.CartItemRequest item = new POSService.CartItemRequest();
+        item.setProductId(thunder.getId());
+        item.setQuantity(2);
+        item.setCupSizeMl(250);
+
+        POSService.CheckoutRequest req = new POSService.CheckoutRequest();
+        req.setItems(List.of(item));
+        req.setPaymentMethod("CASH");
+        posService.processCheckout(req);
+
+        // Thunder: W0=2, Target=0.90 => Sw=2.00, Rd=2.22 >= 1.10 => +1 => 26.00
         priceAdjustmentService.evaluateAndAdjustPrice(thunder.getId());
 
+        Product refreshedThunder = productRepository.findById(thunder.getId()).orElseThrow();
+        assertEquals(new BigDecimal("26.00"), refreshedThunder.getCurrentCupPrice(), "Thunder surged to ₹26.00");
+
         Product refreshedOrange = productRepository.findById(orange.getId()).orElseThrow();
-        assertEquals(new BigDecimal("25.00"), refreshedOrange.getCurrentCupPrice(), "Orange price must remain unchanged when Thunder is purchased");
+        assertEquals(new BigDecimal("25.00"), refreshedOrange.getCurrentCupPrice(), "Orange price must remain unchanged at ₹25.00");
     }
 
     @Test
@@ -313,23 +340,35 @@ public class JuiceInventoryAndPricingTests {
         Product mango = productRepository.findByFlavourIgnoreCase("MANGO").orElseThrow();
 
         thunder.setCurrentCupPrice(new BigDecimal("25.00"));
-        thunder.setOrderCount(10);
-        thunder.setTargetOrders(5);
-        thunder.setVolatility(new BigDecimal("0.0800"));
+        thunder.setTargetSalesPer2Minute(0.90);
         productRepository.save(thunder);
 
         orange.setCurrentCupPrice(new BigDecimal("30.00"));
+        orange.setTargetSalesPer2Minute(1.10);
         productRepository.save(orange);
 
         mint.setCurrentCupPrice(new BigDecimal("22.00"));
+        mint.setTargetSalesPer2Minute(0.80);
         productRepository.save(mint);
 
         mango.setCurrentCupPrice(new BigDecimal("28.00"));
+        mango.setTargetSalesPer2Minute(1.10);
         productRepository.save(mango);
+
+        // Purchase Thunder x 2
+        POSService.CartItemRequest item = new POSService.CartItemRequest();
+        item.setProductId(thunder.getId());
+        item.setQuantity(2);
+        item.setCupSizeMl(250);
+
+        POSService.CheckoutRequest req = new POSService.CheckoutRequest();
+        req.setItems(List.of(item));
+        req.setPaymentMethod("CASH");
+        posService.processCheckout(req);
 
         priceAdjustmentService.evaluateAndAdjustPrice(thunder.getId());
 
-        assertEquals(new BigDecimal("27.00"), productRepository.findById(thunder.getId()).get().getCurrentCupPrice());
+        assertEquals(new BigDecimal("26.00"), productRepository.findById(thunder.getId()).get().getCurrentCupPrice(), "Thunder rose to ₹26.00");
         assertEquals(new BigDecimal("30.00"), productRepository.findById(orange.getId()).get().getCurrentCupPrice(), "Orange must remain ₹30.00");
         assertEquals(new BigDecimal("22.00"), productRepository.findById(mint.getId()).get().getCurrentCupPrice(), "Mint must remain ₹22.00");
         assertEquals(new BigDecimal("28.00"), productRepository.findById(mango.getId()).get().getCurrentCupPrice(), "Mango must remain ₹28.00");

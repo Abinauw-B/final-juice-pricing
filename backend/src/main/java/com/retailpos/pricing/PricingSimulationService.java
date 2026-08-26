@@ -3,6 +3,7 @@ package com.retailpos.pricing;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,15 +12,17 @@ import java.util.List;
 public class PricingSimulationService {
 
     public static class SimulationRequest {
-        private String flavourName = "Mango Juice";
+        private String flavourName = "Fresh Mango Juice";
         private Integer initialVolumeMl = 20000;
-        private BigDecimal initialPrice = new BigDecimal("20.00");
+        private BigDecimal initialPrice = new BigDecimal("25.00");
         private BigDecimal minPrice = new BigDecimal("18.00");
-        private BigDecimal maxPrice = new BigDecimal("25.00");
+        private BigDecimal maxPrice = new BigDecimal("35.00");
         private Integer totalSimulatedPurchases = 40;
         private Integer cupsPerInterval = 4;
-        private Integer intervalMinutes = 5;
+        private Integer intervalMinutes = 2;
+        private Double targetSales = 1.00;
         private String startTimeStr = "12:00";
+        private Boolean includeCrash = false;
         private Double weightVelocity = 0.40;
         private Double weightStockPressure = 0.40;
         private Double weightTimeFactor = 0.20;
@@ -42,8 +45,13 @@ public class PricingSimulationService {
         public void setCupsPerInterval(Integer cupsPerInterval) { this.cupsPerInterval = cupsPerInterval; }
         public Integer getIntervalMinutes() { return intervalMinutes; }
         public void setIntervalMinutes(Integer intervalMinutes) { this.intervalMinutes = intervalMinutes; }
+        public Double getTargetSales() { return targetSales; }
+        public void setTargetSales(Double targetSales) { this.targetSales = targetSales; }
         public String getStartTimeStr() { return startTimeStr; }
         public void setStartTimeStr(String startTimeStr) { this.startTimeStr = startTimeStr; }
+        public Boolean getIncludeCrash() { return includeCrash; }
+        public void setIncludeCrash(Boolean includeCrash) { this.includeCrash = includeCrash; }
+        public boolean isIncludeCrash() { return includeCrash != null && includeCrash; }
         public Double getWeightVelocity() { return weightVelocity; }
         public void setWeightVelocity(Double weightVelocity) { this.weightVelocity = weightVelocity; }
         public Double getWeightStockPressure() { return weightStockPressure; }
@@ -59,25 +67,31 @@ public class PricingSimulationService {
         private int estimatedRemainingCups;
         private int cupsSoldThisStep;
         private int cumulativeCupsSold;
-        private double velocityScore;
-        private double stockPressurePct;
-        private double timeFactorMultiplier;
+        private int w0;
+        private int w1;
+        private int w2;
+        private double weightedSales;
+        private double targetSales;
+        private double demandRatio;
         private double demandScore;
         private BigDecimal price;
         private String priceMovement;
         private String explanation;
 
         public SimulationStep() {}
-        public SimulationStep(int stepIndex, String timeStr, int remainingVolumeMl, int estimatedRemainingCups, int cupsSoldThisStep, int cumulativeCupsSold, double velocityScore, double stockPressurePct, double timeFactorMultiplier, double demandScore, BigDecimal price, String priceMovement, String explanation) {
+        public SimulationStep(int stepIndex, String timeStr, int remainingVolumeMl, int estimatedRemainingCups, int cupsSoldThisStep, int cumulativeCupsSold, int w0, int w1, int w2, double weightedSales, double targetSales, double demandRatio, double demandScore, BigDecimal price, String priceMovement, String explanation) {
             this.stepIndex = stepIndex;
             this.timeStr = timeStr;
             this.remainingVolumeMl = remainingVolumeMl;
             this.estimatedRemainingCups = estimatedRemainingCups;
             this.cupsSoldThisStep = cupsSoldThisStep;
             this.cumulativeCupsSold = cumulativeCupsSold;
-            this.velocityScore = velocityScore;
-            this.stockPressurePct = stockPressurePct;
-            this.timeFactorMultiplier = timeFactorMultiplier;
+            this.w0 = w0;
+            this.w1 = w1;
+            this.w2 = w2;
+            this.weightedSales = weightedSales;
+            this.targetSales = targetSales;
+            this.demandRatio = demandRatio;
             this.demandScore = demandScore;
             this.price = price;
             this.priceMovement = priceMovement;
@@ -96,12 +110,18 @@ public class PricingSimulationService {
         public void setCupsSoldThisStep(int cupsSoldThisStep) { this.cupsSoldThisStep = cupsSoldThisStep; }
         public int getCumulativeCupsSold() { return cumulativeCupsSold; }
         public void setCumulativeCupsSold(int cumulativeCupsSold) { this.cumulativeCupsSold = cumulativeCupsSold; }
-        public double getVelocityScore() { return velocityScore; }
-        public void setVelocityScore(double velocityScore) { this.velocityScore = velocityScore; }
-        public double getStockPressurePct() { return stockPressurePct; }
-        public void setStockPressurePct(double stockPressurePct) { this.stockPressurePct = stockPressurePct; }
-        public double getTimeFactorMultiplier() { return timeFactorMultiplier; }
-        public void setTimeFactorMultiplier(double timeFactorMultiplier) { this.timeFactorMultiplier = timeFactorMultiplier; }
+        public int getW0() { return w0; }
+        public void setW0(int w0) { this.w0 = w0; }
+        public int getW1() { return w1; }
+        public void setW1(int w1) { this.w1 = w1; }
+        public int getW2() { return w2; }
+        public void setW2(int w2) { this.w2 = w2; }
+        public double getWeightedSales() { return weightedSales; }
+        public void setWeightedSales(double weightedSales) { this.weightedSales = weightedSales; }
+        public double getTargetSales() { return targetSales; }
+        public void setTargetSales(double targetSales) { this.targetSales = targetSales; }
+        public double getDemandRatio() { return demandRatio; }
+        public void setDemandRatio(double demandRatio) { this.demandRatio = demandRatio; }
         public double getDemandScore() { return demandScore; }
         public void setDemandScore(double demandScore) { this.demandScore = demandScore; }
         public BigDecimal getPrice() { return price; }
@@ -119,9 +139,12 @@ public class PricingSimulationService {
             private int estimatedRemainingCups;
             private int cupsSoldThisStep;
             private int cumulativeCupsSold;
-            private double velocityScore;
-            private double stockPressurePct;
-            private double timeFactorMultiplier;
+            private int w0;
+            private int w1;
+            private int w2;
+            private double weightedSales;
+            private double targetSales;
+            private double demandRatio;
             private double demandScore;
             private BigDecimal price;
             private String priceMovement;
@@ -133,14 +156,17 @@ public class PricingSimulationService {
             public SimulationStepBuilder estimatedRemainingCups(int estimatedRemainingCups) { this.estimatedRemainingCups = estimatedRemainingCups; return this; }
             public SimulationStepBuilder cupsSoldThisStep(int cupsSoldThisStep) { this.cupsSoldThisStep = cupsSoldThisStep; return this; }
             public SimulationStepBuilder cumulativeCupsSold(int cumulativeCupsSold) { this.cumulativeCupsSold = cumulativeCupsSold; return this; }
-            public SimulationStepBuilder velocityScore(double velocityScore) { this.velocityScore = velocityScore; return this; }
-            public SimulationStepBuilder stockPressurePct(double stockPressurePct) { this.stockPressurePct = stockPressurePct; return this; }
-            public SimulationStepBuilder timeFactorMultiplier(double timeFactorMultiplier) { this.timeFactorMultiplier = timeFactorMultiplier; return this; }
+            public SimulationStepBuilder w0(int w0) { this.w0 = w0; return this; }
+            public SimulationStepBuilder w1(int w1) { this.w1 = w1; return this; }
+            public SimulationStepBuilder w2(int w2) { this.w2 = w2; return this; }
+            public SimulationStepBuilder weightedSales(double weightedSales) { this.weightedSales = weightedSales; return this; }
+            public SimulationStepBuilder targetSales(double targetSales) { this.targetSales = targetSales; return this; }
+            public SimulationStepBuilder demandRatio(double demandRatio) { this.demandRatio = demandRatio; return this; }
             public SimulationStepBuilder demandScore(double demandScore) { this.demandScore = demandScore; return this; }
             public SimulationStepBuilder price(BigDecimal price) { this.price = price; return this; }
             public SimulationStepBuilder priceMovement(String priceMovement) { this.priceMovement = priceMovement; return this; }
             public SimulationStepBuilder explanation(String explanation) { this.explanation = explanation; return this; }
-            public SimulationStep build() { return new SimulationStep(stepIndex, timeStr, remainingVolumeMl, estimatedRemainingCups, cupsSoldThisStep, cumulativeCupsSold, velocityScore, stockPressurePct, timeFactorMultiplier, demandScore, price, priceMovement, explanation); }
+            public SimulationStep build() { return new SimulationStep(stepIndex, timeStr, remainingVolumeMl, estimatedRemainingCups, cupsSoldThisStep, cumulativeCupsSold, w0, w1, w2, weightedSales, targetSales, demandRatio, demandScore, price, priceMovement, explanation); }
         }
     }
 
@@ -202,59 +228,98 @@ public class PricingSimulationService {
 
     public SimulationResponse runSimulation(SimulationRequest request) {
         int volume = (request.getInitialVolumeMl() != null) ? request.getInitialVolumeMl() : 20000;
-        BigDecimal currentPrice = (request.getInitialPrice() != null) ? request.getInitialPrice() : new BigDecimal("20.00");
-        BigDecimal minPrice = (request.getMinPrice() != null) ? request.getMinPrice() : new BigDecimal("18.00");
-        BigDecimal maxPrice = (request.getMaxPrice() != null) ? request.getMaxPrice() : new BigDecimal("25.00");
+        BigDecimal currentPrice = (request.getInitialPrice() != null) ? request.getInitialPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00");
+        BigDecimal minPrice = (request.getMinPrice() != null) ? request.getMinPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("18.00");
+        BigDecimal maxPrice = (request.getMaxPrice() != null) ? request.getMaxPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("35.00");
 
         int cupsPerStep = (request.getCupsPerInterval() != null) ? request.getCupsPerInterval() : 4;
-        int intervalMins = (request.getIntervalMinutes() != null) ? request.getIntervalMinutes() : 5;
+        int intervalMins = (request.getIntervalMinutes() != null && request.getIntervalMinutes() > 0) ? request.getIntervalMinutes() : 2;
         int totalPurchases = (request.getTotalSimulatedPurchases() != null) ? request.getTotalSimulatedPurchases() : 40;
         int maxSteps = Math.min(30, (int) Math.ceil((double) totalPurchases / cupsPerStep));
+        if (maxSteps <= 0) maxSteps = 10;
+
+        double targetVal = (request.getTargetSales() != null && request.getTargetSales() > 0) ? request.getTargetSales() : 1.00;
+        BigDecimal targetSales = BigDecimal.valueOf(targetVal).setScale(2, RoundingMode.HALF_UP);
 
         LocalTime currentTime = LocalTime.parse(request.getStartTimeStr() != null ? request.getStartTimeStr() : "12:00");
         int cumulativeCups = 0;
         List<SimulationStep> steps = new ArrayList<>();
+        List<Integer> salesHistory = new ArrayList<>();
 
-        double wVel = request.getWeightVelocity() != null ? request.getWeightVelocity() : 0.40;
-        double wStock = request.getWeightStockPressure() != null ? request.getWeightStockPressure() : 0.40;
-        double wTime = request.getWeightTimeFactor() != null ? request.getWeightTimeFactor() : 0.20;
+        boolean crashInjected = false;
+        BigDecimal preCrashSnapshotPrice = null;
 
         for (int i = 1; i <= maxSteps && volume > 0; i++) {
             int cupsToDeduct = Math.min(cupsPerStep, volume / 250);
             int mlDeducted = cupsToDeduct * 250;
             volume -= mlDeducted;
             cumulativeCups += cupsToDeduct;
+            salesHistory.add(cupsToDeduct);
 
-            double velocityScore = Math.min(100.0, (cupsToDeduct / 5.0) * 100.0);
-            double stockPressurePct = 100.0 - (((double) volume / request.getInitialVolumeMl()) * 100.0);
-            stockPressurePct = Math.max(0.0, Math.min(100.0, stockPressurePct));
+            int w0 = cupsToDeduct;
+            int w1 = (salesHistory.size() >= 2) ? salesHistory.get(salesHistory.size() - 2) : 0;
+            int w2 = (salesHistory.size() >= 3) ? salesHistory.get(salesHistory.size() - 3) : 0;
 
-            int hour = currentTime.getHour();
-            double timeMult = (hour >= 16 && hour < 21) ? 1.2 : (hour >= 11 && hour < 16) ? 1.1 : 1.0;
-            double timeScore = (timeMult - 1.0) * 250.0 + 50.0;
+            // Authoritative DWMA: S_w = 1.00 * W0 + 0.50 * W1 + 0.25 * W2
+            BigDecimal sw = BigDecimal.valueOf(w0).multiply(new BigDecimal("1.00"))
+                    .add(BigDecimal.valueOf(w1).multiply(new BigDecimal("0.50")))
+                    .add(BigDecimal.valueOf(w2).multiply(new BigDecimal("0.25")))
+                    .setScale(2, RoundingMode.HALF_UP);
 
-            double demandScore = (wVel * velocityScore) + (wStock * stockPressurePct) + (wTime * timeScore);
-            demandScore = Math.max(0.0, Math.min(100.0, demandScore));
+            BigDecimal rd = (targetSales.compareTo(BigDecimal.ZERO) > 0)
+                    ? sw.divide(targetSales, 2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
 
             BigDecimal oldPrice = currentPrice;
-            String movement = "UNCHANGED";
+            String movement = "₹0";
             String explanation;
 
-            // Every 2 steps (~10 mins cooldown simulation) evaluate price step
-            if (i % 2 == 0) {
-                if (demandScore >= 65.0 && currentPrice.compareTo(maxPrice) < 0) {
-                    currentPrice = currentPrice.add(BigDecimal.ONE);
-                    movement = "+₹1";
-                    explanation = String.format("Step %d: Demand Score %.1f triggers +₹1 price increase to ₹%s.", i, demandScore, currentPrice);
-                } else if (demandScore <= 35.0 && currentPrice.compareTo(minPrice) > 0) {
-                    currentPrice = currentPrice.subtract(BigDecimal.ONE);
-                    movement = "-₹1";
-                    explanation = String.format("Step %d: Low demand score %.1f triggers -₹1 price drop to ₹%s.", i, demandScore, currentPrice);
-                } else {
-                    explanation = String.format("Step %d: Demand Score %.1f. Price remains stable at ₹%s.", i, demandScore, currentPrice);
-                }
+            // Check Market Crash Event at Step 5
+            if (i == 5 && request.isIncludeCrash() && !crashInjected) {
+                crashInjected = true;
+                preCrashSnapshotPrice = currentPrice;
+                currentPrice = minPrice;
+                movement = "CRASH";
+                explanation = String.format("Step %d (%s): 🚨 Market Crash Injected! Price dropped to floor limit ₹%s (Snapshot saved: ₹%s).",
+                        i, currentTime, currentPrice, preCrashSnapshotPrice);
+            } else if (i == 6 && preCrashSnapshotPrice != null) {
+                currentPrice = preCrashSnapshotPrice;
+                preCrashSnapshotPrice = null;
+                movement = "RESTORED";
+                explanation = String.format("Step %d (%s): Market Crash expired. Exact pre-crash snapshot restored to ₹%s.",
+                        i, currentTime, currentPrice);
             } else {
-                explanation = String.format("Step %d: Cooldown window active. Price held at ₹%s.", i, currentPrice);
+                // Authoritative Movement Rules:
+                // R_d >= 1.10 AND W0 > 0 -> +₹1
+                // R_d >= 1.10 AND W0 == 0 -> ₹0
+                // 0.90 <= R_d < 1.10 -> ₹0
+                // 0.50 <= R_d < 0.90 -> -₹1
+                // R_d < 0.50 -> -₹2
+                BigDecimal deltaP;
+                if (rd.compareTo(new BigDecimal("1.10")) >= 0) {
+                    if (w0 > 0) {
+                        deltaP = BigDecimal.ONE;
+                        movement = "+₹1";
+                    } else {
+                        deltaP = BigDecimal.ZERO;
+                        movement = "₹0";
+                    }
+                } else if (rd.compareTo(new BigDecimal("0.90")) >= 0) {
+                    deltaP = BigDecimal.ZERO;
+                    movement = "₹0";
+                } else if (rd.compareTo(new BigDecimal("0.50")) >= 0) {
+                    deltaP = new BigDecimal("-1.00");
+                    movement = "-₹1";
+                } else {
+                    deltaP = new BigDecimal("-2.00");
+                    movement = "-₹2";
+                }
+
+                BigDecimal uncapped = currentPrice.add(deltaP);
+                currentPrice = uncapped.max(minPrice).min(maxPrice).setScale(2, RoundingMode.HALF_UP);
+
+                explanation = String.format("Step %d (%s): W0=%d, W1=%d, W2=%d | S_w=%.2f, Target=%.2f, R_d=%.2f => Movement %s (₹%s -> ₹%s)",
+                        i, currentTime, w0, w1, w2, sw.doubleValue(), targetSales.doubleValue(), rd.doubleValue(), movement, oldPrice, currentPrice);
             }
 
             steps.add(SimulationStep.builder()
@@ -264,10 +329,13 @@ public class PricingSimulationService {
                     .estimatedRemainingCups(volume / 250)
                     .cupsSoldThisStep(cupsToDeduct)
                     .cumulativeCupsSold(cumulativeCups)
-                    .velocityScore(velocityScore)
-                    .stockPressurePct(stockPressurePct)
-                    .timeFactorMultiplier(timeMult)
-                    .demandScore(demandScore)
+                    .w0(w0)
+                    .w1(w1)
+                    .w2(w2)
+                    .weightedSales(sw.doubleValue())
+                    .targetSales(targetSales.doubleValue())
+                    .demandRatio(rd.doubleValue())
+                    .demandScore(rd.multiply(BigDecimal.valueOf(100)).doubleValue())
                     .price(currentPrice)
                     .priceMovement(movement)
                     .explanation(explanation)
@@ -280,10 +348,11 @@ public class PricingSimulationService {
                 .flavourName(request.getFlavourName())
                 .initialVolumeMl(request.getInitialVolumeMl())
                 .finalVolumeMl(volume)
-                .initialPrice(request.getInitialPrice())
+                .initialPrice(request.getInitialPrice() != null ? request.getInitialPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00"))
                 .finalPrice(currentPrice)
                 .totalCupsSold(cumulativeCups)
                 .steps(steps)
                 .build();
     }
 }
+

@@ -38,17 +38,20 @@ public class MarketCrashService {
     private String triggerSource = "MANUAL_ADMIN";
 
     private final Set<Long> crashedProductIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final PricingConfigurationService pricingConfigurationService;
 
     public MarketCrashService(ProductRepository productRepository, 
                               PriceHistoryRepository priceHistoryRepository,
                               MarketCrashSnapshotRepository snapshotRepository,
                               PricingRedisRepository redisRepository,
-                              SimpMessagingTemplate messagingTemplate) {
+                              SimpMessagingTemplate messagingTemplate,
+                              PricingConfigurationService pricingConfigurationService) {
         this.productRepository = productRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.snapshotRepository = snapshotRepository;
         this.redisRepository = redisRepository;
         this.messagingTemplate = messagingTemplate;
+        this.pricingConfigurationService = pricingConfigurationService;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -211,18 +214,21 @@ public class MarketCrashService {
 
     @Transactional
     public synchronized MarketCrashStatus triggerMarketCrash() {
-        return triggerMarketCrash(3, "GLOBAL_VOLUME_TRIGGER");
+        int durationSec = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashDurationSeconds() : 180;
+        return triggerMarketCrash(Math.max(1, durationSec / 60), "GLOBAL_VOLUME_TRIGGER");
     }
 
     @Transactional
     public synchronized MarketCrashStatus triggerMarketCrash(int durationMinutes, String triggerType) {
-        // Crash duration is strictly 3 minutes (180 seconds)
-        int duration = 3;
+        int configuredSec = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashDurationSeconds() : 180;
+        int durationSeconds = (durationMinutes > 0) ? durationMinutes * 60 : configuredSec;
         this.crashActive = true;
         this.crashStartedTime = LocalDateTime.now();
-        this.crashEndTime = crashStartedTime.plusSeconds(180);
+        this.crashEndTime = crashStartedTime.plusSeconds(durationSeconds);
         this.currentCrashCode = "CRASH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         this.triggerSource = (triggerType != null) ? triggerType : "MANUAL_ADMIN";
+
+        BigDecimal configuredCrashPrice = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashPrice() : new BigDecimal("18.00");
 
         List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
         crashedProductIds.clear();
@@ -233,7 +239,7 @@ public class MarketCrashService {
         for (Product p : allProducts) {
             crashedProductIds.add(p.getId());
             BigDecimal preCrashPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
-            BigDecimal crashPrice = new BigDecimal("18.00");
+            BigDecimal crashPrice = configuredCrashPrice;
 
             // 2. Save immutable pre-crash snapshot in DB & Redis
             MarketCrashSnapshot snapshot = MarketCrashSnapshot.builder()
@@ -245,7 +251,7 @@ public class MarketCrashService {
             snapshotRepository.save(snapshot);
             redisRepository.setCrashSnapshot(p.getId(), preCrashPrice);
 
-            // 3. Set live price to crash price ₹18.00
+            // 3. Set live price to crash price
             p.setCurrentCupPrice(crashPrice);
             p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
             p.setLastPriceChangeTimestamp(crashStartedTime);
@@ -258,7 +264,8 @@ public class MarketCrashService {
                     .newPrice(crashPrice)
                     .priceChange(crashPrice.subtract(preCrashPrice))
                     .reason("MARKET_CRASH_START")
-                    .explanation(String.format("🚨 MARKET CRASH STARTED! Price snapshot of ₹%s saved; live price set to ₹18.00", preCrashPrice))
+                    .explanation(String.format("🚨 MARKET CRASH STARTED! Price snapshot of ₹%s saved; live price set to ₹%s", preCrashPrice, crashPrice))
+                    .configVersion(pricingConfigurationService != null ? pricingConfigurationService.getConfigurationVersion() : 1L)
                     .createdAt(crashStartedTime)
                     .build();
             priceHistoryRepository.save(history);

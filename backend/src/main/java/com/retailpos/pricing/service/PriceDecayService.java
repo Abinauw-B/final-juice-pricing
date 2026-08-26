@@ -42,94 +42,11 @@ public class PriceDecayService {
     }
 
     /**
-     * Checks products every 30 seconds for decay eligibility (no trades for decayIntervalSeconds)
+     * Out-of-band decay is disabled; zero-demand price decay is governed strictly by the
+     * authoritative 2-minute DWMA settlement engine (PricingEngineService / PriceAdjustmentService).
      */
-    @Scheduled(fixedRate = 30000)
     @Transactional
     public void checkForPriceDecay() {
-        LocalDateTime now = LocalDateTime.now();
-        List<Product> products = productRepository.findByIsActiveTrueOrderByIdAsc();
-        List<ProductPriceDTO> decayedDTOs = new ArrayList<>();
-        boolean priceChanged = false;
-
-        int currentMarketVersion = redisRepository.getMarketVersion();
-
-        for (Product product : products) {
-            LocalDateTime lastTrade = product.getLastPriceChangeTimestamp();
-
-            boolean isEligibleForDecay = (lastTrade == null) || now.isAfter(lastTrade.plusSeconds(decayIntervalSeconds));
-
-            if (isEligibleForDecay) {
-                BigDecimal currentPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
-                BigDecimal minPrice = product.getMinCupPrice() != null ? product.getMinCupPrice() : new BigDecimal("18.00");
-
-                if (currentPrice.compareTo(minPrice) > 0) {
-                    BigDecimal newPrice = currentPrice.subtract(decayStep).max(minPrice);
-                    BigDecimal priceDelta = newPrice.subtract(currentPrice);
-
-                    product.setCurrentCupPrice(newPrice);
-                    product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
-                    product.setLastPriceChangeTimestamp(now);
-                    productRepository.saveAndFlush(product);
-
-                    redisRepository.setProductPrice(product.getId(), newPrice);
-                    redisRepository.setLastTradeTimestamp(product.getId(), now);
-
-                    PriceHistory history = PriceHistory.builder()
-                            .productId(product.getId())
-                            .oldPrice(currentPrice)
-                            .newPrice(newPrice)
-                            .priceChange(priceDelta)
-                            .reason("PRICE_DECAY")
-                            .explanation("Zero-demand price decay for " + product.getName())
-                            .calculationWindowStart(now.minusSeconds(decayIntervalSeconds))
-                            .calculationWindowEnd(now)
-                            .rawW0(0)
-                            .rawW1(0)
-                            .rawW2(0)
-                            .unconsumedW0(0)
-                            .weightedSales(0.0)
-                            .targetSales(product.getTargetSalesPer2Minute() != null ? product.getTargetSalesPer2Minute() : 1.0)
-                            .demandRatio(0.0)
-                            .priceVersion(product.getPriceVersion())
-                            .createdAt(now)
-                            .build();
-
-                    priceHistoryRepository.save(history);
-
-                    BigDecimal baseP = product.getDefaultCupPrice() != null ? product.getDefaultCupPrice() : new BigDecimal("25.00");
-                    double changePct = ((newPrice.subtract(baseP)).doubleValue() / baseP.doubleValue()) * 100.0;
-
-                    ProductPriceDTO dto = ProductPriceDTO.builder()
-                            .beverageId(product.getId())
-                            .name(product.getName())
-                            .flavour(product.getFlavour())
-                            .currentPrice(newPrice)
-                            .effectivePrice(newPrice)
-                            .previousPrice(currentPrice)
-                            .priceDelta(priceDelta)
-                            .priceVersion(product.getPriceVersion())
-                            .priceChangePct(changePct)
-                            .trendDirection("DOWN")
-                            .demandRatio(0.0)
-                            .weightedSales(0.0)
-                            .targetSales(product.getTargetSalesPer2Minute() != null ? product.getTargetSalesPer2Minute() : 1.0)
-                            .demandLevelCategory("ZERO_DEMAND_DECAY")
-                            .minCupPrice(product.getMinCupPrice())
-                            .maxCupPrice(product.getMaxCupPrice())
-                            .build();
-
-                    decayedDTOs.add(dto);
-                    priceChanged = true;
-                    log.info("📉 [PRICE DECAY] ProductId={} ({}) decayed ₹{} -> ₹{} due to zero trades for >{}s",
-                            product.getId(), product.getName(), currentPrice, newPrice, decayIntervalSeconds);
-                }
-            }
-        }
-
-        if (priceChanged && !decayedDTOs.isEmpty()) {
-            int newMarketVersion = redisRepository.incrementMarketVersion();
-            broadcastService.broadcastPriceUpdate(newMarketVersion, decayedDTOs);
-        }
+        log.debug("Out-of-band decay check called; decay is governed authoritatively by the 2-minute DWMA settlement engine.");
     }
 }

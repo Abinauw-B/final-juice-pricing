@@ -37,13 +37,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // Test RBAC checks on /api/admin/secure/ and /reset-all endpoints
-        if (path.contains("/reset-all") || path.startsWith("/api/admin/secure")) {
+        // Test RBAC checks on /api/admin/, /reset-all, and /pricing/config endpoints
+        if (path.contains("/reset-all") || path.startsWith("/api/admin/secure") || (path.contains("/pricing/config") && "PUT".equalsIgnoreCase(request.getMethod()))) {
             // Check explicit role restriction first (e.g. CUSTOMER forbidden)
             if (customRole != null && "CUSTOMER".equalsIgnoreCase(customRole)) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"success\":false, \"status\":403, \"error\":\"FORBIDDEN\", \"message\":\"Access denied for role CUSTOMER\"}");
+                return;
+            }
+
+            if (customRole != null && ("SUPER_ADMIN".equalsIgnoreCase(customRole) || "ADMIN".equalsIgnoreCase(customRole) || "MANAGER".equalsIgnoreCase(customRole))) {
+                filterChain.doFilter(request, response);
                 return;
             }
 

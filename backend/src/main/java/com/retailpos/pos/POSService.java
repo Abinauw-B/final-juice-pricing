@@ -361,26 +361,12 @@ public class POSService {
     private void triggerPostCheckoutSettlement(CheckoutResponse res, Set<Long> purchasedProductIds, CheckoutRequest request) {
         if (res == null || !res.isSuccess() || purchasedProductIds == null || purchasedProductIds.isEmpty()) return;
         try {
-            log.info("[POST-CHECKOUT] Order #{} committed to DB. Triggering targeted live market event & correlation pricing for productIds={}...", res.getOrderNumber(), purchasedProductIds);
-            if (request != null && request.getItems() != null && marketEventService != null) {
-                for (CartItemRequest itemReq : request.getItems()) {
-                    if (itemReq.getProductId() != null) {
-                        com.retailpos.pricing.model.PurchaseEvent pEvent = com.retailpos.pricing.model.PurchaseEvent.builder()
-                                .orderId(res.getOrderId())
-                                .orderNumber(res.getOrderNumber())
-                                .productId(itemReq.getProductId())
-                                .quantity(itemReq.getQuantity() != null ? itemReq.getQuantity() : 1)
-                                .executedPrice(res.getTotalAmount())
-                                .timestamp(LocalDateTime.now())
-                                .build();
-                        marketEventService.handlePurchaseEvent(pEvent);
-                    }
-                }
-            } else {
-                pricingEngineService.executeSettlementForProducts(purchasedProductIds);
+            log.info("[POST-CHECKOUT] Order #{} committed to DB for productIds={}. Sales recorded as demand input for DWMA settlement windows.", res.getOrderNumber(), purchasedProductIds);
+            if (pricingEngineService != null) {
+                pricingEngineService.broadcastCurrentState();
             }
         } catch (Exception e) {
-            log.warn("[POST-CHECKOUT] Post-checkout pricing settlement execution failed gracefully: {}", e.getMessage());
+            log.warn("[POST-CHECKOUT] Post-checkout state broadcast failed gracefully: {}", e.getMessage());
         }
     }
 
@@ -424,10 +410,6 @@ public class POSService {
                 com.retailpos.pricing.PriceLockService.LockedPriceVersion lock = priceLockService.validateAndRedeemLock(itemReq.getPriceLockToken());
                 effectivePrice = lock.getLockedPrice();
                 effectiveVersion = lock.getPriceVersion();
-            } else if (itemReq.getPriceVersion() != null && product.getPriceVersion() != null && !marketCrashService.isProductCrashed(product.getId())) {
-                if (!itemReq.getPriceVersion().equals(product.getPriceVersion())) {
-                    throw new IllegalStateException("PRICE_CHANGED: Price version mismatch for '" + product.getName() + "'. Server current price is ₹" + effectivePrice + ". Please refresh cart.");
-                }
             }
 
             BigDecimal itemTotal = effectivePrice.multiply(BigDecimal.valueOf(qty));

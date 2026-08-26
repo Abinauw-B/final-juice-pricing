@@ -79,7 +79,12 @@ import { FormsModule } from '@angular/forms';
                   <th>Time</th>
                   <th>Rem. Vol (ML)</th>
                   <th>Cups Sold</th>
-                  <th>Demand Score</th>
+                  <th>W0</th>
+                  <th>W1</th>
+                  <th>W2</th>
+                  <th>Weighted Sales</th>
+                  <th>Target Sales</th>
+                  <th>Demand Ratio</th>
                   <th>Movement</th>
                   <th>Current Price</th>
                   <th>Explanation Log</th>
@@ -91,13 +96,18 @@ import { FormsModule } from '@angular/forms';
                   <td style="font-size: 13px; color: var(--text-muted);">{{ step.timeStr }}</td>
                   <td style="font-size: 13px;">{{ step.remainingVolumeMl }} ml</td>
                   <td style="font-weight: 600;">+{{ step.cupsSoldThisStep }}</td>
-                  <td style="font-weight: 700;">{{ Math.round(step.demandScore) }} / 100</td>
+                  <td>{{ step.w0 }}</td>
+                  <td>{{ step.w1 }}</td>
+                  <td>{{ step.w2 }}</td>
+                  <td>{{ step.weightedSales?.toFixed(2) }}</td>
+                  <td>{{ step.targetSales?.toFixed(2) }}</td>
+                  <td>{{ step.demandRatio?.toFixed(2) }}</td>
                   <td>
                     <span class="status-tag" [ngClass]="getMovementClass(step.priceMovement)">
                       {{ step.priceMovement }}
                     </span>
                   </td>
-                  <td style="font-weight: 700; font-size: 16px; color: #10b981;">₹{{ step.price }}</td>
+                  <td style="font-weight: 700; font-size: 16px; color: #10b981;">₹{{ step.price?.toFixed(2) }}</td>
                   <td style="font-size: 12px; color: var(--text-muted); max-width: 280px;">{{ step.explanation }}</td>
                 </tr>
               </tbody>
@@ -113,16 +123,14 @@ export class PricingSimulatorComponent {
   req: any = {
     flavourName: 'Fresh Mango Juice',
     initialVolumeMl: 20000,
-    initialPrice: 20,
+    initialPrice: 25,
     minPrice: 18,
-    maxPrice: 25,
+    maxPrice: 35,
     totalSimulatedPurchases: 40,
     cupsPerInterval: 4,
-    intervalMinutes: 5,
-    startTimeStr: '12:00',
-    weightVelocity: 0.40,
-    weightStockPressure: 0.40,
-    weightTimeFactor: 0.20
+    intervalMinutes: 2,
+    targetSales: 1.00,
+    startTimeStr: '12:00'
   };
 
   simulationResult: any = null;
@@ -137,35 +145,60 @@ export class PricingSimulatorComponent {
         this.simulationResult = res;
       },
       error: () => {
-        // Fallback local simulator demo if backend is initializing
+        // Authoritative DWMA fallback
         const steps = [];
         let vol = this.req.initialVolumeMl;
         let price = this.req.initialPrice;
         let totalSold = 0;
+        const salesHistory: number[] = [];
 
         for (let i = 1; i <= 10; i++) {
-          const sold = 4;
+          const sold = Math.min(this.req.cupsPerInterval, Math.floor(vol / 250));
           vol -= sold * 250;
           totalSold += sold;
-          const score = 50 + (i * 3);
-          let movement = 'UNCHANGED';
+          salesHistory.push(sold);
 
-          if (i % 2 === 0 && score >= 65 && price < this.req.maxPrice) {
-            price += 1;
-            movement = '+₹1';
+          const w0 = sold;
+          const w1 = salesHistory.length >= 2 ? salesHistory[salesHistory.length - 2] : 0;
+          const w2 = salesHistory.length >= 3 ? salesHistory[salesHistory.length - 3] : 0;
+          const sw = (1.00 * w0) + (0.50 * w1) + (0.25 * w2);
+          const target = this.req.targetSales || 1.00;
+          const rd = sw / target;
+
+          let movement = '₹0';
+          let delta = 0;
+          if (rd >= 1.10) {
+            delta = (w0 > 0) ? 1 : 0;
+            movement = (w0 > 0) ? '+₹1' : '₹0';
+          } else if (rd >= 0.90) {
+            delta = 0;
+            movement = '₹0';
+          } else if (rd >= 0.50) {
+            delta = -1;
+            movement = '-₹1';
+          } else {
+            delta = -2;
+            movement = '-₹2';
           }
+          const oldP = price;
+          price = Math.min(this.req.maxPrice, Math.max(this.req.minPrice, price + delta));
 
           steps.push({
             stepIndex: i,
-            timeStr: `12:${(i * 5).toString().padStart(2, '0')}`,
+            timeStr: `12:${((i - 1) * 2).toString().padStart(2, '0')}`,
             remainingVolumeMl: vol,
             estimatedRemainingCups: Math.floor(vol / 250),
             cupsSoldThisStep: sold,
             cumulativeCupsSold: totalSold,
-            demandScore: score,
+            w0: w0,
+            w1: w1,
+            w2: w2,
+            weightedSales: sw,
+            targetSales: target,
+            demandRatio: rd,
             price: price,
             priceMovement: movement,
-            explanation: `Step ${i}: Demand score ${score} evaluated. Price at ₹${price}.`
+            explanation: `Step ${i}: W0=${w0}, W1=${w1}, W2=${w2} | S_w=${sw.toFixed(2)}, Target=${target.toFixed(2)}, R_d=${rd.toFixed(2)} => ${movement} (₹${oldP.toFixed(2)} -> ₹${price.toFixed(2)})`
           });
         }
 
@@ -184,7 +217,8 @@ export class PricingSimulatorComponent {
 
   getMovementClass(m: string): string {
     if (m === '+₹1') return 'tag-depleted';
-    if (m === '-₹1') return 'tag-active';
-    return '';
+    if (m.includes('-')) return 'tag-crash';
+    return 'tag-active';
   }
 }
+

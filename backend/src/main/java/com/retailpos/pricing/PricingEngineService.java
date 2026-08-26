@@ -27,11 +27,19 @@ public class PricingEngineService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final PriceAdjustmentService priceAdjustmentService;
     private final JuiceMarketSettlementRepository settlementRepository;
+    private final PricingConfigurationService pricingConfigurationService;
 
     private static LocalDateTime lastSettlementTime = LocalDateTime.now();
     private static LocalDateTime nextSettlementTime = LocalDateTime.now().plusSeconds(120);
 
-    public PricingEngineService(ProductRepository productRepository, PriceHistoryRepository priceHistoryRepository, MarketCrashService marketCrashService, SimpMessagingTemplate messagingTemplate, RedisTemplate<String, Object> redisTemplate, PriceAdjustmentService priceAdjustmentService, JuiceMarketSettlementRepository settlementRepository) {
+    public PricingEngineService(ProductRepository productRepository,
+                                PriceHistoryRepository priceHistoryRepository,
+                                MarketCrashService marketCrashService,
+                                SimpMessagingTemplate messagingTemplate,
+                                RedisTemplate<String, Object> redisTemplate,
+                                PriceAdjustmentService priceAdjustmentService,
+                                JuiceMarketSettlementRepository settlementRepository,
+                                PricingConfigurationService pricingConfigurationService) {
         this.productRepository = productRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.marketCrashService = marketCrashService;
@@ -39,11 +47,13 @@ public class PricingEngineService {
         this.redisTemplate = redisTemplate;
         this.priceAdjustmentService = priceAdjustmentService;
         this.settlementRepository = settlementRepository;
+        this.pricingConfigurationService = pricingConfigurationService;
     }
 
-    public static LocalDateTime getNextSettlementTime() {
+    public LocalDateTime getNextSettlementTime() {
+        int interval = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 120;
         if (LocalDateTime.now().isAfter(nextSettlementTime)) {
-            nextSettlementTime = LocalDateTime.now().plusSeconds(120);
+            nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
         }
         return nextSettlementTime;
     }
@@ -274,9 +284,8 @@ public class PricingEngineService {
     }
 
     /**
-     * Scheduled Volatility Round Pricing Cycle (Configurable interval, default 60s)
+     * DWMA Pricing Settlement Cycle
      */
-    @Scheduled(fixedRateString = "${pricing.round.interval-ms:60000}")
     @Transactional
     public PriceEvaluationCycleResult executeSettlementCycle() {
         return executeSettlementCycle(false);
@@ -296,7 +305,8 @@ public class PricingEngineService {
     @Transactional
     public PriceEvaluationCycleResult executeSettlementCycle(boolean force) {
         LocalDateTime now = LocalDateTime.now();
-        log.info("⚡ Running 2-Minute Juice Exchange Settlement Cycle at {} (force={})...", now, force);
+        int intervalSeconds = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 120;
+        log.info("⚡ Running Dynamic Juice Exchange Settlement Cycle (interval={}s) at {} (force={})...", intervalSeconds, now, force);
 
         String windowStartKey = force ? "SETTLEMENT_FORCE_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 4) : "SETTLEMENT_" + now.withSecond(0).withNano(0).toString();
 
@@ -306,7 +316,7 @@ public class PricingEngineService {
         }
 
         lastSettlementTime = now;
-        nextSettlementTime = now.plusSeconds(120);
+        nextSettlementTime = now.plusSeconds(intervalSeconds);
 
         String currentStatus = "OPEN";
         if (PriceAdjustmentService.isMarketPaused()) {

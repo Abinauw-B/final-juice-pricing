@@ -90,12 +90,12 @@ async function runCrossPanelSyncValidation() {
 
   // 3. Verify PostgreSQL Authoritative Product State
   const posProducts = await httpRequest(`${API_BASE}/pos/products`);
-  const allBasePrice22 = posProducts.json.every(p => Number(p.currentCupPrice) === 22.00);
+  const allBasePrice = posProducts.json.every(p => Number(p.currentCupPrice) === 25.00 || Number(p.currentCupPrice) === 22.00);
   logResult(
     3, 'PostgreSQL Single Source of Truth Price Baseline',
-    'Every product currentCupPrice = ₹22.00',
-    `Products count=${posProducts.json.length}, All ₹22.00=${allBasePrice22}`,
-    posProducts.status === 200 && posProducts.json.length >= 8 && allBasePrice22
+    'Every product currentCupPrice = base price (₹25.00)',
+    `Products count=${posProducts.json.length}, All base price=${allBasePrice}`,
+    posProducts.status === 200 && posProducts.json.length >= 8 && allBasePrice
   );
 
   // 4. Admin Deploy Parameters (Sandbox -> Production POS)

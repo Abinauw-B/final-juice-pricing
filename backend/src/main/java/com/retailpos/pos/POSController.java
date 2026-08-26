@@ -134,7 +134,11 @@ public class POSController {
             if (details.getMinCupPrice() != null) existing.setMinCupPrice(details.getMinCupPrice());
             if (details.getMaxCupPrice() != null) existing.setMaxCupPrice(details.getMaxCupPrice());
             if (details.getDefaultCupPrice() != null) existing.setDefaultCupPrice(details.getDefaultCupPrice());
+            if (details.getTargetSalesPer2Minute() != null) existing.setTargetSalesPer2Minute(details.getTargetSalesPer2Minute());
+            if (details.getTargetOrders() != null) existing.setTargetOrders(details.getTargetOrders());
+            if (details.getVolatility() != null) existing.setVolatility(details.getVolatility());
             existing.setLastPriceChangeTimestamp(LocalDateTime.now());
+            existing.setPriceVersion(existing.getPriceVersion() != null ? existing.getPriceVersion() + 1 : 1);
             Product updated = productRepository.save(existing);
             broadcastProductUpdate();
             return ResponseEntity.ok(updated);

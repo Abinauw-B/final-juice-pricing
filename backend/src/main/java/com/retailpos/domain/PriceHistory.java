@@ -93,6 +93,9 @@ public class PriceHistory {
     @Column(name = "price_version")
     private Integer priceVersion;
 
+    @Column(name = "config_version")
+    private Long configVersion = 1L;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -177,6 +180,8 @@ public class PriceHistory {
     public void setCeilingPrice(BigDecimal ceilingPrice) { this.ceilingPrice = ceilingPrice; }
     public Integer getPriceVersion() { return priceVersion; }
     public void setPriceVersion(Integer priceVersion) { this.priceVersion = priceVersion; }
+    public Long getConfigVersion() { return configVersion; }
+    public void setConfigVersion(Long configVersion) { this.configVersion = configVersion; }
 
     public static PriceHistoryBuilder builder() { return new PriceHistoryBuilder(); }
 
@@ -209,6 +214,7 @@ public class PriceHistory {
         private BigDecimal floorPrice;
         private BigDecimal ceilingPrice;
         private Integer priceVersion;
+        private Long configVersion = 1L;
         private LocalDateTime createdAt = LocalDateTime.now();
 
         public PriceHistoryBuilder id(Long id) { this.id = id; return this; }
@@ -239,6 +245,7 @@ public class PriceHistory {
         public PriceHistoryBuilder floorPrice(BigDecimal floorPrice) { this.floorPrice = floorPrice; return this; }
         public PriceHistoryBuilder ceilingPrice(BigDecimal ceilingPrice) { this.ceilingPrice = ceilingPrice; return this; }
         public PriceHistoryBuilder priceVersion(Integer priceVersion) { this.priceVersion = priceVersion; return this; }
+        public PriceHistoryBuilder configVersion(Long configVersion) { this.configVersion = configVersion; return this; }
         public PriceHistoryBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
 
         public PriceHistory build() {
@@ -256,6 +263,7 @@ public class PriceHistory {
             ph.setFloorPrice(floorPrice);
             ph.setCeilingPrice(ceilingPrice);
             ph.setPriceVersion(priceVersion);
+            ph.setConfigVersion(configVersion);
             return ph;
         }
     }

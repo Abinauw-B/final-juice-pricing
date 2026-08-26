@@ -152,13 +152,14 @@ async function runE2EValidation() {
 
   // Step 5: Verify STOMP Broadcast Payload
   console.log('\n5️⃣ Step 5: Verifying STOMP Broadcast Payload Integrity...');
-  if (!stompReceivedPayload || !stompReceivedPayload.updatedPrices) {
+  const priceList = stompReceivedPayload?.updatedPrices || stompReceivedPayload?.changes || (Array.isArray(stompReceivedPayload) ? stompReceivedPayload : null);
+  if (!priceList) {
     console.error('❌ STOMP payload not received or malformed!');
     process.exit(1);
   }
 
-  const mangoUpdate = stompReceivedPayload.updatedPrices.find(p => p.beverageId === 1 || p.flavour === 'MANGO');
-  console.log(`   - STOMP Price Update: ₹${mangoUpdate.currentPrice}`);
+  const mangoUpdate = priceList.find(p => p.beverageId === 1 || p.id === 1 || p.flavour === 'MANGO');
+  console.log(`   - STOMP Price Update: ₹${mangoUpdate.currentPrice || mangoUpdate.currentCupPrice}`);
   console.log(`   - STOMP Price Version: ${mangoUpdate.priceVersion}`);
   console.log(`   - STOMP Demand Category: ${mangoUpdate.demandLevelCategory}`);
   console.log(`   - STOMP Price Change: +₹${mangoUpdate.priceChange}`);

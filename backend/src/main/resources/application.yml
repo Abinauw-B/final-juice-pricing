@@ -51,7 +51,7 @@ management:
 
 pricing:
   round:
-    interval-ms: 60000
+    interval-ms: 120000
   default-target-orders: 5
   default-volatility: 0.08
   market-crash:
@@ -59,7 +59,7 @@ pricing:
     floor-buffer-percent: 0.05
   engine:
     enabled: true
-    interval-ms: 60000
+    interval-ms: 120000
   demand:
     window-minutes: 5
     target-orders: 10

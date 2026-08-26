@@ -1,11 +1,6 @@
 package com.retailpos.pricing;
 
-import com.retailpos.domain.PriceHistory;
-import com.retailpos.domain.PriceHistoryRepository;
-import com.retailpos.domain.Product;
-import com.retailpos.domain.ProductRepository;
-import com.retailpos.domain.SystemConfig;
-import com.retailpos.domain.SystemConfigRepository;
+import com.retailpos.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -32,8 +27,21 @@ public class PricingController {
     private final PriceLockService priceLockService;
     private final com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final PricingConfigurationService pricingConfigurationService;
+    private final PricingConfigAuditLogRepository auditLogRepository;
 
-    public PricingController(PriceAdjustmentService priceAdjustmentService, PricingSimulationService pricingSimulationService, PriceHistoryRepository priceHistoryRepository, SystemConfigRepository systemConfigRepository, ProductRepository productRepository, MarketCrashService marketCrashService, PricingEngineService pricingEngineService, PriceLockService priceLockService, com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService, SimpMessagingTemplate messagingTemplate) {
+    public PricingController(PriceAdjustmentService priceAdjustmentService,
+                             PricingSimulationService pricingSimulationService,
+                             PriceHistoryRepository priceHistoryRepository,
+                             SystemConfigRepository systemConfigRepository,
+                             ProductRepository productRepository,
+                             MarketCrashService marketCrashService,
+                             PricingEngineService pricingEngineService,
+                             PriceLockService priceLockService,
+                             com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService,
+                             SimpMessagingTemplate messagingTemplate,
+                             PricingConfigurationService pricingConfigurationService,
+                             PricingConfigAuditLogRepository auditLogRepository) {
         this.priceAdjustmentService = priceAdjustmentService;
         this.pricingSimulationService = pricingSimulationService;
         this.priceHistoryRepository = priceHistoryRepository;
@@ -44,6 +52,8 @@ public class PricingController {
         this.priceLockService = priceLockService;
         this.marketCorrelationService = marketCorrelationService;
         this.messagingTemplate = messagingTemplate;
+        this.pricingConfigurationService = pricingConfigurationService;
+        this.auditLogRepository = auditLogRepository;
     }
 
     @GetMapping({"/market", "/status", "/admin/status"})
@@ -166,21 +176,9 @@ public class PricingController {
         Product updated = priceAdjustmentService.deployAdminPricing(request);
         try {
             if (messagingTemplate != null) {
-                Map<String, Object> wsPayload = new HashMap<>();
-                wsPayload.put("productId", updated.getId());
-                wsPayload.put("id", updated.getId());
-                wsPayload.put("name", updated.getName());
-                wsPayload.put("flavour", updated.getFlavour());
-                wsPayload.put("currentCupPrice", updated.getCurrentCupPrice());
-                wsPayload.put("currentPrice", updated.getCurrentCupPrice());
-                wsPayload.put("defaultCupPrice", updated.getDefaultCupPrice());
-                wsPayload.put("minCupPrice", updated.getMinCupPrice());
-                wsPayload.put("maxCupPrice", updated.getMaxCupPrice());
-                wsPayload.put("priceVersion", updated.getPriceVersion());
-                wsPayload.put("timestamp", LocalDateTime.now().toString());
-
-                messagingTemplate.convertAndSend("/topic/prices", wsPayload);
-                messagingTemplate.convertAndSend("/topic/products", productRepository.findByIsActiveTrueOrderByIdAsc());
+                List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+                messagingTemplate.convertAndSend("/topic/prices", allProducts);
+                messagingTemplate.convertAndSend("/topic/products", allProducts);
             }
         } catch (Exception e) {}
 
@@ -273,39 +271,43 @@ public class PricingController {
     }
 
     @GetMapping({"/config", "/admin/config"})
-    public ResponseEntity<List<SystemConfig>> getConfig() {
-        return ResponseEntity.ok(systemConfigRepository.findAll());
-    }
-
-    public static class UpdateConfigItem {
-        private String key;
-        private String value;
-
-        public UpdateConfigItem() {}
-        public UpdateConfigItem(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
-        public String getKey() { return key; }
-        public void setKey(String key) { this.key = key; }
-        public String getValue() { return value; }
-        public void setValue(String value) { this.value = value; }
+    public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO> getConfig() {
+        return ResponseEntity.ok(pricingConfigurationService.getFullConfiguration());
     }
 
     @PutMapping({"/config", "/admin/config"})
-    public ResponseEntity<List<SystemConfig>> updateConfig(@RequestBody List<UpdateConfigItem> updates) {
-        for (UpdateConfigItem item : updates) {
-            systemConfigRepository.findById(item.getKey()).ifPresent(cfg -> {
-                cfg.setConfigValue(item.getValue());
-                systemConfigRepository.save(cfg);
-            });
-        }
-        try {
-            if (messagingTemplate != null) {
-                messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
-            }
-        } catch (Exception e) {}
-        return ResponseEntity.ok(systemConfigRepository.findAll());
+    public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO> updateConfig(
+            @RequestBody com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig globalConfig,
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
+        String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
+        com.retailpos.pricing.model.PricingConfigDTO updated = pricingConfigurationService.updateGlobalConfiguration(globalConfig, actor, "ADMIN_UI_UPDATE");
+        return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping({"/products/{productId}/config", "/admin/products/{productId}/config"})
+    public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO.ProductConfig> getProductConfig(@PathVariable Long productId) {
+        Product p = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+        return ResponseEntity.ok(new com.retailpos.pricing.model.PricingConfigDTO.ProductConfig(
+                p.getId(), p.getName(), p.getFlavour(),
+                p.getTargetSalesPer2Minute() != null ? p.getTargetSalesPer2Minute() : 1.0,
+                p.getDefaultCupPrice(), p.getCurrentCupPrice(), p.getMinCupPrice(), p.getMaxCupPrice()
+        ));
+    }
+
+    @PutMapping({"/products/{productId}/config", "/admin/products/{productId}/config"})
+    public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO.ProductConfig> updateProductConfig(
+            @PathVariable Long productId,
+            @RequestBody com.retailpos.pricing.model.PricingConfigDTO.ProductConfig productConfig,
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
+        String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
+        com.retailpos.pricing.model.PricingConfigDTO.ProductConfig updated = pricingConfigurationService.updateProductConfiguration(productId, productConfig, actor, "ADMIN_PRODUCT_CONFIG_UPDATE");
+        return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping({"/config/audit", "/admin/config/audit"})
+    public ResponseEntity<List<com.retailpos.domain.PricingConfigAuditLog>> getPricingAuditLogs() {
+        return ResponseEntity.ok(auditLogRepository.findAllByOrderByCreatedAtDesc());
     }
 
     @PostMapping({"/quote", "/lock"})
