@@ -32,22 +32,22 @@ public class PricingConfigDTO {
     public void setProducts(List<ProductConfig> products) { this.products = products; }
 
     public static class GlobalConfig {
-        private Integer settlementIntervalSeconds = 120;
-        private BigDecimal weightW0 = new BigDecimal("1.00");
-        private BigDecimal weightW1 = new BigDecimal("0.50");
-        private BigDecimal weightW2 = new BigDecimal("0.25");
-        private BigDecimal highDemandThreshold = new BigDecimal("1.10");
-        private BigDecimal stableDemandLowerThreshold = new BigDecimal("0.90");
-        private BigDecimal stableDemandUpperThreshold = new BigDecimal("1.10");
-        private BigDecimal lowDemandThreshold = new BigDecimal("0.50");
-        private BigDecimal increaseStep = new BigDecimal("1.00");
-        private BigDecimal decreaseStep1 = new BigDecimal("1.00");
-        private BigDecimal decreaseStep2 = new BigDecimal("2.00");
-        private Integer marketCrashDurationSeconds = 180;
-        private BigDecimal marketCrashPrice = new BigDecimal("18.00");
-        private BigDecimal defaultCupPrice = new BigDecimal("25.00");
-        private BigDecimal minCupPrice = new BigDecimal("18.00");
-        private BigDecimal maxCupPrice = new BigDecimal("35.00");
+        private Integer settlementIntervalSeconds;
+        private BigDecimal weightW0;
+        private BigDecimal weightW1;
+        private BigDecimal weightW2;
+        private BigDecimal highDemandThreshold;
+        private BigDecimal stableDemandLowerThreshold;
+        private BigDecimal stableDemandUpperThreshold;
+        private BigDecimal lowDemandThreshold;
+        private BigDecimal increaseStep;
+        private BigDecimal decreaseStep1;
+        private BigDecimal decreaseStep2;
+        private Integer marketCrashDurationSeconds;
+        private BigDecimal marketCrashPrice;
+        private BigDecimal defaultCupPrice;
+        private BigDecimal minCupPrice;
+        private BigDecimal maxCupPrice;
 
         public GlobalConfig() {}
 

@@ -267,6 +267,16 @@ public class PricingConfigurationService {
 
         // 3. Update in-memory snapshot
         globalConfigCache.putAll(newSettings);
+        if (update.getMinCupPrice() != null || update.getMaxCupPrice() != null || update.getDefaultCupPrice() != null) {
+            List<Product> products = productRepository.findAll();
+            for (Product p : products) {
+                if (update.getMinCupPrice() != null) p.setMinCupPrice(update.getMinCupPrice());
+                if (update.getMaxCupPrice() != null) p.setMaxCupPrice(update.getMaxCupPrice());
+                if (update.getDefaultCupPrice() != null) p.setDefaultCupPrice(update.getDefaultCupPrice());
+            }
+            productRepository.saveAllAndFlush(products);
+        }
+
         currentConfigVersion.set(newVersion);
         lastConfigUpdate = LocalDateTime.now();
 
@@ -377,16 +387,21 @@ public class PricingConfigurationService {
     }
 
     private void validateGlobalConfig(PricingConfigDTO.GlobalConfig config) {
-        if (config.getMinCupPrice() != null && config.getMinCupPrice().compareTo(BigDecimal.ZERO) < 0) {
+        BigDecimal effectiveMin = config.getMinCupPrice() != null ? config.getMinCupPrice() : getMinCupPrice();
+        BigDecimal effectiveMax = config.getMaxCupPrice() != null ? config.getMaxCupPrice() : getMaxCupPrice();
+        BigDecimal effectiveDefault = config.getDefaultCupPrice() != null ? config.getDefaultCupPrice() : getDefaultCupPrice();
+        BigDecimal effectiveCrashPrice = config.getMarketCrashPrice() != null ? config.getMarketCrashPrice() : getMarketCrashPrice();
+
+        if (effectiveMin != null && effectiveMin.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Minimum price cannot be negative");
         }
-        if (config.getMaxCupPrice() != null && config.getMinCupPrice() != null && config.getMaxCupPrice().compareTo(config.getMinCupPrice()) <= 0) {
+        if (effectiveMax != null && effectiveMin != null && effectiveMax.compareTo(effectiveMin) <= 0) {
             throw new IllegalArgumentException("Maximum price must be strictly greater than minimum price");
         }
-        if (config.getDefaultCupPrice() != null && config.getMinCupPrice() != null && config.getDefaultCupPrice().compareTo(config.getMinCupPrice()) < 0) {
+        if (effectiveDefault != null && effectiveMin != null && effectiveDefault.compareTo(effectiveMin) < 0) {
             throw new IllegalArgumentException("Default price cannot be less than minimum price");
         }
-        if (config.getDefaultCupPrice() != null && config.getMaxCupPrice() != null && config.getDefaultCupPrice().compareTo(config.getMaxCupPrice()) > 0) {
+        if (effectiveDefault != null && effectiveMax != null && effectiveDefault.compareTo(effectiveMax) > 0) {
             throw new IllegalArgumentException("Default price cannot exceed maximum price");
         }
         if (config.getWeightW0() != null && config.getWeightW0().compareTo(BigDecimal.ZERO) < 0) {
@@ -404,8 +419,11 @@ public class PricingConfigurationService {
         if (config.getMarketCrashDurationSeconds() != null && config.getMarketCrashDurationSeconds() <= 0) {
             throw new IllegalArgumentException("Market crash duration must be strictly positive (> 0 seconds)");
         }
-        if (config.getMarketCrashPrice() != null && config.getMinCupPrice() != null && config.getMarketCrashPrice().compareTo(config.getMinCupPrice()) < 0) {
-            throw new IllegalArgumentException("Market crash price cannot be below minimum floor price");
+        if (effectiveCrashPrice != null && effectiveMin != null && effectiveCrashPrice.compareTo(effectiveMin) < 0) {
+            // Auto-adjust or validate crash price
+            if (config.getMarketCrashPrice() != null) {
+                throw new IllegalArgumentException("Market crash price cannot be below minimum floor price");
+            }
         }
         if (config.getIncreaseStep() != null && config.getIncreaseStep().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Increase step cannot be negative");
