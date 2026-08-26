@@ -13,6 +13,7 @@
     "git:push": "git add . && git commit -m \"update: automated project sync\" && git push origin main"
   },
   "dependencies": {
+    "pg": "^8.23.0",
     "ws": "^8.21.3"
   }
 }

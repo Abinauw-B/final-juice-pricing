@@ -206,8 +206,8 @@ public class PricingController {
     }
 
     @PostMapping({"/market-crash/trigger", "/market-crash", "/crash/trigger", "/crash"})
-    public ResponseEntity<MarketCrashService.MarketCrashStatus> triggerMarketCrash(@RequestParam(required = false, defaultValue = "3") Integer durationMinutes) {
-        int duration = (durationMinutes != null && durationMinutes > 0) ? durationMinutes : 3;
+    public ResponseEntity<MarketCrashService.MarketCrashStatus> triggerMarketCrash(@RequestParam(required = false) Integer durationMinutes) {
+        int duration = (durationMinutes != null && durationMinutes > 0) ? durationMinutes : 0;
         return ResponseEntity.ok(marketCrashService.triggerMarketCrash(duration, "MANUAL_ADMIN"));
     }
 

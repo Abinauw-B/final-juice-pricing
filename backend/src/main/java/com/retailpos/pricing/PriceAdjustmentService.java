@@ -213,8 +213,12 @@ public class PriceAdjustmentService {
         }
 
         BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
-        BigDecimal floor = product.getMinCupPrice();
-        BigDecimal ceiling = product.getMaxCupPrice();
+        BigDecimal floor = (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null)
+                ? pricingConfigurationService.getMinCupPrice()
+                : product.getMinCupPrice();
+        BigDecimal ceiling = (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null)
+                ? pricingConfigurationService.getMaxCupPrice()
+                : product.getMaxCupPrice();
         int orderCount = product.getOrderCount() != null ? product.getOrderCount() : 0;
         int targetOrders = product.getTargetOrders();
         BigDecimal volatility = product.getVolatility();
@@ -564,14 +568,17 @@ public class PriceAdjustmentService {
         resetMarketStartTime();
 
         int resetCount = 0;
+        BigDecimal basePrice = pricingConfigurationService != null ? pricingConfigurationService.getDefaultCupPrice() : new BigDecimal("25.00");
+        BigDecimal minPrice = pricingConfigurationService != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("18.00");
+        BigDecimal maxPrice = pricingConfigurationService != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("35.00");
+
         for (Product p : products) {
             BigDecimal oldPrice = p.getCurrentCupPrice();
-            BigDecimal basePrice = new BigDecimal("25.00");
 
             p.setCurrentCupPrice(basePrice);
             p.setDefaultCupPrice(basePrice);
-            p.setMinCupPrice(new BigDecimal("18.00"));
-            p.setMaxCupPrice(new BigDecimal("35.00"));
+            p.setMinCupPrice(minPrice);
+            p.setMaxCupPrice(maxPrice);
             p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
             p.setLastPriceChangeTimestamp(null);
             p.setOrderCount(0);
@@ -592,7 +599,7 @@ public class PriceAdjustmentService {
                     .calculationWindowStart(now)
                     .calculationWindowEnd(now)
                     .reason("ADMIN_RESET_TO_DEFAULT")
-                    .explanation(String.format("ADMIN_RESET_TO_DEFAULT: Reset from ₹%s to base ₹25.00. Actor: %s", oldPrice, userActor))
+                    .explanation(String.format("ADMIN_RESET_TO_DEFAULT: Reset from ₹%s to base ₹%s. Actor: %s", oldPrice, basePrice, userActor))
                     .createdAt(now)
                     .build();
             priceHistoryRepository.save(history);
@@ -602,7 +609,7 @@ public class PriceAdjustmentService {
 
         return new ResetAllResponse(
                 true,
-                "All market prices reset to base ₹25.00 successfully",
+                "All market prices reset to base ₹" + basePrice + " successfully",
                 resetCount,
                 requestId,
                 now.toString(),
@@ -792,8 +799,12 @@ public class PriceAdjustmentService {
         }
 
         BigDecimal currentPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
-        BigDecimal floor = p.getMinCupPrice();
-        BigDecimal ceiling = p.getMaxCupPrice();
+        BigDecimal floor = (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null)
+                ? pricingConfigurationService.getMinCupPrice()
+                : p.getMinCupPrice();
+        BigDecimal ceiling = (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null)
+                ? pricingConfigurationService.getMaxCupPrice()
+                : p.getMaxCupPrice();
 
         BigDecimal weightW0 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW0() : new BigDecimal("1.0000");
         BigDecimal weightW1 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW1() : new BigDecimal("0.5000");

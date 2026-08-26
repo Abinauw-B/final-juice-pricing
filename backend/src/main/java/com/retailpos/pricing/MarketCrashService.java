@@ -168,7 +168,7 @@ public class MarketCrashService {
             remaining = Math.max(0, crashEndTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
         }
 
-        BigDecimal displayCrashPrice = new BigDecimal("18.00");
+        BigDecimal displayCrashPrice = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashPrice() : new BigDecimal("18.00");
 
         return MarketCrashStatus.builder()
                 .active(crashActive)
@@ -179,7 +179,7 @@ public class MarketCrashService {
                 .endTime(crashEndTime)
                 .affectedProductIds(new ArrayList<>(crashedProductIds))
                 .crashPrice(displayCrashPrice)
-                .message(crashActive ? "🚨 MARKET CRASH IN PROGRESS! All juices set to ₹18.00 floor price!" : "Trading normal. Dynamic price algorithm active.")
+                .message(crashActive ? "🚨 MARKET CRASH IN PROGRESS! All juices set to ₹" + displayCrashPrice + " crash price!" : "Trading normal. Dynamic price algorithm active.")
                 .build();
     }
 
