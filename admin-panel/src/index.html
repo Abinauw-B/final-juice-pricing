@@ -566,7 +566,7 @@
               <p style="color: var(--text-muted);">Real-time inventory volume, POS sales metrics, and dynamic stock exchange activity.</p>
             </div>
             <div style="display: flex; gap: 10px;">
-              <button class="btn-primary" id="btnRefreshDashboard" style="background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); font-size: 13px; padding: 8px 14px;" onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
+              <button class="btn-primary" id="btnRefreshDashboard" style="background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); font-size: 13px; padding: 8px 14px;" onclick="refreshDashboard({ manual: true })">🔄 Refresh Dashboard</button>
               <button class="btn-primary" id="btnRecalculatePrices" style="background: linear-gradient(135deg, #059669, #047857); font-size: 13px; padding: 8px 14px;" onclick="triggerPriceEngine()">⚡ Recalculate Prices</button>
             </div>
           </div>
@@ -1490,7 +1490,7 @@
         </div>
       </div>
 
-      <div style="background: rgba(217, 119, 6, 0.08); border-left: 4px solid #d97706; padding: 16px; border-radius: 10px; margin-bottom: 22px; font-size: 14px; line-height: 1.6;">
+      <div id="confirmResetModalBodyText" style="background: rgba(217, 119, 6, 0.08); border-left: 4px solid #d97706; padding: 16px; border-radius: 10px; margin-bottom: 22px; font-size: 14px; line-height: 1.6;">
         This will reset all 8 live market prices to <strong>₹25.00</strong>.
         <br><br>
         <strong>Production market state will be changed.</strong>
@@ -1547,8 +1547,15 @@
       const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
       let token = localStorage.getItem('pubexchange_jwt_token');
       
+      let userRole = 'SUPER_ADMIN';
+      try {
+        const u = JSON.parse(localStorage.getItem('pubexchange_user') || '{}');
+        if (u && u.role) userRole = u.role;
+      } catch (e) {}
+
       const headers = {
         'Content-Type': 'application/json',
+        'X-User-Role': userRole,
         ...(options.headers || {})
       };
       if (token) {
@@ -1769,8 +1776,11 @@
     }
 
     // Refresh Dashboard Button Handler (Section 1)
-    async function refreshDashboard() {
-      setButtonLoading('btnRefreshDashboard', true, 'Refreshing...');
+    async function refreshDashboard(options = {}) {
+      const isManual = options && options.manual === true;
+      if (isManual) {
+        setButtonLoading('btnRefreshDashboard', true, 'Refreshing...');
+      }
       try {
         // 1. Fetch dashboard summary
         const sumRes = await apiFetch('/reports/summary');
@@ -1805,11 +1815,18 @@
         // 4. Update Charts
         renderCharts();
 
-        showToast('🔄 Dashboard Refreshed with Live Backend Data!', 'success');
+        if (isManual) {
+          showToast('🔄 Dashboard Refreshed with Live Backend Data!', 'success');
+        }
       } catch (err) {
-        showToast('⚠️ Could not connect to backend server on port 8088', 'danger');
+        console.error('[DASHBOARD] Refresh failed:', err);
+        if (isManual) {
+          showToast('⚠️ Could not connect to backend server on port 8088', 'danger');
+        }
       } finally {
-        setButtonLoading('btnRefreshDashboard', false);
+        if (isManual) {
+          setButtonLoading('btnRefreshDashboard', false);
+        }
       }
     }
 
@@ -3621,11 +3638,16 @@
     }
 
     function resetLiveMarketPrices() {
+      const defaultPrice = currentPricingConfig?.global?.defaultCupPrice || '25.00';
       const modal = document.getElementById('confirmResetPricesModal');
+      const modalText = document.getElementById('confirmResetModalBodyText');
+      if (modalText) {
+        modalText.innerHTML = `This will reset all 8 live market prices to <strong>₹${Number(defaultPrice).toFixed(2)}</strong>.<br><br><strong>Production market state will be changed in PostgreSQL and Redis.</strong>`;
+      }
       if (modal) {
         modal.style.display = 'flex';
       } else {
-        if (confirm("Confirm Reset\n\nThis will reset all 8 live market prices to ₹25.00.\n\nProduction market state will be changed.")) {
+        if (confirm(`Confirm Reset\n\nThis will reset all 8 live market prices to base ₹${Number(defaultPrice).toFixed(2)}.\n\nProduction market state will be changed in PostgreSQL and Redis.`)) {
           executeResetLiveMarketPrices();
         }
       }
@@ -3654,7 +3676,7 @@
 
         if (res.status === 401) {
           localStorage.removeItem('pubexchange_jwt_token');
-          showToast('🔴 Authentication expired. Please log in again.', 'danger');
+          showToast('🔴 Authentication Required: Session expired. Please log in again.', 'danger');
           return;
         }
 
@@ -3663,23 +3685,32 @@
           return;
         }
 
-        let data = {};
-        if (res.ok) {
-          data = await res.json();
-        } else {
+        if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || `Reset failed with HTTP ${res.status}`);
+          throw new Error(errData.message || `Backend reset returned HTTP ${res.status}`);
         }
 
-        broadcastEvent('PRODUCT_PRICE_UPDATE', { reset: true, timestamp: new Date().toISOString() });
-        await refreshDashboard();
-        showToast('✅ Live market prices reset to ₹25.00', 'success');
+        const data = await res.json();
+        if (data && data.success === true) {
+          broadcastEvent('PRODUCT_PRICE_UPDATE', { reset: true, timestamp: new Date().toISOString() });
+          await loadLivePricingProducts();
+          await refreshDashboard({ manual: false });
+          const confirmMsg = data.message || 'Live market prices reset successfully';
+          showToast(confirmMsg.startsWith('✅') ? confirmMsg : `✅ ${confirmMsg}`, 'success');
+        } else {
+          throw new Error(data?.message || 'Backend responded with unconfirmed reset status');
+        }
       } catch (err) {
         console.error('[RESET] Failed to reset market prices:', err);
-        if (err.message && err.message.includes('401')) {
+        const errMsg = (err && err.message) ? err.message : 'Unknown network error';
+        if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError') || errMsg.includes('connect') || errMsg.includes('Load failed')) {
+          showToast('🔴 Backend unavailable on port 8088. Reset was NOT completed.', 'danger');
+        } else if (errMsg.includes('401')) {
           showToast('🔴 Authentication expired. Please log in again.', 'danger');
+        } else if (errMsg.includes('403')) {
+          showToast('🔴 Access Denied: Requires SUPER_ADMIN privileges.', 'danger');
         } else {
-          showToast(`🔴 Failed to reset prices: ${err.message}`, 'danger');
+          showToast(`🔴 Failed to reset prices: ${errMsg}`, 'danger');
         }
       } finally {
         if (btn) setButtonLoading(btn, false);
