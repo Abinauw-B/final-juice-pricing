@@ -1580,6 +1580,17 @@
       }
     }
 
+    // Global Application State Variables
+    let liveProductsCache = [];
+    let currentPricingConfig = null;
+    let totalRevenueSum = 3840.00;
+    let totalCupsSum = 192;
+    let notificationsData = [];
+    let auditData = [];
+    let historyData = [];
+    let usersData = [];
+    let editingUserId = null;
+    let currentUser = { username: 'superadmin', role: 'SUPER_ADMIN', fullName: 'Super Administrator' };
     let revenueChartInstance = null;
     let donutChartInstance = null;
     let isAdminCrashActive = false;
@@ -1718,11 +1729,6 @@
     }
     syncFlavoursMap();
 
-    // User State
-    let currentUser = { username: 'superadmin', role: 'SUPER_ADMIN', fullName: 'Super Administrator' };
-    let usersData = [];
-    let editingUserId = null;
-
     // Batches & History Data State
     const defaultBatches = [
       { id: 1, productId: 1, batchCode: 'BATCH-MNG-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 17500, cupSizeMl: 250, status: 'ACTIVE' },
@@ -1754,13 +1760,6 @@
       batchesData = defaultBatches;
     }
     loadBatchesState();
-
-    let notificationsData = [];
-    let auditData = [];
-    let historyData = [];
-
-    let totalRevenueSum = 3840.00;
-    let totalCupsSum = 192;
 
     // Logout Handler: Invalidates session & clears state
     function handleLogout() {
@@ -2568,8 +2567,6 @@
       }
     }
 
-    let liveProductsCache = [];
-
     function getFruitIconAdmin(p) {
       if (!p) return '🍹';
       const fruitIcons = { 1: '🥭', 2: '🍋', 3: '🌿', 4: '🍊', 5: '🍓', 6: '🍇', 7: '🍹', 23: '⚡' };
@@ -2593,8 +2590,6 @@
     }
 
     // Dynamic Global Engine Configuration Functions
-    let currentPricingConfig = null;
-
     async function loadPricingConfiguration() {
       try {
         const res = await apiFetch('/admin/pricing/config');
