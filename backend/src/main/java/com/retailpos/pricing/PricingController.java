@@ -161,11 +161,26 @@ public class PricingController {
     public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> updateManualPrice(
             @PathVariable Long productId,
             @RequestParam BigDecimal newPrice,
-            @RequestParam(required = false, defaultValue = "MANUAL_ADMIN_CHANGE") String reason) {
+            @RequestParam(required = false, defaultValue = "MANUAL_PRICE_OVERRIDE") String reason) {
         PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.updateManualPrice(productId, newPrice, reason);
         try {
             if (messagingTemplate != null) {
-                messagingTemplate.convertAndSend("/topic/prices", productRepository.findAll());
+                List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+                messagingTemplate.convertAndSend("/topic/prices", activeProducts);
+                messagingTemplate.convertAndSend("/topic/products", activeProducts);
+            }
+        } catch (Exception e) {}
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping({"/products/{productId}/release-override", "/admin/products/{productId}/release-override"})
+    public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> releaseManualOverride(@PathVariable Long productId) {
+        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.releaseManualOverride(productId);
+        try {
+            if (messagingTemplate != null) {
+                List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+                messagingTemplate.convertAndSend("/topic/prices", activeProducts);
+                messagingTemplate.convertAndSend("/topic/products", activeProducts);
             }
         } catch (Exception e) {}
         return ResponseEntity.ok(res);

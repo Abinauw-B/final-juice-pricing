@@ -56,6 +56,9 @@ public class Product {
     @Column(name = "price_version", nullable = false)
     private Integer priceVersion = 1;
 
+    @Column(name = "pricing_mode", nullable = false, length = 30)
+    private String pricingMode = "DYNAMIC";
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -116,6 +119,8 @@ public class Product {
     public void setLastPriceChangeTimestamp(LocalDateTime lastPriceChangeTimestamp) { this.lastPriceChangeTimestamp = lastPriceChangeTimestamp; }
     public Integer getPriceVersion() { return priceVersion; }
     public void setPriceVersion(Integer priceVersion) { this.priceVersion = priceVersion; }
+    public String getPricingMode() { return pricingMode != null ? pricingMode : "DYNAMIC"; }
+    public void setPricingMode(String pricingMode) { this.pricingMode = pricingMode != null ? pricingMode : "DYNAMIC"; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

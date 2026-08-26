@@ -200,7 +200,8 @@ public class PricingConfigurationService {
                     p.getDefaultCupPrice() != null ? p.getDefaultCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00"),
                     p.getCurrentCupPrice() != null ? p.getCurrentCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00"),
                     p.getMinCupPrice() != null ? p.getMinCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("18.00"),
-                    p.getMaxCupPrice() != null ? p.getMaxCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("35.00")
+                    p.getMaxCupPrice() != null ? p.getMaxCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("35.00"),
+                    p.getPricingMode()
             ));
         }
 

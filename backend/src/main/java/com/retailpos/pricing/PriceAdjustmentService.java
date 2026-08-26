@@ -292,6 +292,27 @@ public class PriceAdjustmentService {
                     .build();
         }
 
+        // Check Explicit Admin Manual Override Mode
+        if ("MANUAL_OVERRIDE".equalsIgnoreCase(product.getPricingMode())) {
+            log.info("[DWMA SETTLEMENT] ProductId={} ({}) is in MANUAL_OVERRIDE mode. Price held constant at ₹{}.",
+                    productId, product.getName(), oldPrice);
+            return PriceEvaluationResult.builder()
+                    .productId(productId)
+                    .flavour(product.getFlavour())
+                    .oldPrice(oldPrice)
+                    .newPrice(oldPrice)
+                    .priceChange(BigDecimal.ZERO)
+                    .priceChanged(false)
+                    .demandRatio(1.0)
+                    .weightedSales(1.0)
+                    .targetSales(1.0)
+                    .rawW0(orderCount)
+                    .demandLevelCategory("MANUAL_OVERRIDE")
+                    .explanation("Product is in MANUAL_OVERRIDE mode. Price held constant at ₹" + oldPrice + " by Admin.")
+                    .statusReason("MANUAL_OVERRIDE_HOLD")
+                    .build();
+        }
+
         // --- SINGLE AUTHORITATIVE DWMA PRICING MODEL (DYNAMIC CONFIGURATION) ---
         long configVersion = pricingConfigurationService != null ? pricingConfigurationService.getConfigurationVersion() : 1L;
         BigDecimal weightW0 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW0() : new BigDecimal("1.0000");
@@ -477,11 +498,12 @@ public class PriceAdjustmentService {
         boolean changed = oldPrice.compareTo(newPrice) != 0;
 
         product.setCurrentCupPrice(newPrice);
+        product.setPricingMode("MANUAL_OVERRIDE");
         if (changed) {
             product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
         }
         product.setLastPriceChangeTimestamp(now);
-        productRepository.save(product);
+        productRepository.saveAndFlush(product);
 
         if (redisRepository != null) {
             redisRepository.setProductPrice(productId, newPrice);
@@ -498,8 +520,8 @@ public class PriceAdjustmentService {
                     .targetSales(1.0)
                     .calculationWindowStart(now)
                     .calculationWindowEnd(now)
-                    .reason("MANUAL_ADMIN_CHANGE")
-                    .explanation(reason != null && !reason.isBlank() ? reason : "MANUAL_ADMIN_CHANGE")
+                    .reason("MANUAL_PRICE_OVERRIDE")
+                    .explanation(reason != null && !reason.isBlank() ? reason : "Manual price override set by Admin to ₹" + newPrice)
                     .createdAt(now)
                     .build();
             priceHistoryRepository.save(history);
@@ -515,9 +537,61 @@ public class PriceAdjustmentService {
                 .demandRatio(1.0)
                 .weightedSales(1.0)
                 .targetSales(1.0)
+                .demandLevelCategory("MANUAL_OVERRIDE")
+                .explanation("Price manually set to ₹" + newPrice + " (MANUAL_OVERRIDE lock active)")
+                .statusReason("MANUAL_PRICE_OVERRIDE")
+                .build();
+    }
+
+    @Transactional
+    public PriceEvaluationResult releaseManualOverride(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+
+        BigDecimal currentPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
+        LocalDateTime now = LocalDateTime.now();
+
+        product.setPricingMode("DYNAMIC");
+        product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
+        product.setLastPriceChangeTimestamp(now);
+        productRepository.saveAndFlush(product);
+
+        if (redisRepository != null) {
+            redisRepository.setProductPrice(productId, currentPrice);
+        }
+
+        PriceHistory history = PriceHistory.builder()
+                .productId(productId)
+                .oldPrice(currentPrice)
+                .newPrice(currentPrice)
+                .priceChange(BigDecimal.ZERO)
+                .demandRatio(1.0)
+                .weightedSales(1.0)
+                .targetSales(1.0)
+                .calculationWindowStart(now)
+                .calculationWindowEnd(now)
+                .reason("RELEASE_MANUAL_OVERRIDE")
+                .explanation("Manual price override released. Resumed DYNAMIC DWMA pricing starting from ₹" + currentPrice)
+                .createdAt(now)
+                .build();
+        priceHistoryRepository.save(history);
+
+        log.info("[MANUAL OVERRIDE RELEASED] ProductId={} ({}) returned to DYNAMIC mode at current price ₹{}.",
+                productId, product.getName(), currentPrice);
+
+        return PriceEvaluationResult.builder()
+                .productId(productId)
+                .flavour(product.getFlavour())
+                .oldPrice(currentPrice)
+                .newPrice(currentPrice)
+                .priceChange(BigDecimal.ZERO)
+                .priceChanged(false)
+                .demandRatio(1.0)
+                .weightedSales(1.0)
+                .targetSales(1.0)
                 .demandLevelCategory("NORMAL")
-                .explanation("Price manually set to ₹" + newPrice + " (" + reason + ")")
-                .statusReason("MANUAL_ADMIN_CHANGE")
+                .explanation("Manual override released. Resumed DYNAMIC pricing at ₹" + currentPrice)
+                .statusReason("RELEASE_MANUAL_OVERRIDE")
                 .build();
     }
 
@@ -579,6 +653,7 @@ public class PriceAdjustmentService {
             p.setDefaultCupPrice(basePrice);
             p.setMinCupPrice(minPrice);
             p.setMaxCupPrice(maxPrice);
+            p.setPricingMode("DYNAMIC");
             p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
             p.setLastPriceChangeTimestamp(null);
             p.setOrderCount(0);

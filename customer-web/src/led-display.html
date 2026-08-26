@@ -912,7 +912,18 @@
               }
             }
           });
-          stompClient.subscribe('/topic/products', function () {
+          stompClient.subscribe('/topic/products', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (Array.isArray(res) && res.length > 0) {
+                  products = res.map(normalizeProduct).filter(Boolean);
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderExchangeBoard();
+                  return;
+                }
+              } catch (e) {}
+            }
             fetchProductList();
           });
           stompClient.subscribe('/topic/batches', function () {

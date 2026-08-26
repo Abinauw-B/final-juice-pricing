@@ -134,6 +134,7 @@ public class PricingEngineService {
         private Integer orderCount;
         private Integer targetOrders;
         private BigDecimal volatility;
+        private String pricingMode;
 
         public ProductPriceDTO() {}
 
@@ -156,6 +157,7 @@ public class PricingEngineService {
             this.isCrashed = isCrashed;
             this.minCupPrice = minCupPrice;
             this.maxCupPrice = maxCupPrice;
+            this.pricingMode = "DYNAMIC";
         }
 
         public Long getId() { return beverageId; }
@@ -166,6 +168,8 @@ public class PricingEngineService {
         public void setName(String name) { this.name = name; }
         public String getFlavour() { return flavour; }
         public void setFlavour(String flavour) { this.flavour = flavour; }
+        public String getPricingMode() { return pricingMode != null ? pricingMode : "DYNAMIC"; }
+        public void setPricingMode(String pricingMode) { this.pricingMode = pricingMode != null ? pricingMode : "DYNAMIC"; }
         public BigDecimal getCurrentPrice() { return currentPrice; }
         public void setCurrentPrice(BigDecimal currentPrice) { this.currentPrice = currentPrice; }
         public BigDecimal getCurrentCupPrice() { return currentPrice; }
@@ -242,10 +246,12 @@ public class PricingEngineService {
             private Integer orderCount;
             private Integer targetOrders;
             private BigDecimal volatility;
+            private String pricingMode;
 
             public ProductPriceDTOBuilder beverageId(Long beverageId) { this.beverageId = beverageId; return this; }
             public ProductPriceDTOBuilder name(String name) { this.name = name; return this; }
             public ProductPriceDTOBuilder flavour(String flavour) { this.flavour = flavour; return this; }
+            public ProductPriceDTOBuilder pricingMode(String pricingMode) { this.pricingMode = pricingMode; return this; }
             public ProductPriceDTOBuilder currentPrice(BigDecimal currentPrice) { this.currentPrice = currentPrice; return this; }
             public ProductPriceDTOBuilder effectivePrice(BigDecimal effectivePrice) { this.effectivePrice = effectivePrice; return this; }
             public ProductPriceDTOBuilder previousPrice(BigDecimal previousPrice) { this.previousPrice = previousPrice; return this; }
@@ -271,6 +277,7 @@ public class PricingEngineService {
 
             public ProductPriceDTO build() {
                 ProductPriceDTO dto = new ProductPriceDTO(beverageId, name, flavour, currentPrice, effectivePrice, previousPrice, priceDelta, priceChange, priceVersion, priceChangePct, trendDirection, demandRatio, weightedSales, targetSales, demandLevelCategory, isCrashed, minCupPrice, maxCupPrice);
+                dto.setPricingMode(pricingMode);
                 dto.setRawW0(rawW0);
                 dto.setRawW1(rawW1);
                 dto.setRawW2(rawW2);

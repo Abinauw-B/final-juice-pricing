@@ -109,10 +109,15 @@ public class PricingConfigDTO {
         private BigDecimal currentCupPrice;
         private BigDecimal minCupPrice;
         private BigDecimal maxCupPrice;
+        private String pricingMode;
 
         public ProductConfig() {}
 
         public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice) {
+            this(productId, productName, flavour, targetSales, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, "DYNAMIC");
+        }
+
+        public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, String pricingMode) {
             this.productId = productId;
             this.productName = productName;
             this.flavour = flavour;
@@ -121,6 +126,7 @@ public class PricingConfigDTO {
             this.currentCupPrice = currentCupPrice;
             this.minCupPrice = minCupPrice;
             this.maxCupPrice = maxCupPrice;
+            this.pricingMode = pricingMode != null ? pricingMode : "DYNAMIC";
         }
 
         public Long getProductId() { return productId; }
@@ -146,5 +152,8 @@ public class PricingConfigDTO {
 
         public BigDecimal getMaxCupPrice() { return maxCupPrice; }
         public void setMaxCupPrice(BigDecimal maxCupPrice) { this.maxCupPrice = maxCupPrice; }
+
+        public String getPricingMode() { return pricingMode != null ? pricingMode : "DYNAMIC"; }
+        public void setPricingMode(String pricingMode) { this.pricingMode = pricingMode != null ? pricingMode : "DYNAMIC"; }
     }
 }

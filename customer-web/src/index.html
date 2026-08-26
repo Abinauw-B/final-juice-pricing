@@ -683,12 +683,16 @@
       const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : 18.0);
       const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 35.0);
       const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25.0);
+      const targetSalesPer2Minute = (p.targetSalesPer2Minute !== undefined && p.targetSalesPer2Minute !== null) 
+        ? Number(p.targetSalesPer2Minute) 
+        : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : (p.targetOrders ? Number(p.targetOrders) : 1.0));
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
       const flavour = p.flavour || p.name || 'JUICE';
       const description = p.description || 'Fresh handcrafted fruit juice';
       const trendDirection = p.trendDirection || 'FLAT';
       const trend = p.trend || '0%';
+      const pricingMode = p.pricingMode || 'DYNAMIC';
 
       return {
         ...p,
@@ -697,12 +701,14 @@
         minCupPrice,
         maxCupPrice,
         basePrice,
+        targetSalesPer2Minute,
         defaultCupSizeMl,
         name,
         flavour,
         description,
         trendDirection,
-        trend
+        trend,
+        pricingMode
       };
     }
 
@@ -780,7 +786,20 @@
           fetchProducts();
           checkMarketCrashStatus();
 
-          stompClient.subscribe('/topic/products', function () {
+          stompClient.subscribe('/topic/products', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (Array.isArray(res) && res.length > 0) {
+                  products = normalizeProductsList(res);
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderProducts();
+                  renderTicker();
+                  renderCart();
+                  return;
+                }
+              } catch (e) {}
+            }
             fetchProducts();
           });
           stompClient.subscribe('/topic/batches', function () {
@@ -951,7 +970,7 @@
           }
         }
 
-        const targetSales = p.targetOrders || p.targetSalesPer2Minute || targetSalesMap[p.flavour] || 5;
+        const targetSales = Number(p.targetSalesPer2Minute !== undefined ? p.targetSalesPer2Minute : (p.targetSales !== undefined ? p.targetSales : 1.0)).toFixed(1);
         const rawCategory = p.demandLevelCategory || (diff > 0 ? 'HIGH' : (diff < 0 ? 'LOW' : 'NORMAL'));
         const demandCategory = rawCategory.replace('_CONSUMED', '');
         const demandColor = (demandCategory.includes('HIGH')) ? 'var(--warning)' : (demandCategory.includes('LOW') ? 'var(--info)' : 'var(--text-muted)');
