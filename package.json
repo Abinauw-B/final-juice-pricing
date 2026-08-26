@@ -8,7 +8,9 @@
     "dev": "npx concurrently \"npm run dev:backend\" \"npm --prefix customer-web start\" \"npm --prefix admin-panel start\"",
     "dev:customer": "npm --prefix customer-web start",
     "dev:admin": "npm --prefix admin-panel start",
-    "dev:backend": "cd backend && mvnw spring-boot:run"
+    "dev:backend": "cd backend && mvnw spring-boot:run",
+    "push": "git add . && git commit -m \"update: automated project sync\" && git push origin main",
+    "git:push": "git add . && git commit -m \"update: automated project sync\" && git push origin main"
   },
   "dependencies": {
     "ws": "^8.21.3"
