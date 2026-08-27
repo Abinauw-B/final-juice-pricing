@@ -1,6 +1,6 @@
 # Juice Bar Stock Exchange — POS, Inventory & Dynamic Pricing System
 
-A production-ready retail management system for fresh juice bars featuring a **20L liquid volume batch model**, **PostgreSQL 18.3 persistence**, **Flyway schema migrations**, **Pessimistic Row Locking**, and a **60-Second Automated Enterprise Dynamic Pricing Engine**.
+A production-ready retail management system for fresh juice bars featuring a **20L liquid volume batch model**, **PostgreSQL 18.3 persistence**, **Flyway schema migrations**, **Pessimistic Row Locking**, and a **1-Minute Automated Enterprise Dynamic Pricing Engine with ₹4 Downward Price Decay**.
 
 ---
 
@@ -37,21 +37,30 @@ A production-ready retail management system for fresh juice bars featuring a **2
 2. **Concurrency Safety & Pessimistic Row Locking**:
    - Uses `@Lock(LockModeType.PESSIMISTIC_WRITE)` during checkout to guarantee atomic volume deductions under concurrent POS cashier requests.
 
-3. **Enterprise Dynamic Pricing Engine**:
-   - **Demand Score Equation ($0 - 100$)**:
-     $$\text{Demand Score} = (w_v \times S_v) + (w_s \times S_s) + (w_t \times S_t)$$
-     *(Default weights: Velocity $w_v = 0.40$, Stock Pressure $w_s = 0.40$, Time Factor $w_t = 0.20$)*.
-   - **Step Adjustments**: Controlled $\pm ₹1$ step per evaluation window.
-   - **Cooldown Window**: Minimum 10 minutes between price changes.
-   - **Bounded Limits**: Strict $[₹18, ₹25]$ floor and ceiling limits.
+3. **1-Minute Enterprise DWMA Dynamic Pricing Engine**:
+   - **Settlement Interval**: Authoritative 60-second cycle executed by Spring Boot scheduler.
+   - **Discrete Weighted Moving Average (DWMA)**:
+     - $W_0$ (Latest $0-1$ min): Weight $1.00$
+     - $W_1$ (Previous $1-2$ min): Weight $0.50$
+     - $W_2$ (Previous $2-3$ min): Weight $0.25$
+     - $S_w = (1.00 \times W_0) + (0.50 \times W_1) + (0.25 \times W_2)$
+   - **Demand Ratio ($R_d$)**:
+     $$R_d = \frac{S_w}{\text{TargetSalesPer1Minute}}$$
+   - **Settlement Movement Rules**:
+     - **High Demand ($R_d \ge 1.10$ and $W_0 > 0$)**: $+₹1.00$
+     - **Stable Demand ($0.90 \le R_d < 1.10$ or $R_d \ge 1.10$ with $W_0 = 0$)**: $₹0.00$
+     - **Low Demand / Zero Demand ($R_d < 0.90$)**: $-₹4.00$
+   - **Downward Step Validation**: Downward delta must satisfy $|\Delta P| \pmod 4 = 0$.
+   - **Bounded Clamping & Floor Protection**: $P_{\text{new}} = \max(\text{minCupPrice}, \min(\text{maxCupPrice}, P_{\text{current}} + \Delta P))$.
+     *(Example: ₹21.00 with ₹4 decay clamped at floor ₹18.00 yields ₹18.00, not ₹17.00)*.
 
 4. **Market Crash Routine**:
-   - Triggers panic floor pricing ($₹18.00$) for all juice varieties.
-   - Broadcasts real-time alert via STOMP WebSocket on `/topic/market-crash`.
+   - Panic floor pricing ($₹18.00$) for all juice varieties.
+   - Real-time alert broadcast via STOMP WebSocket on `/topic/market-crash`.
 
 5. **Real-Time WebSocket STOMP Engine**:
-   - Live price updates broadcast on `/topic/prices` and `/topic/led-display`.
-   - Dynamic UI updates without manual browser refresh.
+   - Live price updates broadcast on `/topic/prices`, `/topic/pricing-config`, and `/topic/led-display`.
+   - POS, Admin Panel, LED Display, and Sandbox Simulator receive instant reactive updates.
 
 ---
 

@@ -30,7 +30,7 @@ public class PricingEngineService {
     private final PricingConfigurationService pricingConfigurationService;
 
     private static LocalDateTime lastSettlementTime = LocalDateTime.now();
-    private static LocalDateTime nextSettlementTime = LocalDateTime.now().plusSeconds(120);
+    private static LocalDateTime nextSettlementTime = LocalDateTime.now().plusSeconds(60);
 
     public PricingEngineService(ProductRepository productRepository,
                                 PriceHistoryRepository priceHistoryRepository,
@@ -51,7 +51,7 @@ public class PricingEngineService {
     }
 
     public LocalDateTime getNextSettlementTime() {
-        int interval = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 120;
+        int interval = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
         if (LocalDateTime.now().isAfter(nextSettlementTime)) {
             nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
         }
@@ -311,8 +311,13 @@ public class PricingEngineService {
 
     @Transactional
     public PriceEvaluationCycleResult executeSettlementCycle(boolean force) {
-        LocalDateTime now = LocalDateTime.now();
-        int intervalSeconds = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 120;
+        return executeSettlementCycle(force, LocalDateTime.now());
+    }
+
+    @Transactional
+    public PriceEvaluationCycleResult executeSettlementCycle(boolean force, LocalDateTime evaluationTime) {
+        LocalDateTime now = evaluationTime != null ? evaluationTime : LocalDateTime.now();
+        int intervalSeconds = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
         log.info("⚡ Running Dynamic Juice Exchange Settlement Cycle (interval={}s) at {} (force={})...", intervalSeconds, now, force);
 
         String windowStartKey = force ? "SETTLEMENT_FORCE_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 4) : "SETTLEMENT_" + now.withSecond(0).withNano(0).toString();
@@ -387,7 +392,7 @@ public class PricingEngineService {
         }
 
         JuiceMarketSettlement settlement = JuiceMarketSettlement.builder()
-                .settlementWindowStart(now.minusMinutes(2))
+                .settlementWindowStart(now.minusMinutes(1))
                 .settlementWindowEnd(now)
                 .idempotencyKey(windowStartKey)
                 .status("COMPLETED")
@@ -458,7 +463,7 @@ public class PricingEngineService {
                     .trendDirection(trend)
                     .demandRatio(1.0)
                     .weightedSales(1.0)
-                    .targetSales(product.getTargetSalesPer2Minute() != null ? product.getTargetSalesPer2Minute() : 1.0)
+                    .targetSales(product.getTargetSalesPer1Minute() != null ? product.getTargetSalesPer1Minute() : 0.55)
                     .demandLevelCategory("NORMAL")
                     .isCrashed(crashed)
                     .minCupPrice(product.getMinCupPrice())

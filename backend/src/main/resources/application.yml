@@ -50,8 +50,11 @@ management:
         include: health,info,metrics
 
 pricing:
+  settlement-interval-seconds: 60
+  settlement-interval-ms: 60000
+  price-decrease-step: 4.00
   round:
-    interval-ms: 120000
+    interval-ms: 60000
   default-target-orders: 5
   default-volatility: 0.08
   market-crash:
@@ -59,10 +62,10 @@ pricing:
     floor-buffer-percent: 0.05
   engine:
     enabled: true
-    interval-ms: 120000
+    interval-ms: 60000
   demand:
-    window-minutes: 5
-    target-orders: 10
+    window-minutes: 1
+    target-orders: 5
   weight:
     demand: 0.45
     inventory: 0.30
@@ -75,4 +78,5 @@ pricing:
     probability: 0.03
     multiplier: 0.55
   minimum-change-percent: 1
+
 

@@ -494,25 +494,25 @@
     }
 
     const targetSalesMap = {
-      'MANGO': 1.1,
-      'LEMON': 0.8,
-      'MINT': 0.8,
-      'ORANGE': 1.1,
-      'STRAWBERRY': 0.7,
-      'GRAPE': 0.9,
-      'LYCHEE': 0.9,
-      'THUNDER': 0.9
+      'MANGO': 0.55,
+      'LEMON': 0.40,
+      'MINT': 0.40,
+      'ORANGE': 0.55,
+      'STRAWBERRY': 0.35,
+      'GRAPE': 0.45,
+      'LYCHEE': 0.45,
+      'THUNDER': 0.45
     };
 
     let products = [
-      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 1.1, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.8, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.8, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice loaded with vitamin C', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 1.1, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.7, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 23, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer2Minute: 0.9, trend: '+0.0%', trendDirection: 'FLAT' }
+      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.55, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.40, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.40, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice loaded with vitamin C', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.55, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.35, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 23, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' }
     ];
 
     let cart = [];
@@ -683,9 +683,9 @@
       const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : 18.0);
       const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 35.0);
       const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25.0);
-      const targetSalesPer2Minute = (p.targetSalesPer2Minute !== undefined && p.targetSalesPer2Minute !== null) 
-        ? Number(p.targetSalesPer2Minute) 
-        : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : (p.targetOrders ? Number(p.targetOrders) : 1.0));
+      const targetSalesPer1Minute = (p.targetSalesPer1Minute !== undefined && p.targetSalesPer1Minute !== null) 
+        ? Number(p.targetSalesPer1Minute) 
+        : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : ((p.targetSalesPer2Minute !== undefined && p.targetSalesPer2Minute !== null) ? Number(p.targetSalesPer2Minute) / 2.0 : 0.55));
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
       const flavour = p.flavour || p.name || 'JUICE';
@@ -701,7 +701,8 @@
         minCupPrice,
         maxCupPrice,
         basePrice,
-        targetSalesPer2Minute,
+        targetSalesPer1Minute,
+        targetSalesPer2Minute: targetSalesPer1Minute * 2.0,
         defaultCupSizeMl,
         name,
         flavour,
@@ -970,7 +971,7 @@
           }
         }
 
-        const targetSales = Number(p.targetSalesPer2Minute !== undefined ? p.targetSalesPer2Minute : (p.targetSales !== undefined ? p.targetSales : 1.0)).toFixed(1);
+        const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : (p.targetSales !== undefined ? p.targetSales : (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55))).toFixed(2);
         const rawCategory = p.demandLevelCategory || (diff > 0 ? 'HIGH' : (diff < 0 ? 'LOW' : 'NORMAL'));
         const demandCategory = rawCategory.replace('_CONSUMED', '');
         const demandColor = (demandCategory.includes('HIGH')) ? 'var(--warning)' : (demandCategory.includes('LOW') ? 'var(--info)' : 'var(--text-muted)');
@@ -1000,7 +1001,7 @@
               </div>
 
               <div class="demand-text" style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 12px;">
-                <span>Target: <strong>${targetSales} / round</strong></span>
+                <span>Target: <strong>${targetSales} cups / min</strong></span>
                 <strong style="color: ${demandColor};">${demandCategory}</strong>
               </div>
             </div>

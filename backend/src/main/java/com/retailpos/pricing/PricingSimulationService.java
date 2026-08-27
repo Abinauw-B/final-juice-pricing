@@ -19,8 +19,8 @@ public class PricingSimulationService {
         private BigDecimal maxPrice = new BigDecimal("35.00");
         private Integer totalSimulatedPurchases = 40;
         private Integer cupsPerInterval = 4;
-        private Integer intervalMinutes = 2;
-        private Double targetSales = 1.00;
+        private Integer intervalMinutes = 1;
+        private Double targetSales = 0.55;
         private String startTimeStr = "12:00";
         private Boolean includeCrash = false;
         private Double weightVelocity = 0.40;
@@ -233,12 +233,12 @@ public class PricingSimulationService {
         BigDecimal maxPrice = (request.getMaxPrice() != null) ? request.getMaxPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("35.00");
 
         int cupsPerStep = (request.getCupsPerInterval() != null) ? request.getCupsPerInterval() : 4;
-        int intervalMins = (request.getIntervalMinutes() != null && request.getIntervalMinutes() > 0) ? request.getIntervalMinutes() : 2;
+        int intervalMins = (request.getIntervalMinutes() != null && request.getIntervalMinutes() > 0) ? request.getIntervalMinutes() : 1;
         int totalPurchases = (request.getTotalSimulatedPurchases() != null) ? request.getTotalSimulatedPurchases() : 40;
-        int maxSteps = Math.min(30, (int) Math.ceil((double) totalPurchases / cupsPerStep));
+        int maxSteps = Math.min(30, (int) Math.ceil((double) totalPurchases / Math.max(1, cupsPerStep)));
         if (maxSteps <= 0) maxSteps = 10;
 
-        double targetVal = (request.getTargetSales() != null && request.getTargetSales() > 0) ? request.getTargetSales() : 1.00;
+        double targetVal = (request.getTargetSales() != null && request.getTargetSales() > 0) ? request.getTargetSales() : 0.55;
         BigDecimal targetSales = BigDecimal.valueOf(targetVal).setScale(2, RoundingMode.HALF_UP);
 
         LocalTime currentTime = LocalTime.parse(request.getStartTimeStr() != null ? request.getStartTimeStr() : "12:00");
@@ -293,8 +293,8 @@ public class PricingSimulationService {
                 // R_d >= 1.10 AND W0 > 0 -> +₹1
                 // R_d >= 1.10 AND W0 == 0 -> ₹0
                 // 0.90 <= R_d < 1.10 -> ₹0
-                // 0.50 <= R_d < 0.90 -> -₹1
-                // R_d < 0.50 -> -₹2
+                // 0.50 <= R_d < 0.90 -> -₹4
+                // R_d < 0.50 -> -₹4
                 BigDecimal deltaP;
                 if (rd.compareTo(new BigDecimal("1.10")) >= 0) {
                     if (w0 > 0) {
@@ -308,17 +308,17 @@ public class PricingSimulationService {
                     deltaP = BigDecimal.ZERO;
                     movement = "₹0";
                 } else if (rd.compareTo(new BigDecimal("0.50")) >= 0) {
-                    deltaP = new BigDecimal("-1.00");
-                    movement = "-₹1";
+                    deltaP = new BigDecimal("-4.00");
+                    movement = "-₹4";
                 } else {
-                    deltaP = new BigDecimal("-2.00");
-                    movement = "-₹2";
+                    deltaP = new BigDecimal("-4.00");
+                    movement = "-₹4";
                 }
 
                 BigDecimal uncapped = currentPrice.add(deltaP);
                 currentPrice = uncapped.max(minPrice).min(maxPrice).setScale(2, RoundingMode.HALF_UP);
 
-                explanation = String.format("Step %d (%s): W0=%d, W1=%d, W2=%d | S_w=%.2f, Target=%.2f, R_d=%.2f => Movement %s (₹%s -> ₹%s)",
+                explanation = String.format("Step %d (%s): W0=%d, W1=%d, W2=%d | S_w=%.2f, Target=%.2f cups/min, R_d=%.2f => Movement %s (₹%s -> ₹%s)",
                         i, currentTime, w0, w1, w2, sw.doubleValue(), targetSales.doubleValue(), rd.doubleValue(), movement, oldPrice, currentPrice);
             }
 

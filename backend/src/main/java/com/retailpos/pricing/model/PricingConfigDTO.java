@@ -43,6 +43,7 @@ public class PricingConfigDTO {
         private BigDecimal increaseStep;
         private BigDecimal decreaseStep1;
         private BigDecimal decreaseStep2;
+        private BigDecimal priceDecreaseStep;
         private Integer marketCrashDurationSeconds;
         private BigDecimal marketCrashPrice;
         private BigDecimal defaultCupPrice;
@@ -84,6 +85,9 @@ public class PricingConfigDTO {
         public BigDecimal getDecreaseStep2() { return decreaseStep2; }
         public void setDecreaseStep2(BigDecimal decreaseStep2) { this.decreaseStep2 = decreaseStep2; }
 
+        public BigDecimal getPriceDecreaseStep() { return priceDecreaseStep != null ? priceDecreaseStep : (decreaseStep1 != null ? decreaseStep1 : new BigDecimal("4.00")); }
+        public void setPriceDecreaseStep(BigDecimal priceDecreaseStep) { this.priceDecreaseStep = priceDecreaseStep; }
+
         public Integer getMarketCrashDurationSeconds() { return marketCrashDurationSeconds; }
         public void setMarketCrashDurationSeconds(Integer marketCrashDurationSeconds) { this.marketCrashDurationSeconds = marketCrashDurationSeconds; }
 
@@ -105,6 +109,7 @@ public class PricingConfigDTO {
         private String productName;
         private String flavour;
         private Double targetSales;
+        private Double targetSalesPer1Minute;
         private BigDecimal defaultCupPrice;
         private BigDecimal currentCupPrice;
         private BigDecimal minCupPrice;
@@ -122,6 +127,7 @@ public class PricingConfigDTO {
             this.productName = productName;
             this.flavour = flavour;
             this.targetSales = targetSales;
+            this.targetSalesPer1Minute = targetSales;
             this.defaultCupPrice = defaultCupPrice;
             this.currentCupPrice = currentCupPrice;
             this.minCupPrice = minCupPrice;
@@ -138,8 +144,17 @@ public class PricingConfigDTO {
         public String getFlavour() { return flavour; }
         public void setFlavour(String flavour) { this.flavour = flavour; }
 
-        public Double getTargetSales() { return targetSales; }
-        public void setTargetSales(Double targetSales) { this.targetSales = targetSales; }
+        public Double getTargetSales() { return targetSales != null ? targetSales : targetSalesPer1Minute; }
+        public void setTargetSales(Double targetSales) {
+            this.targetSales = targetSales;
+            this.targetSalesPer1Minute = targetSales;
+        }
+
+        public Double getTargetSalesPer1Minute() { return targetSalesPer1Minute != null ? targetSalesPer1Minute : targetSales; }
+        public void setTargetSalesPer1Minute(Double targetSalesPer1Minute) {
+            this.targetSalesPer1Minute = targetSalesPer1Minute;
+            this.targetSales = targetSalesPer1Minute;
+        }
 
         public BigDecimal getDefaultCupPrice() { return defaultCupPrice; }
         public void setDefaultCupPrice(BigDecimal defaultCupPrice) { this.defaultCupPrice = defaultCupPrice; }

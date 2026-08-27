@@ -322,13 +322,13 @@ public class PriceAdjustmentService {
         BigDecimal stableLow = pricingConfigurationService != null ? pricingConfigurationService.getStableDemandLowerThreshold() : new BigDecimal("0.9000");
         BigDecimal lowThresh = pricingConfigurationService != null ? pricingConfigurationService.getLowDemandThreshold() : new BigDecimal("0.5000");
         BigDecimal incStep = pricingConfigurationService != null ? pricingConfigurationService.getIncreaseStep() : new BigDecimal("1.00");
-        BigDecimal decStep1 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep1() : new BigDecimal("1.00");
-        BigDecimal decStep2 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep2() : new BigDecimal("2.00");
+        BigDecimal decStep1 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep1() : new BigDecimal("4.00");
+        BigDecimal decStep2 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep2() : new BigDecimal("4.00");
 
-        // 1. Time windows: W0 [now - 2m, now), W1 [now - 4m, now - 2m), W2 [now - 6m, now - 4m)
-        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(2), now);
-        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(4), now.minusMinutes(2));
-        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(6), now.minusMinutes(4));
+        // 1. Time windows: W0 [now - 1m, now), W1 [now - 2m, now - 1m), W2 [now - 3m, now - 2m)
+        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(1), now);
+        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(2), now.minusMinutes(1));
+        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(3), now.minusMinutes(2));
 
         // 2. Weighted sales: S_w = (weightW0 * W0) + (weightW1 * W1) + (weightW2 * W2)
         BigDecimal sw = BigDecimal.valueOf(w0).multiply(weightW0)
@@ -337,10 +337,10 @@ public class PriceAdjustmentService {
                 .setScale(2, RoundingMode.HALF_UP);
         double weightedSales = sw.doubleValue();
 
-        // 3. Target sales: product-specific targetSalesPer2Minute
+        // 3. Target sales: product-specific targetSalesPer1Minute (cups / min)
         double targetVal = pricingConfigurationService != null
                 ? pricingConfigurationService.getTargetSalesForProduct(product)
-                : (product.getTargetSalesPer2Minute() != null && product.getTargetSalesPer2Minute() > 0 ? product.getTargetSalesPer2Minute() : 1.00);
+                : (product.getTargetSalesPer1Minute() != null && product.getTargetSalesPer1Minute() > 0 ? product.getTargetSalesPer1Minute() : 0.55);
         BigDecimal targetSalesBd = BigDecimal.valueOf(targetVal).setScale(2, RoundingMode.HALF_UP);
 
         // 4. Demand ratio: R_d = S_w / TargetSales
@@ -384,6 +384,9 @@ public class PriceAdjustmentService {
             demandLevelCategory = "VERY_LOW";
         }
 
+        // Multiple-of-4 Validation for downward price movement
+        PricingConfigurationService.validatePriceMovement(deltaP);
+
         // 6. Bounded price: MAX(minCupPrice, MIN(maxCupPrice, oldPrice + deltaP))
         BigDecimal uncappedPrice = oldPrice.add(deltaP);
         BigDecimal newPrice = uncappedPrice.max(floor).min(ceiling).setScale(2, RoundingMode.HALF_UP);
@@ -392,11 +395,16 @@ public class PriceAdjustmentService {
 
         String settlementKey = "SETTLEMENT_" + now.withSecond(0).withNano(0).toString();
 
-        log.info("[DWMA SETTLEMENT] ProductId={} ({}) | ConfigVer={} | W0={} W1={} W2={} Sw={} Target={} Rd={} Movement={} OldPrice=₹{} NewPrice=₹{} Changed={}",
-                productId, product.getName(), configVersion, w0, w1, w2, weightedSales, targetVal, demandRatio, movement, oldPrice, newPrice, changed);
+        log.info("[PRICING_SETTLEMENT_START] product='{}' (id={}) window=1-minute oldPrice=₹{}", product.getName(), productId, oldPrice);
+        log.info("[PRODUCT_DEMAND_CALCULATED] product='{}' w0={} w1={} w2={} weightedSales={} target={} demandRatio={}",
+                product.getName(), w0, w1, w2, weightedSales, targetVal, demandRatio);
+        log.info("[PRICE_MOVEMENT_CALCULATED] product='{}' category={} rawDelta={}",
+                product.getName(), demandLevelCategory, deltaP);
+        log.info("[PRICE_CLAMPED] product='{}' uncapped=₹{} floor=₹{} ceiling=₹{} clamped=₹{}",
+                product.getName(), uncappedPrice, floor, ceiling, newPrice);
 
         String explanation = String.format(
-                "DWMA Settlement: W0=%d, W1=%d, W2=%d | S_w=%.2f, Target=%.2f, R_d=%.4f => Movement %+d. Price: ₹%s -> ₹%s (%s) [v%d]",
+                "DWMA 1-Min Settlement: W0=%d, W1=%d, W2=%d | S_w=%.2f, Target=%.2f cups/min, R_d=%.4f => Movement %+d. Price: ₹%s -> ₹%s (%s) [v%d]",
                 w0, w1, w2, weightedSales, targetVal, demandRatio, movement, oldPrice, newPrice, reason, configVersion
         );
 
@@ -407,9 +415,11 @@ public class PriceAdjustmentService {
             product.setLastPriceChangeTimestamp(now);
         }
         productRepository.saveAndFlush(product);
+        log.info("[PRICE_PERSISTED] product='{}' newPrice=₹{} priceVersion={}", product.getName(), newPrice, product.getPriceVersion());
 
         if (redisRepository != null) {
             redisRepository.setProductPrice(productId, newPrice);
+            log.info("[REDIS_SYNCED] product='{}' price=₹{}", product.getName(), newPrice);
         }
 
         // Save authoritative audit record in PriceHistory
@@ -435,13 +445,16 @@ public class PriceAdjustmentService {
                 .configVersion(configVersion)
                 .triggerType("SCHEDULED_ROUND")
                 .settlementId(settlementKey)
-                .calculationWindowStart(now.minusMinutes(2))
+                .calculationWindowStart(now.minusMinutes(1))
                 .calculationWindowEnd(now)
                 .reason(reason)
                 .explanation(explanation)
                 .createdAt(now)
                 .build();
         priceHistoryRepository.save(history);
+
+        log.info("[PRICING_SETTLEMENT_COMPLETE] product='{}' oldPrice=₹{} newPrice=₹{} mode={}",
+                product.getName(), oldPrice, newPrice, product.getPricingMode());
 
         return PriceEvaluationResult.builder()
                 .productId(productId)
@@ -637,6 +650,7 @@ public class PriceAdjustmentService {
         }
 
         pricingProcessedSaleRepository.deleteAll();
+        salesOrderItemRepository.deleteAll();
         List<Product> products = productRepository.findByIsActiveTrueOrderByIdAsc();
         LocalDateTime now = LocalDateTime.now();
         resetMarketStartTime();
@@ -699,17 +713,21 @@ public class PriceAdjustmentService {
         private BigDecimal minCupPrice;
         private BigDecimal maxCupPrice;
         private BigDecimal defaultCupPrice;
+        private Double targetSales;
+        private Double targetSalesPer1Minute;
         private Double targetSalesPer2Minute;
         private BigDecimal volatility;
 
         public AdminPricingDeployRequest() {}
-        public AdminPricingDeployRequest(Long productId, String flavour, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, Double targetSalesPer2Minute) {
+        public AdminPricingDeployRequest(Long productId, String flavour, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, Double targetSalesPer1Minute) {
             this.productId = productId;
             this.flavour = flavour;
             this.currentCupPrice = currentCupPrice;
             this.minCupPrice = minCupPrice;
             this.maxCupPrice = maxCupPrice;
-            this.targetSalesPer2Minute = targetSalesPer2Minute;
+            this.targetSalesPer1Minute = targetSalesPer1Minute;
+            this.targetSales = targetSalesPer1Minute;
+            this.targetSalesPer2Minute = targetSalesPer1Minute != null ? targetSalesPer1Minute * 2.0 : null;
         }
 
         public Long getProductId() { return productId; }
@@ -730,8 +748,26 @@ public class PriceAdjustmentService {
         public BigDecimal getDefaultCupPrice() { return defaultCupPrice; }
         public void setDefaultCupPrice(BigDecimal defaultCupPrice) { this.defaultCupPrice = defaultCupPrice; }
         public void setDefaultPrice(BigDecimal defaultPrice) { this.defaultCupPrice = defaultPrice; }
+        public Double getTargetSales() { return targetSales != null ? targetSales : (targetSalesPer1Minute != null ? targetSalesPer1Minute : (targetSalesPer2Minute != null ? targetSalesPer2Minute / 2.0 : null)); }
+        public void setTargetSales(Double targetSales) {
+            this.targetSales = targetSales;
+            this.targetSalesPer1Minute = targetSales;
+            if (targetSales != null) this.targetSalesPer2Minute = targetSales * 2.0;
+        }
+        public Double getTargetSalesPer1Minute() { return targetSalesPer1Minute != null ? targetSalesPer1Minute : targetSales; }
+        public void setTargetSalesPer1Minute(Double targetSalesPer1Minute) {
+            this.targetSalesPer1Minute = targetSalesPer1Minute;
+            this.targetSales = targetSalesPer1Minute;
+            if (targetSalesPer1Minute != null) this.targetSalesPer2Minute = targetSalesPer1Minute * 2.0;
+        }
         public Double getTargetSalesPer2Minute() { return targetSalesPer2Minute; }
-        public void setTargetSalesPer2Minute(Double targetSalesPer2Minute) { this.targetSalesPer2Minute = targetSalesPer2Minute; }
+        public void setTargetSalesPer2Minute(Double targetSalesPer2Minute) {
+            this.targetSalesPer2Minute = targetSalesPer2Minute;
+            if (targetSalesPer2Minute != null) {
+                this.targetSalesPer1Minute = targetSalesPer2Minute / 2.0;
+                this.targetSales = this.targetSalesPer1Minute;
+            }
+        }
         public BigDecimal getVolatility() { return volatility; }
         public void setVolatility(BigDecimal volatility) { this.volatility = volatility; }
     }
@@ -751,7 +787,13 @@ public class PriceAdjustmentService {
         if (request.getMinCupPrice() != null) product.setMinCupPrice(request.getMinCupPrice());
         if (request.getMaxCupPrice() != null) product.setMaxCupPrice(request.getMaxCupPrice());
         if (request.getDefaultCupPrice() != null) product.setDefaultCupPrice(request.getDefaultCupPrice());
-        if (request.getTargetSalesPer2Minute() != null) product.setTargetSalesPer2Minute(request.getTargetSalesPer2Minute());
+        if (request.getTargetSalesPer1Minute() != null) {
+            product.setTargetSalesPer1Minute(request.getTargetSalesPer1Minute());
+        } else if (request.getTargetSales() != null) {
+            product.setTargetSalesPer1Minute(request.getTargetSales());
+        } else if (request.getTargetSalesPer2Minute() != null) {
+            product.setTargetSalesPer1Minute(request.getTargetSalesPer2Minute() / 2.0);
+        }
         if (newPrice != null) product.setCurrentCupPrice(newPrice);
         if (request.getVolatility() != null) product.setVolatility(request.getVolatility());
 
@@ -888,16 +930,17 @@ public class PriceAdjustmentService {
         BigDecimal stableLow = pricingConfigurationService != null ? pricingConfigurationService.getStableDemandLowerThreshold() : new BigDecimal("0.9000");
         BigDecimal lowThresh = pricingConfigurationService != null ? pricingConfigurationService.getLowDemandThreshold() : new BigDecimal("0.5000");
         BigDecimal incStep = pricingConfigurationService != null ? pricingConfigurationService.getIncreaseStep() : new BigDecimal("1.00");
-        BigDecimal decStep1 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep1() : new BigDecimal("1.00");
-        BigDecimal decStep2 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep2() : new BigDecimal("2.00");
+        BigDecimal decStep1 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep1() : new BigDecimal("4.00");
+        BigDecimal decStep2 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep2() : new BigDecimal("4.00");
 
         double targetSales = pricingConfigurationService != null
                 ? pricingConfigurationService.getTargetSalesForProduct(p)
-                : (p.getTargetSalesPer2Minute() != null && p.getTargetSalesPer2Minute() > 0 ? p.getTargetSalesPer2Minute() : 1.0);
+                : (p.getTargetSalesPer1Minute() != null && p.getTargetSalesPer1Minute() > 0 ? p.getTargetSalesPer1Minute() : 0.55);
 
-        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(2), now);
-        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(4), now.minusMinutes(2));
-        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(6), now.minusMinutes(4));
+        // 1-minute DWMA windows
+        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(1), now);
+        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(2), now.minusMinutes(1));
+        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(3), now.minusMinutes(2));
 
         BigDecimal sw = BigDecimal.valueOf(w0).multiply(weightW0)
                 .add(BigDecimal.valueOf(w1).multiply(weightW1))
@@ -936,7 +979,7 @@ public class PriceAdjustmentService {
         BigDecimal projectedPrice = uncappedPrice.max(floor).min(ceiling).setScale(2, RoundingMode.HALF_UP);
 
         String breakdown = String.format(
-                "Current Window W0: %d, Window W1: %d, Window W2: %d | Weighted Sales: %.2f*%d + %.2f*%d + %.2f*%d = %.2f | Target: %.2f | Demand Ratio: %.2f / %.2f = %.4f (%s) | Movement: %+d => Projected: ₹%s",
+                "Current Window W0 [0–1m]: %d, W1 [1–2m]: %d, W2 [2–3m]: %d | Weighted Sales: %.2f*%d + %.2f*%d + %.2f*%d = %.2f | Target: %.2f cups/min | Demand Ratio: %.2f / %.2f = %.4f (%s) | Movement: %+d => Projected: ₹%s",
                 w0, w1, w2, weightW0.doubleValue(), w0, weightW1.doubleValue(), w1, weightW2.doubleValue(), w2, weightedSales, targetSales, weightedSales, targetSales, demandRatio, category, movement, projectedPrice
         );
 

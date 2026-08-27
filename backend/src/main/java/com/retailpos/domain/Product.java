@@ -35,8 +35,11 @@ public class Product {
     @Column(name = "max_cup_price", nullable = false)
     private BigDecimal maxCupPrice = new BigDecimal("25.00");
 
+    @Column(name = "target_sales_per_1_minute")
+    private Double targetSalesPer1Minute = 0.55;
+
     @Column(name = "target_sales_per_2_minute")
-    private Double targetSalesPer2Minute = 1.0;
+    private Double targetSalesPer2Minute = 1.10;
 
     @Column(name = "order_count", nullable = false)
     private Integer orderCount = 0;
@@ -67,7 +70,7 @@ public class Product {
 
     public Product() {}
 
-    public Product(Long id, String name, String flavour, String description, Integer defaultCupSizeMl, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, Double targetSalesPer2Minute, Integer orderCount, Integer targetOrders, BigDecimal volatility, LocalDateTime lastPriceChangeTimestamp, Integer priceVersion, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Product(Long id, String name, String flavour, String description, Integer defaultCupSizeMl, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, Double targetSalesPer1Minute, Integer orderCount, Integer targetOrders, BigDecimal volatility, LocalDateTime lastPriceChangeTimestamp, Integer priceVersion, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.flavour = flavour;
@@ -77,7 +80,8 @@ public class Product {
         this.currentCupPrice = currentCupPrice != null ? currentCupPrice : new BigDecimal("25.00");
         this.minCupPrice = minCupPrice != null ? minCupPrice : new BigDecimal("18.00");
         this.maxCupPrice = maxCupPrice != null ? maxCupPrice : new BigDecimal("35.00");
-        this.targetSalesPer2Minute = targetSalesPer2Minute != null ? targetSalesPer2Minute : 1.0;
+        this.targetSalesPer1Minute = targetSalesPer1Minute != null ? targetSalesPer1Minute : 0.55;
+        this.targetSalesPer2Minute = this.targetSalesPer1Minute * 2.0;
         this.orderCount = orderCount != null ? orderCount : 0;
         this.targetOrders = targetOrders != null ? targetOrders : 5;
         this.volatility = volatility != null ? volatility : new BigDecimal("0.0800");
@@ -105,8 +109,31 @@ public class Product {
     public void setMinCupPrice(BigDecimal minCupPrice) { this.minCupPrice = minCupPrice; }
     public BigDecimal getMaxCupPrice() { return maxCupPrice; }
     public void setMaxCupPrice(BigDecimal maxCupPrice) { this.maxCupPrice = maxCupPrice; }
-    public Double getTargetSalesPer2Minute() { return targetSalesPer2Minute; }
-    public void setTargetSalesPer2Minute(Double targetSalesPer2Minute) { this.targetSalesPer2Minute = targetSalesPer2Minute; }
+    
+    public Double getTargetSalesPer1Minute() {
+        if (targetSalesPer1Minute != null && targetSalesPer1Minute > 0) return targetSalesPer1Minute;
+        if (targetSalesPer2Minute != null && targetSalesPer2Minute > 0) return targetSalesPer2Minute / 2.0;
+        return 0.55;
+    }
+    public void setTargetSalesPer1Minute(Double targetSalesPer1Minute) {
+        this.targetSalesPer1Minute = targetSalesPer1Minute;
+        if (targetSalesPer1Minute != null) {
+            this.targetSalesPer2Minute = targetSalesPer1Minute * 2.0;
+        }
+    }
+
+    public Double getTargetSalesPer2Minute() {
+        if (targetSalesPer2Minute != null && targetSalesPer2Minute > 0) return targetSalesPer2Minute;
+        if (targetSalesPer1Minute != null && targetSalesPer1Minute > 0) return targetSalesPer1Minute * 2.0;
+        return 1.10;
+    }
+    public void setTargetSalesPer2Minute(Double targetSalesPer2Minute) {
+        this.targetSalesPer2Minute = targetSalesPer2Minute;
+        if (targetSalesPer2Minute != null) {
+            this.targetSalesPer1Minute = targetSalesPer2Minute / 2.0;
+        }
+    }
+
     public Integer getOrderCount() { return orderCount != null ? orderCount : 0; }
     public void setOrderCount(Integer orderCount) { this.orderCount = orderCount; }
     public Integer getTargetOrders() { return targetOrders != null ? targetOrders : 5; }
@@ -138,7 +165,8 @@ public class Product {
         private BigDecimal currentCupPrice = new BigDecimal("25.00");
         private BigDecimal minCupPrice = new BigDecimal("18.00");
         private BigDecimal maxCupPrice = new BigDecimal("35.00");
-        private Double targetSalesPer2Minute = 1.0;
+        private Double targetSalesPer1Minute = 0.55;
+        private Double targetSalesPer2Minute = 1.10;
         private Integer orderCount = 0;
         private Integer targetOrders = 5;
         private BigDecimal volatility = new BigDecimal("0.0800");
@@ -156,7 +184,16 @@ public class Product {
         public ProductBuilder currentCupPrice(BigDecimal currentCupPrice) { this.currentCupPrice = currentCupPrice; return this; }
         public ProductBuilder minCupPrice(BigDecimal minCupPrice) { this.minCupPrice = minCupPrice; return this; }
         public ProductBuilder maxCupPrice(BigDecimal maxCupPrice) { this.maxCupPrice = maxCupPrice; return this; }
-        public ProductBuilder targetSalesPer2Minute(Double targetSalesPer2Minute) { this.targetSalesPer2Minute = targetSalesPer2Minute; return this; }
+        public ProductBuilder targetSalesPer1Minute(Double targetSalesPer1Minute) {
+            this.targetSalesPer1Minute = targetSalesPer1Minute;
+            if (targetSalesPer1Minute != null) this.targetSalesPer2Minute = targetSalesPer1Minute * 2.0;
+            return this;
+        }
+        public ProductBuilder targetSalesPer2Minute(Double targetSalesPer2Minute) {
+            this.targetSalesPer2Minute = targetSalesPer2Minute;
+            if (targetSalesPer2Minute != null) this.targetSalesPer1Minute = targetSalesPer2Minute / 2.0;
+            return this;
+        }
         public ProductBuilder orderCount(Integer orderCount) { this.orderCount = orderCount; return this; }
         public ProductBuilder targetOrders(Integer targetOrders) { this.targetOrders = targetOrders; return this; }
         public ProductBuilder volatility(BigDecimal volatility) { this.volatility = volatility; return this; }
@@ -166,7 +203,10 @@ public class Product {
         public ProductBuilder updatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
 
         public Product build() {
-            return new Product(id, name, flavour, description, defaultCupSizeMl, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, targetSalesPer2Minute, orderCount, targetOrders, volatility, lastPriceChangeTimestamp, priceVersion, createdAt, updatedAt);
+            Product p = new Product(id, name, flavour, description, defaultCupSizeMl, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, targetSalesPer1Minute, orderCount, targetOrders, volatility, lastPriceChangeTimestamp, priceVersion, createdAt, updatedAt);
+            if (targetSalesPer2Minute != null) p.setTargetSalesPer2Minute(targetSalesPer2Minute);
+            if (targetSalesPer1Minute != null) p.setTargetSalesPer1Minute(targetSalesPer1Minute);
+            return p;
         }
     }
 }

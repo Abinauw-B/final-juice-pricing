@@ -76,12 +76,12 @@ public class PricingConfigurationService {
     }
 
     public int getSettlementIntervalSeconds() {
-        String val = globalConfigCache.getOrDefault("SETTLEMENT_INTERVAL_SECONDS", "120");
+        String val = globalConfigCache.getOrDefault("SETTLEMENT_INTERVAL_SECONDS", "60");
         try {
             int interval = Integer.parseInt(val);
-            return interval > 0 ? interval : 120;
+            return interval > 0 ? interval : 60;
         } catch (Exception e) {
-            return 120;
+            return 60;
         }
     }
 
@@ -118,11 +118,25 @@ public class PricingConfigurationService {
     }
 
     public BigDecimal getDecreaseStep1() {
-        return parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_1", "1.00"), new BigDecimal("1.00"));
+        return parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_1", "4.00"), new BigDecimal("4.00"));
     }
 
     public BigDecimal getDecreaseStep2() {
-        return parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_2", "2.00"), new BigDecimal("2.00"));
+        return parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_2", "4.00"), new BigDecimal("4.00"));
+    }
+
+    public BigDecimal getPriceDecreaseStep() {
+        return parseDecimal(globalConfigCache.getOrDefault("PRICE_DECREASE_STEP", "4.00"), new BigDecimal("4.00"));
+    }
+
+    public static void validatePriceMovement(BigDecimal delta) {
+        if (delta == null || delta.compareTo(BigDecimal.ZERO) >= 0) return;
+        BigDecimal absDelta = delta.abs();
+        BigDecimal[] divRem = absDelta.divideAndRemainder(new BigDecimal("4.00"));
+        if (divRem[1].compareTo(BigDecimal.ZERO) != 0) {
+            log.error("[PRICE_MOVEMENT_VALIDATION] Downward price movement {} is not a multiple of ₹4.00!", delta);
+            throw new IllegalStateException("Downward price movement must be a multiple of ₹4.00. Got: " + delta);
+        }
     }
 
     public int getMarketCrashDurationSeconds() {
@@ -152,11 +166,14 @@ public class PricingConfigurationService {
     }
 
     public double getTargetSalesForProduct(Product product) {
-        if (product == null) return 1.00;
-        if (product.getTargetSalesPer2Minute() != null && product.getTargetSalesPer2Minute() > 0) {
-            return product.getTargetSalesPer2Minute();
+        if (product == null) return 0.55;
+        if (product.getTargetSalesPer1Minute() != null && product.getTargetSalesPer1Minute() > 0) {
+            return product.getTargetSalesPer1Minute();
         }
-        return 1.00;
+        if (product.getTargetSalesPer2Minute() != null && product.getTargetSalesPer2Minute() > 0) {
+            return product.getTargetSalesPer2Minute() / 2.0;
+        }
+        return 0.55;
     }
 
     private BigDecimal parseDecimal(String str, BigDecimal def) {
@@ -183,6 +200,7 @@ public class PricingConfigurationService {
         global.setIncreaseStep(getIncreaseStep().setScale(2, RoundingMode.HALF_UP));
         global.setDecreaseStep1(getDecreaseStep1().setScale(2, RoundingMode.HALF_UP));
         global.setDecreaseStep2(getDecreaseStep2().setScale(2, RoundingMode.HALF_UP));
+        global.setPriceDecreaseStep(getPriceDecreaseStep().setScale(2, RoundingMode.HALF_UP));
         global.setMarketCrashDurationSeconds(getMarketCrashDurationSeconds());
         global.setMarketCrashPrice(getMarketCrashPrice().setScale(2, RoundingMode.HALF_UP));
         global.setDefaultCupPrice(getDefaultCupPrice().setScale(2, RoundingMode.HALF_UP));
@@ -192,11 +210,12 @@ public class PricingConfigurationService {
         List<Product> products = productRepository.findByIsActiveTrueOrderByIdAsc();
         List<PricingConfigDTO.ProductConfig> productConfigs = new ArrayList<>();
         for (Product p : products) {
+            double target = p.getTargetSalesPer1Minute() != null ? p.getTargetSalesPer1Minute() : (p.getTargetSalesPer2Minute() != null ? p.getTargetSalesPer2Minute() / 2.0 : 0.55);
             productConfigs.add(new PricingConfigDTO.ProductConfig(
                     p.getId(),
                     p.getName(),
                     p.getFlavour(),
-                    p.getTargetSalesPer2Minute() != null ? p.getTargetSalesPer2Minute() : 1.0,
+                    target,
                     p.getDefaultCupPrice() != null ? p.getDefaultCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00"),
                     p.getCurrentCupPrice() != null ? p.getCurrentCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00"),
                     p.getMinCupPrice() != null ? p.getMinCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("18.00"),
@@ -235,6 +254,11 @@ public class PricingConfigurationService {
         if (update.getIncreaseStep() != null) newSettings.put("INCREASE_STEP", update.getIncreaseStep().setScale(2, RoundingMode.HALF_UP).toString());
         if (update.getDecreaseStep1() != null) newSettings.put("DECREASE_STEP_1", update.getDecreaseStep1().setScale(2, RoundingMode.HALF_UP).toString());
         if (update.getDecreaseStep2() != null) newSettings.put("DECREASE_STEP_2", update.getDecreaseStep2().setScale(2, RoundingMode.HALF_UP).toString());
+        if (update.getPriceDecreaseStep() != null) {
+            newSettings.put("PRICE_DECREASE_STEP", update.getPriceDecreaseStep().setScale(2, RoundingMode.HALF_UP).toString());
+            newSettings.put("DECREASE_STEP_1", update.getPriceDecreaseStep().setScale(2, RoundingMode.HALF_UP).toString());
+            newSettings.put("DECREASE_STEP_2", update.getPriceDecreaseStep().setScale(2, RoundingMode.HALF_UP).toString());
+        }
         if (update.getMarketCrashDurationSeconds() != null) newSettings.put("MARKET_CRASH_DURATION_SECONDS", String.valueOf(update.getMarketCrashDurationSeconds()));
         if (update.getMarketCrashPrice() != null) newSettings.put("MARKET_CRASH_PRICE", update.getMarketCrashPrice().setScale(2, RoundingMode.HALF_UP).toString());
         if (update.getDefaultCupPrice() != null) newSettings.put("DEFAULT_CUP_PRICE", update.getDefaultCupPrice().setScale(2, RoundingMode.HALF_UP).toString());
@@ -336,12 +360,14 @@ public class PricingConfigurationService {
         long oldVersion = currentConfigVersion.get();
         long newVersion = oldVersion + 1;
 
-        Double oldTarget = product.getTargetSalesPer2Minute();
+        Double oldTarget = product.getTargetSalesPer1Minute();
         BigDecimal oldBase = product.getDefaultCupPrice();
         BigDecimal oldMin = product.getMinCupPrice();
         BigDecimal oldMax = product.getMaxCupPrice();
 
-        if (update.getTargetSales() != null) product.setTargetSalesPer2Minute(update.getTargetSales());
+        if (update.getTargetSales() != null) {
+            product.setTargetSalesPer1Minute(update.getTargetSales());
+        }
         if (update.getDefaultCupPrice() != null) product.setDefaultCupPrice(update.getDefaultCupPrice());
         if (update.getMinCupPrice() != null) product.setMinCupPrice(update.getMinCupPrice());
         if (update.getMaxCupPrice() != null) product.setMaxCupPrice(update.getMaxCupPrice());
@@ -367,7 +393,7 @@ public class PricingConfigurationService {
         // Sync Redis & STOMP
         try {
             if (redisTemplate != null) {
-                redisTemplate.opsForValue().set("pricing:product:" + productId + ":target", String.valueOf(product.getTargetSalesPer2Minute()));
+                redisTemplate.opsForValue().set("pricing:product:" + productId + ":target", String.valueOf(product.getTargetSalesPer1Minute()));
             }
             if (messagingTemplate != null) {
                 messagingTemplate.convertAndSend("/topic/pricing-config", getFullConfiguration());
@@ -379,7 +405,7 @@ public class PricingConfigurationService {
                 product.getId(),
                 product.getName(),
                 product.getFlavour(),
-                product.getTargetSalesPer2Minute(),
+                product.getTargetSalesPer1Minute(),
                 product.getDefaultCupPrice(),
                 product.getCurrentCupPrice(),
                 product.getMinCupPrice(),
@@ -434,6 +460,9 @@ public class PricingConfigurationService {
         }
         if (config.getDecreaseStep2() != null && config.getDecreaseStep2().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Decrease step 2 cannot be negative");
+        }
+        if (config.getPriceDecreaseStep() != null && config.getPriceDecreaseStep().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Price decrease step cannot be negative");
         }
         if (config.getLowDemandThreshold() != null && config.getStableDemandLowerThreshold() != null
                 && config.getLowDemandThreshold().compareTo(config.getStableDemandLowerThreshold()) >= 0) {

@@ -251,7 +251,7 @@ public class JuiceInventoryAndPricingTests {
     @Transactional
     void testRepeatedSettlementIdempotency() {
         mangoProduct.setCurrentCupPrice(new BigDecimal("25.00"));
-        mangoProduct.setTargetSalesPer2Minute(1.10);
+        mangoProduct.setTargetSalesPer1Minute(0.55);
         mangoProduct = productRepository.save(mangoProduct);
 
         // Record a sale of 3 cups in W0
@@ -265,15 +265,15 @@ public class JuiceInventoryAndPricingTests {
         req.setPaymentMethod("CASH");
         posService.processCheckout(req);
 
-        // W0=3, W1=0, W2=0 => Sw=3.00, Target=1.10 => Rd=2.7272 >= 1.10 and W0>0 => +1 => 26.00
+        // W0=3, W1=0, W2=0 => Sw=3.00, Target=0.55 => Rd=5.4545 >= 1.10 and W0>0 => +1 => 26.00
         PriceAdjustmentService.PriceEvaluationResult res1 = priceAdjustmentService.evaluateAndAdjustPrice(mangoProduct.getId());
         assertEquals(new BigDecimal("26.00"), res1.getNewPrice());
 
         // In the future (say 10 minutes later with 0 sales in W0, W1, W2):
-        // W0=0, W1=0, W2=0 => Sw=0, Rd=0 < 0.50 => -2 => 26.00 -> 24.00
+        // W0=0, W1=0, W2=0 => Sw=0, Rd=0 < 0.50 => -4 => 26.00 -> 22.00
         LocalDateTime futureTime = LocalDateTime.now().plusMinutes(10);
         PriceAdjustmentService.PriceEvaluationResult res2 = priceAdjustmentService.evaluateAndAdjustPrice(mangoProduct.getId(), futureTime);
-        assertEquals(new BigDecimal("24.00"), res2.getNewPrice());
+        assertEquals(new BigDecimal("22.00"), res2.getNewPrice());
     }
 
     @Test
@@ -288,7 +288,7 @@ public class JuiceInventoryAndPricingTests {
                         .currentCupPrice(new BigDecimal("25.00"))
                         .minCupPrice(new BigDecimal("18.00"))
                         .maxCupPrice(new BigDecimal("35.00"))
-                        .targetSalesPer2Minute(0.90)
+                        .targetSalesPer1Minute(0.45)
                         .build()));
 
         Product orange = productRepository.findByFlavourIgnoreCase("ORANGE")
@@ -299,14 +299,14 @@ public class JuiceInventoryAndPricingTests {
                         .currentCupPrice(new BigDecimal("25.00"))
                         .minCupPrice(new BigDecimal("18.00"))
                         .maxCupPrice(new BigDecimal("35.00"))
-                        .targetSalesPer2Minute(1.10)
+                        .targetSalesPer1Minute(0.55)
                         .build()));
 
         orange.setCurrentCupPrice(new BigDecimal("25.00"));
         orange = productRepository.save(orange);
 
         thunder.setCurrentCupPrice(new BigDecimal("25.00"));
-        thunder.setTargetSalesPer2Minute(0.90);
+        thunder.setTargetSalesPer1Minute(0.45);
         thunder = productRepository.save(thunder);
 
         // Checkout Thunder only
@@ -320,7 +320,7 @@ public class JuiceInventoryAndPricingTests {
         req.setPaymentMethod("CASH");
         posService.processCheckout(req);
 
-        // Thunder: W0=2, Target=0.90 => Sw=2.00, Rd=2.22 >= 1.10 => +1 => 26.00
+        // Thunder: W0=2, Target=0.45 => Sw=2.00, Rd=4.44 >= 1.10 => +1 => 26.00
         priceAdjustmentService.evaluateAndAdjustPrice(thunder.getId());
 
         Product refreshedThunder = productRepository.findById(thunder.getId()).orElseThrow();
@@ -340,19 +340,19 @@ public class JuiceInventoryAndPricingTests {
         Product mango = productRepository.findByFlavourIgnoreCase("MANGO").orElseThrow();
 
         thunder.setCurrentCupPrice(new BigDecimal("25.00"));
-        thunder.setTargetSalesPer2Minute(0.90);
+        thunder.setTargetSalesPer1Minute(0.45);
         productRepository.save(thunder);
 
         orange.setCurrentCupPrice(new BigDecimal("30.00"));
-        orange.setTargetSalesPer2Minute(1.10);
+        orange.setTargetSalesPer1Minute(0.55);
         productRepository.save(orange);
 
         mint.setCurrentCupPrice(new BigDecimal("22.00"));
-        mint.setTargetSalesPer2Minute(0.80);
+        mint.setTargetSalesPer1Minute(0.40);
         productRepository.save(mint);
 
         mango.setCurrentCupPrice(new BigDecimal("28.00"));
-        mango.setTargetSalesPer2Minute(1.10);
+        mango.setTargetSalesPer1Minute(0.55);
         productRepository.save(mango);
 
         // Purchase Thunder x 2

@@ -35,7 +35,7 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
                 },
                 triggerContext -> {
                     int intervalSeconds = pricingConfigService.getSettlementIntervalSeconds();
-                    if (intervalSeconds <= 0) intervalSeconds = 120;
+                    if (intervalSeconds <= 0) intervalSeconds = 60;
                     Instant lastActual = triggerContext.lastActualExecution();
                     if (lastActual == null) {
                         return Instant.now().plusSeconds(intervalSeconds);

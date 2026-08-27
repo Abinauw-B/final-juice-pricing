@@ -32,57 +32,60 @@ public class PriceMovementUnitTest {
         } else if (rd.compareTo(new BigDecimal("0.9000")) >= 0) {
             deltaP = BigDecimal.ZERO;
         } else if (rd.compareTo(new BigDecimal("0.5000")) >= 0) {
-            deltaP = new BigDecimal("-1.00");
+            deltaP = new BigDecimal("-4.00");
         } else {
-            deltaP = new BigDecimal("-2.00");
+            deltaP = new BigDecimal("-4.00");
         }
+
+        // Validate multiple of 4 for downward movement
+        PricingConfigurationService.validatePriceMovement(deltaP);
 
         BigDecimal uncapped = currentPrice.add(deltaP);
         return uncapped.max(floor).min(ceiling).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Test
-    @DisplayName("Example 1 — Mango High Demand: W0=3, W1=1, W2=0, Target=1.10 -> Sw=3.50, Rd=3.1818 -> +₹1.00 -> ₹26.00")
+    @DisplayName("Example 1 — Mango High Demand: W0=3, W1=1, W2=0, Target=0.55 -> Sw=3.50, Rd=6.3636 -> +₹1.00 -> ₹26.00")
     void testExample1MangoHighDemand() {
         BigDecimal currentPrice = new BigDecimal("25.00");
         BigDecimal floor = new BigDecimal("18.00");
         BigDecimal ceiling = new BigDecimal("35.00");
 
-        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 3, 1, 0, 1.10, floor, ceiling);
+        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 3, 1, 0, 0.55, floor, ceiling);
         assertEquals(new BigDecimal("26.00"), newPrice);
     }
 
     @Test
-    @DisplayName("Example 2 — Lemon Zero Demand Decay: W0=0, W1=0, W2=0, Target=0.80 -> Sw=0, Rd=0 -> -₹2.00 -> ₹23.00")
+    @DisplayName("Example 2 — Lemon Zero Demand Decay: W0=0, W1=0, W2=0, Target=0.40 -> Sw=0, Rd=0 -> -₹4.00 -> ₹21.00")
     void testExample2LemonZeroDemandDecay() {
         BigDecimal currentPrice = new BigDecimal("25.00");
         BigDecimal floor = new BigDecimal("18.00");
         BigDecimal ceiling = new BigDecimal("35.00");
 
-        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 0, 0, 0.80, floor, ceiling);
-        assertEquals(new BigDecimal("23.00"), newPrice);
+        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 0, 0, 0.40, floor, ceiling);
+        assertEquals(new BigDecimal("21.00"), newPrice);
     }
 
     @Test
-    @DisplayName("Example 3 — Orange Stable Demand: W0=1, W1=0, W2=0, Target=1.10 -> Sw=1.00, Rd=0.9091 -> ₹0.00 -> ₹25.00")
+    @DisplayName("Example 3 — Orange Stable Demand: W0=1, W1=0, W2=0, Target=1.00 -> Sw=1.00, Rd=1.0000 -> ₹0.00 -> ₹25.00")
     void testExample3OrangeStableDemand() {
         BigDecimal currentPrice = new BigDecimal("25.00");
         BigDecimal floor = new BigDecimal("18.00");
         BigDecimal ceiling = new BigDecimal("35.00");
 
-        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 1, 0, 0, 1.10, floor, ceiling);
+        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 1, 0, 0, 1.00, floor, ceiling);
         assertEquals(new BigDecimal("25.00"), newPrice);
     }
 
     @Test
-    @DisplayName("Example 4 — Strawberry Floor Protection: Current=₹19.00, Zero Demand Decay -> Floor ₹18.00")
+    @DisplayName("Example 4 — Strawberry Floor Protection: Current=₹21.00, Zero Demand Decay -> Floor ₹18.00 (not ₹17.00)")
     void testExample4StrawberryFloorProtection() {
-        BigDecimal currentPrice = new BigDecimal("19.00");
+        BigDecimal currentPrice = new BigDecimal("21.00");
         BigDecimal floor = new BigDecimal("18.00");
         BigDecimal ceiling = new BigDecimal("35.00");
 
-        // 19.00 - 2.00 = 17.00 -> clamped to 18.00
-        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 0, 0, 0.70, floor, ceiling);
+        // 21.00 - 4.00 = 17.00 -> clamped to 18.00
+        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 0, 0, 0.35, floor, ceiling);
         assertEquals(new BigDecimal("18.00"), newPrice);
     }
 
@@ -94,7 +97,7 @@ public class PriceMovementUnitTest {
         BigDecimal ceiling = new BigDecimal("35.00");
 
         // 34.50 + 1.00 = 35.50 -> clamped to 35.00
-        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 6, 4, 2, 0.90, floor, ceiling);
+        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 6, 4, 2, 0.45, floor, ceiling);
         assertEquals(new BigDecimal("35.00"), newPrice);
     }
 
@@ -105,31 +108,31 @@ public class PriceMovementUnitTest {
         BigDecimal floor = new BigDecimal("18.00");
         BigDecimal ceiling = new BigDecimal("35.00");
 
-        // W0=0, W1=4, W2=2 => Sw = 0 + 2.0 + 0.5 = 2.50. Target=1.00 => Rd = 2.50 >= 1.10. But W0=0 -> deltaP = 0
-        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 4, 2, 1.00, floor, ceiling);
+        // W0=0, W1=4, W2=2 => Sw = 0 + 2.0 + 0.5 = 2.50. Target=0.55 => Rd = 4.54 >= 1.10. But W0=0 -> deltaP = 0
+        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 4, 2, 0.55, floor, ceiling);
         assertEquals(new BigDecimal("25.00"), newPrice);
     }
 
     @Test
-    @DisplayName("Verify Below Normal Partial Decay (0.50 <= Rd < 0.90 -> -₹1.00)")
+    @DisplayName("Verify Below Normal Partial Decay (0.50 <= Rd < 0.90 -> -₹4.00)")
     void testBelowNormalPartialDecay() {
         BigDecimal currentPrice = new BigDecimal("25.00");
         BigDecimal floor = new BigDecimal("18.00");
         BigDecimal ceiling = new BigDecimal("35.00");
 
-        // W0=1, W1=0, W2=0 => Sw=1.00. Target=1.50 => Rd=0.6667 => 0.50 <= Rd < 0.90 => deltaP = -1.00
+        // W0=1, W1=0, W2=0 => Sw=1.00. Target=1.50 => Rd=0.6667 => 0.50 <= Rd < 0.90 => deltaP = -4.00
         BigDecimal newPrice = calculateDWMAPrice(currentPrice, 1, 0, 0, 1.50, floor, ceiling);
-        assertEquals(new BigDecimal("24.00"), newPrice);
+        assertEquals(new BigDecimal("21.00"), newPrice);
     }
 
     @Test
-    @DisplayName("Verify Floor Hard Stop (Current ₹18.00 - ₹2.00 = ₹18.00)")
+    @DisplayName("Verify Floor Hard Stop (Current ₹18.00 - ₹4.00 = ₹18.00)")
     void testFloorHardStop() {
         BigDecimal currentPrice = new BigDecimal("18.00");
         BigDecimal floor = new BigDecimal("18.00");
         BigDecimal ceiling = new BigDecimal("35.00");
 
-        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 0, 0, 1.00, floor, ceiling);
+        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 0, 0, 0.55, floor, ceiling);
         assertEquals(new BigDecimal("18.00"), newPrice);
     }
 
@@ -140,8 +143,26 @@ public class PriceMovementUnitTest {
         BigDecimal floor = new BigDecimal("18.00");
         BigDecimal ceiling = new BigDecimal("35.00");
 
-        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 10, 0, 0, 1.00, floor, ceiling);
+        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 10, 0, 0, 0.55, floor, ceiling);
         assertEquals(new BigDecimal("35.00"), newPrice);
+    }
+
+    @Test
+    @DisplayName("Verify Downward Price Movement Multiples of 4 Validation")
+    void testDownwardMovementValidation() {
+        // Valid multiples of 4:
+        PricingConfigurationService.validatePriceMovement(new BigDecimal("-4.00"));
+        PricingConfigurationService.validatePriceMovement(new BigDecimal("-8.00"));
+        PricingConfigurationService.validatePriceMovement(new BigDecimal("-12.00"));
+        PricingConfigurationService.validatePriceMovement(new BigDecimal("-16.00"));
+        PricingConfigurationService.validatePriceMovement(new BigDecimal("0.00"));
+        PricingConfigurationService.validatePriceMovement(new BigDecimal("1.00"));
+
+        // Invalid downward amounts (not divisible by 4)
+        assertThrows(IllegalStateException.class, () -> PricingConfigurationService.validatePriceMovement(new BigDecimal("-1.00")));
+        assertThrows(IllegalStateException.class, () -> PricingConfigurationService.validatePriceMovement(new BigDecimal("-2.00")));
+        assertThrows(IllegalStateException.class, () -> PricingConfigurationService.validatePriceMovement(new BigDecimal("-3.00")));
+        assertThrows(IllegalStateException.class, () -> PricingConfigurationService.validatePriceMovement(new BigDecimal("-5.00")));
     }
 
     @Test
@@ -169,7 +190,7 @@ public class PriceMovementUnitTest {
     }
 
     @Test
-    @DisplayName("Verify DWMA Simulation Rules and Market Crash Snapshot Restoration")
+    @DisplayName("Verify DWMA Simulation Rules and Market Crash Snapshot Restoration (1-min and ₹4 step)")
     void testDWMASimulationAndCrashRestoration() {
         PricingSimulationService simService = new PricingSimulationService();
         PricingSimulationService.SimulationRequest req = new PricingSimulationService.SimulationRequest();
@@ -178,20 +199,21 @@ public class PriceMovementUnitTest {
         req.setMinPrice(new BigDecimal("18.00"));
         req.setMaxPrice(new BigDecimal("35.00"));
         req.setCupsPerInterval(4);
-        req.setTargetSales(1.00);
+        req.setIntervalMinutes(1);
+        req.setTargetSales(0.55);
         req.setTotalSimulatedPurchases(40);
         req.setIncludeCrash(true);
 
         PricingSimulationService.SimulationResponse res = simService.runSimulation(req);
         assertEquals(10, res.getSteps().size());
 
-        // Step 1: W0=4, W1=0, W2=0 => S_w=4.00, R_d=4.00 => Movement +1 => 26.00
+        // Step 1: W0=4, W1=0, W2=0 => S_w=4.00, Target=0.55 => R_d=7.27 => Movement +1 => 26.00
         PricingSimulationService.SimulationStep step1 = res.getSteps().get(0);
         assertEquals(4, step1.getW0());
         assertEquals(0, step1.getW1());
         assertEquals(0, step1.getW2());
         assertEquals(4.00, step1.getWeightedSales(), 0.01);
-        assertEquals(4.00, step1.getDemandRatio(), 0.01);
+        assertEquals(7.27, step1.getDemandRatio(), 0.05);
         assertEquals("+₹1", step1.getPriceMovement());
         assertEquals(new BigDecimal("26.00"), step1.getPrice());
 
@@ -203,8 +225,6 @@ public class PriceMovementUnitTest {
         // Step 6: Market Crash Expired -> Exact Pre-crash price snapshot restored
         PricingSimulationService.SimulationStep step6 = res.getSteps().get(5);
         assertEquals("RESTORED", step6.getPriceMovement());
-        // Step 4 price before crash was 29.00
         assertEquals(new BigDecimal("29.00"), step6.getPrice());
     }
 }
-

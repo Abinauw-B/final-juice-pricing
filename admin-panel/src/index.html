@@ -818,7 +818,7 @@
                     <th>Base (₹)</th>
                     <th>Floor (₹)</th>
                     <th>Ceiling (₹)</th>
-                    <th>Target / 2-Min</th>
+                    <th>Target / 1-Min</th>
                     <th>Manual Price Control</th>
                     <th>Action</th>
                   </tr>
@@ -838,7 +838,7 @@
                   <h2 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">⚙️ Authoritative DWMA Engine Global Configuration</h2>
                   <span id="cfgActiveVersionBadge" style="background: #2563eb; color: #fff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 9999px;">VERSION 1</span>
                 </div>
-                <p style="color: var(--text-muted); font-size: 13px; margin: 4px 0 0 0;">Persisted in PostgreSQL database with optimistic locking and synced to Redis cache. Applied dynamically on every 2-minute settlement cycle.</p>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 4px 0 0 0;">Persisted in PostgreSQL database with optimistic locking and synced to Redis cache. Applied dynamically on every 1-minute settlement cycle.</p>
               </div>
               <div style="display: flex; gap: 8px;">
                 <button class="btn-primary" style="background: #64748b; padding: 7px 12px; font-size: 12px;" onclick="loadPricingConfiguration()">🔄 Reload Config</button>
@@ -850,8 +850,8 @@
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 18px;">
               <div>
                 <label style="display: block; font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Settlement Interval (Seconds)</label>
-                <input type="number" id="cfgSettlementInterval" value="120" min="10" max="3600" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
-                <span style="font-size: 11px; color: var(--text-muted);">Cycle frequency (Default: 120s)</span>
+                <input type="number" id="cfgSettlementInterval" value="60" min="10" max="3600" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
+                <span style="font-size: 11px; color: var(--text-muted);">Cycle frequency (Default: 60s)</span>
               </div>
               <div>
                 <label style="display: block; font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">Market Crash Duration (Sec)</label>
@@ -875,19 +875,19 @@
               <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0 0 10px 0;">📊 DWMA Historical Time-Window Weights (S_w = W0×w0 + W1×w1 + W2×w2)</h3>
               <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
                 <div>
-                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Window W0 Weight [0–2 min]</label>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Window W0 Weight [0–1 min]</label>
                   <input type="number" id="cfgWeightW0" value="1.00" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
-                  <span style="font-size: 11px; color: var(--text-muted);">Multiplier for sales in last 2 minutes (Default: 1.00)</span>
+                  <span style="font-size: 11px; color: var(--text-muted);">Multiplier for sales in last 1 minute (Default: 1.00)</span>
                 </div>
                 <div>
-                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Window W1 Weight [2–4 min]</label>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Window W1 Weight [1–2 min]</label>
                   <input type="number" id="cfgWeightW1" value="0.50" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
-                  <span style="font-size: 11px; color: var(--text-muted);">Multiplier for sales 2–4 minutes ago (Default: 0.50)</span>
+                  <span style="font-size: 11px; color: var(--text-muted);">Multiplier for sales 1–2 minutes ago (Default: 0.50)</span>
                 </div>
                 <div>
-                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Window W2 Weight [4–6 min]</label>
+                  <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Window W2 Weight [2–3 min]</label>
                   <input type="number" id="cfgWeightW2" value="0.25" step="0.05" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px;">
-                  <span style="font-size: 11px; color: var(--text-muted);">Multiplier for sales 4–6 minutes ago (Default: 0.25)</span>
+                  <span style="font-size: 11px; color: var(--text-muted);">Multiplier for sales 2–3 minutes ago (Default: 0.25)</span>
                 </div>
               </div>
             </div>
@@ -921,11 +921,11 @@
                 </div>
                 <div>
                   <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Decay Step 1 (-ΔP₁)</label>
-                  <input type="number" id="cfgDecreaseStep1" value="1.00" step="0.50" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px; color: #d97706;">
+                  <input type="number" id="cfgDecreaseStep1" value="4.00" step="1.00" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px; color: #d97706;">
                 </div>
                 <div>
                   <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Decay Step 2 (-ΔP₂)</label>
-                  <input type="number" id="cfgDecreaseStep2" value="2.00" step="0.50" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px; color: #dc2626;">
+                  <input type="number" id="cfgDecreaseStep2" value="4.00" step="1.00" min="0" style="width: 100%; padding: 8px; font-weight: 700; border: 1.5px solid #cbd5e1; border-radius: 6px; color: #dc2626;">
                 </div>
                 <div>
                   <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Min Circuit Floor (₹)</label>
@@ -944,7 +944,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <div>
                 <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 2px 0;">📜 Pricing Configuration Audit Trail &amp; S_w Settlement Log</h2>
-                <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Immutable audit records generated for every setting update and scheduled 2-minute settlement.</p>
+                <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Immutable audit records generated for every setting update and scheduled 1-minute settlement.</p>
               </div>
               <div style="display: flex; gap: 8px;">
                 <button class="btn-primary" style="padding: 6px 12px; font-size: 12px; background: #2563eb;" onclick="loadPricingAuditLogs()">🔄 Refresh Audit Trail</button>
@@ -1360,8 +1360,8 @@
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
         <div>
-          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Target Sales (2-min window)</label>
-          <input type="number" id="editPricingTargetSales" step="0.1" style="width: 100%; padding: 10px; font-weight: 700;">
+          <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Target Sales (1-min window, cups/min)</label>
+          <input type="number" id="editPricingTargetSales" step="0.05" style="width: 100%; padding: 10px; font-weight: 700;">
         </div>
         <div>
           <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Volatility Factor</label>
@@ -2788,7 +2788,7 @@
         });
         if (!res.ok) throw new Error('Failed to update product config');
         const updated = await res.json();
-        showToast(`✅ Saved Target Sales for "${updated.productName || 'Product'}": ${newTarget} cups/2-min`, 'success');
+        showToast(`✅ Saved Target Sales for "${updated.productName || 'Product'}": ${newTarget} cups/min`, 'success');
         await loadPricingConfiguration();
         await loadPricingAuditLogs();
       } catch (err) {
@@ -2832,7 +2832,7 @@
           defaultCupPrice: 25.00,
           minCupPrice: 18.00,
           maxCupPrice: 35.00,
-          targetSalesPer2Minute: 1.0,
+          targetSalesPer1Minute: 0.55,
           volatility: 0.08
         }));
       }
@@ -2850,7 +2850,7 @@
         const basePrice = Number(p.defaultCupPrice || p.basePrice || 25).toFixed(2);
         const minPrice = Number(p.minCupPrice || 18).toFixed(2);
         const maxPrice = Number(p.maxCupPrice || 35).toFixed(2);
-        const target = p.targetSalesPer2Minute || p.targetSales || p.targetOrders || 1.0;
+        const target = p.targetSalesPer1Minute || p.targetSales || (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55);
         const isOverride = (p.pricingMode === 'MANUAL_OVERRIDE');
         
         const modeBadge = isOverride
@@ -2879,7 +2879,7 @@
             <td style="color: #2563eb; font-weight: 700;">₹${maxPrice}</td>
             <td>
               <div style="display: flex; align-items: center; gap: 4px;">
-                <input id="targetInput_${pid}" type="number" step="0.1" min="0.1" value="${target}" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #3b82f6; border-radius: 6px; font-size: 13px;">
+                <input id="targetInput_${pid}" type="number" step="0.05" min="0.05" value="${target}" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #3b82f6; border-radius: 6px; font-size: 13px;">
                 <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669;" onclick="saveProductTargetSales(${pid})" title="Save Target Sales to PostgreSQL">💾</button>
               </div>
             </td>
@@ -2894,7 +2894,7 @@
 
     function editProductPricing(productId) {
       const p = liveProductsCache.find(prod => prod.id === productId) || {
-        id: productId, name: flavoursMap[productId] || `Product #${productId}`, description: 'Fresh handcrafted juice', currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, targetSalesPer2Minute: 1.0, volatility: 0.08
+        id: productId, name: flavoursMap[productId] || `Product #${productId}`, description: 'Fresh handcrafted juice', currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, targetSalesPer1Minute: 0.55, volatility: 0.08
       };
 
       document.getElementById('editPricingProductId').value = p.id;
@@ -2904,7 +2904,7 @@
       document.getElementById('editPricingBasePrice').value = p.defaultCupPrice || 25;
       document.getElementById('editPricingMinPrice').value = p.minCupPrice || 18;
       document.getElementById('editPricingMaxPrice').value = p.maxCupPrice || 35;
-      document.getElementById('editPricingTargetSales').value = p.targetSalesPer2Minute || 1.0;
+      document.getElementById('editPricingTargetSales').value = p.targetSalesPer1Minute || (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55);
       document.getElementById('editPricingVolatility').value = p.volatility || 0.08;
 
       document.getElementById('editProductPricingModal').style.display = 'flex';
@@ -2925,7 +2925,7 @@
       const basePrice = parseFloat(document.getElementById('editPricingBasePrice').value) || 25;
       const minPrice = parseFloat(document.getElementById('editPricingMinPrice').value) || 18;
       const maxPrice = parseFloat(document.getElementById('editPricingMaxPrice').value) || 35;
-      const targetSales = parseFloat(document.getElementById('editPricingTargetSales').value) || 1.0;
+      const targetSales = parseFloat(document.getElementById('editPricingTargetSales').value) || 0.55;
       const volatility = parseFloat(document.getElementById('editPricingVolatility').value) || 0.08;
 
       const payload = {
@@ -2936,7 +2936,8 @@
         defaultCupPrice: basePrice,
         minCupPrice: minPrice,
         maxCupPrice: maxPrice,
-        targetSalesPer2Minute: targetSales,
+        targetSales: targetSales,
+        targetSalesPer1Minute: targetSales,
         volatility: volatility
       };
 
@@ -3474,7 +3475,7 @@
       const minPrice = req.minPrice || 18.00;
       const maxPrice = req.maxPrice || 35.00;
       const cupsPerStep = req.cupsPerInterval || 4;
-      const targetSales = 1.00;
+      const targetSales = req.targetSales || 0.55;
 
       let vol = req.initialVolumeMl || 20000;
       const salesHistory = [];
@@ -3518,21 +3519,21 @@
             delta = 0;
             movement = '₹0';
           } else if (rd >= 0.50) {
-            delta = -1;
-            movement = '-₹1';
+            delta = -4;
+            movement = '-₹4';
           } else {
-            delta = -2;
-            movement = '-₹2';
+            delta = -4;
+            movement = '-₹4';
           }
           currPrice = Math.min(maxPrice, Math.max(minPrice, currPrice + delta));
-          explanation = `Step ${i} (T+${(i-1)*2}m): W0=${w0}, W1=${w1}, W2=${w2} | S_w=${sw.toFixed(2)}, Target=${targetSales.toFixed(2)}, R_d=${rd.toFixed(2)} => ${movement} (₹${oldP.toFixed(2)} -> ₹${currPrice.toFixed(2)})`;
+          explanation = `Step ${i} (T+${(i-1)*1}m): W0=${w0}, W1=${w1}, W2=${w2} | S_w=${sw.toFixed(2)}, Target=${targetSales.toFixed(2)} cups/min, R_d=${rd.toFixed(2)} => ${movement} (₹${oldP.toFixed(2)} -> ₹${currPrice.toFixed(2)})`;
         }
 
         const tagClass = (movement.includes('-') || movement === 'CRASH') ? 'tag-crash' : 'tag-active';
         steps.push(`
           <tr>
             <td>Step ${i}</td>
-            <td>T+${(i-1)*2}m</td>
+            <td>T+${(i-1)*1}m</td>
             <td>${vol} ml</td>
             <td>${cups} cups</td>
             <td>${w0}</td>

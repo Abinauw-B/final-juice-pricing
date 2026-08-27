@@ -254,14 +254,23 @@ public class PricingController {
     }
 
     @RequestMapping(value = {"/evaluate", "/admin/evaluate"}, method = {RequestMethod.GET, RequestMethod.POST})
-    public ResponseEntity<PricingEngineService.PriceEvaluationCycleResult> evaluateAllPrices() {
-        PricingEngineService.PriceEvaluationCycleResult cycleResult = pricingEngineService.executeSettlementCycle(true);
+    public ResponseEntity<PricingEngineService.PriceEvaluationCycleResult> evaluateAllPrices(
+            @RequestParam(required = false) String evaluationTime) {
+        LocalDateTime time = (evaluationTime != null && !evaluationTime.isBlank())
+                ? LocalDateTime.parse(evaluationTime)
+                : LocalDateTime.now();
+        PricingEngineService.PriceEvaluationCycleResult cycleResult = pricingEngineService.executeSettlementCycle(true, time);
         return ResponseEntity.ok(cycleResult);
     }
 
     @PostMapping("/evaluate/{productId}")
-    public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> evaluateProductPrice(@PathVariable Long productId) {
-        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.evaluateAndAdjustPrice(productId);
+    public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> evaluateProductPrice(
+            @PathVariable Long productId,
+            @RequestParam(required = false) String evaluationTime) {
+        LocalDateTime time = (evaluationTime != null && !evaluationTime.isBlank())
+                ? LocalDateTime.parse(evaluationTime)
+                : LocalDateTime.now();
+        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.evaluateAndAdjustPrice(productId, time);
         try {
             if (messagingTemplate != null) {
                 messagingTemplate.convertAndSend("/topic/prices", productRepository.findByIsActiveTrueOrderByIdAsc());
@@ -305,7 +314,7 @@ public class PricingController {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
         return ResponseEntity.ok(new com.retailpos.pricing.model.PricingConfigDTO.ProductConfig(
                 p.getId(), p.getName(), p.getFlavour(),
-                p.getTargetSalesPer2Minute() != null ? p.getTargetSalesPer2Minute() : 1.0,
+                p.getTargetSalesPer1Minute() != null ? p.getTargetSalesPer1Minute() : 0.55,
                 p.getDefaultCupPrice(), p.getCurrentCupPrice(), p.getMinCupPrice(), p.getMaxCupPrice()
         ));
     }

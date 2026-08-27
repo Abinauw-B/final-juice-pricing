@@ -128,8 +128,8 @@ export class PricingSimulatorComponent {
     maxPrice: 35,
     totalSimulatedPurchases: 40,
     cupsPerInterval: 4,
-    intervalMinutes: 2,
-    targetSales: 1.00,
+    intervalMinutes: 1,
+    targetSales: 0.55,
     startTimeStr: '12:00'
   };
 
@@ -162,7 +162,7 @@ export class PricingSimulatorComponent {
           const w1 = salesHistory.length >= 2 ? salesHistory[salesHistory.length - 2] : 0;
           const w2 = salesHistory.length >= 3 ? salesHistory[salesHistory.length - 3] : 0;
           const sw = (1.00 * w0) + (0.50 * w1) + (0.25 * w2);
-          const target = this.req.targetSales || 1.00;
+          const target = this.req.targetSales || 0.55;
           const rd = sw / target;
 
           let movement = '₹0';
@@ -174,18 +174,18 @@ export class PricingSimulatorComponent {
             delta = 0;
             movement = '₹0';
           } else if (rd >= 0.50) {
-            delta = -1;
-            movement = '-₹1';
+            delta = -4;
+            movement = '-₹4';
           } else {
-            delta = -2;
-            movement = '-₹2';
+            delta = -4;
+            movement = '-₹4';
           }
           const oldP = price;
           price = Math.min(this.req.maxPrice, Math.max(this.req.minPrice, price + delta));
 
           steps.push({
             stepIndex: i,
-            timeStr: `12:${((i - 1) * 2).toString().padStart(2, '0')}`,
+            timeStr: `12:${((i - 1) * 1).toString().padStart(2, '0')}`,
             remainingVolumeMl: vol,
             estimatedRemainingCups: Math.floor(vol / 250),
             cupsSoldThisStep: sold,
@@ -198,7 +198,7 @@ export class PricingSimulatorComponent {
             demandRatio: rd,
             price: price,
             priceMovement: movement,
-            explanation: `Step ${i}: W0=${w0}, W1=${w1}, W2=${w2} | S_w=${sw.toFixed(2)}, Target=${target.toFixed(2)}, R_d=${rd.toFixed(2)} => ${movement} (₹${oldP.toFixed(2)} -> ₹${price.toFixed(2)})`
+            explanation: `Step ${i}: W0=${w0}, W1=${w1}, W2=${w2} | S_w=${sw.toFixed(2)}, Target=${target.toFixed(2)} cups/min, R_d=${rd.toFixed(2)} => ${movement} (₹${oldP.toFixed(2)} -> ₹${price.toFixed(2)})`
           });
         }
 
