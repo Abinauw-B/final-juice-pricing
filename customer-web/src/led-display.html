@@ -504,15 +504,15 @@
     </div>
     <div class="summary-card">
       <span class="summary-title">Market Base</span>
-      <span class="summary-val" style="color: #38BDF8;">₹25</span>
+      <span class="summary-val" style="color: #38BDF8;">₹25.00</span>
     </div>
     <div class="summary-card">
       <span class="summary-title">Market Mode</span>
-      <span class="summary-val" style="color: var(--accent-gold);" id="engineModeBadge">🟢 2-Min Settlement Cycle</span>
+      <span class="summary-val" style="color: #10B981;" id="engineModeBadge">🟢 1-Min Settlement Cycle</span>
     </div>
     <div class="summary-card">
       <span class="summary-title">Average Price</span>
-      <span class="summary-val" id="sumAvgPrice">₹25</span>
+      <span class="summary-val" id="sumAvgPrice">₹25.00</span>
     </div>
   </div>
 
@@ -522,10 +522,10 @@
       <div class="panel-header">
         <div>
           <div class="panel-title">📊 Beverage Stock Market LED Board</div>
-          <div class="panel-sub">LIVE TICKER MODE &bull; 2-MINUTE DYNAMIC SETTLEMENT ENGINE</div>
+          <div class="panel-sub">LIVE TICKER MODE &bull; 1-MINUTE DYNAMIC SETTLEMENT ENGINE</div>
         </div>
         <div style="font-size: 13px; font-weight: 800; color: #38BDF8;">
-          Base Rate: ₹25
+          Base Rate: ₹25.00
         </div>
       </div>
 
@@ -556,9 +556,9 @@
 
         <div class="info-card">
           <div class="info-title">Base Exchange Price</div>
-          <div class="info-price-highlight" style="color: #38BDF8;">₹25</div>
+          <div class="info-price-highlight" style="color: #38BDF8;">₹25.00</div>
           <div class="info-detail">
-            All 8 active juices start at ₹25 base, dynamically adjusting between ₹18 (Floor) and ₹35 (Ceiling) based on 2-minute sales demand.
+            All active juices start at ₹25 base, dynamically adjusting between ₹18 (Floor) and ₹35 (Ceiling) based on authoritative 1-minute DWMA sales demand.
           </div>
         </div>
 
@@ -736,27 +736,29 @@
         const name = p.name || p.flavour || 'Juice';
         const cupSize = p.defaultCupSizeMl || 250;
 
-        const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 20));
-        const baseP = Math.round(p.basePrice || p.defaultCupPrice || 20);
-        const diff = activePrice - baseP;
-        const pct = Math.round(((activePrice - baseP) / baseP) * 100);
-        totalPrices += activePrice;
+        const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 25)).toFixed(2);
+        const baseP = Number(p.basePrice || p.defaultCupPrice || 25).toFixed(2);
+        const diff = Number(activePrice) - Number(baseP);
+        const pct = baseP > 0 ? (((Number(activePrice) - Number(baseP)) / Number(baseP)) * 100).toFixed(1) : 0;
+        totalPrices += Number(activePrice);
 
-        let badgeHtml = `<span class="status-pill-stable" style="padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 12px; background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3);">— STABLE (₹${baseP})</span>`;
+        let badgeHtml = `<span class="status-pill-stable" style="padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 12px; background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.25); font-variant-numeric: tabular-nums;">— ₹0 (₹${baseP})</span>`;
         
         if (isMarketCrashActive) {
-          badgeHtml = `<span class="status-pill-down" style="padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 12px; background: rgba(239,68,68,0.25); color: #ef4444; border: 1px solid rgba(239,68,68,0.4);">🚨 CRASH (₹${activePrice})</span>`;
+          badgeHtml = `<span class="status-pill-down" style="padding: 5px 12px; border-radius: 20px; font-weight: 900; font-size: 12px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; box-shadow: 0 0 12px rgba(239,68,68,0.5); font-variant-numeric: tabular-nums;">🚨 CRASH (₹${activePrice})</span>`;
         } else if (diff > 0) {
-          badgeHtml = `<span class="status-pill-up" style="padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 12px; background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3);">▲ SURGE +${pct}%</span>`;
+          badgeHtml = `<span class="status-pill-up" style="padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 12px; background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.35); box-shadow: 0 0 10px rgba(16,185,129,0.2); font-variant-numeric: tabular-nums;">▲ +₹${diff.toFixed(2)} (+${pct}%)</span>`;
         } else if (diff < 0) {
-          badgeHtml = `<span class="status-pill-down" style="padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 12px; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3);">▼ DISCOUNT ${pct}%</span>`;
+          badgeHtml = `<span class="status-pill-down" style="padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 12px; background: rgba(244,63,94,0.15); color: #f43f5e; border: 1px solid rgba(244,63,94,0.35); box-shadow: 0 0 10px rgba(244,63,94,0.2); font-variant-numeric: tabular-nums;">▼ -₹${Math.abs(diff).toFixed(2)} (${pct}%)</span>`;
         }
+
+        const priceColor = isMarketCrashActive ? '#ef4444' : (diff > 0 ? '#10b981' : (diff < 0 ? '#f43f5e' : '#38bdf8'));
 
         return `
           <tr>
-            <td style="font-weight: 800; font-size: 18px;">${icon} ${name}</td>
-            <td style="color: var(--text-secondary); font-size: 15px;">${cupSize} ml</td>
-            <td style="font-size: 22px; font-weight: 900; color: ${isMarketCrashActive ? '#ef4444' : (diff > 0 ? '#22c55e' : (diff < 0 ? '#38bdf8' : 'var(--text-primary)'))}">₹${activePrice}</td>
+            <td style="font-weight: 800; font-size: 18px; color: var(--text-primary);">${icon} ${name}</td>
+            <td style="color: var(--text-secondary); font-size: 14px; font-weight: 600;">${cupSize} ml</td>
+            <td style="font-size: 24px; font-weight: 900; font-family: monospace; font-variant-numeric: tabular-nums; color: ${priceColor};">₹${activePrice}</td>
             <td>${badgeHtml}</td>
           </tr>
         `;
@@ -796,28 +798,29 @@
           const diff = activePrice - baseP;
           const pct = Math.round(((activePrice - baseP) / baseP) * 100);
 
-          let priceColor = '#38BDF8';
-          let signStr = 'STABLE';
+          let priceColor = '#38bdf8';
+          let signBadge = `<span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.25);">— ₹0</span>`;
           if (isMarketCrashActive) {
-            priceColor = '#EF4444';
-            signStr = 'CRASH FLOOR';
+            priceColor = '#ef4444';
+            signBadge = `<span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; box-shadow: 0 0 8px rgba(239,68,68,0.5);">🚨 CRASH</span>`;
           } else if (diff > 0) {
-            priceColor = '#22C55E';
-            signStr = `▲ +${pct}%`;
+            priceColor = '#10b981';
+            signBadge = `<span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.35); box-shadow: 0 0 8px rgba(16,185,129,0.2);">▲ +₹${diff.toFixed(2)}</span>`;
           } else if (diff < 0) {
-            priceColor = '#F59E0B';
-            signStr = `▼ ${pct}%`;
+            priceColor = '#f43f5e';
+            signBadge = `<span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: rgba(244,63,94,0.15); color: #f43f5e; border: 1px solid rgba(244,63,94,0.35); box-shadow: 0 0 8px rgba(244,63,94,0.2);">▼ -₹${Math.abs(diff).toFixed(2)}</span>`;
           }
 
           return `
-            <span class="ticker-item">
-              <span style="color: var(--text-primary); font-size: 15px; font-weight: 800;">${icon} ${flavour}:</span>
-              <span style="color: ${priceColor}; font-size: 16px; font-weight: 900;">₹${activePrice} (${signStr})</span>
+            <span class="ticker-item" style="font-variant-numeric: tabular-nums;">
+              <span style="color: var(--text-primary); font-size: 14px; font-weight: 800;">${icon} ${flavour}:</span>
+              <span style="color: ${priceColor}; font-size: 15px; font-weight: 900; font-family: monospace;">₹${activePrice}</span>
+              ${signBadge}
             </span>
           `;
-        }).join(' &bull; ');
+        }).join(' &nbsp;&bull;&nbsp; ');
         
-        track.innerHTML = `${tickerHtml} &bull; ${tickerHtml}`;
+        track.innerHTML = `${tickerHtml} &nbsp;&bull;&nbsp; ${tickerHtml}`;
       }
     }
 
