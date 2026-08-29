@@ -135,6 +135,11 @@
       letter-spacing: -0.012em;
     }
 
+    html {
+      overflow-y: scroll;
+      scrollbar-gutter: stable;
+    }
+
     body {
       background: var(--bg-mesh);
       background-color: var(--bg-page);
@@ -142,7 +147,6 @@
       color: var(--text-primary);
       min-height: 100vh;
       padding: 18px 24px;
-      transition: background 0.3s ease, color 0.3s ease;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -289,17 +293,18 @@
     /* Main 12-Column Responsive Layout */
     .pos-container {
       display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 22px;
-      max-width: 1600px;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
+      max-width: 100%;
       margin: 0 auto;
+      padding: 0 4px;
     }
 
-    /* Clean Professional Product Card with Appetizing Beverage Photos */
+    /* 4 in a row beverage product grid */
     .flavour-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
     }
 
     /* Flavour-Specific Gradient Themes */
@@ -380,7 +385,7 @@
       background: var(--flavour-grad-dark);
       border: 1px solid var(--flavour-border, var(--border-color));
       border-radius: var(--radius-card);
-      padding: 16px;
+      padding: 13px;
       display: flex; flex-direction: column; justify-content: space-between;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 20px var(--flavour-glow, transparent);
       backdrop-filter: blur(20px);
@@ -400,7 +405,7 @@
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 4px;
+      height: 3.5px;
       background: var(--flavour-top-strip, linear-gradient(90deg, #0284c7, #38bdf8));
       z-index: 2;
     }
@@ -415,10 +420,10 @@
     .card-img-banner {
       position: relative;
       width: 100%;
-      height: 155px;
-      border-radius: 12px;
+      height: 125px;
+      border-radius: 10px;
       overflow: hidden;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
       background: var(--bg-secondary);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
     }
@@ -439,7 +444,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      padding: 10px 12px;
+      padding: 8px 10px;
       pointer-events: none;
     }
     .fruit-pill {
@@ -447,24 +452,24 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.25);
-      padding: 4px 10px;
+      padding: 3px 8px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
       color: #ffffff;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       letter-spacing: 0.3px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
 
-    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .card-header-left { display: flex; align-items: center; gap: 10px; }
-    .card-name { font-size: 17px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.25; }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .card-header-left { display: flex; align-items: center; gap: 8px; }
+    .card-name { font-size: 15px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.25; }
     .market-badge {
-      font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px;
-      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 20px;
+      display: inline-flex; align-items: center; gap: 3px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
@@ -492,11 +497,11 @@
     /* Mini Sparkline Chart Container */
     .card-chart-wrap {
       width: 100%;
-      height: 68px;
+      height: 54px;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      margin-bottom: 12px;
+      border-radius: 8px;
+      margin-bottom: 9px;
       position: relative;
       overflow: hidden;
       box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -508,14 +513,14 @@
     }
     .chart-badge-pts {
       position: absolute;
-      top: 4px; right: 6px;
-      font-size: 9px;
+      top: 3px; right: 5px;
+      font-size: 8.5px;
       font-family: var(--font-mono);
       font-weight: 700;
       color: var(--text-muted);
       background: rgba(15, 23, 42, 0.7);
       backdrop-filter: blur(4px);
-      padding: 1px 6px;
+      padding: 1px 5px;
       border-radius: 4px;
       pointer-events: none;
       letter-spacing: 0.3px;
@@ -524,14 +529,14 @@
     .price-section {
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
+      border-radius: 10px;
+      padding: 9px 12px;
+      margin-bottom: 9px;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
       transition: all 0.3s ease;
     }
     .price-main {
-      font-size: 29px; font-weight: 900; color: var(--flavour-accent, var(--accent-cyan)); letter-spacing: -0.5px;
+      font-size: 24px; font-weight: 900; color: var(--flavour-accent, var(--accent-cyan)); letter-spacing: -0.5px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
@@ -539,9 +544,9 @@
       text-shadow: 0 0 14px var(--flavour-glow, rgba(56, 189, 248, 0.2));
       display: inline-block;
     }
-    .price-unit { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+    .price-unit { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
     .price-bounds {
-      font-size: 11.5px; color: var(--text-muted); margin-top: 6px; display: flex; justify-content: space-between;
+      font-size: 10.5px; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
@@ -551,12 +556,12 @@
     .demand-section {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 10px 12px;
-      margin-bottom: 14px;
+      border-radius: 8px;
+      padding: 7px 10px;
+      margin-bottom: 10px;
     }
     .demand-text {
-      font-size: 11.5px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center;
+      font-size: 10.5px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
@@ -564,11 +569,11 @@
     .demand-text strong { color: var(--flavour-accent, var(--accent-cyan)); font-weight: 800; }
     .demand-bar-track {
       width: 100%;
-      height: 5px;
+      height: 4.5px;
       background: rgba(148, 163, 184, 0.2);
       border-radius: 3px;
       overflow: hidden;
-      margin-top: 6px;
+      margin-top: 5px;
       position: relative;
     }
     .demand-bar-fill {
@@ -588,13 +593,13 @@
     }
 
     .add-to-cart-btn {
-      width: 100%; height: 44px;
+      width: 100%; height: 38px;
       background: var(--flavour-btn, linear-gradient(135deg, #0284c7, #2563eb));
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: var(--radius-btn);
-      color: #ffffff; font-weight: 800; font-size: 13.5px;
+      color: #ffffff; font-weight: 800; font-size: 12.5px;
       cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex; align-items: center; justify-content: center; gap: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
       box-shadow: 0 4px 16px var(--flavour-glow, rgba(37, 99, 235, 0.35));
     }
     .add-to-cart-btn:hover {
@@ -603,6 +608,42 @@
       box-shadow: 0 8px 24px var(--flavour-glow, rgba(37, 99, 235, 0.5));
     }
     .add-to-cart-btn:active { transform: scale(0.98); }
+
+    /* Responsive Breakpoints for 4-in-a-Row Product Grid */
+    @media (max-width: 1400px) {
+      .pos-container {
+        grid-template-columns: 1fr 310px;
+        gap: 12px;
+      }
+      .flavour-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+    }
+    @media (max-width: 1120px) {
+      .flavour-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .pos-container {
+        grid-template-columns: 1fr 300px;
+      }
+    }
+    @media (max-width: 860px) {
+      .pos-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .flavour-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+    @media (max-width: 520px) {
+      .flavour-grid {
+        grid-template-columns: 1fr;
+      }
+    }
 
     /* Flash Highlight Animations for Live Dynamic Price Movements */
     @keyframes flashSurgePulse {
@@ -1280,7 +1321,11 @@
       }
 
       if (g.settlementIntervalSeconds) {
-        updatePricingTimingState(g);
+        updatePricingTimingState({
+          intervalSeconds: g.settlementIntervalSeconds,
+          settlementIntervalSeconds: g.settlementIntervalSeconds,
+          nextSettlementAt: config.nextSettlementAt
+        });
       }
     }
 
@@ -1408,120 +1453,179 @@
       if (syncEl) syncEl.textContent = new Date().toLocaleTimeString();
     }
 
+    let lastRenderedPosCardIds = '';
+
     function renderProducts() {
       if (!products || products.length === 0) return;
       products.sort((a, b) => (a.id || 0) - (b.id || 0));
       const grid = document.getElementById('productGrid');
       if (!grid) return;
 
-      grid.innerHTML = products.map(p => {
-        const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
-        const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
-        const minP = Number(p.minCupPrice !== undefined ? p.minCupPrice : 18.0);
-        const maxP = Number(p.maxCupPrice !== undefined ? p.maxCupPrice : 35.0);
-        const diff = activePrice - baseP;
-        const icon = getFruitIcon(p);
-        const imgUrl = getBeverageImage(p);
+      const currentIds = products.map(p => p.id).join(',');
+      const needsFullRebuild = (currentIds !== lastRenderedPosCardIds) || (grid.children.length !== products.length);
 
-        const pctVal = baseP > 0 ? Math.abs(((diff / baseP) * 100).toFixed(1)) : '0.0';
+      if (needsFullRebuild) {
+        lastRenderedPosCardIds = currentIds;
+        grid.innerHTML = products.map(p => {
+          const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+          const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+          const minP = Number(p.minCupPrice !== undefined ? p.minCupPrice : 18.0);
+          const maxP = Number(p.maxCupPrice !== undefined ? p.maxCupPrice : 35.0);
+          const diff = activePrice - baseP;
+          const icon = getFruitIcon(p);
+          const imgUrl = getBeverageImage(p);
 
-        let badgeClass = 'badge-stable';
-        let badgeText = `— ₹${activePrice.toFixed(2)} BASE RATE`;
-        if (isMarketCrashActive) {
-          badgeClass = 'badge-down';
-          badgeText = `▼ CRASH ₹${activePrice.toFixed(2)}`;
-        } else if (diff > 0.05) {
-          badgeClass = 'badge-up';
-          badgeText = `▲ +₹${diff.toFixed(2)} (+${pctVal}%) SURGE`;
-        } else if (diff < -0.05) {
-          badgeClass = 'badge-down';
-          badgeText = `▼ -₹${Math.abs(diff).toFixed(2)} (-${pctVal}%) DISCOUNT`;
-        }
+          const pctVal = baseP > 0 ? Math.abs(((diff / baseP) * 100).toFixed(1)) : '0.0';
 
-        const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : 0.40).toFixed(2);
-        
-        let demandCategory = 'NORMAL';
-        let demandColor = 'var(--text-muted)';
-        let demandBarClass = 'demand-normal';
-        let demandPercent = 50;
+          let badgeClass = 'badge-stable';
+          let badgeText = `— ₹${activePrice.toFixed(2)} BASE RATE`;
+          if (isMarketCrashActive) {
+            badgeClass = 'badge-down';
+            badgeText = `▼ CRASH ₹${activePrice.toFixed(2)}`;
+          } else if (diff > 0.05) {
+            badgeClass = 'badge-up';
+            badgeText = `▲ +₹${diff.toFixed(2)} (+${pctVal}%) SURGE`;
+          } else if (diff < -0.05) {
+            badgeClass = 'badge-down';
+            badgeText = `▼ -₹${Math.abs(diff).toFixed(2)} (-${pctVal}%) DISCOUNT`;
+          }
 
-        if (diff > 0.05) {
-          demandCategory = '🔥 HIGH DEMAND';
-          demandColor = 'var(--warning)';
-          demandBarClass = 'demand-high';
-          demandPercent = Math.min(100, Math.round(50 + (diff / (maxP - baseP || 1)) * 50));
-        } else if (diff < -0.05) {
-          demandCategory = '❄️ DISCOUNT FLOOR';
-          demandColor = 'var(--accent-cyan)';
-          demandBarClass = 'demand-low';
-          demandPercent = Math.max(15, Math.round(50 - (Math.abs(diff) / (baseP - minP || 1)) * 35));
-        } else {
-          demandCategory = '⚡ ACTIVE FLOW';
-          demandColor = 'var(--accent-emerald)';
-          demandBarClass = 'demand-normal';
-          demandPercent = 50;
-        }
+          const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : 0.40).toFixed(2);
+          
+          let demandCategory = 'NORMAL';
+          let demandColor = 'var(--text-muted)';
+          let demandBarClass = 'demand-normal';
+          let demandPercent = 50;
 
-        const themeClass = getFlavourThemeClass(p);
+          if (diff > 0.05) {
+            demandCategory = '🔥 HIGH DEMAND';
+            demandColor = 'var(--warning)';
+            demandBarClass = 'demand-high';
+            demandPercent = Math.min(100, Math.round(50 + (diff / (maxP - baseP || 1)) * 50));
+          } else if (diff < -0.05) {
+            demandCategory = '❄️ DISCOUNT FLOOR';
+            demandColor = 'var(--accent-cyan)';
+            demandBarClass = 'demand-low';
+            demandPercent = Math.max(15, Math.round(50 - (Math.abs(diff) / (baseP - minP || 1)) * 35));
+          } else {
+            demandCategory = '⚡ ACTIVE FLOW';
+            demandColor = 'var(--accent-emerald)';
+            demandBarClass = 'demand-normal';
+            demandPercent = 50;
+          }
 
-        return `
-          <div class="flavour-card ${themeClass} ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}" id="flavourCard-${p.id}">
-            <div>
-              <div class="card-img-banner">
-                <img src="${imgUrl}" alt="${p.name}" class="beverage-photo" loading="lazy" />
-                <div class="card-img-overlay">
-                  <span class="fruit-pill">${icon} ${p.flavour || p.name}</span>
-                  <span class="market-badge ${badgeClass}" id="marketBadge-${p.id}">${badgeText}</span>
+          const themeClass = getFlavourThemeClass(p);
+
+          return `
+            <div class="flavour-card ${themeClass} ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}" id="flavourCard-${p.id}">
+              <div>
+                <div class="card-img-banner">
+                  <img src="${imgUrl}" alt="${p.name}" class="beverage-photo" loading="lazy" />
+                  <div class="card-img-overlay">
+                    <span class="fruit-pill">${icon} ${p.flavour || p.name}</span>
+                    <span class="market-badge ${badgeClass}" id="marketBadge-${p.id}">${badgeText}</span>
+                  </div>
+                </div>
+
+                <div class="card-top">
+                  <div class="card-header-left">
+                    <span class="card-name">${p.name}</span>
+                  </div>
+                </div>
+
+                <!-- Real-Time Mini Price Sparkline -->
+                <div class="card-chart-wrap">
+                  <canvas id="posSparkline-${p.id}" class="card-chart-canvas"></canvas>
+                  <span class="chart-badge-pts" id="sparklinePts-${p.id}">LIVE DWMA</span>
+                </div>
+                
+                <!-- Dynamic Price Box -->
+                <div class="price-section">
+                  <div>
+                    <span class="price-main ${p.tickClass || ''}" id="priceMain-${p.id}">₹${activePrice.toFixed(2)}</span>
+                    <span class="price-unit">/ ${p.defaultCupSizeMl || 250}ml cup</span>
+                  </div>
+                  <div class="price-bounds">
+                    <span id="posBase-${p.id}">Base ₹${baseP.toFixed(2)}</span>
+                    <span id="posFloor-${p.id}">Floor ₹${minP.toFixed(2)}</span>
+                    <span id="posCeil-${p.id}">Ceiling ₹${maxP.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <!-- Demand Velocity Progress Bar -->
+                <div class="demand-section">
+                  <div class="demand-text">
+                    <span id="posTarget-${p.id}">Target: <strong>${targetSales} cups/min</strong></span>
+                    <strong id="posDemandCat-${p.id}" style="color: ${demandColor}; font-size: 11px;">${demandCategory}</strong>
+                  </div>
+                  <div class="demand-bar-track">
+                    <div class="demand-bar-fill ${demandBarClass}" id="posDemandBar-${p.id}" style="width: ${demandPercent}%;"></div>
+                  </div>
                 </div>
               </div>
 
-              <div class="card-top">
-                <div class="card-header-left">
-                  <span class="card-name">${p.name}</span>
-                </div>
-              </div>
-
-              <!-- Real-Time Mini Price Sparkline -->
-              <div class="card-chart-wrap">
-                <canvas id="posSparkline-${p.id}" class="card-chart-canvas"></canvas>
-                <span class="chart-badge-pts" id="sparklinePts-${p.id}">LIVE DWMA</span>
-              </div>
-              
-              <!-- Dynamic Price Box -->
-              <div class="price-section">
-                <div>
-                  <span class="price-main ${p.tickClass || ''}" id="priceMain-${p.id}">₹${activePrice.toFixed(2)}</span>
-                  <span class="price-unit">/ ${p.defaultCupSizeMl || 250}ml cup</span>
-                </div>
-                <div class="price-bounds">
-                  <span>Base ₹${baseP.toFixed(2)}</span>
-                  <span>Floor ₹${minP.toFixed(2)}</span>
-                  <span>Ceiling ₹${maxP.toFixed(2)}</span>
-                </div>
-              </div>
-
-              <!-- Demand Velocity Progress Bar -->
-              <div class="demand-section">
-                <div class="demand-text">
-                  <span>Target: <strong>${targetSales} cups/min</strong></span>
-                  <strong style="color: ${demandColor}; font-size: 11px;">${demandCategory}</strong>
-                </div>
-                <div class="demand-bar-track">
-                  <div class="demand-bar-fill ${demandBarClass}" style="width: ${demandPercent}%;"></div>
-                </div>
-              </div>
+              <button class="add-to-cart-btn" id="posAddToCart-${p.id}" ${!isBackendOnline ? 'disabled="disabled" style="opacity:0.5; cursor:not-allowed; background:#64748b;"' : ''} onclick="addToCart(${p.id})">
+                ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Price ₹${activePrice.toFixed(2)}` : '🛒 + Add to Cart')}
+              </button>
             </div>
+          `;
+        }).join('');
+      } else {
+        // Fast in-place DOM updates - NO layout recalculations, smooth static page
+        products.forEach(p => {
+          const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+          const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+          const minP = Number(p.minCupPrice !== undefined ? p.minCupPrice : 18.0);
+          const maxP = Number(p.maxCupPrice !== undefined ? p.maxCupPrice : 35.0);
+          const diff = activePrice - baseP;
+          const pctVal = baseP > 0 ? Math.abs(((diff / baseP) * 100).toFixed(1)) : '0.0';
 
-            <button class="add-to-cart-btn" ${!isBackendOnline ? 'disabled="disabled" style="opacity:0.5; cursor:not-allowed; background:#64748b;"' : ''} onclick="addToCart(${p.id})">
-              ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Price ₹${activePrice.toFixed(2)}` : '🛒 + Add to Cart')}
-            </button>
-          </div>
-        `;
-      }).join('');
+          const badgeEl = document.getElementById(`marketBadge-${p.id}`);
+          if (badgeEl) {
+            badgeEl.className = 'market-badge ' + (isMarketCrashActive ? 'badge-down' : (diff > 0.05 ? 'badge-up' : (diff < -0.05 ? 'badge-down' : 'badge-stable')));
+            badgeEl.textContent = isMarketCrashActive ? `▼ CRASH ₹${activePrice.toFixed(2)}` : (diff > 0.05 ? `▲ +₹${diff.toFixed(2)} (+${pctVal}%) SURGE` : (diff < -0.05 ? `▼ -₹${Math.abs(diff).toFixed(2)} (-${pctVal}%) DISCOUNT` : `— ₹${activePrice.toFixed(2)} BASE RATE`));
+          }
+
+          const priceEl = document.getElementById(`priceMain-${p.id}`);
+          if (priceEl) priceEl.textContent = `₹${activePrice.toFixed(2)}`;
+
+          const baseEl = document.getElementById(`posBase-${p.id}`);
+          if (baseEl) baseEl.textContent = `Base ₹${baseP.toFixed(2)}`;
+
+          const floorEl = document.getElementById(`posFloor-${p.id}`);
+          if (floorEl) floorEl.textContent = `Floor ₹${minP.toFixed(2)}`;
+
+          const ceilEl = document.getElementById(`posCeil-${p.id}`);
+          if (ceilEl) ceilEl.textContent = `Ceiling ₹${maxP.toFixed(2)}`;
+
+          const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : 0.40).toFixed(2);
+          const targetEl = document.getElementById(`posTarget-${p.id}`);
+          if (targetEl) targetEl.innerHTML = `Target: <strong>${targetSales} cups/min</strong>`;
+
+          const demandCatEl = document.getElementById(`posDemandCat-${p.id}`);
+          const barEl = document.getElementById(`posDemandBar-${p.id}`);
+          if (demandCatEl && barEl) {
+            if (diff > 0.05) {
+              demandCatEl.textContent = '🔥 HIGH DEMAND';
+              demandCatEl.style.color = 'var(--warning)';
+              barEl.className = 'demand-bar-fill demand-high';
+              barEl.style.width = `${Math.min(100, Math.round(50 + (diff / (maxP - baseP || 1)) * 50))}%`;
+            } else if (diff < -0.05) {
+              demandCatEl.textContent = '❄️ DISCOUNT FLOOR';
+              demandCatEl.style.color = 'var(--accent-cyan)';
+              barEl.className = 'demand-bar-fill demand-low';
+              barEl.style.width = `${Math.max(15, Math.round(50 - (Math.abs(diff) / (baseP - minP || 1)) * 35))}%`;
+            } else {
+              demandCatEl.textContent = '⚡ ACTIVE FLOW';
+              demandCatEl.style.color = 'var(--accent-emerald)';
+              barEl.className = 'demand-bar-fill demand-normal';
+              barEl.style.width = '50%';
+            }
+          }
+        });
+      }
 
       requestAnimationFrame(renderAllSparklines);
-      setTimeout(renderAllSparklines, 60);
-      setTimeout(renderAllSparklines, 250);
     }
 
     function renderAllSparklines() {
@@ -1597,14 +1701,16 @@
       // Color based on latest movement
       const latestP = dataPoints[dataPoints.length - 1].price;
       let strokeColor = '#0284C7';
-      if (latestP > basePrice + 0.05) strokeColor = '#10B981'; // Green Surge
-      else if (latestP < basePrice - 0.05) strokeColor = '#F43F5E'; // Red Discount
+      if (latestP > basePrice + 0.05) strokeColor = '#10B981';
+      else if (latestP < basePrice - 0.05) strokeColor = '#F43F5E';
 
-      // Gradient Area
+      // Draw Area Fill with smooth cubic bezier
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
-        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i - 1].price);
+        ctx.bezierCurveTo((x0 + x1) / 2, y0, (x0 + x1) / 2, y1, x1, y1);
       }
       ctx.lineTo(getX(dataPoints.length - 1), padTop + plotHeight);
       ctx.lineTo(getX(0), padTop + plotHeight);
@@ -1612,39 +1718,54 @@
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
       if (latestP > basePrice + 0.05) {
-        areaGrad.addColorStop(0, 'rgba(16, 185, 129, 0.28)');
+        areaGrad.addColorStop(0, 'rgba(16, 185, 129, 0.32)');
+        areaGrad.addColorStop(0.6, 'rgba(16, 185, 129, 0.08)');
       } else if (latestP < basePrice - 0.05) {
-        areaGrad.addColorStop(0, 'rgba(244, 63, 94, 0.28)');
+        areaGrad.addColorStop(0, 'rgba(244, 63, 94, 0.32)');
+        areaGrad.addColorStop(0.6, 'rgba(244, 63, 94, 0.08)');
       } else {
-        areaGrad.addColorStop(0, 'rgba(2, 132, 199, 0.22)');
+        areaGrad.addColorStop(0, 'rgba(56, 189, 248, 0.28)');
+        areaGrad.addColorStop(0.6, 'rgba(56, 189, 248, 0.06)');
       }
       areaGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
-      // Smooth Stroke Line
+      // Smooth Stroke Line with glow
+      ctx.save();
+      ctx.shadowColor = latestP > basePrice + 0.05 ? 'rgba(16, 185, 129, 0.6)' : (latestP < basePrice - 0.05 ? 'rgba(244, 63, 94, 0.6)' : 'rgba(56, 189, 248, 0.6)');
+      ctx.shadowBlur = 6;
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
-        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i - 1].price);
+        ctx.bezierCurveTo((x0 + x1) / 2, y0, (x0 + x1) / 2, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.4;
+      ctx.lineWidth = 2.2;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
+      ctx.restore();
 
       // Beacon Dot on Latest Point
       const lastX = getX(dataPoints.length - 1);
       const lastY = getY(latestP);
+
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = latestP > basePrice + 0.05 ? 'rgba(16, 185, 129, 0.25)' : (latestP < basePrice - 0.05 ? 'rgba(244, 63, 94, 0.25)' : 'rgba(56, 189, 248, 0.25)');
+      ctx.fill();
+
       ctx.beginPath();
       ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
-      ctx.fillStyle = latestP > basePrice ? 'rgba(16, 185, 129, 0.35)' : (latestP < basePrice ? 'rgba(244, 63, 94, 0.35)' : 'rgba(2, 132, 199, 0.35)');
+      ctx.arc(lastX, lastY, 1.2, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
       ctx.fill();
     }
 
@@ -1903,15 +2024,15 @@
 
     function updatePricingTimingState(timing) {
       if (!timing) return;
-      const sec = timing.intervalSeconds || 60;
-      const label = timing.label || (sec + ' Seconds');
-      const shortLabel = sec === 30 ? '30-Sec' : (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`);
+      const sec = timing.intervalSeconds || timing.settlementIntervalSeconds || 60;
+      const label = timing.label || (sec === 10 ? '10 Seconds' : (sec === 30 ? '30 Seconds' : (sec % 60 === 0 ? `${sec / 60} Minute${sec > 60 ? 's' : ''}` : `${sec} Seconds`)));
+      const shortLabel = sec === 10 ? '10-Sec' : (sec === 30 ? '30-Sec' : (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`));
 
       currentPricingTiming = {
         intervalSeconds: sec,
         label: label,
         shortLabel: shortLabel,
-        nextSettlementAt: timing.nextSettlementAt
+        nextSettlementAt: timing.nextSettlementAt || currentPricingTiming.nextSettlementAt
       };
 
       const openStateEl = document.getElementById('marketOpenStateText');
@@ -1926,14 +2047,27 @@
     function startSettlementCountdown() {
       if (settlementCountdownInterval) clearInterval(settlementCountdownInterval);
       settlementCountdownInterval = setInterval(() => {
-        let remaining = 60;
+        const intervalSec = currentPricingTiming.intervalSeconds || 60;
+        const now = Date.now();
+        let remaining = intervalSec;
+
         if (currentPricingTiming.nextSettlementAt) {
-          const diffMs = new Date(currentPricingTiming.nextSettlementAt) - new Date();
-          remaining = Math.max(0, Math.floor(diffMs / 1000));
+          const targetTime = new Date(currentPricingTiming.nextSettlementAt).getTime();
+          if (!isNaN(targetTime)) {
+            const diffMs = targetTime - now;
+            if (diffMs > 0) {
+              remaining = Math.min(intervalSec, Math.ceil(diffMs / 1000));
+            } else {
+              remaining = intervalSec - (Math.floor(now / 1000) % intervalSec);
+              if (diffMs < -2000 && diffMs > -5000) {
+                fetchPricingTiming();
+              }
+            }
+          } else {
+            remaining = intervalSec - (Math.floor(now / 1000) % intervalSec);
+          }
         } else {
-          settlementCountdownSeconds--;
-          if (settlementCountdownSeconds <= 0) settlementCountdownSeconds = currentPricingTiming.intervalSeconds || 60;
-          remaining = settlementCountdownSeconds;
+          remaining = intervalSec - (Math.floor(now / 1000) % intervalSec);
         }
 
         const mins = Math.floor(remaining / 60);
@@ -2116,7 +2250,7 @@
       fetchProducts();
       fetchPricingTiming();
       fetchPricingConfiguration();
-    }, 2500);
+    }, 10000);
 
     function toggleThemeMode() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.body.classList.contains('dark-theme-mode');

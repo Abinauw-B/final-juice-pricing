@@ -125,11 +125,13 @@ public class POSController {
     }
 
     @PutMapping("/products/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product details) {
         return productRepository.findById(id).map(existing -> {
             if (details.getName() != null) existing.setName(details.getName());
             if (details.getFlavour() != null) existing.setFlavour(details.getFlavour());
             if (details.getDescription() != null) existing.setDescription(details.getDescription());
+            if (details.getPricingMode() != null) existing.setPricingMode(details.getPricingMode());
             if (details.getCurrentCupPrice() != null) existing.setCurrentCupPrice(details.getCurrentCupPrice());
             if (details.getMinCupPrice() != null) existing.setMinCupPrice(details.getMinCupPrice());
             if (details.getMaxCupPrice() != null) existing.setMaxCupPrice(details.getMaxCupPrice());
@@ -146,7 +148,7 @@ public class POSController {
             if (details.getVolatility() != null) existing.setVolatility(details.getVolatility());
             existing.setLastPriceChangeTimestamp(LocalDateTime.now());
             existing.setPriceVersion(existing.getPriceVersion() != null ? existing.getPriceVersion() + 1 : 1);
-            Product updated = productRepository.save(existing);
+            Product updated = productRepository.saveAndFlush(existing);
             broadcastProductUpdate();
             return ResponseEntity.ok(updated);
         }).orElse(ResponseEntity.notFound().build());

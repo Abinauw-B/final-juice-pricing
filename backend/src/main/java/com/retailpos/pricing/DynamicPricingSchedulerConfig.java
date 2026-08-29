@@ -26,7 +26,7 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
     }
 
     @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+    public void configureTasks(@org.springframework.lang.NonNull ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.addTriggerTask(
                 () -> {
                     try {

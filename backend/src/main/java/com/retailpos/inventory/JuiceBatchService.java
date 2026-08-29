@@ -52,7 +52,7 @@ public class JuiceBatchService {
                 .containerCapacityMl(capacity)
                 .initialVolumeMl(capacity)
                 .remainingVolumeMl(capacity)
-                .cupSizeMl(product.getDefaultCupSizeMl())
+                .cupSizeMl(product.getDefaultCupSizeMl() != null ? product.getDefaultCupSizeMl() : 250)
                 .status(JuiceBatch.BatchStatus.ACTIVE)
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -73,7 +73,7 @@ public class JuiceBatchService {
         return savedBatch;
     }
 
-    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    @Transactional
     public JuiceBatch deductBatchVolume(Long productId, int mlToDeduct) {
         int maxAttempts = 3;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {

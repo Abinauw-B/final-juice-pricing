@@ -124,6 +124,11 @@
       letter-spacing: -0.011em;
     }
 
+    html {
+      overflow-y: scroll;
+      scrollbar-gutter: stable;
+    }
+
     body {
       background-color: var(--bg-page);
       color: var(--text-primary);
@@ -133,7 +138,6 @@
       overflow-x: hidden;
       padding: 16px 22px;
       -webkit-font-smoothing: antialiased;
-      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     /* ==========================================================================
@@ -530,28 +534,47 @@
       border: 1px solid var(--border-color);
     }
 
-    /* REAL PRICE HISTORY GRAPH CONTAINER (160px height) */
+    /* REAL PRICE HISTORY GRAPH CONTAINER — Premium fintech sparkline */
     .chart-container-wrapper {
       position: relative;
       width: 100%;
-      height: 145px;
-      background: var(--bg-secondary);
+      height: 160px;
+      background: linear-gradient(160deg, var(--bg-secondary) 0%, var(--bg-subtle) 100%);
       border: 1px solid var(--border-color);
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 4px;
       margin-bottom: 8px;
       overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .chart-container-wrapper:hover {
+      border-color: var(--border-strong);
+      box-shadow: inset 0 0 0 1px var(--border-color), 0 4px 12px rgba(0,0,0,0.08);
+    }
+    /* Glowing tint strip at top for surge/decay state — injected via JS class */
+    .chart-container-wrapper.chart-surge {
+      border-color: rgba(5, 150, 105, 0.35);
+      box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.15), inset 0 0 18px rgba(5, 150, 105, 0.06);
+    }
+    .chart-container-wrapper.chart-decay {
+      border-color: rgba(220, 38, 38, 0.35);
+      box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.15), inset 0 0 18px rgba(220, 38, 38, 0.06);
+    }
+    .chart-container-wrapper.chart-stable {
+      border-color: rgba(2, 132, 199, 0.25);
     }
     .chart-header-row {
       position: absolute;
-      top: 4px; left: 8px; right: 8px;
+      top: 5px; left: 9px; right: 9px;
       display: flex;
       justify-content: space-between;
-      font-size: 9.5px;
+      align-items: center;
+      font-size: 9px;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       font-family: var(--font-mono);
+      letter-spacing: 0.4px;
       pointer-events: none;
       z-index: 2;
     }
@@ -564,21 +587,22 @@
 
     /* Chart Hover Tooltip Overlay */
     .chart-tooltip {
-      position: absolute;
-      background: rgba(15, 23, 42, 0.92);
+      position: fixed;
+      background: rgba(10, 15, 28, 0.96);
       color: #FFFFFF;
-      padding: 6px 10px;
-      border-radius: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
       font-size: 11px;
       font-weight: 600;
       pointer-events: none;
       display: none;
-      z-index: 10;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      line-height: 1.35;
+      z-index: 9999;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      line-height: 1.45;
       font-family: var(--font-mono);
       white-space: nowrap;
+      backdrop-filter: blur(8px);
     }
 
     /* Empty Chart State */
@@ -1159,7 +1183,7 @@
           </div>
           <div class="info-row">
             <span class="info-row-label">Downward Step</span>
-            <span class="info-row-val" id="sidebarDownStep">₹4.00</span>
+            <span class="info-row-val" id="sidebarDownStep">₹1.00</span>
           </div>
           <div class="info-row">
             <span class="info-row-label">Last Synchronization</span>
@@ -1411,7 +1435,7 @@
       const w0 = g.weightW0 !== undefined ? Number(g.weightW0).toFixed(2) : '1.00';
       const w1 = g.weightW1 !== undefined ? Number(g.weightW1).toFixed(2) : '0.50';
       const w2 = g.weightW2 !== undefined ? Number(g.weightW2).toFixed(2) : '0.25';
-      const downStep = g.priceDecreaseStep || g.decreaseStep1 || 4.00;
+      const downStep = g.priceDecreaseStep || g.decreaseStep1 || 1.00;
       const incStep = g.increaseStep || 1.00;
       const crashFloor = g.marketCrashPrice !== undefined ? Number(g.marketCrashPrice).toFixed(2) : '18.00';
 
@@ -1458,21 +1482,25 @@
       if (ruleCrashFloor) ruleCrashFloor.textContent = `₹${crashFloor} Floor`;
 
       if (config.global && config.global.settlementIntervalSeconds) {
-        updatePricingTimingState(config.global);
+        updatePricingTimingState({
+          intervalSeconds: config.global.settlementIntervalSeconds,
+          settlementIntervalSeconds: config.global.settlementIntervalSeconds,
+          nextSettlementAt: config.nextSettlementAt
+        });
       }
     }
 
     function updatePricingTimingState(timing) {
       if (!timing) return;
-      const sec = timing.intervalSeconds || 60;
-      const label = timing.label || (sec + ' Seconds');
-      const shortLabel = sec === 30 ? '30-Sec' : (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`);
+      const sec = timing.intervalSeconds || timing.settlementIntervalSeconds || 60;
+      const label = timing.label || (sec === 10 ? '10 Seconds' : (sec === 30 ? '30 Seconds' : (sec % 60 === 0 ? `${sec / 60} Minute${sec > 60 ? 's' : ''}` : `${sec} Seconds`)));
+      const shortLabel = sec === 10 ? '10-Sec' : (sec === 30 ? '30-Sec' : (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`));
 
       currentPricingTiming = {
         intervalSeconds: sec,
         label: label,
         shortLabel: shortLabel,
-        nextSettlementAt: timing.nextSettlementAt
+        nextSettlementAt: timing.nextSettlementAt || currentPricingTiming.nextSettlementAt
       };
 
       const marketStateText = document.getElementById('marketStateText');
@@ -1606,109 +1634,152 @@
       if (el) el.textContent = timeStr;
     }
 
+    let lastRenderedCardIds = '';
+
     function renderProductCards() {
       const grid = document.getElementById('productGridContainer');
       if (!grid) return;
 
-      grid.innerHTML = products.map(p => {
-        const icon = getFruitIcon(p);
-        const imgUrl = getBeverageImage(p);
-        const name = p.name || p.flavour || 'Juice';
-        const cleanFlavour = getCleanFlavourName(p);
-        const cupSize = p.defaultCupSizeMl || 250;
+      const currentIds = products.map(p => p.id).join(',');
+      const needsFullRebuild = (currentIds !== lastRenderedCardIds) || (grid.children.length !== products.length);
 
-        const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
-        const lastChange = (p.deltaPrice !== undefined ? Number(p.deltaPrice) : (p.priceDelta !== undefined ? Number(p.priceDelta) : (p.priceChange !== undefined ? Number(p.priceChange) : 0)));
-        const movementReason = p.movementReason || p.movement || p.demandLevelCategory || (lastChange > 0 ? 'HIGH_DEMAND' : (lastChange < 0 ? 'LOW_DEMAND' : 'NORMAL_DEMAND'));
+      if (needsFullRebuild) {
+        lastRenderedCardIds = currentIds;
+        grid.innerHTML = products.map(p => {
+          const icon = getFruitIcon(p);
+          const imgUrl = getBeverageImage(p);
+          const name = p.name || p.flavour || 'Juice';
+          const cleanFlavour = getCleanFlavourName(p);
+          const cupSize = p.defaultCupSizeMl || 250;
 
-        let badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (STABLE)</span>`;
-        let priceColor = 'var(--text-primary)';
+          const baseP = Number(p.basePrice !== undefined ? p.basePrice : (p.defaultCupPrice !== undefined ? p.defaultCupPrice : 25)).toFixed(2);
+          const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
+          const lastChange = (p.deltaPrice !== undefined ? Number(p.deltaPrice) : (p.priceDelta !== undefined ? Number(p.priceDelta) : (p.priceChange !== undefined ? Number(p.priceChange) : 0)));
+          const movementReason = p.movementReason || p.movement || p.demandLevelCategory || (lastChange > 0 ? 'HIGH_DEMAND' : (lastChange < 0 ? 'LOW_DEMAND' : 'NORMAL_DEMAND'));
 
-        if (isMarketCrashActive) {
-          badgeHtml = `<span class="delta-badge delta-decay">🚨 CRASH ₹${activePrice}</span>`;
-          priceColor = 'var(--accent-rose)';
-        } else if (lastChange > 0) {
-          badgeHtml = `<span class="delta-badge delta-surge">▲ +₹${lastChange.toFixed(2)} (${movementReason})</span>`;
-          priceColor = 'var(--accent-emerald)';
-        } else if (lastChange < 0) {
-          badgeHtml = `<span class="delta-badge delta-decay">▼ -₹${Math.abs(lastChange).toFixed(2)} (${movementReason})</span>`;
-          priceColor = 'var(--accent-rose)';
-        } else {
-          badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (${movementReason})</span>`;
-        }
+          let badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (STABLE)</span>`;
+          let priceColor = 'var(--text-primary)';
 
-        const targetDisplay = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
+          if (isMarketCrashActive) {
+            badgeHtml = `<span class="delta-badge delta-decay">🚨 CRASH ₹${activePrice}</span>`;
+            priceColor = 'var(--accent-rose)';
+          } else if (lastChange > 0) {
+            badgeHtml = `<span class="delta-badge delta-surge">▲ +₹${lastChange.toFixed(2)} (${movementReason})</span>`;
+            priceColor = 'var(--accent-emerald)';
+          } else if (lastChange < 0) {
+            badgeHtml = `<span class="delta-badge delta-decay">▼ -₹${Math.abs(lastChange).toFixed(2)} (${movementReason})</span>`;
+            priceColor = 'var(--accent-rose)';
+          } else {
+            badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (${movementReason})</span>`;
+          }
 
-        return `
-          <div class="product-card" id="card_prod_${p.id}">
-            <div>
-              <!-- Image Banner -->
-              <div class="product-img-wrapper">
-                <img src="${imgUrl}" alt="${name}" class="product-img" loading="lazy" />
-                <div class="product-img-overlay">
-                  <span class="fruit-badge">${icon} ${cleanFlavour}</span>
-                  <span class="live-indicator-badge">● LIVE</span>
+          const targetDisplay = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
+
+          return `
+            <div class="product-card" id="card_prod_${p.id}">
+              <div>
+                <!-- Image Banner -->
+                <div class="product-img-wrapper">
+                  <img src="${imgUrl}" alt="${name}" class="product-img" loading="lazy" />
+                  <div class="product-img-overlay">
+                    <span class="fruit-badge">${icon} ${cleanFlavour}</span>
+                    <span class="live-indicator-badge">● LIVE</span>
+                  </div>
+                </div>
+
+                <!-- Title & Size -->
+                <div class="product-title-row">
+                  <div class="product-name">${name}</div>
+                </div>
+                <div class="product-size">${cupSize} ml standard cup</div>
+
+                <!-- Current Price & Delta -->
+                <div class="product-price-row">
+                  <div class="product-price" id="card_price_${p.id}" style="color: ${priceColor};">₹${activePrice}</div>
+                  <div id="card_badge_${p.id}">${badgeHtml}</div>
+                </div>
+
+                <!-- REAL PRICE HISTORY GRAPH -->
+                <div class="chart-container-wrapper" id="chart_wrapper_${p.id}">
+                  <div class="chart-header-row">
+                    <span>PRICE TREND</span>
+                    <span id="chart_pts_count_${p.id}">REAL-TIME DWMA</span>
+                  </div>
+                  <canvas id="chart_canvas_${p.id}" class="product-chart-canvas"></canvas>
+                  <div id="chart_empty_${p.id}" class="chart-empty-state" style="display: none;">
+                    <div>Waiting for price history...</div>
+                    <div style="font-size: 9.5px; margin-top: 2px; color: var(--text-muted);">Next 1-min settlement will log here</div>
+                  </div>
+                </div>
+
+                <!-- Product Specs Mini-Table -->
+                <div class="product-specs-grid">
+                  <div class="spec-item">
+                    <span class="spec-label">Base</span>
+                    <span class="spec-val" id="card_base_${p.id}">₹${baseP}</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Floor</span>
+                    <span class="spec-val" id="card_floor_${p.id}">₹${Number(p.minCupPrice || 18).toFixed(2)}</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Ceiling</span>
+                    <span class="spec-val" id="card_ceiling_${p.id}">₹${Number(p.maxCupPrice || 35).toFixed(2)}</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Target</span>
+                    <span class="spec-val" id="card_target_${p.id}">${targetDisplay}</span>
+                  </div>
                 </div>
               </div>
 
-              <!-- Title & Size -->
-              <div class="product-title-row">
-                <div class="product-name">${name}</div>
-              </div>
-              <div class="product-size">${cupSize} ml standard cup</div>
-
-              <!-- Current Price & Delta -->
-              <div class="product-price-row">
-                <div class="product-price" style="color: ${priceColor};">₹${activePrice}</div>
-                ${badgeHtml}
-              </div>
-
-              <!-- REAL PRICE HISTORY GRAPH -->
-              <div class="chart-container-wrapper" id="chart_wrapper_${p.id}">
-                <div class="chart-header-row">
-                  <span>PRICE TREND</span>
-                  <span id="chart_pts_count_${p.id}">REAL-TIME DWMA</span>
-                </div>
-                <canvas id="chart_canvas_${p.id}" class="product-chart-canvas"></canvas>
-                <div id="chart_empty_${p.id}" class="chart-empty-state" style="display: none;">
-                  <div>Waiting for price history...</div>
-                  <div style="font-size: 9.5px; margin-top: 2px; color: var(--text-muted);">Next 1-min settlement will log here</div>
-                </div>
-              </div>
-
-              <!-- Product Specs Mini-Table -->
-              <div class="product-specs-grid">
-                <div class="spec-item">
-                  <span class="spec-label">Base</span>
-                  <span class="spec-val">₹${baseP}</span>
-                </div>
-                <div class="spec-item">
-                  <span class="spec-label">Floor</span>
-                  <span class="spec-val">₹${Number(p.minCupPrice || 18).toFixed(2)}</span>
-                </div>
-                <div class="spec-item">
-                  <span class="spec-label">Ceiling</span>
-                  <span class="spec-val">₹${Number(p.maxCupPrice || 35).toFixed(2)}</span>
-                </div>
-                <div class="spec-item">
-                  <span class="spec-label">Target</span>
-                  <span class="spec-val">${targetDisplay}</span>
-                </div>
+              <!-- Card Actions -->
+              <div class="card-footer-actions">
+                <button class="btn-card-action" onclick="openProductModal(${p.id})">
+                  🔍 Details
+                </button>
+                <a href="http://localhost:8000/" target="_blank" class="btn-card-action btn-card-action-pos">
+                  🛒 Buy POS
+                </a>
               </div>
             </div>
+          `;
+        }).join('');
+      } else {
+        // Smooth in-place DOM updates without layout shifts or jitter
+        products.forEach(p => {
+          const baseP = Number(p.basePrice !== undefined ? p.basePrice : (p.defaultCupPrice !== undefined ? p.defaultCupPrice : 25)).toFixed(2);
+          const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
+          const lastChange = (p.deltaPrice !== undefined ? Number(p.deltaPrice) : (p.priceDelta !== undefined ? Number(p.priceDelta) : (p.priceChange !== undefined ? Number(p.priceChange) : 0)));
+          const movementReason = p.movementReason || p.movement || p.demandLevelCategory || (lastChange > 0 ? 'HIGH_DEMAND' : (lastChange < 0 ? 'LOW_DEMAND' : 'NORMAL_DEMAND'));
 
-            <!-- Card Actions -->
-            <div class="card-footer-actions">
-              <button class="btn-card-action" onclick="openProductModal(${p.id})">
-                🔍 Details
-              </button>
-              <a href="http://localhost:8000/" target="_blank" class="btn-card-action btn-card-action-pos">
-                🛒 Buy POS
-              </a>
-            </div>
-          </div>
-        `;
-      }).join('');
+          const priceEl = document.getElementById(`card_price_${p.id}`);
+          const badgeEl = document.getElementById(`card_badge_${p.id}`);
+          if (priceEl) {
+            priceEl.textContent = `₹${activePrice}`;
+            priceEl.style.color = isMarketCrashActive ? 'var(--accent-rose)' : (lastChange > 0 ? 'var(--accent-emerald)' : (lastChange < 0 ? 'var(--accent-rose)' : 'var(--text-primary)'));
+          }
+          if (badgeEl) {
+            let badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (${movementReason})</span>`;
+            if (isMarketCrashActive) {
+              badgeHtml = `<span class="delta-badge delta-decay">🚨 CRASH ₹${activePrice}</span>`;
+            } else if (lastChange > 0) {
+              badgeHtml = `<span class="delta-badge delta-surge">▲ +₹${lastChange.toFixed(2)} (${movementReason})</span>`;
+            } else if (lastChange < 0) {
+              badgeHtml = `<span class="delta-badge delta-decay">▼ -₹${Math.abs(lastChange).toFixed(2)} (${movementReason})</span>`;
+            }
+            badgeEl.innerHTML = badgeHtml;
+          }
+          const baseEl = document.getElementById(`card_base_${p.id}`);
+          if (baseEl) baseEl.textContent = `₹${baseP}`;
+          const floorEl = document.getElementById(`card_floor_${p.id}`);
+          if (floorEl) floorEl.textContent = `₹${Number(p.minCupPrice || 18).toFixed(2)}`;
+          const ceilEl = document.getElementById(`card_ceiling_${p.id}`);
+          if (ceilEl) ceilEl.textContent = `₹${Number(p.maxCupPrice || 35).toFixed(2)}`;
+          const targetEl = document.getElementById(`card_target_${p.id}`);
+          if (targetEl) targetEl.textContent = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
+        });
+      }
     }
 
     /* ==========================================================================
@@ -1790,84 +1861,185 @@
       const getX = (index) => dataPoints.length === 1 ? padLeft + plotWidth / 2 : padLeft + (index / (dataPoints.length - 1)) * plotWidth;
 
       const isLight = currentTheme === 'light';
-      const gridColor = isLight ? 'rgba(226, 232, 240, 0.8)' : 'rgba(55, 65, 81, 0.6)';
-      const textColor = isLight ? '#64748B' : '#94A3B8';
-      const baseLineColor = isLight ? 'rgba(148, 163, 184, 0.5)' : 'rgba(100, 116, 139, 0.5)';
+      const gridColor = isLight ? 'rgba(226, 232, 240, 0.65)' : 'rgba(55, 65, 81, 0.5)';
+      const textColor = isLight ? '#94A3B8' : '#6B7B92';
+      const baseLineColor = isLight ? 'rgba(99, 102, 241, 0.4)' : 'rgba(129, 140, 248, 0.45)';
 
-      // 1. Draw Subtle Grid Lines & Y-Axis Labels
-      ctx.font = '9px JetBrains Mono, monospace';
+      // Determine sentiment color scheme
+      const latestPrice = dataPoints[dataPoints.length - 1].price;
+      let strokeColor, strokeColorRgb, strokeColorFade;
+      if (latestPrice > basePrice) {
+        strokeColor = '#10B981'; strokeColorRgb = '16,185,129'; strokeColorFade = '#059669';
+      } else if (latestPrice < basePrice) {
+        strokeColor = '#F43F5E'; strokeColorRgb = '244,63,94'; strokeColorFade = '#DC2626';
+      } else {
+        strokeColor = '#38BDF8'; strokeColorRgb = '56,189,248'; strokeColorFade = '#0284C7';
+      }
+
+      // Apply tinted border class to wrapper
+      const wrapper = canvas.closest('.chart-container-wrapper');
+      if (wrapper) {
+        wrapper.classList.remove('chart-surge', 'chart-decay', 'chart-stable');
+        wrapper.classList.add(latestPrice > basePrice ? 'chart-surge' : latestPrice < basePrice ? 'chart-decay' : 'chart-stable');
+      }
+
+      // 0. Draw subtle price zone band (floor area = safe, above ceiling = danger)
+      const floorPrice = prod ? Number(prod.minCupPrice || 18) : 18;
+      const ceilingPrice = prod ? Number(prod.maxCupPrice || 35) : 35;
+      const yFloor = getY(floorPrice);
+      const yBase = getY(basePrice);
+
+      // Soft floor zone (below base) — warm red tint
+      const floorZoneGrad = ctx.createLinearGradient(0, yBase, 0, yFloor);
+      floorZoneGrad.addColorStop(0, 'rgba(244,63,94,0.0)');
+      floorZoneGrad.addColorStop(1, 'rgba(244,63,94,0.05)');
+      ctx.fillStyle = floorZoneGrad;
+      ctx.fillRect(padLeft, yBase, plotWidth, Math.max(0, yFloor - yBase));
+
+      // 1. Draw Grid Lines & Y-Axis Labels
+      ctx.font = 'bold 8.5px JetBrains Mono, monospace';
       ctx.fillStyle = textColor;
       ctx.textAlign = 'right';
 
-      [maxP, basePrice, minP].forEach(priceVal => {
+      // Horizontal grid lines at 4 price levels
+      const gridPrices = [maxP, basePrice, (minP + basePrice) / 2, minP];
+      gridPrices.forEach(priceVal => {
         const y = getY(priceVal);
+        if (y < padTop || y > padTop + plotHeight) return;
         ctx.beginPath();
-        ctx.strokeStyle = priceVal === basePrice ? baseLineColor : gridColor;
-        ctx.lineWidth = 1;
-        if (priceVal === basePrice) ctx.setLineDash([3, 3]);
-        else ctx.setLineDash([]);
+        if (priceVal === basePrice) {
+          ctx.strokeStyle = baseLineColor;
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([4, 4]);
+        } else {
+          ctx.strokeStyle = gridColor;
+          ctx.lineWidth = 0.7;
+          ctx.setLineDash([2, 4]);
+        }
         ctx.moveTo(padLeft, y);
         ctx.lineTo(width - padRight, y);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillText(`₹${Math.round(priceVal)}`, padLeft - 4, y + 3);
+        if (priceVal === maxP || priceVal === basePrice || priceVal === minP) {
+          ctx.fillStyle = priceVal === basePrice ? (isLight ? '#818CF8' : '#A5B4FC') : textColor;
+          ctx.fillText(`₹${Math.round(priceVal)}`, padLeft - 3, y + 3);
+        }
       });
 
-      // 2. Draw Area Gradient & Trend Line
-      const latestPrice = dataPoints[dataPoints.length - 1].price;
-      let strokeColor = '#0284C7';
-      if (latestPrice > basePrice) strokeColor = '#059669'; // Green
-      else if (latestPrice < basePrice) strokeColor = '#DC2626'; // Red
-
-      // Draw Area Fill
+      // 2. Draw Area Gradient Fill — wide, vibrant, two-stop
       ctx.beginPath();
+      // Use smooth cubic bezier for area
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
-        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        const cpx = (x0 + x1) / 2;
+        ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.lineTo(getX(dataPoints.length - 1), padTop + plotHeight);
       ctx.lineTo(getX(0), padTop + plotHeight);
       ctx.closePath();
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
-      areaGrad.addColorStop(0, latestPrice > basePrice ? 'rgba(5, 150, 105, 0.25)' : (latestPrice < basePrice ? 'rgba(220, 38, 38, 0.25)' : 'rgba(2, 132, 199, 0.2)'));
-      areaGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.32)`);
+      areaGrad.addColorStop(0.55, `rgba(${strokeColorRgb}, 0.10)`);
+      areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.0)`);
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
-      // Draw Line Stroke
+      // 3. Draw Smooth Line Stroke with glow shadow
+      ctx.save();
+      ctx.shadowColor = `rgba(${strokeColorRgb}, 0.5)`;
+      ctx.shadowBlur = 6;
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
-        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        const cpx = (x0 + x1) / 2;
+        ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = 2.5;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
+      ctx.restore();
 
-      // 3. Draw Latest Value Beacon Dot
+      // 4. Micro data point dots — subtle, only rendered when few points
+      if (dataPoints.length <= 15) {
+        dataPoints.forEach((pt, i) => {
+          const x = getX(i), y = getY(pt.price);
+          const isLast = i === dataPoints.length - 1;
+          if (isLast) return; // drawn separately below
+          ctx.beginPath();
+          ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${strokeColorRgb}, 0.55)`;
+          ctx.fill();
+        });
+      }
+
+      // 5. Beacon Dot at latest price — glowing pulse ring
       const lastX = getX(dataPoints.length - 1);
       const lastY = getY(latestPrice);
+
+      // Outer glow ring
+      ctx.save();
+      ctx.shadowColor = strokeColor;
+      ctx.shadowBlur = 12;
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.22)`;
+      ctx.fill();
+      ctx.restore();
+
+      // Middle pulsing ring
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 9, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${strokeColorRgb}, 0.2)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Core dot
+      ctx.save();
+      ctx.shadowColor = strokeColor;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
+      // White center
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
-      ctx.fillStyle = latestPrice > basePrice ? 'rgba(5, 150, 105, 0.3)' : (latestPrice < basePrice ? 'rgba(220, 38, 38, 0.3)' : 'rgba(2, 132, 199, 0.3)');
+      ctx.arc(lastX, lastY, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
       ctx.fill();
+      ctx.restore();
 
-      // 4. Draw X-Axis Time Labels
+      // 6. Price label next to beacon dot
+      ctx.save();
+      const labelText = `₹${latestPrice.toFixed(2)}`;
+      ctx.font = 'bold 9px JetBrains Mono, monospace';
+      const labelW = ctx.measureText(labelText).width + 8;
+      const labelX = Math.min(lastX + 12, width - padRight - labelW);
+      const labelY = Math.max(padTop + 6, Math.min(lastY, padTop + plotHeight - 6));
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.15)`;
+      ctx.fillRect(labelX - 4, labelY - 9, labelW, 14);
+      ctx.fillStyle = strokeColor;
+      ctx.textAlign = 'left';
+      ctx.fillText(labelText, labelX, labelY + 2);
+      ctx.restore();
+
+      // 7. X-Axis Time Labels
       if (dataPoints.length > 1) {
+        ctx.font = '8px JetBrains Mono, monospace';
+        ctx.fillStyle = textColor;
         ctx.textAlign = 'left';
         const firstTime = dataPoints[0].time.toTimeString().split(' ')[0].slice(0, 5);
-        ctx.fillText(firstTime, padLeft, height - 6);
+        ctx.fillText(firstTime, padLeft + 2, height - 4);
 
         ctx.textAlign = 'right';
         const lastTime = dataPoints[dataPoints.length - 1].time.toTimeString().split(' ')[0].slice(0, 5);
-        ctx.fillText(lastTime, width - padRight, height - 6);
+        ctx.fillText(lastTime, width - padRight - 2, height - 4);
       }
 
       // Attach Interactive Mouse Hover & Touch Events
@@ -1894,15 +2066,26 @@
           const changeStr = pt.change > 0 ? `+₹${pt.change.toFixed(2)}` : (pt.change < 0 ? `-₹${Math.abs(pt.change).toFixed(2)}` : '₹0.00');
           const changeColor = pt.change > 0 ? '#10B981' : (pt.change < 0 ? '#EF4444' : '#94A3B8');
 
+          const tooltipColor = pt.change > 0 ? '#10B981' : (pt.change < 0 ? '#F43F5E' : '#38BDF8');
           tooltip.innerHTML = `
-            <div style="font-weight: 800; color: #38BDF8; margin-bottom: 2px;">${prod.name}</div>
-            <div>Time: <span style="color: #F8FAFC;">${timeStr}</span></div>
-            <div>Price: <span style="font-weight: 800; color: #FFFFFF;">₹${pt.price.toFixed(2)}</span> (${changeStr})</div>
-            <div style="font-size: 9.5px; color: #94A3B8; margin-top: 2px;">${pt.reason || '1-Min DWMA Cycle'}</div>
+            <div style="font-weight: 800; color: #38BDF8; margin-bottom: 4px; font-size: 11px; letter-spacing: 0.3px;">${prod.name}</div>
+            <div style="display:flex;justify-content:space-between;gap:16px;">
+              <span style="color:#94A3B8;">Time</span>
+              <span style="color:#F8FAFC;font-weight:700;">${timeStr}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;gap:16px;margin-top:2px;">
+              <span style="color:#94A3B8;">Price</span>
+              <span style="font-weight:900;color:#FFFFFF;font-size:13px;">₹${pt.price.toFixed(2)}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;gap:16px;margin-top:2px;">
+              <span style="color:#94A3B8;">Change</span>
+              <span style="font-weight:800;color:${tooltipColor}">${changeStr}</span>
+            </div>
+            <div style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.1);font-size:9px;color:#64748B;">${pt.reason || '1-Min DWMA Cycle'}</div>
           `;
           tooltip.style.display = 'block';
-          tooltip.style.left = `${clientX + 12}px`;
-          tooltip.style.top = `${clientY - 30}px`;
+          tooltip.style.left = `${clientX + 14}px`;
+          tooltip.style.top = `${clientY - 40}px`;
         }
       }
 
@@ -1984,6 +2167,8 @@
     /* ==========================================================================
        BOTTOM TICKER MARQUEE
        ========================================================================== */
+    let lastTickerHtml = '';
+
     function updateBottomTicker() {
       const track = document.getElementById('bottomTickerTrack');
       if (!track) return;
@@ -2009,7 +2194,10 @@
         `;
       }).join(' &nbsp;&bull;&nbsp; ');
 
-      track.innerHTML = `${tickerHtml} &nbsp;&bull;&nbsp; ${tickerHtml}`;
+      if (tickerHtml !== lastTickerHtml) {
+        lastTickerHtml = tickerHtml;
+        track.innerHTML = `${tickerHtml} &nbsp;&bull;&nbsp; ${tickerHtml}`;
+      }
     }
 
     /* ==========================================================================
@@ -2079,71 +2267,149 @@
         dataPoints.push({ time: new Date(), price: Number(prod.currentCupPrice || 25), change: 0, reason: 'Initial' });
       }
 
-      const padLeft = 40;
-      const padRight = 20;
-      const padTop = 20;
-      const padBottom = 30;
+      const padLeft = 44;
+      const padRight = 24;
+      const padTop = 24;
+      const padBottom = 34;
       const plotWidth = width - padLeft - padRight;
       const plotHeight = height - padTop - padBottom;
 
-      const minP = 15;
-      const maxP = 38;
-      const priceSpan = maxP - minP;
+      const minP = Math.max(12, floorPrice - 3);
+      const maxP = Math.min(42, ceilingPrice + 3);
+      const priceSpan = Math.max(8, maxP - minP);
 
       const getY = (val) => padTop + plotHeight - ((val - minP) / priceSpan) * plotHeight;
       const getX = (index) => dataPoints.length === 1 ? padLeft + plotWidth / 2 : padLeft + (index / (dataPoints.length - 1)) * plotWidth;
 
       const isLight = currentTheme === 'light';
 
-      // Draw Ceiling, Base, Floor Reference Lines
+      // 0. Draw range zone: floor-to-ceiling shaded band
+      const yCeil = getY(ceilingPrice);
+      const yFloor = getY(floorPrice);
+      const yBase = getY(basePrice);
+
+      // Above base (green zone)
+      const greenBand = ctx.createLinearGradient(0, yCeil, 0, yBase);
+      greenBand.addColorStop(0, 'rgba(16,185,129,0.06)');
+      greenBand.addColorStop(1, 'rgba(16,185,129,0.0)');
+      ctx.fillStyle = greenBand;
+      ctx.fillRect(padLeft, yCeil, plotWidth, Math.max(0, yBase - yCeil));
+
+      // Below base (red zone)
+      const redBand = ctx.createLinearGradient(0, yBase, 0, yFloor);
+      redBand.addColorStop(0, 'rgba(244,63,94,0.0)');
+      redBand.addColorStop(1, 'rgba(244,63,94,0.06)');
+      ctx.fillStyle = redBand;
+      ctx.fillRect(padLeft, yBase, plotWidth, Math.max(0, yFloor - yBase));
+
+      // 1. Draw Reference Lines with labels
       const refLines = [
-        { label: `Ceiling ₹${ceilingPrice}`, val: ceilingPrice, color: 'rgba(220, 38, 38, 0.4)' },
-        { label: `Base ₹${basePrice}`, val: basePrice, color: isLight ? 'rgba(148, 163, 184, 0.7)' : 'rgba(100, 116, 139, 0.7)' },
-        { label: `Floor ₹${floorPrice}`, val: floorPrice, color: 'rgba(5, 150, 105, 0.4)' }
+        { label: `↑ CEIL ₹${ceilingPrice}`, val: ceilingPrice, color: 'rgba(244, 63, 94, 0.55)', dash: [5, 4] },
+        { label: `● BASE ₹${basePrice}`, val: basePrice, color: isLight ? 'rgba(99, 102, 241, 0.6)' : 'rgba(129, 140, 248, 0.6)', dash: [5, 4] },
+        { label: `↓ FLOOR ₹${floorPrice}`, val: floorPrice, color: 'rgba(16, 185, 129, 0.55)', dash: [5, 4] }
       ];
 
-      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.font = 'bold 9.5px JetBrains Mono, monospace';
       ctx.textAlign = 'right';
       refLines.forEach(ref => {
         const y = getY(ref.val);
+        if (y < padTop || y > padTop + plotHeight) return;
         ctx.beginPath();
         ctx.strokeStyle = ref.color;
         ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]);
+        ctx.setLineDash(ref.dash);
         ctx.moveTo(padLeft, y);
         ctx.lineTo(width - padRight, y);
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = ref.color;
-        ctx.fillText(ref.label, width - padRight, y - 4);
+        ctx.fillText(ref.label, width - padRight + 22, y + 3);
       });
 
-      // Draw Line Chart
+      // 2. Determine overall sentiment colors
+      const latestPriceM = dataPoints[dataPoints.length - 1].price;
+      let strokeColorM, strokeColorRgbM;
+      if (latestPriceM > basePrice) { strokeColorM = '#10B981'; strokeColorRgbM = '16,185,129'; }
+      else if (latestPriceM < basePrice) { strokeColorM = '#F43F5E'; strokeColorRgbM = '244,63,94'; }
+      else { strokeColorM = '#38BDF8'; strokeColorRgbM = '56,189,248'; }
+
+      // 3. Area fill — vibrant gradient
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
-        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        ctx.bezierCurveTo((x0 + x1) / 2, y0, (x0 + x1) / 2, y1, x1, y1);
       }
-      ctx.strokeStyle = '#0284C7';
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
+      ctx.lineTo(getX(dataPoints.length - 1), padTop + plotHeight);
+      ctx.lineTo(getX(0), padTop + plotHeight);
+      ctx.closePath();
+      const areaGradM = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
+      areaGradM.addColorStop(0, `rgba(${strokeColorRgbM}, 0.28)`);
+      areaGradM.addColorStop(0.6, `rgba(${strokeColorRgbM}, 0.08)`);
+      areaGradM.addColorStop(1, `rgba(${strokeColorRgbM}, 0.0)`);
+      ctx.fillStyle = areaGradM;
+      ctx.fill();
 
-      // Draw Points
+      // 4. Smooth line stroke with glow
+      ctx.save();
+      ctx.shadowColor = `rgba(${strokeColorRgbM}, 0.55)`;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        ctx.bezierCurveTo((x0 + x1) / 2, y0, (x0 + x1) / 2, y1, x1, y1);
+      }
+      ctx.strokeStyle = strokeColorM;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.restore();
+
+      // 5. Colored data dots per point sentiment
       dataPoints.forEach((pt, i) => {
         const x = getX(i);
         const y = getY(pt.price);
+        const dotColor = pt.price > basePrice ? '#10B981' : (pt.price < basePrice ? '#F43F5E' : '#38BDF8');
+        const isLast = i === dataPoints.length - 1;
         ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = pt.price > basePrice ? '#059669' : (pt.price < basePrice ? '#DC2626' : '#0284C7');
+        ctx.arc(x, y, isLast ? 5 : 3, 0, Math.PI * 2);
+        ctx.fillStyle = dotColor;
         ctx.fill();
+        if (isLast) {
+          ctx.beginPath();
+          ctx.arc(x, y, 9, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(${strokeColorRgbM}, 0.3)`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.fill();
+        }
       });
 
-      // Draw Time Axis
-      ctx.fillStyle = isLight ? '#64748B' : '#94A3B8';
+      // 6. Y-Axis price labels
+      ctx.font = 'bold 9px JetBrains Mono, monospace';
+      ctx.fillStyle = isLight ? '#94A3B8' : '#64748B';
+      const labelPrices = [maxP, basePrice, minP];
+      labelPrices.forEach(pv => {
+        const y = getY(pv);
+        if (y < padTop || y > padTop + plotHeight) return;
+        ctx.textAlign = 'right';
+        ctx.fillText(`₹${Math.round(pv)}`, padLeft - 4, y + 3);
+      });
+
+      // 7. Time Axis Labels
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.fillStyle = isLight ? '#94A3B8' : '#6B7B92';
       ctx.textAlign = 'left';
-      ctx.fillText(dataPoints[0].time.toTimeString().split(' ')[0], padLeft, height - 8);
+      ctx.fillText(dataPoints[0].time.toTimeString().split(' ')[0].slice(0, 5), padLeft, height - 10);
       ctx.textAlign = 'right';
-      ctx.fillText(dataPoints[dataPoints.length - 1].time.toTimeString().split(' ')[0], width - padRight, height - 8);
+      ctx.fillText(dataPoints[dataPoints.length - 1].time.toTimeString().split(' ')[0].slice(0, 5), width - padRight, height - 10);
     }
 
     function renderModalSettlementsTable(productId) {
@@ -2440,7 +2706,7 @@
       fetchProducts();
       fetchPricingTiming();
       fetchPricingConfiguration();
-    }, 2500);
+    }, 10000);
   </script>
 </body>
 </html>

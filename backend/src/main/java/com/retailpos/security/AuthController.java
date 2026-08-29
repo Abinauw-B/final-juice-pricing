@@ -1,6 +1,5 @@
 package com.retailpos.security;
 
-import com.retailpos.domain.Role;
 import com.retailpos.domain.User;
 import com.retailpos.domain.UserRepository;
 import com.retailpos.domain.RoleRepository;

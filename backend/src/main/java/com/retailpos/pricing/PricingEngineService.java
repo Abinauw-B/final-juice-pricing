@@ -3,7 +3,6 @@ package com.retailpos.pricing;
 import com.retailpos.domain.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,9 +50,14 @@ public class PricingEngineService {
         this.pricingConfigurationService = pricingConfigurationService;
     }
 
+    public LocalDateTime getLastSettlementTime() {
+        return lastSettlementTime;
+    }
+
     public LocalDateTime getNextSettlementTime() {
         int interval = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
-        if (LocalDateTime.now().isAfter(nextSettlementTime)) {
+        if (interval <= 0) interval = 60;
+        if (nextSettlementTime == null || LocalDateTime.now().isAfter(nextSettlementTime)) {
             nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
         }
         return nextSettlementTime;
@@ -334,7 +338,10 @@ public class PricingEngineService {
             int intervalSeconds = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
             log.info("⚡ Running Dynamic Juice Exchange Settlement Cycle (interval={}s) at {} (force={})...", intervalSeconds, now, force);
 
-            String windowStartKey = force ? "SETTLEMENT_FORCE_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 4) : "SETTLEMENT_" + now.withSecond(0).withNano(0).toString();
+            long epochSeconds = now.atZone(java.time.ZoneId.systemDefault()).toEpochSecond();
+            long bucket = (epochSeconds / intervalSeconds) * intervalSeconds;
+            String windowStartKey = force ? "SETTLEMENT_FORCE_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 4)
+                    : "SETTLEMENT_" + intervalSeconds + "_" + bucket;
 
             if (!force && settlementRepository.existsByIdempotencyKey(windowStartKey)) {
                 log.info("Settlement for window {} already executed. Skipping duplicate run.", windowStartKey);

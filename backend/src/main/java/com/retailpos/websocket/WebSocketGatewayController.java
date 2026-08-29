@@ -21,12 +21,10 @@ public class WebSocketGatewayController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final MarketCrashService marketCrashService;
-    private final PricingEngineService pricingEngineService;
 
-    public WebSocketGatewayController(SimpMessagingTemplate messagingTemplate, MarketCrashService marketCrashService, PricingEngineService pricingEngineService) {
+    public WebSocketGatewayController(SimpMessagingTemplate messagingTemplate, MarketCrashService marketCrashService) {
         this.messagingTemplate = messagingTemplate;
         this.marketCrashService = marketCrashService;
-        this.pricingEngineService = pricingEngineService;
     }
 
     public static class STOMPHeartbeatMessage {

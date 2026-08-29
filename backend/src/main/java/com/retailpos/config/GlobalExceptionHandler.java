@@ -41,9 +41,9 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now().toString());
         body.put("status", HttpStatus.BAD_REQUEST.value());
-        String message = "Validation failed";
-        if (ex.getBindingResult().getFieldError() != null && ex.getBindingResult().getFieldError().getDefaultMessage() != null) {
-            message = "Validation failed: " + ex.getBindingResult().getFieldError().getDefaultMessage();
+        org.springframework.validation.FieldError fieldError = ex.getBindingResult().getFieldError();
+        if (fieldError != null && fieldError.getDefaultMessage() != null) {
+            message = "Validation failed: " + fieldError.getDefaultMessage();
         }
         body.put("message", message);
         body.put("path", request.getDescription(false).replace("uri=", ""));

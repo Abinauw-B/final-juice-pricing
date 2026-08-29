@@ -933,11 +933,13 @@
                   Settlement Interval
                 </label>
                 <select id="pricingIntervalSelect" style="width: 100%; padding: 10px 14px; font-size: 14px; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); cursor: pointer;">
+                  <option value="10">10 Seconds</option>
                   <option value="30">30 Seconds</option>
                   <option value="60">1 Minute</option>
                   <option value="120">2 Minutes</option>
                   <option value="300">5 Minutes</option>
                   <option value="600">10 Minutes</option>
+                  <option value="900">15 Minutes</option>
                 </select>
               </div>
 
@@ -2115,6 +2117,42 @@
       if (modal) modal.style.display = 'none';
     }
 
+    let adminCrashEndTime = 0;
+
+    function updateMarketCrashTimerDisplay() {
+      if (!isAdminCrashActive) return;
+      
+      const now = Date.now();
+      let secs = 0;
+      if (adminCrashEndTime > now) {
+        secs = Math.ceil((adminCrashEndTime - now) / 1000);
+      }
+      
+      const mins = Math.floor(secs / 60).toString().padStart(2, '0');
+      const secsStr = (secs % 60).toString().padStart(2, '0');
+      const timeStr = `${mins}:${secsStr}`;
+
+      const timerEl = document.getElementById('adminCrashTimer');
+      if (timerEl) {
+        timerEl.style.display = 'inline-block';
+        timerEl.textContent = timeStr;
+      }
+      
+      const crashTabTimer = document.getElementById('crashTabTimerDisplay');
+      if (crashTabTimer) {
+        crashTabTimer.textContent = timeStr;
+      }
+
+      const headerText = document.getElementById('headerMarketStatusText');
+      if (headerText) {
+        headerText.textContent = `🚨 MARKET CRASH (${timeStr})`;
+      }
+
+      if (secs <= 0 && isAdminCrashActive) {
+        checkMarketCrashStatus();
+      }
+    }
+
     async function executeTriggerAdminMarketCrash(customFloorPrice = 18) {
       closeCrashConfirmationModal();
       const crashBtn = document.getElementById('adminTriggerCrashBtn');
@@ -2130,21 +2168,19 @@
         const crashStatus = await res.json();
         
         const secs = (crashStatus.remainingSeconds || 180);
-        const endTime = Date.now() + (secs * 1000);
+        adminCrashEndTime = Date.now() + (secs * 1000);
 
         localStorage.setItem('pubexchange_market_crash_active', 'true');
-        localStorage.setItem('pubexchange_market_crash_end_time', endTime.toString());
+        localStorage.setItem('pubexchange_market_crash_end_time', adminCrashEndTime.toString());
         localStorage.setItem('pubexchange_market_crash_floor', customFloorPrice.toString());
 
-        broadcastEvent('MARKET_CRASH_START', { endTime, floorPrice: customFloorPrice });
+        broadcastEvent('MARKET_CRASH_START', { endTime: adminCrashEndTime, floorPrice: customFloorPrice });
         syncMarketCrashUI(crashStatus);
-
-        if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
-        adminCrashTimerInterval = setInterval(checkMarketCrashStatus, 1000);
 
         showToast('🚨 Market Crash Event Triggered Across All Panels!', 'warning');
         loadMarketCrashEventHistory();
       } catch (err) {
+        console.error('[CRASH] Trigger error:', err);
         showToast('❌ Market Crash Trigger Failed: Backend server error', 'danger');
       } finally {
         if (crashBtn) setButtonLoading(crashBtn, false);
@@ -2178,7 +2214,7 @@
 
     function syncMarketCrashUI(status) {
       if (!status) return;
-      isAdminCrashActive = status.active;
+      isAdminCrashActive = Boolean(status.active);
 
       const crashBtn = document.getElementById('adminTriggerCrashBtn');
       const stopBtn = document.getElementById('adminStopCrashBtn');
@@ -2194,7 +2230,8 @@
       const headerText = document.getElementById('headerMarketStatusText');
 
       if (status.active) {
-        const secs = status.remainingSeconds || 0;
+        const secs = (typeof status.remainingSeconds === 'number' && status.remainingSeconds > 0) ? status.remainingSeconds : 180;
+        adminCrashEndTime = Date.now() + (secs * 1000);
         const mins = Math.floor(secs / 60).toString().padStart(2, '0');
         const secsStr = (secs % 60).toString().padStart(2, '0');
         const timeStr = `${mins}:${secsStr}`;
@@ -2226,6 +2263,7 @@
         if (crashTabTimer) crashTabTimer.textContent = timeStr;
 
       } else {
+        adminCrashEndTime = 0;
         if (tag) {
           tag.textContent = 'TRADING NORMAL';
           tag.className = 'status-tag tag-active';
@@ -2252,9 +2290,7 @@
     }
 
     // Market Crash Stop Handler
-    async function stopAdminMarketCrash(promptConfirm = true) {
-      if (promptConfirm && !confirm("Stop active Market Crash and resume normal trading?")) return;
-
+    async function stopAdminMarketCrash() {
       const stopBtn = document.getElementById('adminStopCrashBtn');
       const crashTabStopBtn = document.getElementById('crashTabStopBtn');
       if (stopBtn) setButtonLoading(stopBtn, true, 'Stopping...');
@@ -2268,7 +2304,7 @@
         localStorage.removeItem('pubexchange_market_crash_end_time');
         broadcastEvent('MARKET_CRASH_STOP');
 
-        if (adminCrashTimerInterval) clearInterval(adminCrashTimerInterval);
+        adminCrashEndTime = 0;
         syncMarketCrashUI(crashStatus || { active: false });
         showToast('✓ Market Crash stopped. Trading resumed normal status.', 'info');
         loadMarketCrashEventHistory();
@@ -2451,28 +2487,105 @@
       if (typeof ApexCharts !== 'undefined') {
         try {
           if (!revenueChartInstance && revContainer) {
+            const revenueData = [0, 480, 1100, 2050, 2950, 3800, Math.max(Math.round(totalRevenueSum), 4200)];
             const options = {
-              chart: { type: 'area', height: 260, toolbar: { show: false }, background: 'transparent' },
-              theme: { mode: 'light' },
-              series: [{ name: 'Revenue (₹)', data: [450, 780, 1200, 1950, 2400, 3100, Math.round(totalRevenueSum)] }],
-              xaxis: { categories: ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', 'Now'] },
-              colors: ['#059669'],
-              stroke: { curve: 'smooth', width: 3 }
+              chart: {
+                type: 'area', height: 268, toolbar: { show: false }, background: 'transparent',
+                fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
+                animations: { enabled: true, speed: 800 },
+                dropShadow: { enabled: true, top: 8, blur: 12, color: 'rgba(5,150,105,0.22)', opacity: 0.8 }
+              },
+              series: [{ name: 'Revenue', data: revenueData }],
+              xaxis: {
+                categories: ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00', 'Now'],
+                axisBorder: { show: false }, axisTicks: { show: false },
+                labels: { style: { colors: '#94A3B8', fontSize: '11px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 } }
+              },
+              yaxis: {
+                labels: {
+                  formatter: (val) => '\u20b9' + Math.round(val),
+                  style: { colors: '#94A3B8', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
+                }
+              },
+              colors: ['#10B981'],
+              stroke: { curve: 'smooth', width: 3 },
+              fill: {
+                type: 'gradient',
+                gradient: {
+                  shadeIntensity: 1, opacityFrom: 0.42, opacityTo: 0.0, stops: [0, 90, 100],
+                  colorStops: [
+                    { offset: 0, color: '#10B981', opacity: 0.42 },
+                    { offset: 60, color: '#059669', opacity: 0.10 },
+                    { offset: 100, color: '#10B981', opacity: 0.0 }
+                  ]
+                }
+              },
+              markers: { size: 4, colors: ['#10B981'], strokeColors: '#FFFFFF', strokeWidth: 2, hover: { size: 7 } },
+              grid: {
+                borderColor: 'rgba(226,232,240,0.5)', strokeDashArray: 4,
+                xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } },
+                padding: { top: 6, right: 8, bottom: 0, left: 4 }
+              },
+              tooltip: {
+                theme: 'dark',
+                style: { fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" },
+                y: { formatter: (val) => '\u20b9' + val.toLocaleString('en-IN') }
+              },
+              dataLabels: { enabled: false }
             };
             revenueChartInstance = new ApexCharts(revContainer, options);
             revenueChartInstance.render();
           }
 
           if (!donutChartInstance && donutContainer) {
-            const labels = Object.values(flavoursMap).slice(0, 7);
-            const series = batchesData.slice(0, 7).map(b => (b.remainingVolumeMl || 20000) / 1000.0);
-
+            const flavourLabels = Object.values(flavoursMap).slice(0, 7);
+            const series = batchesData.slice(0, 7).map(b => parseFloat(((b.remainingVolumeMl || 20000) / 1000.0).toFixed(1)));
+            const donutColors = ['#F59E0B', '#10B981', '#3B82F6', '#F43F5E', '#8B5CF6', '#06B6D4', '#EF4444'];
             const options = {
-              chart: { type: 'donut', height: 260, background: 'transparent' },
-              theme: { mode: 'light' },
-              series: series.length > 0 ? series : [17.5, 16.0, 19.0, 14.2, 18.5, 15.7, 17.5],
-              labels: labels.length > 0 ? labels : ['Mango', 'Lemon', 'Mint', 'Orange', 'Strawberry', 'Grape', 'Lychee'],
-              colors: ['#d97706', '#ca8a04', '#059669', '#ea580c', '#e11d48', '#7c3aed', '#0284c7']
+              chart: {
+                type: 'donut', height: 268, background: 'transparent',
+                fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
+                animations: { enabled: true, speed: 700 },
+                dropShadow: { enabled: true, top: 4, blur: 10, color: '#000', opacity: 0.15 }
+              },
+              series: series.length > 0 ? series : [17.5, 19.0, 14.2, 18.5, 15.7, 17.5, 16.0],
+              labels: flavourLabels.length > 0 ? flavourLabels : ['Mango', 'Mint', 'Orange', 'Strawberry', 'Grape', 'Lychee', 'Lemon'],
+              colors: donutColors,
+              stroke: { width: 2, colors: ['transparent'] },
+              plotOptions: {
+                pie: {
+                  donut: {
+                    size: '68%',
+                    labels: {
+                      show: true,
+                      total: {
+                        show: true, label: 'Total Volume',
+                        fontSize: '10px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, color: '#64748B',
+                        formatter: (w) => {
+                          const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                          return total.toFixed(1) + 'L';
+                        }
+                      },
+                      value: { fontSize: '18px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: '#0F172A', formatter: (val) => parseFloat(val).toFixed(1) + 'L' }
+                    }
+                  }
+                }
+              },
+              dataLabels: {
+                enabled: true,
+                formatter: (val) => val.toFixed(0) + '%',
+                dropShadow: { enabled: true, blur: 3, opacity: 0.2 },
+                style: { fontSize: '10px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }
+              },
+              legend: {
+                position: 'bottom', fontSize: '11px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600,
+                markers: { width: 9, height: 9, radius: 3 }, itemMargin: { horizontal: 6, vertical: 3 }
+              },
+              tooltip: {
+                theme: 'dark',
+                style: { fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" },
+                y: { formatter: (val) => val.toFixed(1) + ' Litres' }
+              }
             };
             donutChartInstance = new ApexCharts(donutContainer, options);
             donutChartInstance.render();
@@ -2851,22 +2964,28 @@
 
     function applyTimingToUI(timing) {
       if (!timing) return;
-      activePricingTiming = timing;
+      const sec = timing.intervalSeconds || timing.settlementIntervalSeconds || 60;
+      activePricingTiming = {
+        ...activePricingTiming,
+        ...timing,
+        intervalSeconds: sec
+      };
 
       const sel = document.getElementById('pricingIntervalSelect');
-      if (sel && timing.intervalSeconds) {
-        sel.value = String(timing.intervalSeconds);
+      if (sel) {
+        sel.value = String(sec);
       }
 
       const cycleDisplay = document.getElementById('timingCurrentCycleDisplay');
-      if (cycleDisplay && timing.intervalSeconds) {
-        const shortLabel = timing.intervalSeconds === 30 ? '30-Sec' :
-          (timing.intervalSeconds % 60 === 0 ? `${timing.intervalSeconds / 60}-Min` : `${timing.intervalSeconds}s`);
+      if (cycleDisplay) {
+        const shortLabel = sec === 10 ? '10-Sec' :
+          (sec === 30 ? '30-Sec' :
+          (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`));
         cycleDisplay.textContent = `${shortLabel} DWMA`;
       }
 
-      if (document.getElementById('cfgSettlementInterval') && timing.intervalSeconds) {
-        document.getElementById('cfgSettlementInterval').value = timing.intervalSeconds;
+      if (document.getElementById('cfgSettlementInterval')) {
+        document.getElementById('cfgSettlementInterval').value = sec;
       }
     }
 
@@ -2876,11 +2995,13 @@
       const currentSec = activePricingTiming.intervalSeconds || 60;
 
       const labelMap = {
+        10: '10 Seconds',
         30: '30 Seconds',
         60: '1 Minute',
         120: '2 Minutes',
         300: '5 Minutes',
-        600: '10 Minutes'
+        600: '10 Minutes',
+        900: '15 Minutes'
       };
 
       const curEl = document.getElementById('modalCurrentTimingText');
@@ -2943,23 +3064,31 @@
         const countdownEl = document.getElementById('timingNextSettlementCountdown');
         if (!countdownEl) return;
 
-        if (!activePricingTiming || !activePricingTiming.nextSettlementAt) {
-          countdownEl.textContent = '--:--';
-          return;
-        }
-
-        const targetTime = new Date(activePricingTiming.nextSettlementAt).getTime();
+        const intervalSec = (activePricingTiming && activePricingTiming.intervalSeconds) ? activePricingTiming.intervalSeconds : 60;
         const now = Date.now();
-        const diffMs = targetTime - now;
+        let remainingSec = 60;
 
-        if (diffMs <= 0) {
-          countdownEl.textContent = '00:00';
-          return;
+        if (activePricingTiming && activePricingTiming.nextSettlementAt) {
+          const targetTime = new Date(activePricingTiming.nextSettlementAt).getTime();
+          if (!isNaN(targetTime)) {
+            const diffMs = targetTime - now;
+            if (diffMs > 0) {
+              remainingSec = Math.ceil(diffMs / 1000);
+            } else {
+              remainingSec = intervalSec - (Math.floor(now / 1000) % intervalSec);
+              if (diffMs < -2000 && diffMs > -5000) {
+                loadPricingTiming();
+              }
+            }
+          } else {
+            remainingSec = intervalSec - (Math.floor(now / 1000) % intervalSec);
+          }
+        } else {
+          remainingSec = intervalSec - (Math.floor(now / 1000) % intervalSec);
         }
 
-        const totalSec = Math.floor(diffMs / 1000);
-        const mins = Math.floor(totalSec / 60);
-        const secs = totalSec % 60;
+        const mins = Math.floor(remainingSec / 60);
+        const secs = remainingSec % 60;
         countdownEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
       }, 1000);
     }
@@ -2987,6 +3116,13 @@
         badge.textContent = `VERSION ${config.version}`;
       }
 
+      if (g.settlementIntervalSeconds) {
+        applyTimingToUI({
+          intervalSeconds: g.settlementIntervalSeconds,
+          settlementIntervalSeconds: g.settlementIntervalSeconds,
+          label: g.settlementIntervalSeconds === 30 ? '30 Seconds' : (g.settlementIntervalSeconds % 60 === 0 ? `${g.settlementIntervalSeconds / 60} Minute` : `${g.settlementIntervalSeconds}s`)
+        });
+      }
       if (document.getElementById('cfgSettlementInterval')) document.getElementById('cfgSettlementInterval').value = g.settlementIntervalSeconds || 60;
       if (document.getElementById('cfgCrashDuration')) document.getElementById('cfgCrashDuration').value = g.marketCrashDurationSeconds || 180;
       if (document.getElementById('cfgCrashPrice')) document.getElementById('cfgCrashPrice').value = Number(g.marketCrashPrice || 18).toFixed(2);
@@ -4389,6 +4525,9 @@
       await ensureAdminAuthenticated();
       checkAdminBackendHealth();
       setInterval(checkAdminBackendHealth, 5000);
+      checkMarketCrashStatus();
+      setInterval(checkMarketCrashStatus, 3000);
+      setInterval(updateMarketCrashTimerDisplay, 500);
       refreshDashboard();
       loadNotifications();
       restoreSimulatorParams();
@@ -4397,6 +4536,7 @@
       loadPricingConfiguration();
       loadLivePricingProducts();
       loadPricingAuditLogs();
+      loadMarketCrashEventHistory();
       
       const savedActiveTab = localStorage.getItem('pubexchange_active_tab');
       if (savedActiveTab) {

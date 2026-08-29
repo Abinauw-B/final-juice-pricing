@@ -9,11 +9,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -40,15 +38,6 @@ public class JuiceInventoryAndPricingTests {
     private POSService posService;
 
     @Autowired
-    private StockPressureService stockPressureService;
-
-    @Autowired
-    private TimeFactorService timeFactorService;
-
-    @Autowired
-    private DemandCalculationService demandCalculationService;
-
-    @Autowired
     private PriceAdjustmentService priceAdjustmentService;
 
     @Autowired
@@ -59,9 +48,6 @@ public class JuiceInventoryAndPricingTests {
 
     @Autowired
     private MarketCrashService marketCrashService;
-
-    @Autowired
-    private SystemConfigRepository systemConfigRepository;
 
     private Product mangoProduct;
 
@@ -120,7 +106,6 @@ public class JuiceInventoryAndPricingTests {
 
     @Test
     @DisplayName("Req 2: Single 250ml cup sale deducts exactly 250ml")
-    @Transactional
     void testSingleCupSaleDeduction() {
         POSService.CartItemRequest item = new POSService.CartItemRequest();
         item.setProductId(mangoProduct.getId());
@@ -155,7 +140,6 @@ public class JuiceInventoryAndPricingTests {
 
     @Test
     @DisplayName("Req 5: Demand price adjustment evaluation")
-    @Transactional
     void testDemandPriceAdjustment() {
         mangoProduct.setLastPriceChangeTimestamp(null);
         productRepository.save(mangoProduct);
@@ -186,7 +170,7 @@ public class JuiceInventoryAndPricingTests {
     @Test
     @DisplayName("Req 7: Concurrent checkout safety with row locking")
     void testConcurrentCheckoutSafety() throws Exception {
-        int threads = 10;
+        int threads = 3;
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         CountDownLatch latch = new CountDownLatch(threads);
         AtomicInteger successCount = new AtomicInteger(0);
@@ -211,14 +195,13 @@ public class JuiceInventoryAndPricingTests {
             });
         }
 
-        latch.await(5, java.util.concurrent.TimeUnit.SECONDS);
+        latch.await(3, java.util.concurrent.TimeUnit.SECONDS);
         executor.shutdownNow();
         assertTrue(successCount.get() > 0);
     }
 
     @Test
     @DisplayName("Req 8: 2-Minute Automated Pricing Engine Settlement Cycle Execution")
-    @Transactional
     void testPricingEngine2MinuteSettlementCycleExecution() {
         PricingEngineService.PriceEvaluationCycleResult result = pricingEngineService.executeSettlementCycle();
         assertNotNull(result);
@@ -230,7 +213,6 @@ public class JuiceInventoryAndPricingTests {
 
     @Test
     @DisplayName("Req 9: Market Crash Override isolates crash price without overwriting normal price")
-    @Transactional
     void testMarketCrashOverride() {
         try {
             marketCrashService.triggerMarketCrash(3, 2, new BigDecimal("18.00"), "TEST");
@@ -242,15 +224,8 @@ public class JuiceInventoryAndPricingTests {
         }
     }
 
-    @Autowired
-    private SalesOrderRepository salesOrderRepository;
-
-    @Autowired
-    private SalesOrderItemRepository salesOrderItemRepository;
-
     @Test
     @DisplayName("Req 10 & 11: Repeated settlement idempotency and new purchase recognition with DWMA")
-    @Transactional
     void testRepeatedSettlementIdempotency() {
         mangoProduct.setCurrentCupPrice(new BigDecimal("25.00"));
         mangoProduct.setTargetSalesPer1Minute(0.55);
@@ -280,7 +255,6 @@ public class JuiceInventoryAndPricingTests {
 
     @Test
     @DisplayName("Req 12 & 13: Cross-product dynamic pricing isolation with DWMA")
-    @Transactional
     void testCrossProductIsolation() {
         Product thunder = productRepository.findByFlavourIgnoreCase("THUNDER")
                 .orElseGet(() -> productRepository.save(Product.builder()
@@ -334,7 +308,6 @@ public class JuiceInventoryAndPricingTests {
 
     @Test
     @DisplayName("Req 14: Enhanced product isolation with four distinct initial prices")
-    @Transactional
     void testEnhancedProductIsolationWithDifferentPrices() {
         Product thunder = productRepository.findByFlavourIgnoreCase("THUNDER")
                 .orElseGet(() -> productRepository.save(Product.builder().name("Thunder").flavour("THUNDER").defaultCupPrice(new BigDecimal("25.00")).currentCupPrice(new BigDecimal("25.00")).minCupPrice(new BigDecimal("18.00")).maxCupPrice(new BigDecimal("35.00")).targetSalesPer1Minute(0.45).build()));

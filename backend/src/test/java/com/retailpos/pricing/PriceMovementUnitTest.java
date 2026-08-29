@@ -203,8 +203,13 @@ public class PriceMovementUnitTest {
         assertEquals(1.20, target120s, 0.001);
 
         // Interval label
+        assertEquals("10 Seconds", PricingConfigurationService.getIntervalLabel(10));
+        assertEquals("30 Seconds", PricingConfigurationService.getIntervalLabel(30));
         assertEquals("1 Minute", PricingConfigurationService.getIntervalLabel(60));
         assertEquals("2 Minutes", PricingConfigurationService.getIntervalLabel(120));
+        assertEquals("5 Minutes", PricingConfigurationService.getIntervalLabel(300));
+        assertEquals("10 Minutes", PricingConfigurationService.getIntervalLabel(600));
+        assertEquals("15 Minutes", PricingConfigurationService.getIntervalLabel(900));
     }
 
     @Test

@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class PriceAdjustmentService {
@@ -19,11 +18,8 @@ public class PriceAdjustmentService {
 
     private final ProductRepository productRepository;
     private final PriceHistoryRepository priceHistoryRepository;
-    private final SystemConfigRepository systemConfigRepository;
     private final SalesOrderItemRepository salesOrderItemRepository;
-    private final JuiceBatchRepository juiceBatchRepository;
     private final MarketCrashService marketCrashService;
-    private final AuditLogRepository auditLogRepository;
     private final PricingProcessedSaleRepository pricingProcessedSaleRepository;
     private final com.retailpos.pricing.redis.PricingRedisRepository redisRepository;
     private final PricingConfigurationService pricingConfigurationService;
@@ -33,21 +29,15 @@ public class PriceAdjustmentService {
 
     public PriceAdjustmentService(ProductRepository productRepository,
                                   PriceHistoryRepository priceHistoryRepository,
-                                  SystemConfigRepository systemConfigRepository,
                                   SalesOrderItemRepository salesOrderItemRepository,
-                                  JuiceBatchRepository juiceBatchRepository,
                                   MarketCrashService marketCrashService,
-                                  AuditLogRepository auditLogRepository,
                                   PricingProcessedSaleRepository pricingProcessedSaleRepository,
                                   com.retailpos.pricing.redis.PricingRedisRepository redisRepository,
                                   PricingConfigurationService pricingConfigurationService) {
         this.productRepository = productRepository;
         this.priceHistoryRepository = priceHistoryRepository;
-        this.systemConfigRepository = systemConfigRepository;
         this.salesOrderItemRepository = salesOrderItemRepository;
-        this.juiceBatchRepository = juiceBatchRepository;
         this.marketCrashService = marketCrashService;
-        this.auditLogRepository = auditLogRepository;
         this.pricingProcessedSaleRepository = pricingProcessedSaleRepository;
         this.redisRepository = redisRepository;
         this.pricingConfigurationService = pricingConfigurationService;
@@ -63,6 +53,10 @@ public class PriceAdjustmentService {
 
     public static void resetMarketStartTime() {
         marketStartTime = LocalDateTime.now();
+    }
+
+    public static LocalDateTime getMarketStartTime() {
+        return marketStartTime;
     }
 
     public static class PriceEvaluationResult {
@@ -205,23 +199,16 @@ public class PriceAdjustmentService {
         if (product.getMaxCupPrice() == null) {
             throw new IllegalArgumentException("Product maxCupPrice (ceiling) is required for product ID: " + productId);
         }
-        if (product.getTargetOrders() == null || product.getTargetOrders() <= 0) {
-            throw new IllegalArgumentException("Product targetOrders must be > 0 for product ID: " + productId);
-        }
-        if (product.getVolatility() == null) {
-            throw new IllegalArgumentException("Product volatility is required for product ID: " + productId);
-        }
-
+        int targetOrders = (product.getTargetOrders() != null && product.getTargetOrders() > 0) ? product.getTargetOrders() : 5;
+        BigDecimal volatility = (product.getVolatility() != null) ? product.getVolatility() : new BigDecimal("1.00");
         BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
-        BigDecimal floor = (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null)
-                ? pricingConfigurationService.getMinCupPrice()
-                : product.getMinCupPrice();
-        BigDecimal ceiling = (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null)
-                ? pricingConfigurationService.getMaxCupPrice()
-                : product.getMaxCupPrice();
+        BigDecimal floor = (product.getMinCupPrice() != null)
+                ? product.getMinCupPrice()
+                : (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("18.00"));
+        BigDecimal ceiling = (product.getMaxCupPrice() != null)
+                ? product.getMaxCupPrice()
+                : (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("35.00"));
         int orderCount = product.getOrderCount() != null ? product.getOrderCount() : 0;
-        int targetOrders = product.getTargetOrders();
-        BigDecimal volatility = product.getVolatility();
 
         // Check Market Paused
         if (marketPaused) {
@@ -326,9 +313,33 @@ public class PriceAdjustmentService {
 
         // 1. Time windows based on configured settlement interval: W0 [now - interval, now), W1 [now - 2*interval, now - interval), W2 [now - 3*interval, now - 2*interval)
         int intervalSec = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
-        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusSeconds(intervalSec), now);
-        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusSeconds(2L * intervalSec), now.minusSeconds(intervalSec));
-        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusSeconds(3L * intervalSec), now.minusSeconds(2L * intervalSec));
+        LocalDateTime marketStart = getMarketStartTime();
+
+        LocalDateTime w0Start = now.minusSeconds(intervalSec);
+        if (marketStart != null && w0Start.isBefore(marketStart)) {
+            w0Start = marketStart;
+        }
+        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
+
+        LocalDateTime w1Start = now.minusSeconds(2L * intervalSec);
+        LocalDateTime w1End = now.minusSeconds(intervalSec);
+        int w1 = 0;
+        if (marketStart == null || w1End.isAfter(marketStart)) {
+            if (marketStart != null && w1Start.isBefore(marketStart)) {
+                w1Start = marketStart;
+            }
+            w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
+        }
+
+        LocalDateTime w2Start = now.minusSeconds(3L * intervalSec);
+        LocalDateTime w2End = now.minusSeconds(2L * intervalSec);
+        int w2 = 0;
+        if (marketStart == null || w2End.isAfter(marketStart)) {
+            if (marketStart != null && w2Start.isBefore(marketStart)) {
+                w2Start = marketStart;
+            }
+            w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
+        }
 
         // 2. Weighted sales: S_w = (weightW0 * W0) + (weightW1 * W1) + (weightW2 * W2)
         BigDecimal sw = BigDecimal.valueOf(w0).multiply(weightW0)
@@ -647,8 +658,7 @@ public class PriceAdjustmentService {
             marketCrashService.stopMarketCrash();
         }
 
-        pricingProcessedSaleRepository.deleteAll();
-        salesOrderItemRepository.deleteAll();
+        pricingProcessedSaleRepository.deleteAllInBatch();
         List<Product> products = productRepository.findByIsActiveTrueOrderByIdAsc();
         LocalDateTime now = LocalDateTime.now();
         resetMarketStartTime();
@@ -803,11 +813,14 @@ public class PriceAdjustmentService {
             redisRepository.setProductPrice(saved.getId(), saved.getCurrentCupPrice());
         }
 
+        BigDecimal effectiveNewPrice = newPrice != null ? newPrice : (oldPrice != null ? oldPrice : BigDecimal.ZERO);
+        BigDecimal effectiveOldPrice = oldPrice != null ? oldPrice : effectiveNewPrice;
+
         PriceHistory history = PriceHistory.builder()
                 .productId(saved.getId())
-                .oldPrice(oldPrice != null ? oldPrice : newPrice)
-                .newPrice(newPrice)
-                .priceChange(newPrice.subtract(oldPrice != null ? oldPrice : newPrice))
+                .oldPrice(effectiveOldPrice)
+                .newPrice(effectiveNewPrice)
+                .priceChange(effectiveNewPrice.subtract(effectiveOldPrice))
                 .reason("ADMIN_DEPLOY")
                 .explanation("Admin deployed product config updates.")
                 .configVersion(pricingConfigurationService != null ? pricingConfigurationService.getConfigurationVersion() : 1L)
@@ -914,12 +927,12 @@ public class PriceAdjustmentService {
         }
 
         BigDecimal currentPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
-        BigDecimal floor = (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null)
-                ? pricingConfigurationService.getMinCupPrice()
-                : p.getMinCupPrice();
-        BigDecimal ceiling = (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null)
-                ? pricingConfigurationService.getMaxCupPrice()
-                : p.getMaxCupPrice();
+        BigDecimal floor = (p.getMinCupPrice() != null)
+                ? p.getMinCupPrice()
+                : (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("18.00"));
+        BigDecimal ceiling = (p.getMaxCupPrice() != null)
+                ? p.getMaxCupPrice()
+                : (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("35.00"));
 
         BigDecimal weightW0 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW0() : new BigDecimal("1.0000");
         BigDecimal weightW1 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW1() : new BigDecimal("0.5000");

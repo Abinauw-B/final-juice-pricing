@@ -1,9 +1,6 @@
 package com.retailpos.report;
 
 import com.retailpos.domain.JuiceBatch;
-import com.retailpos.domain.SalesOrder;
-import com.retailpos.domain.SalesOrderRepository;
-import com.retailpos.domain.ProductRepository;
 import com.retailpos.domain.JuiceBatchRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,21 +9,16 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping({"/api/reports", "/api"})
 @CrossOrigin(origins = "*")
 public class ReportController {
 
-    private final SalesOrderRepository salesOrderRepository;
-    private final ProductRepository productRepository;
     private final JuiceBatchRepository juiceBatchRepository;
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
-    public ReportController(SalesOrderRepository salesOrderRepository, ProductRepository productRepository, JuiceBatchRepository juiceBatchRepository, org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
-        this.salesOrderRepository = salesOrderRepository;
-        this.productRepository = productRepository;
+    public ReportController(JuiceBatchRepository juiceBatchRepository, org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.juiceBatchRepository = juiceBatchRepository;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -35,12 +27,17 @@ public class ReportController {
     public ResponseEntity<Map<String, Object>> getSummaryReport() {
         Map<String, Object> report = new HashMap<>();
 
-        Long totalOrders = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sales_orders", Long.class);
-        BigDecimal totalRevenue = jdbcTemplate.queryForObject("SELECT COALESCE(SUM(total_amount), 0) FROM sales_orders", BigDecimal.class);
-        Integer cupsSold = jdbcTemplate.queryForObject("SELECT COALESCE(SUM(quantity), 0) FROM sales_order_items", Integer.class);
+        Long totalOrdersObj = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM sales_orders", Long.class);
+        long totalOrders = totalOrdersObj != null ? totalOrdersObj : 0L;
+
+        BigDecimal totalRevenueObj = jdbcTemplate.queryForObject("SELECT COALESCE(SUM(total_amount), 0) FROM sales_orders", BigDecimal.class);
+        BigDecimal totalRevenue = totalRevenueObj != null ? totalRevenueObj : BigDecimal.ZERO;
+
+        Integer cupsSoldObj = jdbcTemplate.queryForObject("SELECT COALESCE(SUM(quantity), 0) FROM sales_order_items", Integer.class);
+        int cupsSold = cupsSoldObj != null ? cupsSoldObj : 0;
 
         if (cupsSold == 0 && totalOrders > 0) {
-            cupsSold = totalOrders.intValue();
+            cupsSold = (int) Math.min(totalOrders, Integer.MAX_VALUE);
         }
 
         List<JuiceBatch> batches = juiceBatchRepository.findAll();
@@ -54,10 +51,10 @@ public class ReportController {
             cupsSold = 192;
         }
 
-        report.put("totalOrders", totalOrders != null ? totalOrders : 0L);
+        report.put("totalOrders", totalOrders);
         report.put("activeBatches", activeBatches);
-        report.put("totalRevenue", totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
-        report.put("cupsSold", cupsSold != null ? cupsSold : 0);
+        report.put("totalRevenue", totalRevenue);
+        report.put("cupsSold", cupsSold);
         report.put("liquidVolumeLitres", Math.round(liquidVolumeLitres * 10.0) / 10.0);
 
         return ResponseEntity.ok(report);

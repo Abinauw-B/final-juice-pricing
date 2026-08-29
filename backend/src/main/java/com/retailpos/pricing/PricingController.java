@@ -19,7 +19,6 @@ public class PricingController {
     private final PriceAdjustmentService priceAdjustmentService;
     private final PricingSimulationService pricingSimulationService;
     private final PriceHistoryRepository priceHistoryRepository;
-    private final SystemConfigRepository systemConfigRepository;
     private final ProductRepository productRepository;
     private final MarketCrashService marketCrashService;
 
@@ -33,7 +32,6 @@ public class PricingController {
     public PricingController(PriceAdjustmentService priceAdjustmentService,
                              PricingSimulationService pricingSimulationService,
                              PriceHistoryRepository priceHistoryRepository,
-                             SystemConfigRepository systemConfigRepository,
                              ProductRepository productRepository,
                              MarketCrashService marketCrashService,
                              PricingEngineService pricingEngineService,
@@ -45,7 +43,6 @@ public class PricingController {
         this.priceAdjustmentService = priceAdjustmentService;
         this.pricingSimulationService = pricingSimulationService;
         this.priceHistoryRepository = priceHistoryRepository;
-        this.systemConfigRepository = systemConfigRepository;
         this.productRepository = productRepository;
         this.marketCrashService = marketCrashService;
         this.pricingEngineService = pricingEngineService;
@@ -406,14 +403,14 @@ public class PricingController {
         if (selectedInterval == null) {
             Map<String, Object> err = new HashMap<>();
             err.put("error", "intervalSeconds is required");
-            err.put("allowedIntervals", List.of(30, 60, 120, 300, 600));
+            err.put("allowedIntervals", List.of(10, 30, 60, 120, 300, 600, 900));
             return ResponseEntity.badRequest().body(err);
         }
 
         if (!PricingConfigurationService.ALLOWED_INTERVALS.contains(selectedInterval)) {
             Map<String, Object> err = new HashMap<>();
-            err.put("error", "Invalid settlement interval: " + selectedInterval + "s. Allowed values are: 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600).");
-            err.put("allowedIntervals", List.of(30, 60, 120, 300, 600));
+            err.put("error", "Invalid settlement interval: " + selectedInterval + "s. Allowed values are: 10s (10), 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600), 15 min (900).");
+            err.put("allowedIntervals", List.of(10, 30, 60, 120, 300, 600, 900));
             return ResponseEntity.badRequest().body(err);
         }
 

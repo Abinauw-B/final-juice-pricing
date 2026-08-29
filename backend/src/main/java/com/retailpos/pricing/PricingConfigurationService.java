@@ -377,6 +377,9 @@ public class PricingConfigurationService {
             product.setTargetSalesPer1Minute(update.getTargetSales());
             product.setTargetSalesPer2Minute(update.getTargetSales() * 2.0);
         }
+        if (update.getPricingMode() != null && !update.getPricingMode().isBlank()) {
+            product.setPricingMode(update.getPricingMode());
+        }
         if (update.getDefaultCupPrice() != null) product.setDefaultCupPrice(update.getDefaultCupPrice());
         if (update.getMinCupPrice() != null) product.setMinCupPrice(update.getMinCupPrice());
         if (update.getMaxCupPrice() != null) product.setMaxCupPrice(update.getMaxCupPrice());
@@ -420,7 +423,8 @@ public class PricingConfigurationService {
                 product.getDefaultCupPrice(),
                 product.getCurrentCupPrice(),
                 product.getMinCupPrice(),
-                product.getMaxCupPrice()
+                product.getMaxCupPrice(),
+                product.getPricingMode()
         );
     }
 
@@ -454,7 +458,7 @@ public class PricingConfigurationService {
         if (config.getSettlementIntervalSeconds() != null) {
             int interval = config.getSettlementIntervalSeconds();
             if (!ALLOWED_INTERVALS.contains(interval)) {
-                throw new IllegalArgumentException("Invalid settlement interval: " + interval + "s. Allowed values are: 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600).");
+                throw new IllegalArgumentException("Invalid settlement interval: " + interval + "s. Allowed values are: 10s (10), 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600), 15 min (900).");
             }
         }
         if (config.getMarketCrashDurationSeconds() != null && config.getMarketCrashDurationSeconds() <= 0) {
@@ -488,7 +492,7 @@ public class PricingConfigurationService {
         }
     }
 
-    public static final Set<Integer> ALLOWED_INTERVALS = Set.of(30, 60, 120, 300, 600);
+    public static final Set<Integer> ALLOWED_INTERVALS = Set.of(10, 30, 60, 120, 300, 600, 900);
 
     public String getSettlementIntervalLabel() {
         int sec = getSettlementIntervalSeconds();
@@ -503,11 +507,13 @@ public class PricingConfigurationService {
 
     public static String getIntervalLabel(int seconds) {
         return switch (seconds) {
+            case 10 -> "10 Seconds";
             case 30 -> "30 Seconds";
             case 60 -> "1 Minute";
             case 120 -> "2 Minutes";
             case 300 -> "5 Minutes";
             case 600 -> "10 Minutes";
+            case 900 -> "15 Minutes";
             default -> (seconds % 60 == 0) ? (seconds / 60) + " Minutes" : seconds + " Seconds";
         };
     }
