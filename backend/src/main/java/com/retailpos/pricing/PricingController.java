@@ -194,6 +194,9 @@ public class PricingController {
                 List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
                 messagingTemplate.convertAndSend("/topic/prices", allProducts);
                 messagingTemplate.convertAndSend("/topic/products", allProducts);
+                if (pricingConfigurationService != null) {
+                    messagingTemplate.convertAndSend("/topic/pricing-config", pricingConfigurationService.getFullConfiguration());
+                }
             }
         } catch (Exception e) {}
 
@@ -367,6 +370,85 @@ public class PricingController {
     @PutMapping({"/correlations", "/admin/correlations"})
     public ResponseEntity<com.retailpos.domain.ProductCorrelation> updateCorrelation(@RequestBody UpdateCorrelationRequest req) {
         return ResponseEntity.ok(marketCorrelationService.updateCorrelation(req.getSourceProductId(), req.getTargetProductId(), req.getCoefficient(), req.getEnabled()));
+    }
+
+    @GetMapping({"/timing", "/admin/timing"})
+    public ResponseEntity<Map<String, Object>> getPricingTiming() {
+        int interval = pricingConfigurationService.getSettlementIntervalSeconds();
+        Map<String, Object> res = new HashMap<>();
+        res.put("intervalSeconds", interval);
+        res.put("intervalMinutes", (double) interval / 60.0);
+        res.put("label", PricingConfigurationService.getIntervalLabel(interval));
+        res.put("active", true);
+        res.put("pricingModel", "DWMA");
+        res.put("nextSettlementAt", pricingEngineService.getNextSettlementTime().toString());
+        res.put("allowedIntervals", List.of(30, 60, 120, 300, 600));
+        return ResponseEntity.ok(res);
+    }
+
+    public static class PricingTimingUpdateRequest {
+        private Integer intervalSeconds;
+
+        public PricingTimingUpdateRequest() {}
+        public PricingTimingUpdateRequest(Integer intervalSeconds) { this.intervalSeconds = intervalSeconds; }
+
+        public Integer getIntervalSeconds() { return intervalSeconds; }
+        public void setIntervalSeconds(Integer intervalSeconds) { this.intervalSeconds = intervalSeconds; }
+    }
+
+    @RequestMapping(value = {"/timing", "/admin/timing"}, method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<Map<String, Object>> updatePricingTiming(
+            @RequestBody(required = false) PricingTimingUpdateRequest req,
+            @RequestParam(required = false) Integer intervalSeconds,
+            @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
+
+        Integer selectedInterval = (req != null && req.getIntervalSeconds() != null) ? req.getIntervalSeconds() : intervalSeconds;
+        if (selectedInterval == null) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", "intervalSeconds is required");
+            err.put("allowedIntervals", List.of(30, 60, 120, 300, 600));
+            return ResponseEntity.badRequest().body(err);
+        }
+
+        if (!PricingConfigurationService.ALLOWED_INTERVALS.contains(selectedInterval)) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", "Invalid settlement interval: " + selectedInterval + "s. Allowed values are: 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600).");
+            err.put("allowedIntervals", List.of(30, 60, 120, 300, 600));
+            return ResponseEntity.badRequest().body(err);
+        }
+
+        String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
+        com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig update = new com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig();
+        update.setSettlementIntervalSeconds(selectedInterval);
+        pricingConfigurationService.updateGlobalConfiguration(update, actor, "ADMIN_SETTLEMENT_INTERVAL_CHANGE");
+
+        String label = PricingConfigurationService.getIntervalLabel(selectedInterval);
+        LocalDateTime nextTime = pricingEngineService.getNextSettlementTime();
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("success", true);
+        res.put("intervalSeconds", selectedInterval);
+        res.put("intervalMinutes", (double) selectedInterval / 60.0);
+        res.put("label", label);
+        res.put("nextSettlementAt", nextTime.toString());
+        res.put("message", "Pricing settlement interval updated to " + label);
+
+        // Broadcast dedicated timing event over WebSocket
+        try {
+            if (messagingTemplate != null) {
+                Map<String, Object> wsMsg = new HashMap<>();
+                wsMsg.put("type", "PRICING_TIMING_CHANGED");
+                wsMsg.put("intervalSeconds", selectedInterval);
+                wsMsg.put("intervalMinutes", (double) selectedInterval / 60.0);
+                wsMsg.put("label", label);
+                wsMsg.put("nextSettlementAt", nextTime.toString());
+                wsMsg.put("timestamp", LocalDateTime.now().toString());
+                messagingTemplate.convertAndSend("/topic/pricing-config", wsMsg);
+                messagingTemplate.convertAndSend("/topic/settlement", wsMsg);
+            }
+        } catch (Exception ignored) {}
+
+        return ResponseEntity.ok(res);
     }
 }
 

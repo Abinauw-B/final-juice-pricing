@@ -2,6 +2,7 @@ package com.retailpos.pricing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
@@ -11,6 +12,7 @@ import java.time.Instant;
 
 @Configuration
 @EnableScheduling
+@ConditionalOnProperty(name = "pricing.scheduler.enabled", havingValue = "true", matchIfMissing = true)
 public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
 
     private static final Logger log = LoggerFactory.getLogger(DynamicPricingSchedulerConfig.class);

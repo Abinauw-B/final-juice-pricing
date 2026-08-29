@@ -49,10 +49,10 @@ A production-ready retail management system for fresh juice bars featuring a **2
    - **Settlement Movement Rules**:
      - **High Demand ($R_d \ge 1.10$ and $W_0 > 0$)**: $+₹1.00$
      - **Stable Demand ($0.90 \le R_d < 1.10$ or $R_d \ge 1.10$ with $W_0 = 0$)**: $₹0.00$
-     - **Low Demand / Zero Demand ($R_d < 0.90$)**: $-₹4.00$
-   - **Downward Step Validation**: Downward delta must satisfy $|\Delta P| \pmod 4 = 0$.
+     - **Low Demand / Zero Demand ($R_d < 0.90$)**: $-₹1.00$
+   - **Step Movement Invariant**: Every normal settlement changes price by strictly $+₹1.00, ₹0.00, \text{ or } -₹1.00$.
    - **Bounded Clamping & Floor Protection**: $P_{\text{new}} = \max(\text{minCupPrice}, \min(\text{maxCupPrice}, P_{\text{current}} + \Delta P))$.
-     *(Example: ₹21.00 with ₹4 decay clamped at floor ₹18.00 yields ₹18.00, not ₹17.00)*.
+     *(Example: ₹18.00 with decay clamped at floor ₹18.00 yields ₹18.00)*.
 
 4. **Market Crash Routine**:
    - Panic floor pricing ($₹18.00$) for all juice varieties.

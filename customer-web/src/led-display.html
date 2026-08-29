@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Noida Pub Exchange - Beverage Stock Market LED Ticker Node</title>
+  <title>Noida Pub Exchange - Beverage Stock Market Dashboard</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <script>
     // Suppress Chromium legacy unload permission violation warnings from SockJS
@@ -30,54 +30,98 @@
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
   <style>
-    /* Dark Premium Stock Exchange Theme (Default for LED Ticker) */
-    :root, body.dark-theme-mode {
-      --bg-page: #07090e;
-      --bg-surface: rgba(11, 15, 25, 0.9);
-      --bg-surface-secondary: rgba(22, 30, 46, 0.65);
-      --bg-card: rgba(16, 22, 34, 0.75);
-      --bg-elevated: rgba(22, 31, 48, 0.85);
-      --border: rgba(255, 255, 255, 0.09);
-      --border-subtle: rgba(255, 255, 255, 0.06);
-      --text-primary: #f8fafc;
-      --text-secondary: #cbd5e1;
-      --text-muted: #8e9db2;
-      --accent-gold: #f59e0b;
-      --accent-cyan: #38bdf8;
-      --success: #10b981;
-      --info: #0284c7;
-      --radius-card: 16px;
-      --radius-btn: 10px;
+    /* ==========================================================================
+       PROFESSIONAL FINTECH DESIGN SYSTEM (LIGHT THEME PRIMARY)
+       ========================================================================== */
+    :root, html[data-theme="light"], body:not(.dark-theme-mode) {
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
 
-      background: radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
-                  radial-gradient(circle at 88% 92%, rgba(192, 132, 252, 0.07) 0%, transparent 45%),
-                  #07090e !important;
-      background-attachment: fixed !important;
+      --bg-page: #F5F7FA;
+      --bg-surface: #FFFFFF;
+      --bg-card: #FFFFFF;
+      --bg-secondary: #F8FAFC;
+      --bg-subtle: #F1F5F9;
+      --bg-hover: #F1F5F9;
+
+      --border-color: #E2E8F0;
+      --border-subtle: #EDF2F7;
+      --border-strong: #CBD5E1;
+
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      --text-inverse: #FFFFFF;
+
+      --accent-emerald: #059669;
+      --accent-emerald-bg: #ECFDF5;
+      --accent-emerald-border: #A7F3D0;
+
+      --accent-rose: #DC2626;
+      --accent-rose-bg: #FEF2F2;
+      --accent-rose-border: #FECACA;
+
+      --accent-cyan: #0284C7;
+      --accent-cyan-bg: #F0F9FF;
+      --accent-cyan-border: #BAE6FD;
+
+      --accent-amber: #D97706;
+      --accent-amber-bg: #FFFBEB;
+      --accent-amber-border: #FDE68A;
+
+      --radius-card: 14px;
+      --radius-btn: 8px;
+      --radius-pill: 20px;
+
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px -2px rgba(15, 23, 42, 0.05);
+      --shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 12px 24px -4px rgba(15, 23, 42, 0.08);
+      --shadow-modal: 0 20px 40px -8px rgba(15, 23, 42, 0.22);
     }
 
-    body.light-theme-mode {
-      --bg-page: #f8fafc;
-      --bg-surface: #ffffff;
-      --bg-surface-secondary: #f1f5f9;
-      --bg-card: #ffffff;
-      --bg-elevated: #f8fafc;
-      --border: #e2e8f0;
-      --border-subtle: #edf2f7;
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #64748b;
-      --accent-gold: #d97706;
-      --accent-cyan: #0284c7;
-      --success: #059669;
-      --info: #2563eb;
+    html[data-theme="dark"], body.dark-theme-mode {
+      --bg-page: #0B0F19;
+      --bg-surface: #111827;
+      --bg-card: #111827;
+      --bg-secondary: #1F2937;
+      --bg-subtle: #1E293B;
+      --bg-hover: #374151;
+
+      --border-color: #374151;
+      --border-subtle: #1F2937;
+      --border-strong: #4B5563;
+
+      --text-primary: #F8FAFC;
+      --text-secondary: #CBD5E1;
+      --text-muted: #94A3B8;
+      --text-inverse: #0F172A;
+
+      --accent-emerald: #10B981;
+      --accent-emerald-bg: rgba(16, 185, 129, 0.15);
+      --accent-emerald-border: rgba(16, 185, 129, 0.35);
+
+      --accent-rose: #EF4444;
+      --accent-rose-bg: rgba(239, 68, 68, 0.15);
+      --accent-rose-border: rgba(239, 68, 68, 0.35);
+
+      --accent-cyan: #38BDF8;
+      --accent-cyan-bg: rgba(56, 189, 248, 0.15);
+      --accent-cyan-border: rgba(56, 189, 248, 0.35);
+
+      --accent-amber: #F59E0B;
+      --accent-amber-bg: rgba(245, 158, 11, 0.15);
+      --accent-amber-border: rgba(245, 158, 11, 0.35);
+
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.6);
+      --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      letter-spacing: -0.012em;
+      font-family: var(--font-main);
+      letter-spacing: -0.011em;
     }
 
     body {
@@ -87,98 +131,114 @@
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
-      padding: 16px;
+      padding: 16px 22px;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    /* Top Exchange Header */
+    /* ==========================================================================
+       TOP HEADER
+       ========================================================================== */
     .top-header {
-      height: 72px;
       background: var(--bg-surface);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-color);
       border-radius: var(--radius-card);
-      padding: 0 24px;
+      padding: 12px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .brand-section {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
-    .brand-logo {
-      width: 46px;
-      height: 46px;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
+    .brand-logo-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+      font-size: 22px;
     }
 
     .brand-title {
-      font-size: 20px;
-      font-weight: 900;
+      font-size: 18px;
+      font-weight: 800;
       color: var(--text-primary);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
     }
 
     .brand-subtitle {
-      font-size: 13px;
-      color: var(--accent-gold);
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .header-center-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 11.5px;
       font-weight: 700;
-      letter-spacing: 0.3px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      border: 1px solid transparent;
+    }
+    .status-badge-online {
+      background: var(--accent-emerald-bg);
+      color: var(--accent-emerald);
+      border-color: var(--accent-emerald-border);
+    }
+    .status-badge-offline {
+      background: var(--accent-rose-bg);
+      color: var(--accent-rose);
+      border-color: var(--accent-rose-border);
+    }
+    .status-badge-market {
+      background: var(--accent-cyan-bg);
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan-border);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
     }
 
-    /* Connection Status Badge */
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      border: 1px solid transparent;
-    }
-    .status-badge-online {
-      background: rgba(34, 197, 94, 0.12);
-      color: var(--success);
-      border-color: rgba(34, 197, 94, 0.3);
-    }
-    .status-badge-offline {
-      background: rgba(245, 158, 11, 0.12);
-      color: var(--accent-gold);
-      border-color: rgba(245, 158, 11, 0.3);
-    }
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 8px var(--success);
-    }
-
-    /* Market Clock */
-    .market-clock-card {
-      background: var(--bg-surface-secondary);
-      border: 1px solid var(--border-subtle);
+    .market-time-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
       border-radius: var(--radius-btn);
-      padding: 4px 16px;
+      padding: 5px 12px;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -191,19 +251,19 @@
       letter-spacing: 0.5px;
     }
     .clock-val {
-      font-family: monospace;
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
-      font-size: 18px;
-      font-weight: 800;
+      font-feature-settings: 'tnum' 1;
+      font-size: 14px;
+      font-weight: 700;
       color: var(--text-primary);
     }
 
-    /* Header Nav Buttons */
-    .btn-nav {
-      background: var(--bg-surface-secondary);
-      border: 1px solid var(--border);
+    .btn-action {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
       color: var(--text-primary);
-      padding: 8px 14px;
+      padding: 7px 12px;
       border-radius: var(--radius-btn);
       font-size: 12px;
       font-weight: 700;
@@ -212,29 +272,44 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: background 0.15s ease;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
     }
-    .btn-nav:hover {
-      background: var(--bg-elevated);
-      border-color: var(--text-secondary);
+    .btn-action:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+    .btn-action-primary {
+      background: var(--accent-cyan);
+      color: #FFFFFF;
+      border-color: var(--accent-cyan);
+    }
+    .btn-action-primary:hover {
+      background: #0369A1;
+      color: #FFFFFF;
     }
 
-    /* Market Summary Bar */
-    .summary-bar {
+    /* ==========================================================================
+       MARKET SUMMARY ROW
+       ========================================================================== */
+    .summary-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 14px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     .summary-card {
       background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
+      border: 1px solid var(--border-color);
       border-radius: var(--radius-card);
-      padding: 12px 18px;
+      padding: 14px 18px;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-card);
     }
-    .summary-title {
+    .summary-label {
       font-size: 11px;
       font-weight: 700;
       color: var(--text-muted);
@@ -242,357 +317,950 @@
       letter-spacing: 0.5px;
       margin-bottom: 4px;
     }
-    .summary-val {
-      font-size: 22px;
-      font-weight: 900;
+    .summary-value {
+      font-size: 20px;
+      font-weight: 800;
       color: var(--text-primary);
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum' 1;
+    }
+    .summary-subtext {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
     }
 
-    /* Main Grid Layout */
-    .main-grid {
+    /* ==========================================================================
+       MAIN LAYOUT: 4x2 BEVERAGE GRID + SIDEBAR
+       ========================================================================== */
+    .main-layout {
       display: grid;
       grid-template-columns: 1fr 340px;
-      gap: 14px;
+      gap: 16px;
       flex: 1;
       min-height: 0;
     }
 
-    /* Panel Card */
-    .panel-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
+    .main-section-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
       border-radius: var(--radius-card);
-      padding: 20px;
+      padding: 18px 20px;
       display: flex;
       flex-direction: column;
+      box-shadow: var(--shadow-card);
     }
-    .panel-header {
+
+    .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 16px;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .panel-title {
+
+    .section-title {
       font-size: 16px;
-      font-weight: 900;
+      font-weight: 800;
       color: var(--text-primary);
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.4px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .panel-sub {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent-gold);
+
+    .section-meta-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+    .meta-tag {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      padding: 3px 8px;
+      border-radius: 6px;
     }
 
-    /* Exchange Table */
-    .table-container {
+    /* 4x2 GRID */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
       flex: 1;
-      overflow-y: auto;
     }
-    .exchange-table {
+
+    /* PRODUCT CARD */
+    .product-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+      position: relative;
+    }
+    .product-card:hover {
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Product Image Banner */
+    .product-img-wrapper {
+      position: relative;
       width: 100%;
-      border-collapse: collapse;
+      height: 105px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 10px;
     }
-    .exchange-table th {
-      color: var(--text-secondary);
-      font-size: 13px;
+    .product-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .product-img-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.75) 100%);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 6px 8px;
+      pointer-events: none;
+    }
+    .fruit-badge {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #FFFFFF;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .live-indicator-badge {
+      background: rgba(16, 185, 129, 0.9);
+      color: #FFFFFF;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 9.5px;
       font-weight: 800;
-      text-align: left;
-      padding: 12px 16px;
-      background: var(--bg-surface-secondary);
-      border-bottom: 2px solid var(--border);
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Card Details Header */
+    .product-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+    .product-name {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .product-size {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Price Row */
+    .product-price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4px 0 8px 0;
+    }
+    .product-price {
+      font-size: 22px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum' 1;
+      color: var(--text-primary);
+    }
+    .delta-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .delta-surge {
+      background: var(--accent-emerald-bg);
+      color: var(--accent-emerald);
+      border: 1px solid var(--accent-emerald-border);
+    }
+    .delta-decay {
+      background: var(--accent-rose-bg);
+      color: var(--accent-rose);
+      border: 1px solid var(--accent-rose-border);
+    }
+    .delta-stable {
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    /* REAL PRICE HISTORY GRAPH CONTAINER (160px height) */
+    .chart-container-wrapper {
+      position: relative;
+      width: 100%;
+      height: 145px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .chart-header-row {
+      position: absolute;
+      top: 4px; left: 8px; right: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.6px;
-      position: sticky;
-      top: 0;
+      font-family: var(--font-mono);
+      pointer-events: none;
       z-index: 2;
     }
-    .exchange-table td {
-      padding: 16px;
-      border-bottom: 1px solid var(--border-subtle);
-      font-size: 16px;
-      color: var(--text-primary);
-      vertical-align: middle;
-      font-variant-numeric: tabular-nums;
-    }
-    .exchange-table tr {
-      background: var(--bg-surface);
-    }
-    .exchange-table tr:nth-child(even) {
-      background: var(--bg-surface-secondary);
+    .product-chart-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
     }
 
-    /* High-contrast Static Price Styling */
-    .static-price-display {
-      font-size: 32px;
-      font-weight: 900;
-      color: #38BDF8;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.5px;
-      text-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
-    }
-
-    /* Status Pill */
-    .status-pill-fixed {
-      font-size: 12px;
-      font-weight: 800;
-      padding: 6px 12px;
+    /* Chart Hover Tooltip Overlay */
+    .chart-tooltip {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.92);
+      color: #FFFFFF;
+      padding: 6px 10px;
       border-radius: 6px;
-      text-transform: uppercase;
-      background: rgba(56, 189, 248, 0.12);
-      color: #38BDF8;
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      letter-spacing: 0.5px;
-      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      line-height: 1.35;
+      font-family: var(--font-mono);
+      white-space: nowrap;
     }
 
-    /* Side Info & QR Code Card */
-    .info-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-card);
-      padding: 18px;
-      margin-bottom: 14px;
-    }
-    .info-title {
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--accent-gold);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 8px;
-    }
-    .info-detail {
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
-    .info-price-highlight {
-      font-size: 28px;
-      font-weight: 900;
-      color: var(--text-primary);
-      margin: 10px 0;
-    }
-
-    .qr-container {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-card);
-      padding: 20px;
+    /* Empty Chart State */
+    .chart-empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
-      margin-top: auto;
+      padding: 10px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--bg-secondary);
+      z-index: 1;
     }
-    .qr-box {
-      width: 140px;
-      height: 140px;
-      background: #FFFFFF;
-      border-radius: 10px;
-      padding: 8px;
-      margin: 12px auto;
+
+    /* Product Specs Mini-Table */
+    .product-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-bottom: 8px;
+      font-size: 10.5px;
+    }
+    .spec-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .spec-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .spec-val {
+      color: var(--text-primary);
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    /* Card Actions Footer */
+    .card-footer-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .btn-card-action {
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      transition: all 0.15s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      gap: 4px;
     }
-    .qr-box img {
+    .btn-card-action:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+    .btn-card-action-pos {
+      background: var(--accent-cyan-bg);
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan-border);
+    }
+    .btn-card-action-pos:hover {
+      background: var(--accent-cyan);
+      color: #FFFFFF;
+    }
+
+    /* ==========================================================================
+       RIGHT SIDEBAR: MARKET INFO & QR ORDERING
+       ========================================================================== */
+    .sidebar-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .sidebar-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .sidebar-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .info-list-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+    .info-row-label {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    .info-row-val {
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+    }
+
+    /* Market Sentiment Progress Bar */
+    .sentiment-meter-box {
+      margin: 12px 0 6px 0;
+    }
+    .sentiment-bar-track {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-subtle);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      margin-bottom: 6px;
+    }
+    .sentiment-fill-bull {
+      height: 100%;
+      background: var(--accent-emerald);
+      transition: width 0.4s ease;
+    }
+    .sentiment-fill-stable {
+      height: 100%;
+      background: #94A3B8;
+      transition: width 0.4s ease;
+    }
+    .sentiment-fill-bear {
+      height: 100%;
+      background: var(--accent-rose);
+      transition: width 0.4s ease;
+    }
+    .sentiment-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    /* QR Order Box */
+    .qr-card-center {
+      text-align: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      box-shadow: var(--shadow-card);
+    }
+    .qr-img-box {
+      width: 130px;
+      height: 130px;
+      margin: 10px auto;
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-img-box img {
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
 
-    /* Bottom Ticker Bar */
-    .ticker-bar {
-      height: 44px;
+    /* ==========================================================================
+       BOTTOM TICKER BAR
+       ========================================================================== */
+    .bottom-ticker-bar {
+      height: 42px;
       background: var(--bg-surface);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-color);
       border-radius: var(--radius-btn);
-      margin-top: 14px;
+      margin-top: 16px;
       display: flex;
       align-items: center;
       overflow: hidden;
       padding: 0 16px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      box-shadow: var(--shadow-card);
     }
-    .ticker-label {
-      font-size: 12px;
-      font-weight: 900;
-      color: var(--accent-gold);
+    .ticker-prefix {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--accent-cyan);
       text-transform: uppercase;
-      letter-spacing: 0.8px;
-      padding-right: 16px;
-      border-right: 1px solid var(--border-subtle);
+      letter-spacing: 0.5px;
+      padding-right: 14px;
+      border-right: 1px solid var(--border-color);
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .ticker-track {
+    .ticker-viewport {
       flex: 1;
       overflow: hidden;
       white-space: nowrap;
-      padding-left: 16px;
+      padding-left: 14px;
     }
-    .ticker-content {
+    .ticker-scroll-content {
       display: inline-block;
       white-space: nowrap;
-      animation: tickerMarquee 30s linear infinite;
+      animation: marqueeAnimation 30s linear infinite;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
     }
-    @keyframes tickerMarquee {
+    @keyframes marqueeAnimation {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
-    .ticker-item {
+    .ticker-item-span {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      margin-right: 32px;
-      font-size: 14px;
+      gap: 6px;
+      margin-right: 28px;
+      font-size: 12.5px;
       font-weight: 700;
+    }
+
+    /* ==========================================================================
+       FULL-SIZE PRODUCT DETAILS MODAL
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+    .modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-modal);
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .modal-chart-box {
+      width: 100%;
+      height: 240px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      position: relative;
+      padding: 8px;
+    }
+    .modal-close-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .modal-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+    }
+    .modal-table th, .modal-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      text-align: left;
+    }
+    .modal-table th {
+      color: var(--text-muted);
+      font-weight: 700;
+      background: var(--bg-secondary);
+    }
+
+    /* Market Crash Overlay */
+    .crash-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(220, 38, 38, 0.9);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      color: #FFFFFF;
+      text-align: center;
+      padding: 20px;
+    }
+    .crash-box {
+      background: #0F172A;
+      border: 2px solid #EF4444;
+      border-radius: 16px;
+      padding: 32px 48px;
+      max-width: 600px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1360px) {
+      .product-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-row { grid-template-columns: repeat(2, 1fr); }
+      .main-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .product-grid { grid-template-columns: 1fr; }
+      .summary-row { grid-template-columns: 1fr; }
+      .top-header { flex-direction: column; align-items: stretch; }
+      .header-actions { justify-content: space-between; flex-wrap: wrap; }
     }
   </style>
 </head>
-<body class="dark-theme-mode">
+<body>
 
-  <!-- Top Header Banner -->
+  <!-- Full-Screen Market Crash Alert Overlay -->
+  <div id="crashOverlay" class="crash-overlay">
+    <div class="crash-box">
+      <div style="font-size: 48px; margin-bottom: 12px;">🚨</div>
+      <h1 style="font-size: 28px; font-weight: 900; color: #EF4444;">MARKET CRASH IN PROGRESS</h1>
+      <p style="font-size: 16px; margin: 10px 0; color: #F8FAFC;">
+        All drink prices reduced to Absolute Floor: <span style="color: #FACC15; font-size: 22px; font-weight: 800;">₹18.00</span>
+      </p>
+      <div id="crashTimerText" style="font-size: 48px; font-family: var(--font-mono); font-weight: 900; color: #FACC15; margin: 12px 0;">03:00</div>
+      <p style="font-size: 13px; color: #94A3B8;">Prices will reset to DWMA recalculation when timer expires.</p>
+    </div>
+  </div>
+
+  <!-- Product Details Modal -->
+  <div id="productDetailModal" class="modal-overlay" onclick="closeProductModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span id="modalFruitIcon" style="font-size: 24px;">🍹</span>
+          <div>
+            <div id="modalProductName" style="font-size: 17px; font-weight: 800; color: var(--text-primary);">Product Details</div>
+            <div id="modalProductFlavour" style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">250 ml standard cup</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeProductModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+          <div class="summary-card" style="padding: 10px 14px;">
+            <div class="summary-label">Current Price</div>
+            <div class="summary-value" id="modalCurrentPrice" style="color: var(--accent-cyan); font-size: 18px;">₹25.00</div>
+          </div>
+          <div class="summary-card" style="padding: 10px 14px;">
+            <div class="summary-label">Base Rate</div>
+            <div class="summary-value" style="font-size: 18px;">₹25.00</div>
+          </div>
+          <div class="summary-card" style="padding: 10px 14px;">
+            <div class="summary-label">Floor / Ceiling</div>
+            <div class="summary-value" style="font-size: 16px;">₹18 / ₹35</div>
+          </div>
+          <div class="summary-card" style="padding: 10px 14px;">
+            <div class="summary-label">Target Demand</div>
+            <div class="summary-value" id="modalTargetDemand" style="font-size: 16px;">1.0 cups/min</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+            Full Historical Price Trajectory (PostgreSQL Audit Log)
+          </div>
+          <div class="modal-chart-box">
+            <canvas id="modalChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+            Recent Settlements (1-Min DWMA Engine)
+          </div>
+          <div style="max-height: 160px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px;">
+            <table class="modal-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Price</th>
+                  <th>Change</th>
+                  <th>Reason / Trigger</th>
+                </tr>
+              </thead>
+              <tbody id="modalSettlementTableBody">
+                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading audit history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Header -->
   <header class="top-header">
     <div class="brand-section">
-      <div class="brand-logo">🍹</div>
+      <div class="brand-logo-icon">🍹</div>
       <div>
         <div class="brand-title">NOIDA PUB EXCHANGE</div>
-        <div class="brand-subtitle">Beverage Stock Market LED Ticker Node</div>
+        <div class="brand-subtitle">Beverage Stock Market &bull; LED Ticker Node</div>
       </div>
     </div>
 
-    <div class="header-actions">
-      <!-- Connection Status -->
+    <div class="header-center-status">
       <span id="backendStatusBadge" class="status-badge status-badge-online">
         <span class="status-dot"></span>
-        <span id="backendStatusText">● BACKEND ONLINE (8088)</span>
+        <span id="backendStatusText">BACKEND ONLINE (8088)</span>
       </span>
+      <span class="status-badge status-badge-market">
+        <span class="status-dot"></span>
+        <span id="marketStateText">MARKET OPEN (1-MIN DWMA)</span>
+      </span>
+    </div>
 
-      <!-- Market Clock -->
-      <div class="market-clock-card">
+    <div class="header-actions">
+      <div class="market-time-card">
         <span class="clock-label">Market Time</span>
-        <span class="clock-val" id="liveClockDisplay">16:26:45 LIVE</span>
+        <span class="clock-val" id="liveClockDisplay">--:--:-- LIVE</span>
       </div>
 
-      <!-- Controls -->
-      <button id="themeToggleBtnLED" onclick="toggleThemeMode()" class="btn-nav">
-        🌙 Theme: Dark
+      <button class="btn-action" id="themeToggleBtn" onclick="toggleTheme()">
+        ☀️ Theme: Light
       </button>
-      <button class="btn-nav" onclick="toggleFullScreen()" title="Toggle Fullscreen Mode">
+      <button class="btn-action" onclick="toggleFullScreen()" title="Fullscreen Mode">
         ⛶ Fullscreen
       </button>
-      <a href="http://localhost:8000/" target="_blank" class="btn-nav">
+      <a href="http://localhost:8000/" target="_blank" class="btn-action btn-action-primary">
         🛒 Open POS
       </a>
-      <a href="http://localhost:8001/" target="_blank" class="btn-nav">
+      <a href="http://localhost:8001/" target="_blank" class="btn-action">
         ⚙️ Admin Panel
       </a>
     </div>
   </header>
 
-  <!-- Market Summary Bar -->
-  <div class="summary-bar">
+  <!-- Market Summary Row -->
+  <div class="summary-row">
     <div class="summary-card">
-      <span class="summary-title">Active Beverages</span>
-      <span class="summary-val" id="sumActiveCount">8 Products</span>
+      <div>
+        <div class="summary-label">Active Beverages</div>
+        <div class="summary-value" id="sumActiveBeverages">8 Products</div>
+      </div>
+      <div class="summary-subtext">Tradable securities on floor</div>
     </div>
+
     <div class="summary-card">
-      <span class="summary-title">Market Base</span>
-      <span class="summary-val" style="color: #38BDF8;">₹25.00</span>
+      <div>
+        <div class="summary-label">Market Base Rate</div>
+        <div class="summary-value" id="sumMarketBaseRate" style="color: var(--accent-cyan);">₹25.00</div>
+      </div>
+      <div class="summary-subtext" id="sumMarketBaseRateSubtext">Floor: ₹18.00 &bull; Ceiling: ₹35.00</div>
     </div>
+
     <div class="summary-card">
-      <span class="summary-title">Market Mode</span>
-      <span class="summary-val" style="color: #10B981;" id="engineModeBadge">🟢 1-Min Settlement Cycle</span>
+      <div>
+        <div class="summary-label">Market Engine</div>
+        <div class="summary-value" id="sumEngineMode" style="color: var(--accent-emerald);">1-Min DWMA</div>
+      </div>
+      <div class="summary-subtext" id="sumEngineSubtext">W0=1.00 &bull; W1=0.50 &bull; W2=0.25 &bull; Normal Movement: &plusmn;₹1</div>
     </div>
+
     <div class="summary-card">
-      <span class="summary-title">Average Price</span>
-      <span class="summary-val" id="sumAvgPrice">₹25.00</span>
+      <div>
+        <div class="summary-label">Market Sentiment</div>
+        <div class="summary-value" id="sumSentimentText" style="font-size: 17px;">Calculating...</div>
+      </div>
+      <div class="summary-subtext" id="sumSentimentBreakdown">Real product delta index</div>
     </div>
   </div>
 
-  <div class="main-grid">
-    <!-- Main Exchange Board -->
-    <div class="panel-card">
-      <div class="panel-header">
+  <!-- Main Layout -->
+  <div class="main-layout">
+    
+    <!-- Main 4x2 Beverage Market Area -->
+    <div class="main-section-card">
+      <div class="section-header">
         <div>
-          <div class="panel-title">📊 Beverage Stock Market LED Board</div>
-          <div class="panel-sub">LIVE TICKER MODE &bull; 1-MINUTE DYNAMIC SETTLEMENT ENGINE</div>
+          <div class="section-title">📊 Live Beverage Market</div>
+          <div id="sectionSubtitle" style="font-size: 11.5px; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
+            REAL-TIME 1-MINUTE DWMA PRICING &bull; INDEPENDENT PRODUCT HISTORIES
+          </div>
         </div>
-        <div style="font-size: 13px; font-weight: 800; color: #38BDF8;">
-          Base Rate: ₹25.00
+        <div class="section-meta-badges">
+          <span class="meta-tag" id="metaBaseRate">Base: ₹25.00</span>
+          <span class="meta-tag" id="metaFloorLimit">Floor: ₹18.00</span>
+          <span class="meta-tag" id="metaCeilingLimit">Ceiling: ₹35.00</span>
+          <span class="meta-tag" id="metaSettlementTag">Settlement: 1 min</span>
+          <span class="meta-tag" id="metaDownStep">Down Step: ₹1.00</span>
         </div>
       </div>
 
-      <div class="table-container">
-        <table class="exchange-table">
-          <thead>
-            <tr>
-              <th>Beverage</th>
-              <th>Unit Size</th>
-              <th>Current Price</th>
-              <th>Market Status</th>
-            </tr>
-          </thead>
-          <tbody id="exchangeBoardBody">
-            <!-- Rendered statically -->
-          </tbody>
-        </table>
+      <!-- 4x2 Grid Container -->
+      <div class="product-grid" id="productGridContainer">
+        <!-- Rendered dynamically with real Canvas Price History Charts -->
       </div>
     </div>
 
-    <!-- Static Market Overview & QR Ordering -->
-    <div style="display: flex; flex-direction: column; gap: 14px;">
-      <div class="panel-card" style="flex: 1;">
-        <div class="panel-header">
-          <div class="panel-title">📌 Market Info</div>
-          <div class="panel-sub">LED Ticker Overview</div>
+    <!-- Right Sidebar -->
+    <div class="sidebar-wrapper">
+      
+      <!-- Market Overview Card -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">
+          <span>📌 Market Overview</span>
         </div>
-
-        <div class="info-card">
-          <div class="info-title">Base Exchange Price</div>
-          <div class="info-price-highlight" style="color: #38BDF8;">₹25.00</div>
-          <div class="info-detail">
-            All active juices start at ₹25 base, dynamically adjusting between ₹18 (Floor) and ₹35 (Ceiling) based on authoritative 1-minute DWMA sales demand.
+        <div class="info-list-group">
+          <div class="info-row">
+            <span class="info-row-label">Base Exchange Price</span>
+            <span class="info-row-val" id="sidebarBasePrice">₹25.00</span>
           </div>
-        </div>
-
-        <div class="info-card">
-          <div class="info-title">Trading Engine Status</div>
-          <div class="info-detail" style="font-weight: 700; color: var(--text-primary);">
-            LED Node Display Only (Read-Only Mode)
+          <div class="info-row">
+            <span class="info-row-label">Floor Limit</span>
+            <span class="info-row-val" id="sidebarFloorLimit" style="color: var(--accent-rose);">₹18.00</span>
           </div>
-        </div>
-
-        <!-- QR Order Container -->
-        <div class="qr-container">
-          <div style="font-size: 15px; font-weight: 900; color: var(--text-primary);">ORDER FROM YOUR TABLE</div>
-          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Scan to open customer POS terminal</div>
-          <div class="qr-box">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://localhost:8000" alt="Scan to Order POS" />
+          <div class="info-row">
+            <span class="info-row-label">Ceiling Limit</span>
+            <span class="info-row-val" id="sidebarCeilingLimit" style="color: var(--accent-emerald);">₹35.00</span>
           </div>
-          <div style="font-size: 12px; font-weight: 800; font-family: monospace; color: #38BDF8;">http://localhost:8000</div>
+          <div class="info-row">
+            <span class="info-row-label">Settlement Cycle</span>
+            <span class="info-row-val" id="sidebarSettlementCycle">1 Minute (DWMA)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row-label">Downward Step</span>
+            <span class="info-row-val" id="sidebarDownStep">₹4.00</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row-label">Last Synchronization</span>
+            <span class="info-row-val" id="sidebarLastSyncTime">--:--:--</span>
+          </div>
         </div>
       </div>
+
+      <!-- Live Market Sentiment Card -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">
+          <span>📈 Live Market Sentiment</span>
+        </div>
+        <div class="sentiment-meter-box">
+          <div class="sentiment-bar-track">
+            <div id="sentimentBarBull" class="sentiment-fill-bull" style="width: 33%;"></div>
+            <div id="sentimentBarStable" class="sentiment-fill-stable" style="width: 34%;"></div>
+            <div id="sentimentBarBear" class="sentiment-fill-bear" style="width: 33%;"></div>
+          </div>
+          <div class="sentiment-legend">
+            <span id="sentimentCountBull" style="color: var(--accent-emerald);">0 ↑ Rising</span>
+            <span id="sentimentCountStable" style="color: var(--text-muted);">8 → Stable</span>
+            <span id="sentimentCountBear" style="color: var(--accent-rose);">0 ↓ Falling</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Movement Rules Card -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">
+          <span>⚡ Movement Rules</span>
+        </div>
+        <div class="info-list-group" style="font-size: 11.5px; font-family: var(--font-mono);">
+          <div class="info-row">
+            <span style="color: var(--accent-emerald);">▲ High Demand</span>
+            <span id="ruleHighSurge" style="color: var(--accent-emerald); font-weight: 700;">+₹1.00 Surge</span>
+          </div>
+          <div class="info-row">
+            <span style="color: var(--text-muted);">— Normal Demand</span>
+            <span style="color: var(--text-muted); font-weight: 700;">₹0.00 Stable</span>
+          </div>
+          <div class="info-row">
+            <span style="color: var(--accent-rose);">▼ Low Demand</span>
+            <span id="ruleLowDecay" style="color: var(--accent-rose); font-weight: 700;">-₹1.00 Decay</span>
+          </div>
+          <div class="info-row">
+            <span style="color: #D97706;">🚨 Market Crash</span>
+            <span id="ruleCrashFloor" style="color: #D97706; font-weight: 700;">₹18.00 Floor</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR Order Card -->
+      <div class="qr-card-center">
+        <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">ORDER FROM TABLE</div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Scan with mobile to open POS</div>
+        <div class="qr-img-box">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://localhost:8000" alt="Scan to Order POS" />
+        </div>
+        <div style="font-size: 11.5px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan);">
+          http://localhost:8000
+        </div>
+      </div>
+
     </div>
   </div>
 
   <!-- Bottom Ticker Bar -->
-  <div class="ticker-bar">
-    <div class="ticker-label">Live LED Ticker</div>
-    <div class="ticker-track">
-      <div class="ticker-content" id="bottomTickerTrack">
-        <!-- Rendered statically -->
+  <div class="bottom-ticker-bar">
+    <div class="ticker-prefix">
+      <span>⚡ LIVE TICKER</span>
+    </div>
+    <div class="ticker-viewport">
+      <div class="ticker-scroll-content" id="bottomTickerTrack">
+        <!-- Rendered dynamically -->
       </div>
     </div>
   </div>
 
+  <!-- Chart Hover Tooltip Element -->
+  <div id="chartTooltip" class="chart-tooltip"></div>
+
   <script>
+    /* ==========================================================================
+       CONFIGURATION & STATE MANAGEMENT
+       ========================================================================== */
+    const CONFIG = {
+      API_BASE_URL: 'http://localhost:8088/api',
+      WS_URL: 'http://localhost:8088/ws'
+    };
+
+    let currentTheme = localStorage.getItem('pubexchange_theme') || 'light';
+    let products = [];
+    let priceHistoryMap = {}; // Maps productId -> Array of { timestamp, price, priceChange, reason }
+    let isMarketCrashActive = false;
+    let crashRemainingSeconds = 0;
+    let crashTimerInterval = null;
+    let stompClient = null;
+    let isReconnectingWS = false;
+    let activeModalProductId = null;
+
     const fruitIcons = {
       1: '🥭',
       2: '🍋',
@@ -600,9 +1268,35 @@
       4: '🍊',
       5: '🍓',
       6: '🍇',
-      7: '⚡',
-      23: '🍹'
+      7: '🍈',
+      23: '⚡'
     };
+
+    const beverageImages = {
+      1: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=600&auto=format&fit=crop&q=80', // Mango
+      2: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&auto=format&fit=crop&q=80', // Lemon
+      3: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop&q=80', // Mint
+      4: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=600&auto=format&fit=crop&q=80', // Orange
+      5: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&auto=format&fit=crop&q=80', // Strawberry
+      6: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=600&auto=format&fit=crop&q=80', // Grape
+      7: 'https://images.unsplash.com/photo-1560512823-829485b8bf24?w=600&auto=format&fit=crop&q=80', // Lychee
+      23: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&auto=format&fit=crop&q=80' // Thunder
+    };
+
+    function getBeverageImage(p) {
+      if (!p) return beverageImages[1];
+      if (beverageImages[p.id]) return beverageImages[p.id];
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return beverageImages[1];
+      if (f.includes('LEMON')) return beverageImages[2];
+      if (f.includes('MINT')) return beverageImages[3];
+      if (f.includes('ORANGE')) return beverageImages[4];
+      if (f.includes('STRAWBERRY')) return beverageImages[5];
+      if (f.includes('GRAPE')) return beverageImages[6];
+      if (f.includes('LYCHEE')) return beverageImages[7];
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return beverageImages[23];
+      return beverageImages[1];
+    }
 
     function getFruitIcon(p) {
       if (!p) return '🍹';
@@ -615,26 +1309,58 @@
       if (f.includes('GRAPE')) return '🍇';
       if (f.includes('STRAWBERRY')) return '🍓';
       if (f.includes('THUNDER') || f.includes('ENERGY')) return '⚡';
-      if (f.includes('LYCHEE')) return '🍹';
-      if (f.includes('PINEAPPLE')) return '🍍';
-      if (f.includes('APPLE')) return '🍏';
-      if (f.includes('WATERMELON')) return '🍉';
-      if (f.includes('PEACH')) return '🍑';
-      if (f.includes('BERRY')) return '🫐';
-      if (f.includes('KIWI')) return '🥝';
+      if (f.includes('LYCHEE')) return '🍈';
       return '🍹';
     }
 
-    let products = [
-      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 },
-      { id: 23, name: 'Thunder', flavour: 'THUNDER', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25 }
-    ];
+    function getCleanFlavourName(p) {
+      if (!p) return 'Juice';
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return 'Mango';
+      if (f.includes('LEMON')) return 'Lemon';
+      if (f.includes('MINT')) return 'Mint Cooler';
+      if (f.includes('ORANGE')) return 'Orange';
+      if (f.includes('STRAWBERRY')) return 'Strawberry';
+      if (f.includes('GRAPE')) return 'Grape';
+      if (f.includes('LYCHEE')) return 'Lychee';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return 'Thunder';
+      return (p.flavour || p.name || 'Juice').replace(/_/g, ' ');
+    }
+
+    /* ==========================================================================
+       THEME CONTROLLER
+       ========================================================================== */
+    function applyTheme(theme) {
+      currentTheme = theme;
+      localStorage.setItem('pubexchange_theme', theme);
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') {
+        document.body.classList.add('dark-theme-mode');
+      } else {
+        document.body.classList.remove('dark-theme-mode');
+      }
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) {
+        btn.textContent = theme === 'dark' ? '🌙 Theme: Dark' : '☀️ Theme: Light';
+      }
+      // Re-render charts with correct theme colors
+      renderAllCharts();
+      if (activeModalProductId) renderModalChart(activeModalProductId);
+    }
+
+    function toggleTheme() {
+      applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    }
+
+    applyTheme(currentTheme);
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
 
     function updateClock() {
       const now = new Date();
@@ -642,198 +1368,146 @@
       const clockEl = document.getElementById('liveClockDisplay');
       if (clockEl) clockEl.textContent = `${timeStr} LIVE`;
     }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-    function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {});
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-      }
-    }
-
-    const CONFIG = {
-      API_BASE_URL: 'http://localhost:8088/api',
-      WS_URL: 'http://localhost:8088/ws'
+    let currentPricingTiming = {
+      intervalSeconds: 60,
+      label: '1 Minute',
+      shortLabel: '1-Min',
+      nextSettlementAt: null
     };
 
-    let isMarketCrashActive = false;
-    let crashRemainingSeconds = 0;
-    let stompClient = null;
-    let isReconnectingWS = false;
+    let currentPricingConfig = null;
 
-    const pubExchangeChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
-    const marketChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_market_channel') : null;
-    if (pubExchangeChannel) pubExchangeChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
-    if (marketChannel) marketChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
-
-    window.addEventListener('message', (event) => {
-      if (event.data && event.data.type) {
-        handleCrossPanelEvent(event.data);
-      }
-    });
-
-    window.addEventListener('storage', (e) => {
-      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event') && e.newValue) {
-        try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) {}
-      }
-    });
-
-    function handleCrossPanelEvent(msg) {
-      if (!msg || !msg.type) return;
-      if (msg.type === 'NEW_FLAVOUR_ADDED' || msg.type === 'PRODUCT_PRICE_UPDATE' || msg.type === 'BATCH_PRODUCT_PRICE_UPDATED' || msg.type === 'PRICE_ENGINE_RUN' || msg.type === 'BATCH_UPDATED' || msg.type === 'PRICES_RECALCULATED' || msg.type === 'REFRESH_PRODUCTS') {
-        fetchProductList();
-      } else if (msg.type === 'MARKET_CRASH_TRIGGER' || msg.type === 'MARKET_CRASH_START') {
-        isMarketCrashActive = true;
-        crashRemainingSeconds = msg.payload?.durationSeconds || 180;
-        renderExchangeBoard();
-      } else if (msg.type === 'MARKET_CRASH_STOP') {
-        isMarketCrashActive = false;
-        renderExchangeBoard();
-      }
-    }
-
-    async function checkBackendHealth() {
-      const badge = document.getElementById('backendStatusBadge');
-      const text = document.getElementById('backendStatusText');
-      if (!badge || !text) return;
-
+    async function fetchPricingTiming() {
       try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/health`);
-        if (res.ok) {
-          badge.className = 'status-badge status-badge-online';
-          text.textContent = '● BACKEND ONLINE (8088)';
-        } else {
-          badge.className = 'status-badge status-badge-offline';
-          text.textContent = '● BACKEND OFFLINE';
-        }
-      } catch (err) {
-        badge.className = 'status-badge status-badge-offline';
-        text.textContent = '● BACKEND OFFLINE';
-      }
-    }
-
-    async function checkMarketCrashStatus() {
-      try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/market-crash/status`);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/timing`);
         if (res.ok) {
           const data = await res.json();
-          isMarketCrashActive = data.active;
-          crashRemainingSeconds = data.remainingSeconds || 0;
-          renderExchangeBoard();
+          updatePricingTimingState(data);
         }
-      } catch (err) {}
+      } catch (e) {}
     }
 
-    function renderExchangeBoard() {
-      const body = document.getElementById('exchangeBoardBody');
-      if (!body) return;
-
-      let totalPrices = 0;
-      let count = products.length;
-
-      body.innerHTML = products.map(p => {
-        const icon = getFruitIcon(p);
-        const name = p.name || p.flavour || 'Juice';
-        const cupSize = p.defaultCupSizeMl || 250;
-
-        const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 25)).toFixed(2);
-        const baseP = Number(p.basePrice || p.defaultCupPrice || 25).toFixed(2);
-        const diff = Number(activePrice) - Number(baseP);
-        const pct = baseP > 0 ? (((Number(activePrice) - Number(baseP)) / Number(baseP)) * 100).toFixed(1) : 0;
-        totalPrices += Number(activePrice);
-
-        let badgeHtml = `<span class="status-pill-stable" style="padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 12px; background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.25); font-variant-numeric: tabular-nums;">— ₹0 (₹${baseP})</span>`;
-        
-        if (isMarketCrashActive) {
-          badgeHtml = `<span class="status-pill-down" style="padding: 5px 12px; border-radius: 20px; font-weight: 900; font-size: 12px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; box-shadow: 0 0 12px rgba(239,68,68,0.5); font-variant-numeric: tabular-nums;">🚨 CRASH (₹${activePrice})</span>`;
-        } else if (diff > 0) {
-          badgeHtml = `<span class="status-pill-up" style="padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 12px; background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.35); box-shadow: 0 0 10px rgba(16,185,129,0.2); font-variant-numeric: tabular-nums;">▲ +₹${diff.toFixed(2)} (+${pct}%)</span>`;
-        } else if (diff < 0) {
-          badgeHtml = `<span class="status-pill-down" style="padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 12px; background: rgba(244,63,94,0.15); color: #f43f5e; border: 1px solid rgba(244,63,94,0.35); box-shadow: 0 0 10px rgba(244,63,94,0.2); font-variant-numeric: tabular-nums;">▼ -₹${Math.abs(diff).toFixed(2)} (${pct}%)</span>`;
+    async function fetchPricingConfiguration() {
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/config`);
+        if (res.ok) {
+          const config = await res.json();
+          applyPricingConfiguration(config);
         }
+      } catch (e) {}
+    }
 
-        const priceColor = isMarketCrashActive ? '#ef4444' : (diff > 0 ? '#10b981' : (diff < 0 ? '#f43f5e' : '#38bdf8'));
+    function applyPricingConfiguration(config) {
+      if (!config) return;
+      currentPricingConfig = config;
+      const g = config.global || config;
 
-        return `
-          <tr>
-            <td style="font-weight: 800; font-size: 18px; color: var(--text-primary);">${icon} ${name}</td>
-            <td style="color: var(--text-secondary); font-size: 14px; font-weight: 600;">${cupSize} ml</td>
-            <td style="font-size: 24px; font-weight: 900; font-family: monospace; font-variant-numeric: tabular-nums; color: ${priceColor};">₹${activePrice}</td>
-            <td>${badgeHtml}</td>
-          </tr>
-        `;
-      }).join('');
+      const basePrice = g.defaultCupPrice !== undefined ? Number(g.defaultCupPrice).toFixed(2) : '25.00';
+      const minPrice = g.minCupPrice !== undefined ? Number(g.minCupPrice).toFixed(2) : '18.00';
+      const maxPrice = g.maxCupPrice !== undefined ? Number(g.maxCupPrice).toFixed(2) : '35.00';
+      const w0 = g.weightW0 !== undefined ? Number(g.weightW0).toFixed(2) : '1.00';
+      const w1 = g.weightW1 !== undefined ? Number(g.weightW1).toFixed(2) : '0.50';
+      const w2 = g.weightW2 !== undefined ? Number(g.weightW2).toFixed(2) : '0.25';
+      const downStep = g.priceDecreaseStep || g.decreaseStep1 || 4.00;
+      const incStep = g.increaseStep || 1.00;
+      const crashFloor = g.marketCrashPrice !== undefined ? Number(g.marketCrashPrice).toFixed(2) : '18.00';
 
-      // Update Summary Bar count
-      const activeEl = document.getElementById('sumActiveCount');
-      if (activeEl) activeEl.textContent = `${count} Products`;
+      const sumBaseRate = document.getElementById('sumMarketBaseRate');
+      if (sumBaseRate) sumBaseRate.textContent = `₹${basePrice}`;
 
-      const avgPrice = count > 0 ? Math.round(totalPrices / count) : 25;
-      const avgEl = document.getElementById('sumAvgPrice');
-      if (avgEl) avgEl.textContent = `Avg ₹${avgPrice}`;
+      const sumBaseRateSubtext = document.getElementById('sumMarketBaseRateSubtext');
+      if (sumBaseRateSubtext) sumBaseRateSubtext.innerHTML = `Floor: ₹${minPrice} &bull; Ceiling: ₹${maxPrice}`;
 
-      const modeBadge = document.getElementById('engineModeBadge');
-      if (modeBadge) {
-        if (isMarketCrashActive) {
-          modeBadge.style.background = 'rgba(239,68,68,0.2)';
-          modeBadge.style.color = '#ef4444';
-          modeBadge.style.borderColor = 'rgba(239,68,68,0.4)';
-          modeBadge.textContent = '🚨 MARKET CRASH ACTIVE';
-        } else {
-          modeBadge.style.background = 'rgba(34,197,94,0.15)';
-          modeBadge.style.color = '#22c55e';
-          modeBadge.style.borderColor = 'rgba(34,197,94,0.3)';
-          modeBadge.textContent = '🟢 LIVE DYNAMIC ENGINE';
-        }
-      }
+      const sumEngineSubtext = document.getElementById('sumEngineSubtext');
+      if (sumEngineSubtext) sumEngineSubtext.innerHTML = `W0=${w0} &bull; W1=${w1} &bull; W2=${w2} &bull; Normal Movement: &plusmn;₹${Number(incStep).toFixed(0)}`;
 
-      // Update Bottom Ticker Marquee Track
-      const track = document.getElementById('bottomTickerTrack');
-      if (track) {
-        const tickerHtml = products.map(p => {
-          const icon = getFruitIcon(p);
-          const flavour = (p.name || p.flavour || 'JUICE').toUpperCase();
-          const activePrice = Math.round(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || p.currentPrice || 20));
-          const baseP = Math.round(p.basePrice || p.defaultCupPrice || 20);
-          const diff = activePrice - baseP;
-          const pct = Math.round(((activePrice - baseP) / baseP) * 100);
+      const metaBaseRate = document.getElementById('metaBaseRate');
+      if (metaBaseRate) metaBaseRate.textContent = `Base: ₹${basePrice}`;
 
-          let priceColor = '#38bdf8';
-          let signBadge = `<span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.25);">— ₹0</span>`;
-          if (isMarketCrashActive) {
-            priceColor = '#ef4444';
-            signBadge = `<span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; box-shadow: 0 0 8px rgba(239,68,68,0.5);">🚨 CRASH</span>`;
-          } else if (diff > 0) {
-            priceColor = '#10b981';
-            signBadge = `<span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.35); box-shadow: 0 0 8px rgba(16,185,129,0.2);">▲ +₹${diff.toFixed(2)}</span>`;
-          } else if (diff < 0) {
-            priceColor = '#f43f5e';
-            signBadge = `<span style="font-size: 11px; padding: 2px 7px; border-radius: 12px; background: rgba(244,63,94,0.15); color: #f43f5e; border: 1px solid rgba(244,63,94,0.35); box-shadow: 0 0 8px rgba(244,63,94,0.2);">▼ -₹${Math.abs(diff).toFixed(2)}</span>`;
-          }
+      const metaFloorLimit = document.getElementById('metaFloorLimit');
+      if (metaFloorLimit) metaFloorLimit.textContent = `Floor: ₹${minPrice}`;
 
-          return `
-            <span class="ticker-item" style="font-variant-numeric: tabular-nums;">
-              <span style="color: var(--text-primary); font-size: 14px; font-weight: 800;">${icon} ${flavour}:</span>
-              <span style="color: ${priceColor}; font-size: 15px; font-weight: 900; font-family: monospace;">₹${activePrice}</span>
-              ${signBadge}
-            </span>
-          `;
-        }).join(' &nbsp;&bull;&nbsp; ');
-        
-        track.innerHTML = `${tickerHtml} &nbsp;&bull;&nbsp; ${tickerHtml}`;
+      const metaCeilingLimit = document.getElementById('metaCeilingLimit');
+      if (metaCeilingLimit) metaCeilingLimit.textContent = `Ceiling: ₹${maxPrice}`;
+
+      const metaDownStep = document.getElementById('metaDownStep');
+      if (metaDownStep) metaDownStep.textContent = `Down Step: ₹${Number(downStep).toFixed(2)}`;
+
+      const sidebarBasePrice = document.getElementById('sidebarBasePrice');
+      if (sidebarBasePrice) sidebarBasePrice.textContent = `₹${basePrice}`;
+
+      const sidebarFloorLimit = document.getElementById('sidebarFloorLimit');
+      if (sidebarFloorLimit) sidebarFloorLimit.textContent = `₹${minPrice}`;
+
+      const sidebarCeilingLimit = document.getElementById('sidebarCeilingLimit');
+      if (sidebarCeilingLimit) sidebarCeilingLimit.textContent = `₹${maxPrice}`;
+
+      const sidebarDownStep = document.getElementById('sidebarDownStep');
+      if (sidebarDownStep) sidebarDownStep.textContent = `₹${Number(downStep).toFixed(2)}`;
+
+      const ruleHighSurge = document.getElementById('ruleHighSurge');
+      if (ruleHighSurge) ruleHighSurge.textContent = `+₹${Number(incStep).toFixed(2)} Surge`;
+
+      const ruleLowDecay = document.getElementById('ruleLowDecay');
+      if (ruleLowDecay) ruleLowDecay.textContent = `-₹${Number(downStep).toFixed(2)} Decay`;
+
+      const ruleCrashFloor = document.getElementById('ruleCrashFloor');
+      if (ruleCrashFloor) ruleCrashFloor.textContent = `₹${crashFloor} Floor`;
+
+      if (config.global && config.global.settlementIntervalSeconds) {
+        updatePricingTimingState(config.global);
       }
     }
 
+    function updatePricingTimingState(timing) {
+      if (!timing) return;
+      const sec = timing.intervalSeconds || 60;
+      const label = timing.label || (sec + ' Seconds');
+      const shortLabel = sec === 30 ? '30-Sec' : (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`);
+
+      currentPricingTiming = {
+        intervalSeconds: sec,
+        label: label,
+        shortLabel: shortLabel,
+        nextSettlementAt: timing.nextSettlementAt
+      };
+
+      const marketStateText = document.getElementById('marketStateText');
+      if (marketStateText) marketStateText.textContent = `MARKET OPEN (${shortLabel.toUpperCase()} DWMA)`;
+
+      const sumEngineMode = document.getElementById('sumEngineMode');
+      if (sumEngineMode) sumEngineMode.textContent = `${shortLabel} DWMA`;
+
+      const metaSettlementTag = document.getElementById('metaSettlementTag');
+      if (metaSettlementTag) metaSettlementTag.textContent = `Settlement: ${shortLabel.toLowerCase()}`;
+
+      const sidebarSettlementCycle = document.getElementById('sidebarSettlementCycle');
+      if (sidebarSettlementCycle) sidebarSettlementCycle.textContent = `${label} (DWMA)`;
+
+      const sectionSubtitle = document.getElementById('sectionSubtitle');
+      if (sectionSubtitle) sectionSubtitle.textContent = `REAL-TIME ${label.toUpperCase()} DWMA PRICING • INDEPENDENT PRODUCT HISTORIES`;
+
+      renderAllCharts();
+    }
+
+    /* ==========================================================================
+       DATA FETCHING & POSTGRESQL PRICE HISTORY INTEGRATION
+       ========================================================================== */
     function normalizeProduct(p) {
       if (!p) return null;
       const id = p.id || p.beverageId || p.productId;
-      const currentCupPrice = p.currentCupPrice !== undefined ? Math.round(p.currentCupPrice) : (p.currentPrice !== undefined ? Math.round(p.currentPrice) : 25);
-      const minCupPrice = p.minCupPrice !== undefined ? Math.round(p.minCupPrice) : (p.minPrice !== undefined ? Math.round(p.minPrice) : 18);
-      const maxCupPrice = p.maxCupPrice !== undefined ? Math.round(p.maxCupPrice) : (p.maxPrice !== undefined ? Math.round(p.maxPrice) : 35);
-      const basePrice = p.basePrice !== undefined ? Math.round(p.basePrice) : (p.defaultCupPrice !== undefined ? Math.round(p.defaultCupPrice) : 25);
+      const currentCupPrice = p.currentCupPrice !== undefined ? Number(p.currentCupPrice) : (p.currentPrice !== undefined ? Number(p.currentPrice) : 25);
+      const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : 18);
+      const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 35);
+      const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25);
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
       const flavour = p.flavour || p.name || 'JUICE';
+      const targetSalesPer1Minute = p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : (p.targetSalesPer2Minute ? (p.targetSalesPer2Minute / 2).toFixed(2) : 0.5);
+      const pricingMode = p.pricingMode || 'DYNAMIC';
 
       return {
         ...p,
@@ -844,81 +1518,717 @@
         basePrice,
         defaultCupSizeMl,
         name,
-        flavour
+        flavour,
+        targetSalesPer1Minute,
+        pricingMode
       };
     }
 
-    async function fetchProductList() {
+    // Fetch All 8 Products
+    async function fetchProducts() {
       try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/pos/products`);
         if (res.ok) {
           const data = await res.json();
-          if (data && Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data) && data.length > 0) {
             products = data.map(normalizeProduct).filter(Boolean);
             products.sort((a, b) => (a.id || 0) - (b.id || 0));
           }
         }
-      } catch (e) {}
+      } catch (err) {}
 
+      // Fallback default 8 products if backend unreachable
+      if (!products || products.length === 0) {
+        products = [
+          { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.125, pricingMode: 'DYNAMIC' },
+          { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.40, pricingMode: 'DYNAMIC' },
+          { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.35, pricingMode: 'DYNAMIC' },
+          { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.50, pricingMode: 'DYNAMIC' },
+          { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.30, pricingMode: 'DYNAMIC' },
+          { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.45, pricingMode: 'DYNAMIC' },
+          { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.20, pricingMode: 'DYNAMIC' },
+          { id: 23, name: 'Thunder Energy', flavour: 'THUNDER', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.50, pricingMode: 'DYNAMIC' }
+        ];
+      }
+
+      await fetchAllPriceHistories();
       await checkMarketCrashStatus();
-      renderExchangeBoard();
+      renderDashboard();
     }
 
+    // Fetch PostgreSQL Price History for all products
+    async function fetchAllPriceHistories() {
+      for (const p of products) {
+        await fetchProductHistory(p.id);
+      }
+    }
+
+    async function fetchProductHistory(productId) {
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/history/${productId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            // Sort ascending by time for chart rendering
+            const sorted = data.slice().sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp));
+            priceHistoryMap[productId] = sorted.map(item => ({
+              timestamp: item.createdAt || item.timestamp || new Date().toISOString(),
+              price: Number(item.newPrice !== undefined ? item.newPrice : item.price || 25),
+              oldPrice: Number(item.oldPrice !== undefined ? item.oldPrice : item.price || 25),
+              priceChange: Number(item.priceChange !== undefined ? item.priceChange : 0),
+              reason: item.reason || item.explanation || '1-Min DWMA Settlement'
+            }));
+          }
+        }
+      } catch (err) {}
+
+      // If map has no entry, initialize empty array
+      if (!priceHistoryMap[productId]) {
+        priceHistoryMap[productId] = [];
+      }
+    }
+
+    /* ==========================================================================
+       DASHBOARD & PRODUCT GRID RENDERING
+       ========================================================================== */
+    function renderDashboard() {
+      renderProductCards();
+      updateMarketSummary();
+      updateBottomTicker();
+      updateSyncTime();
+      renderAllCharts();
+    }
+
+    function updateSyncTime() {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0];
+      const el = document.getElementById('sidebarLastSyncTime');
+      if (el) el.textContent = timeStr;
+    }
+
+    function renderProductCards() {
+      const grid = document.getElementById('productGridContainer');
+      if (!grid) return;
+
+      grid.innerHTML = products.map(p => {
+        const icon = getFruitIcon(p);
+        const imgUrl = getBeverageImage(p);
+        const name = p.name || p.flavour || 'Juice';
+        const cleanFlavour = getCleanFlavourName(p);
+        const cupSize = p.defaultCupSizeMl || 250;
+
+        const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
+        const lastChange = (p.deltaPrice !== undefined ? Number(p.deltaPrice) : (p.priceDelta !== undefined ? Number(p.priceDelta) : (p.priceChange !== undefined ? Number(p.priceChange) : 0)));
+        const movementReason = p.movementReason || p.movement || p.demandLevelCategory || (lastChange > 0 ? 'HIGH_DEMAND' : (lastChange < 0 ? 'LOW_DEMAND' : 'NORMAL_DEMAND'));
+
+        let badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (STABLE)</span>`;
+        let priceColor = 'var(--text-primary)';
+
+        if (isMarketCrashActive) {
+          badgeHtml = `<span class="delta-badge delta-decay">🚨 CRASH ₹${activePrice}</span>`;
+          priceColor = 'var(--accent-rose)';
+        } else if (lastChange > 0) {
+          badgeHtml = `<span class="delta-badge delta-surge">▲ +₹${lastChange.toFixed(2)} (${movementReason})</span>`;
+          priceColor = 'var(--accent-emerald)';
+        } else if (lastChange < 0) {
+          badgeHtml = `<span class="delta-badge delta-decay">▼ -₹${Math.abs(lastChange).toFixed(2)} (${movementReason})</span>`;
+          priceColor = 'var(--accent-rose)';
+        } else {
+          badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (${movementReason})</span>`;
+        }
+
+        const targetDisplay = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
+
+        return `
+          <div class="product-card" id="card_prod_${p.id}">
+            <div>
+              <!-- Image Banner -->
+              <div class="product-img-wrapper">
+                <img src="${imgUrl}" alt="${name}" class="product-img" loading="lazy" />
+                <div class="product-img-overlay">
+                  <span class="fruit-badge">${icon} ${cleanFlavour}</span>
+                  <span class="live-indicator-badge">● LIVE</span>
+                </div>
+              </div>
+
+              <!-- Title & Size -->
+              <div class="product-title-row">
+                <div class="product-name">${name}</div>
+              </div>
+              <div class="product-size">${cupSize} ml standard cup</div>
+
+              <!-- Current Price & Delta -->
+              <div class="product-price-row">
+                <div class="product-price" style="color: ${priceColor};">₹${activePrice}</div>
+                ${badgeHtml}
+              </div>
+
+              <!-- REAL PRICE HISTORY GRAPH -->
+              <div class="chart-container-wrapper" id="chart_wrapper_${p.id}">
+                <div class="chart-header-row">
+                  <span>PRICE TREND</span>
+                  <span id="chart_pts_count_${p.id}">REAL-TIME DWMA</span>
+                </div>
+                <canvas id="chart_canvas_${p.id}" class="product-chart-canvas"></canvas>
+                <div id="chart_empty_${p.id}" class="chart-empty-state" style="display: none;">
+                  <div>Waiting for price history...</div>
+                  <div style="font-size: 9.5px; margin-top: 2px; color: var(--text-muted);">Next 1-min settlement will log here</div>
+                </div>
+              </div>
+
+              <!-- Product Specs Mini-Table -->
+              <div class="product-specs-grid">
+                <div class="spec-item">
+                  <span class="spec-label">Base</span>
+                  <span class="spec-val">₹${baseP}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Floor</span>
+                  <span class="spec-val">₹${Number(p.minCupPrice || 18).toFixed(2)}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Ceiling</span>
+                  <span class="spec-val">₹${Number(p.maxCupPrice || 35).toFixed(2)}</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Target</span>
+                  <span class="spec-val">${targetDisplay}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="card-footer-actions">
+              <button class="btn-card-action" onclick="openProductModal(${p.id})">
+                🔍 Details
+              </button>
+              <a href="http://localhost:8000/" target="_blank" class="btn-card-action btn-card-action-pos">
+                🛒 Buy POS
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ==========================================================================
+       REAL CANVAS PRICE GRAPH RENDERING ENGINE
+       ========================================================================== */
+    function renderAllCharts() {
+      products.forEach(p => {
+        renderProductChart(p.id);
+      });
+    }
+
+    function renderProductChart(productId) {
+      const canvas = document.getElementById(`chart_canvas_${productId}`);
+      const emptyEl = document.getElementById(`chart_empty_${productId}`);
+      const ptsCountEl = document.getElementById(`chart_pts_count_${productId}`);
+      if (!canvas) return;
+
+      const history = priceHistoryMap[productId] || [];
+      const prod = products.find(p => p.id === productId);
+      const basePrice = prod ? Number(prod.basePrice || 25) : 25;
+      const currentPrice = prod ? Number(prod.currentCupPrice || 25) : 25;
+
+      // Make sure canvas display buffer matches container size
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const width = rect.width > 0 ? rect.width - 8 : 220;
+      const height = rect.height > 0 ? rect.height - 8 : 135;
+      
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+
+      // Build data points list
+      let dataPoints = [];
+      if (history.length > 0) {
+        // Take last 40 data points
+        dataPoints = history.slice(-40).map(h => ({
+          time: new Date(h.timestamp),
+          price: Number(h.price),
+          change: Number(h.priceChange || 0),
+          reason: h.reason
+        }));
+      }
+
+      // If history is empty, add current base/price point
+      if (dataPoints.length === 0) {
+        dataPoints.push({
+          time: new Date(),
+          price: currentPrice,
+          change: 0,
+          reason: 'Initial Baseline'
+        });
+      }
+
+      if (ptsCountEl) {
+        ptsCountEl.innerHTML = `${dataPoints.length} PTS &bull; DWMA &bull; ${currentPricingTiming.shortLabel.toUpperCase()}`;
+      }
+
+      // Chart Padding
+      const padLeft = 32;
+      const padRight = 14;
+      const padTop = 22;
+      const padBottom = 22;
+      const plotWidth = width - padLeft - padRight;
+      const plotHeight = height - padTop - padBottom;
+
+      // Determine Min and Max for Y-Axis
+      let prices = dataPoints.map(d => d.price);
+      let minP = Math.min(18, ...prices);
+      let maxP = Math.max(35, ...prices);
+      const priceSpan = Math.max(4, maxP - minP);
+
+      const getY = (val) => padTop + plotHeight - ((val - minP) / priceSpan) * plotHeight;
+      const getX = (index) => dataPoints.length === 1 ? padLeft + plotWidth / 2 : padLeft + (index / (dataPoints.length - 1)) * plotWidth;
+
+      const isLight = currentTheme === 'light';
+      const gridColor = isLight ? 'rgba(226, 232, 240, 0.8)' : 'rgba(55, 65, 81, 0.6)';
+      const textColor = isLight ? '#64748B' : '#94A3B8';
+      const baseLineColor = isLight ? 'rgba(148, 163, 184, 0.5)' : 'rgba(100, 116, 139, 0.5)';
+
+      // 1. Draw Subtle Grid Lines & Y-Axis Labels
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'right';
+
+      [maxP, basePrice, minP].forEach(priceVal => {
+        const y = getY(priceVal);
+        ctx.beginPath();
+        ctx.strokeStyle = priceVal === basePrice ? baseLineColor : gridColor;
+        ctx.lineWidth = 1;
+        if (priceVal === basePrice) ctx.setLineDash([3, 3]);
+        else ctx.setLineDash([]);
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(width - padRight, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillText(`₹${Math.round(priceVal)}`, padLeft - 4, y + 3);
+      });
+
+      // 2. Draw Area Gradient & Trend Line
+      const latestPrice = dataPoints[dataPoints.length - 1].price;
+      let strokeColor = '#0284C7';
+      if (latestPrice > basePrice) strokeColor = '#059669'; // Green
+      else if (latestPrice < basePrice) strokeColor = '#DC2626'; // Red
+
+      // Draw Area Fill
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+      }
+      ctx.lineTo(getX(dataPoints.length - 1), padTop + plotHeight);
+      ctx.lineTo(getX(0), padTop + plotHeight);
+      ctx.closePath();
+
+      const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
+      areaGrad.addColorStop(0, latestPrice > basePrice ? 'rgba(5, 150, 105, 0.25)' : (latestPrice < basePrice ? 'rgba(220, 38, 38, 0.25)' : 'rgba(2, 132, 199, 0.2)'));
+      areaGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+      ctx.fillStyle = areaGrad;
+      ctx.fill();
+
+      // Draw Line Stroke
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+      }
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // 3. Draw Latest Value Beacon Dot
+      const lastX = getX(dataPoints.length - 1);
+      const lastY = getY(latestPrice);
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = strokeColor;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
+      ctx.fillStyle = latestPrice > basePrice ? 'rgba(5, 150, 105, 0.3)' : (latestPrice < basePrice ? 'rgba(220, 38, 38, 0.3)' : 'rgba(2, 132, 199, 0.3)');
+      ctx.fill();
+
+      // 4. Draw X-Axis Time Labels
+      if (dataPoints.length > 1) {
+        ctx.textAlign = 'left';
+        const firstTime = dataPoints[0].time.toTimeString().split(' ')[0].slice(0, 5);
+        ctx.fillText(firstTime, padLeft, height - 6);
+
+        ctx.textAlign = 'right';
+        const lastTime = dataPoints[dataPoints.length - 1].time.toTimeString().split(' ')[0].slice(0, 5);
+        ctx.fillText(lastTime, width - padRight, height - 6);
+      }
+
+      // Attach Interactive Mouse Hover & Touch Events
+      attachChartTooltipEvents(canvas, dataPoints, prod, padLeft, padRight, padTop, plotWidth, plotHeight, minP, priceSpan);
+    }
+
+    function attachChartTooltipEvents(canvas, dataPoints, prod, padLeft, padRight, padTop, plotWidth, plotHeight, minP, priceSpan) {
+      const tooltip = document.getElementById('chartTooltip');
+      if (!tooltip || dataPoints.length === 0) return;
+
+      function handleMove(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        if (!clientX) return;
+
+        const mouseX = clientX - rect.left;
+        const normX = (mouseX - padLeft) / plotWidth;
+        const index = Math.max(0, Math.min(dataPoints.length - 1, Math.round(normX * (dataPoints.length - 1))));
+        const pt = dataPoints[index];
+
+        if (pt) {
+          const timeStr = pt.time.toTimeString().split(' ')[0];
+          const changeStr = pt.change > 0 ? `+₹${pt.change.toFixed(2)}` : (pt.change < 0 ? `-₹${Math.abs(pt.change).toFixed(2)}` : '₹0.00');
+          const changeColor = pt.change > 0 ? '#10B981' : (pt.change < 0 ? '#EF4444' : '#94A3B8');
+
+          tooltip.innerHTML = `
+            <div style="font-weight: 800; color: #38BDF8; margin-bottom: 2px;">${prod.name}</div>
+            <div>Time: <span style="color: #F8FAFC;">${timeStr}</span></div>
+            <div>Price: <span style="font-weight: 800; color: #FFFFFF;">₹${pt.price.toFixed(2)}</span> (${changeStr})</div>
+            <div style="font-size: 9.5px; color: #94A3B8; margin-top: 2px;">${pt.reason || '1-Min DWMA Cycle'}</div>
+          `;
+          tooltip.style.display = 'block';
+          tooltip.style.left = `${clientX + 12}px`;
+          tooltip.style.top = `${clientY - 30}px`;
+        }
+      }
+
+      function handleLeave() {
+        tooltip.style.display = 'none';
+      }
+
+      canvas.onmousemove = handleMove;
+      canvas.onmouseleave = handleLeave;
+      canvas.ontouchstart = handleMove;
+      canvas.ontouchmove = handleMove;
+      canvas.ontouchend = handleLeave;
+    }
+
+    /* ==========================================================================
+       SUMMARY BAR & SENTIMENT CALCULATION (REAL DATA)
+       ========================================================================== */
+    function updateMarketSummary() {
+      const activeEl = document.getElementById('sumActiveBeverages');
+      if (activeEl) activeEl.textContent = `${products.length} Products`;
+
+      // Real Sentiment Calculation based on current price vs base price
+      let risingCount = 0;
+      let fallingCount = 0;
+      let stableCount = 0;
+
+      products.forEach(p => {
+        const curr = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25));
+        const base = Number(p.basePrice || 25);
+        if (curr > base) risingCount++;
+        else if (curr < base) fallingCount++;
+        else stableCount++;
+      });
+
+      const total = products.length || 1;
+      const bullPct = Math.round((risingCount / total) * 100);
+      const bearPct = Math.round((fallingCount / total) * 100);
+      const stablePct = 100 - bullPct - bearPct;
+
+      const sentText = document.getElementById('sumSentimentText');
+      const sentBreakdown = document.getElementById('sumSentimentBreakdown');
+      
+      if (sentText) {
+        if (isMarketCrashActive) {
+          sentText.textContent = '🚨 MARKET CRASH';
+          sentText.style.color = 'var(--accent-rose)';
+        } else if (fallingCount > risingCount && fallingCount >= 4) {
+          sentText.textContent = 'BEARISH (Discount)';
+          sentText.style.color = 'var(--accent-rose)';
+        } else if (risingCount > fallingCount && risingCount >= 4) {
+          sentText.textContent = 'BULLISH (High Demand)';
+          sentText.style.color = 'var(--accent-emerald)';
+        } else {
+          sentText.textContent = 'STABLE (Balanced)';
+          sentText.style.color = 'var(--accent-cyan)';
+        }
+      }
+
+      if (sentBreakdown) {
+        sentBreakdown.textContent = `${risingCount} ↑ Rising &bull; ${stableCount} → Stable &bull; ${fallingCount} ↓ Falling`;
+      }
+
+      // Sidebar Sentiment Breakdown
+      const sBull = document.getElementById('sentimentBarBull');
+      const sStable = document.getElementById('sentimentBarStable');
+      const sBear = document.getElementById('sentimentBarBear');
+      if (sBull) sBull.style.width = `${bullPct}%`;
+      if (sStable) sStable.style.width = `${stablePct}%`;
+      if (sBear) sBear.style.width = `${bearPct}%`;
+
+      const sCountBull = document.getElementById('sentimentCountBull');
+      const sCountStable = document.getElementById('sentimentCountStable');
+      const sCountBear = document.getElementById('sentimentCountBear');
+      if (sCountBull) sCountBull.textContent = `${risingCount} ↑ Rising`;
+      if (sCountStable) sCountStable.textContent = `${stableCount} → Stable`;
+      if (sCountBear) sCountBear.textContent = `${fallingCount} ↓ Falling`;
+    }
+
+    /* ==========================================================================
+       BOTTOM TICKER MARQUEE
+       ========================================================================== */
+    function updateBottomTicker() {
+      const track = document.getElementById('bottomTickerTrack');
+      if (!track) return;
+
+      const tickerHtml = products.map(p => {
+        const icon = getFruitIcon(p);
+        const cleanName = getCleanFlavourName(p).toUpperCase();
+        const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
+        const baseP = Number(p.basePrice || 25).toFixed(2);
+        const diff = Number(activePrice) - Number(baseP);
+        const pct = baseP > 0 ? (((Number(activePrice) - Number(baseP)) / Number(baseP)) * 100).toFixed(1) : 0;
+
+        let deltaHtml = `<span style="color: var(--text-muted); font-size: 11px;">(— 0.0%)</span>`;
+        if (diff > 0) deltaHtml = `<span style="color: var(--accent-emerald); font-size: 11px;">(▲ +${pct}%)</span>`;
+        else if (diff < 0) deltaHtml = `<span style="color: var(--accent-rose); font-size: 11px;">(▼ ${pct}%)</span>`;
+
+        return `
+          <span class="ticker-item-span">
+            <span>${icon} ${cleanName}:</span>
+            <span style="font-weight: 800; font-family: var(--font-mono);">₹${activePrice}</span>
+            ${deltaHtml}
+          </span>
+        `;
+      }).join(' &nbsp;&bull;&nbsp; ');
+
+      track.innerHTML = `${tickerHtml} &nbsp;&bull;&nbsp; ${tickerHtml}`;
+    }
+
+    /* ==========================================================================
+       MODAL PRODUCT DETAILS & FULL-SIZE CHART
+       ========================================================================== */
+    function openProductModal(productId) {
+      activeModalProductId = productId;
+      const prod = products.find(p => p.id === productId);
+      if (!prod) return;
+
+      const icon = getFruitIcon(prod);
+      const name = prod.name || prod.flavour || 'Juice';
+      const cleanFlavour = getCleanFlavourName(prod);
+      const activePrice = Number(isMarketCrashActive ? (prod.minCupPrice || 18) : (prod.currentCupPrice || 25)).toFixed(2);
+
+      document.getElementById('modalFruitIcon').textContent = icon;
+      document.getElementById('modalProductName').textContent = name;
+      document.getElementById('modalProductFlavour').textContent = `${prod.defaultCupSizeMl || 250} ml standard cup &bull; Flavour: ${cleanFlavour}`;
+      document.getElementById('modalCurrentPrice').textContent = `₹${activePrice}`;
+      document.getElementById('modalTargetDemand').textContent = prod.targetSalesPer1Minute ? `${prod.targetSalesPer1Minute} cups/min` : '0.50 cups/min';
+
+      const modal = document.getElementById('productDetailModal');
+      if (modal) modal.style.display = 'flex';
+
+      renderModalChart(productId);
+      renderModalSettlementsTable(productId);
+    }
+
+    function closeProductModal(e) {
+      if (e && e.target !== document.getElementById('productDetailModal') && !e.target.classList.contains('modal-close-btn')) return;
+      const modal = document.getElementById('productDetailModal');
+      if (modal) modal.style.display = 'none';
+      activeModalProductId = null;
+    }
+
+    function renderModalChart(productId) {
+      const canvas = document.getElementById('modalChartCanvas');
+      if (!canvas) return;
+
+      const history = priceHistoryMap[productId] || [];
+      const prod = products.find(p => p.id === productId);
+      const basePrice = prod ? Number(prod.basePrice || 25) : 25;
+      const floorPrice = prod ? Number(prod.minCupPrice || 18) : 18;
+      const ceilingPrice = prod ? Number(prod.maxCupPrice || 35) : 35;
+
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const width = rect.width - 16;
+      const height = rect.height - 16;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+
+      let dataPoints = history.slice(-60).map(h => ({
+        time: new Date(h.timestamp),
+        price: Number(h.price),
+        change: Number(h.priceChange || 0),
+        reason: h.reason
+      }));
+
+      if (dataPoints.length === 0) {
+        dataPoints.push({ time: new Date(), price: Number(prod.currentCupPrice || 25), change: 0, reason: 'Initial' });
+      }
+
+      const padLeft = 40;
+      const padRight = 20;
+      const padTop = 20;
+      const padBottom = 30;
+      const plotWidth = width - padLeft - padRight;
+      const plotHeight = height - padTop - padBottom;
+
+      const minP = 15;
+      const maxP = 38;
+      const priceSpan = maxP - minP;
+
+      const getY = (val) => padTop + plotHeight - ((val - minP) / priceSpan) * plotHeight;
+      const getX = (index) => dataPoints.length === 1 ? padLeft + plotWidth / 2 : padLeft + (index / (dataPoints.length - 1)) * plotWidth;
+
+      const isLight = currentTheme === 'light';
+
+      // Draw Ceiling, Base, Floor Reference Lines
+      const refLines = [
+        { label: `Ceiling ₹${ceilingPrice}`, val: ceilingPrice, color: 'rgba(220, 38, 38, 0.4)' },
+        { label: `Base ₹${basePrice}`, val: basePrice, color: isLight ? 'rgba(148, 163, 184, 0.7)' : 'rgba(100, 116, 139, 0.7)' },
+        { label: `Floor ₹${floorPrice}`, val: floorPrice, color: 'rgba(5, 150, 105, 0.4)' }
+      ];
+
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.textAlign = 'right';
+      refLines.forEach(ref => {
+        const y = getY(ref.val);
+        ctx.beginPath();
+        ctx.strokeStyle = ref.color;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(width - padRight, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = ref.color;
+        ctx.fillText(ref.label, width - padRight, y - 4);
+      });
+
+      // Draw Line Chart
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+      }
+      ctx.strokeStyle = '#0284C7';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Draw Points
+      dataPoints.forEach((pt, i) => {
+        const x = getX(i);
+        const y = getY(pt.price);
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = pt.price > basePrice ? '#059669' : (pt.price < basePrice ? '#DC2626' : '#0284C7');
+        ctx.fill();
+      });
+
+      // Draw Time Axis
+      ctx.fillStyle = isLight ? '#64748B' : '#94A3B8';
+      ctx.textAlign = 'left';
+      ctx.fillText(dataPoints[0].time.toTimeString().split(' ')[0], padLeft, height - 8);
+      ctx.textAlign = 'right';
+      ctx.fillText(dataPoints[dataPoints.length - 1].time.toTimeString().split(' ')[0], width - padRight, height - 8);
+    }
+
+    function renderModalSettlementsTable(productId) {
+      const tbody = document.getElementById('modalSettlementTableBody');
+      if (!tbody) return;
+
+      const history = priceHistoryMap[productId] || [];
+      if (history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 16px;">No completed settlements recorded yet for this drink.</td></tr>`;
+        return;
+      }
+
+      // Show latest 10 settlements desc
+      const recent = history.slice(-10).reverse();
+      tbody.innerHTML = recent.map(h => {
+        const timeStr = new Date(h.timestamp).toTimeString().split(' ')[0];
+        const changeStr = h.priceChange > 0 ? `+₹${h.priceChange.toFixed(2)}` : (h.priceChange < 0 ? `-₹${Math.abs(h.priceChange).toFixed(2)}` : '₹0.00');
+        const changeColor = h.priceChange > 0 ? 'var(--accent-emerald)' : (h.priceChange < 0 ? 'var(--accent-rose)' : 'var(--text-muted)');
+
+        return `
+          <tr>
+            <td>${timeStr}</td>
+            <td style="font-weight: 700;">₹${Number(h.price).toFixed(2)}</td>
+            <td style="color: ${changeColor}; font-weight: 700;">${changeStr}</td>
+            <td style="color: var(--text-secondary);">${h.reason || '1-Min DWMA Cycle'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    /* ==========================================================================
+       WEBSOCKET REAL-TIME SYNC & LIVE PRICE ENGINE INTEGRATION
+       ========================================================================== */
     function connectWebSocket() {
       if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
       if (isReconnectingWS) return;
 
+      const socketBadge = document.getElementById('backendStatusBadge');
+      const socketText = document.getElementById('backendStatusText');
+
       try {
         const socket = new SockJS(CONFIG.WS_URL);
         stompClient = Stomp.over(socket);
-        stompClient.debug = null;
+        stompClient.debug = null; // Clean console output
+
         stompClient.connect({}, function () {
           isReconnectingWS = false;
-          fetchProductList();
-          checkMarketCrashStatus();
+          if (socketBadge) socketBadge.className = 'status-badge status-badge-online';
+          if (socketText) socketText.textContent = 'BACKEND ONLINE (8088)';
 
+          fetchProducts();
+
+          // 1. Subscribe to Live Price Updates
           stompClient.subscribe('/topic/prices', function (message) {
-            if (message.body) {
-              const res = JSON.parse(message.body);
-              let incoming = [];
-              if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) {
-                incoming = res.updatedPrices;
-              } else if (res && res.changes && Array.isArray(res.changes)) {
-                incoming = res.changes;
-              } else if (Array.isArray(res)) {
-                incoming = res;
-              } else if (res && (res.id || res.beverageId || res.productId)) {
-                incoming = [res];
-              }
-
-              if (incoming.length > 0) {
-                const normList = incoming.map(normalizeProduct).filter(Boolean);
-                normList.forEach(np => {
-                  const idx = products.findIndex(p => p.id === np.id || (p.name && np.name && p.name.toLowerCase() === np.name.toLowerCase()));
-                  if (idx !== -1) {
-                    products[idx] = { ...products[idx], ...np };
-                  } else {
-                    products.push(np);
-                  }
-                });
-                products.sort((a, b) => (a.id || 0) - (b.id || 0));
-                renderExchangeBoard();
-              } else {
-                fetchProductList();
-              }
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                handleIncomingPriceMessage(res);
+              } catch (e) {}
             }
           });
+
+          // 2. Subscribe to Market Crash Alerts
           stompClient.subscribe('/topic/market-crash', function (message) {
-            if (message.body) {
-              const res = JSON.parse(message.body);
-              if (res && res.active !== undefined) {
-                isMarketCrashActive = res.active;
-                crashRemainingSeconds = res.remainingSeconds || 0;
-                renderExchangeBoard();
-              } else {
-                checkMarketCrashStatus();
-              }
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (res.active) triggerMarketCrash(res.remainingSeconds || 180);
+                else stopMarketCrash();
+              } catch (e) {}
             }
+          });
+
+          // 3. Subscribe to Settlement / Products update
+          stompClient.subscribe('/topic/settlement', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (res.type === 'PRICING_TIMING_CHANGED' || res.intervalSeconds) {
+                  updatePricingTimingState(res);
+                }
+              } catch (e) {}
+            }
+            fetchProducts();
+            fetchPricingConfiguration();
           });
           stompClient.subscribe('/topic/products', function (message) {
             if (message && message.body) {
@@ -927,76 +2237,210 @@
                 if (Array.isArray(res) && res.length > 0) {
                   products = res.map(normalizeProduct).filter(Boolean);
                   products.sort((a, b) => (a.id || 0) - (b.id || 0));
-                  renderExchangeBoard();
+                  renderDashboard();
                   return;
                 }
               } catch (e) {}
             }
-            fetchProductList();
+            fetchProducts();
           });
-          stompClient.subscribe('/topic/batches', function () {
-            fetchProductList();
-          });
-          stompClient.subscribe('/topic/led-display', function () {
-            fetchProductList();
-          });
-          stompClient.subscribe('/topic/settlement', function () {
-            fetchProductList();
+
+          // 4. Subscribe to Pricing Timing / Config Updates
+          stompClient.subscribe('/topic/pricing-config', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                applyPricingConfiguration(res);
+                if (res.products && Array.isArray(res.products) && res.products.length > 0) {
+                  products = res.products.map(normalizeProduct).filter(Boolean);
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderDashboard();
+                } else {
+                  fetchProducts();
+                }
+              } catch (e) {
+                fetchProducts();
+              }
+            }
           });
         }, function () {
+          // Reconnect handler
           isReconnectingWS = true;
+          if (socketBadge) socketBadge.className = 'status-badge status-badge-offline';
+          if (socketText) socketText.textContent = 'RECONNECTING...';
+          wsReconnectAttempts = (wsReconnectAttempts || 0) + 1;
+          const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
           setTimeout(() => {
             isReconnectingWS = false;
             connectWebSocket();
-          }, 3000);
+          }, backoffDelay);
         });
       } catch (err) {
+        wsReconnectAttempts = (wsReconnectAttempts || 0) + 1;
+        const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
         setTimeout(() => {
           isReconnectingWS = false;
           connectWebSocket();
-        }, 3000);
+        }, backoffDelay);
       }
     }
 
-    // Theme Toggle Logic
-    function toggleThemeMode() {
-      const isDark = document.body.classList.contains('dark-theme-mode');
-      setThemeMode(!isDark);
-    }
+    function handleIncomingPriceMessage(res) {
+      let incoming = [];
+      if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) incoming = res.updatedPrices;
+      else if (res && res.changes && Array.isArray(res.changes)) incoming = res.changes;
+      else if (Array.isArray(res)) incoming = res;
+      else if (res && (res.id || res.beverageId || res.productId)) incoming = [res];
 
-    function setThemeMode(isDark) {
-      if (isDark) {
-        document.body.classList.add('dark-theme-mode');
-        document.body.classList.remove('light-theme-mode');
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('pubexchange_led_theme', 'dark');
-      } else {
-        document.body.classList.remove('dark-theme-mode');
-        document.body.classList.add('light-theme-mode');
-        document.documentElement.setAttribute('data-theme', 'light');
-        localStorage.setItem('pubexchange_led_theme', 'light');
+      if (incoming.length === 0) {
+        fetchProducts();
+        return;
       }
-      updateThemeButtonUI(isDark);
-    }
 
-    function updateThemeButtonUI(isDark) {
-      const btn = document.getElementById('themeToggleBtnLED');
-      if (btn) {
-        btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
+      const nowIso = new Date().toISOString();
+
+      incoming.forEach(item => {
+        const pId = item.id || item.beverageId || item.productId;
+        const newPrice = Number(item.currentCupPrice !== undefined ? item.currentCupPrice : (item.currentPrice !== undefined ? item.currentPrice : (item.newPrice || 25)));
+        const oldPrice = Number(item.oldPrice !== undefined ? item.oldPrice : (item.basePrice || item.defaultCupPrice || 25));
+        const priceChange = Number(item.priceChange !== undefined ? item.priceChange : (newPrice - oldPrice));
+
+        // Update product state
+        const idx = products.findIndex(p => p.id === pId || (p.name && item.name && p.name.toLowerCase() === item.name.toLowerCase()));
+        if (idx !== -1) {
+          products[idx].currentCupPrice = newPrice;
+          products[idx].deltaPrice = priceChange;
+          products[idx].priceDelta = priceChange;
+          products[idx].priceChange = priceChange;
+          products[idx].movement = item.movement || item.demandLevelCategory || (priceChange > 0 ? 'HIGH_DEMAND' : (priceChange < 0 ? 'LOW_DEMAND' : 'NORMAL_DEMAND'));
+          products[idx].movementReason = products[idx].movement;
+          if (item.minCupPrice !== undefined) products[idx].minCupPrice = Number(item.minCupPrice);
+          if (item.maxCupPrice !== undefined) products[idx].maxCupPrice = Number(item.maxCupPrice);
+          if (item.defaultCupPrice !== undefined) products[idx].basePrice = Number(item.defaultCupPrice);
+          if (item.targetSalesPer1Minute !== undefined) products[idx].targetSalesPer1Minute = item.targetSalesPer1Minute;
+          if (item.targetSalesPerMinute !== undefined) products[idx].targetSalesPer1Minute = item.targetSalesPerMinute;
+        }
+
+        // Append to history array for this specific product
+        if (!priceHistoryMap[pId]) priceHistoryMap[pId] = [];
+        
+        // Avoid duplicate immediate entries
+        const lastEntry = priceHistoryMap[pId][priceHistoryMap[pId].length - 1];
+        if (!lastEntry || Math.abs(new Date(nowIso) - new Date(lastEntry.timestamp)) > 2000 || lastEntry.price !== newPrice) {
+          priceHistoryMap[pId].push({
+            timestamp: nowIso,
+            price: newPrice,
+            oldPrice: oldPrice,
+            priceChange: priceChange,
+            reason: item.reason || item.explanation || 'Live Settlement'
+          });
+        }
+      });
+
+      renderDashboard();
+
+      if (activeModalProductId) {
+        renderModalChart(activeModalProductId);
+        renderModalSettlementsTable(activeModalProductId);
       }
     }
 
-    // Initialization
-    const savedThemeLED = localStorage.getItem('pubexchange_led_theme');
-    setThemeMode(savedThemeLED !== 'light');
+    /* ==========================================================================
+       MARKET CRASH ENGINE
+       ========================================================================== */
+    async function checkMarketCrashStatus() {
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/market-crash/status`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.active) triggerMarketCrash(data.remainingSeconds || 180);
+          else if (isMarketCrashActive) stopMarketCrash();
+        }
+      } catch (err) {}
+    }
 
-    setInterval(updateClock, 1000);
+    function triggerMarketCrash(duration = 180) {
+      isMarketCrashActive = true;
+      crashRemainingSeconds = duration;
+      const overlay = document.getElementById('crashOverlay');
+      if (overlay) overlay.style.display = 'flex';
+      updateCrashTimerUI();
+
+      if (crashTimerInterval) clearInterval(crashTimerInterval);
+      crashTimerInterval = setInterval(() => {
+        crashRemainingSeconds--;
+        updateCrashTimerUI();
+        if (crashRemainingSeconds <= 0) stopMarketCrash();
+      }, 1000);
+
+      renderDashboard();
+    }
+
+    function stopMarketCrash() {
+      isMarketCrashActive = false;
+      if (crashTimerInterval) clearInterval(crashTimerInterval);
+      const overlay = document.getElementById('crashOverlay');
+      if (overlay) overlay.style.display = 'none';
+      renderDashboard();
+    }
+
+    function updateCrashTimerUI() {
+      const mins = Math.floor(Math.max(0, crashRemainingSeconds) / 60);
+      const secs = Math.max(0, crashRemainingSeconds) % 60;
+      const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      const timerEl = document.getElementById('crashTimerText');
+      if (timerEl) timerEl.textContent = timeStr;
+    }
+
+    // Health check periodically
+    async function checkBackendHealth() {
+      const badge = document.getElementById('backendStatusBadge');
+      const text = document.getElementById('backendStatusText');
+      if (!badge || !text) return;
+
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/health`);
+        if (res.ok) {
+          badge.className = 'status-badge status-badge-online';
+          text.textContent = 'BACKEND ONLINE (8088)';
+        } else {
+          badge.className = 'status-badge status-badge-offline';
+          text.textContent = 'BACKEND OFFLINE';
+        }
+      } catch (e) {
+        badge.className = 'status-badge status-badge-offline';
+        text.textContent = 'BACKEND OFFLINE';
+      }
+    }
+
+    // Broadcast Channel & Storage cross-tab events
+    const pubChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
+    if (pubChannel) pubChannel.onmessage = (event) => {
+      if (event.data && (event.data.type === 'NEW_FLAVOUR_ADDED' || event.data.type === 'PRICE_ENGINE_RUN' || event.data.type === 'BATCH_PRODUCT_PRICE_UPDATED' || event.data.type === 'PRODUCT_PRICE_UPDATE')) {
+        fetchProducts();
+        fetchPricingConfiguration();
+      }
+    };
+
+    window.addEventListener('resize', () => {
+      renderAllCharts();
+      if (activeModalProductId) renderModalChart(activeModalProductId);
+    });
+
     setInterval(checkBackendHealth, 5000);
-    
-    updateClock();
-    checkBackendHealth();
-    fetchProductList();
+
+    // Initial Execution
+    fetchPricingTiming();
+    fetchPricingConfiguration();
+    fetchProducts();
     connectWebSocket();
+
+    // Background continuous sync to guarantee real-time reflection of admin actions
+    setInterval(() => {
+      fetchProducts();
+      fetchPricingTiming();
+      fetchPricingConfiguration();
+    }, 2500);
   </script>
 </body>
 </html>

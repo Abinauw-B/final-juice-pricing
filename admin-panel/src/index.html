@@ -33,187 +33,87 @@
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
 
-    :root {
+    :root, html[data-theme="dark"], body.dark-theme-mode {
       --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
 
-      /* Base Light Theme */
-      --bg-main: #f8fafc;
-      --bg-sidebar: #ffffff;
-      --bg-card: #ffffff;
-      --bg-card-hover: #f8fafc;
-      --bg-subtle: #f1f5f9;
-      --bg-glass: rgba(255, 255, 255, 0.85);
-      --accent-blue: #2563eb;
-      --accent-cyan: #0284c7;
-      --accent-emerald: #059669;
-      --accent-amber: #d97706;
-      --accent-rose: #e11d48;
-      --accent-purple: #7c3aed;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      --border-glow: rgba(37, 99, 235, 0.2);
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-      --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
-      --shadow-lg: 0 16px 32px -6px rgba(0, 0, 0, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
-      --shadow-glass: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-    }
+      /* Dark Theme — "Obsidian" Tokens */
+      --bg-page: #07090E;
+      --bg-surface: rgba(11, 15, 25, 0.88);
+      --bg-secondary: rgba(22, 30, 46, 0.65);
+      --bg-elevated: rgba(22, 31, 48, 0.85);
+      --bg-card: rgba(16, 22, 34, 0.72);
+      --bg-card-hover: rgba(22, 31, 48, 0.85);
+      --bg-subtle: rgba(26, 36, 54, 0.6);
+      --bg-glass: rgba(16, 22, 34, 0.72);
+      
+      --border-color: rgba(255, 255, 255, 0.09);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-glow: rgba(56, 189, 248, 0.35);
 
-    /* Luxury Light Theme Explicit Overrides */
-    body:not(.dark-theme-mode) {
-      --bg-main: #f8fafc;
-      --bg-sidebar: #ffffff;
-      --bg-card: #ffffff;
-      --bg-subtle: #f1f5f9;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      background: radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.03) 0%, transparent 40%),
-                  radial-gradient(circle at 90% 90%, rgba(124, 58, 237, 0.03) 0%, transparent 40%),
-                  #f8fafc !important;
-      background-attachment: fixed !important;
-      color: #0f172a !important;
-    }
+      --text-main: #F8FAFC;
+      --text-secondary: #CBD5E1;
+      --text-muted: #8E9DB2;
 
-    body:not(.dark-theme-mode) .sidebar {
-      background: rgba(255, 255, 255, 0.95) !important;
-      border-right: 1px solid #e2e8f0 !important;
-      backdrop-filter: blur(16px);
-    }
+      --accent-cyan: #38BDF8;
+      --accent-emerald: #10B981;
+      --accent-rose: #F43F5E;
+      --accent-amber: #F59E0B;
+      --accent-purple: #C084FC;
+      --accent-blue: #38BDF8;
 
-    body:not(.dark-theme-mode) .top-header {
-      background: rgba(255, 255, 255, 0.95) !important;
-      border-bottom: 1px solid #e2e8f0 !important;
-      backdrop-filter: blur(16px);
-    }
-
-    body:not(.dark-theme-mode) .metric-card,
-    body:not(.dark-theme-mode) .section-card {
-      background: #ffffff !important;
-      border: 1px solid #e2e8f0 !important;
-      box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05) !important;
-      color: #0f172a !important;
-    }
-
-    /* Cyberpunk / Bloomberg Obsidian Dark Theme Overrides */
-    body.dark-theme-mode {
-      --bg-main: #07090e !important;
-      --bg-sidebar: rgba(11, 15, 25, 0.92) !important;
-      --bg-card: rgba(16, 22, 34, 0.72) !important;
-      --bg-card-hover: rgba(22, 31, 48, 0.85) !important;
-      --bg-subtle: rgba(26, 36, 54, 0.6) !important;
-      --bg-glass: rgba(16, 22, 34, 0.72) !important;
-      --accent-blue: #38bdf8 !important;
-      --accent-cyan: #06b6d4 !important;
-      --accent-emerald: #10b981 !important;
-      --accent-amber: #f59e0b !important;
-      --accent-rose: #f43f5e !important;
-      --accent-purple: #c084fc !important;
-      --text-main: #f8fafc !important;
-      --text-muted: #8e9db2 !important;
-      --border-color: rgba(255, 255, 255, 0.09) !important;
-      --border-glow: rgba(56, 189, 248, 0.25) !important;
       --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
       --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.5);
       --shadow-lg: 0 16px 40px -6px rgba(0, 0, 0, 0.7);
+      --elevation-1: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 12px 36px -4px rgba(0, 0, 0, 0.55);
+      --elevation-2: 0 24px 60px -8px rgba(0, 0, 0, 0.65);
       --shadow-glass: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 12px 36px -4px rgba(0, 0, 0, 0.55);
 
-      background: radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
-                  radial-gradient(circle at 88% 92%, rgba(192, 132, 252, 0.07) 0%, transparent 45%),
-                  radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
-                  #07090e !important;
-      background-attachment: fixed !important;
-      color: #f8fafc !important;
+      --bg-mesh: radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                 radial-gradient(circle at 88% 92%, rgba(192, 132, 252, 0.07) 0%, transparent 45%),
+                 radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
+                 #07090E;
     }
 
-    body.dark-theme-mode .sidebar {
-      background: var(--bg-sidebar) !important;
-      border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
-      backdrop-filter: blur(20px);
-    }
+    html[data-theme="light"], body:not(.dark-theme-mode) {
+      /* Light Theme — "Porcelain" Tokens */
+      --bg-page: #F4F6FB;
+      --bg-surface: rgba(255, 255, 255, 0.92);
+      --bg-secondary: rgba(226, 232, 240, 0.55);
+      --bg-elevated: rgba(255, 255, 255, 0.96);
+      --bg-card: rgba(255, 255, 255, 0.78);
+      --bg-card-hover: rgba(255, 255, 255, 0.95);
+      --bg-subtle: #f1f5f9;
+      --bg-glass: rgba(255, 255, 255, 0.85);
 
-    body.dark-theme-mode .top-header {
-      background: rgba(11, 15, 25, 0.88) !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
-      backdrop-filter: blur(20px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-    }
+      --border-color: rgba(15, 23, 42, 0.08);
+      --border-subtle: rgba(15, 23, 42, 0.05);
+      --border-glow: rgba(2, 132, 199, 0.30);
 
-    body.dark-theme-mode .main-content {
-      background: transparent !important;
-    }
+      --text-main: #0F172A;
+      --text-secondary: #334155;
+      --text-muted: #64748B;
 
-    body.dark-theme-mode .metric-card,
-    body.dark-theme-mode .section-card,
-    body.dark-theme-mode .toast-msg {
-      background: var(--bg-card) !important;
-      border: 1px solid rgba(255, 255, 255, 0.08) !important;
-      box-shadow: var(--shadow-glass) !important;
-      color: #f8fafc !important;
-      backdrop-filter: blur(18px) saturate(180%);
-      -webkit-backdrop-filter: blur(18px) saturate(180%);
-    }
+      --accent-cyan: #0284C7;
+      --accent-emerald: #059669;
+      --accent-rose: #E11D48;
+      --accent-amber: #D97706;
+      --accent-purple: #9333EA;
+      --accent-blue: #2563EB;
 
-    body.dark-theme-mode .metric-label {
-      color: #8e9db2 !important;
-      letter-spacing: 0.04em;
-    }
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 16px 32px -6px rgba(0, 0, 0, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
+      --elevation-1: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 12px 32px -6px rgba(15, 23, 42, 0.12);
+      --elevation-2: 0 24px 48px -10px rgba(15, 23, 42, 0.18);
+      --shadow-glass: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 12px 32px -6px rgba(15, 23, 42, 0.12);
 
-    body.dark-theme-mode .metric-val {
-      color: #f8fafc !important;
-    }
-
-    /* Sub-cards and telemetry items inside dashboard */
-    body.dark-theme-mode div[style*="background: #f8fafc"],
-    body.dark-theme-mode div[style*="background:#f8fafc"],
-    body.dark-theme-mode div[style*="background: #ffffff"],
-    body.dark-theme-mode div[style*="background:#ffffff"] {
-      background: rgba(22, 30, 46, 0.65) !important;
-      border-color: rgba(255, 255, 255, 0.08) !important;
-      color: #f8fafc !important;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    }
-
-    body.dark-theme-mode div[style*="background: #f8fafc"] div,
-    body.dark-theme-mode div[style*="background: #ffffff"] div {
-      color: #f8fafc !important;
-    }
-
-    body.dark-theme-mode table,
-    body.dark-theme-mode tr,
-    body.dark-theme-mode td {
-      background: transparent !important;
-      color: #cbd5e1 !important;
-      border-color: rgba(255, 255, 255, 0.06) !important;
-    }
-
-    body.dark-theme-mode th {
-      background: rgba(13, 19, 31, 0.8) !important;
-      color: #94a3b8 !important;
-      border-color: rgba(255, 255, 255, 0.08) !important;
-    }
-
-    body.dark-theme-mode tr:hover {
-      background: rgba(30, 41, 59, 0.45) !important;
-    }
-
-    body.dark-theme-mode input,
-    body.dark-theme-mode select,
-    body.dark-theme-mode textarea {
-      background: rgba(11, 17, 28, 0.75) !important;
-      color: #f8fafc !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    }
-
-    body.dark-theme-mode input:focus,
-    body.dark-theme-mode select:focus,
-    body.dark-theme-mode textarea:focus {
-      border-color: #38bdf8 !important;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25), 0 0 16px rgba(56, 189, 248, 0.15) !important;
-      background: rgba(15, 23, 42, 0.9) !important;
+      --bg-mesh: radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.10) 0%, transparent 40%),
+                 radial-gradient(circle at 88% 92%, rgba(192, 132, 252, 0.09) 0%, transparent 45%),
+                 radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+                 #F4F6FB;
     }
 
     /* Core Reset & Global Typography */
@@ -226,11 +126,14 @@
     }
 
     body {
-      background-color: var(--bg-main);
+      background: var(--bg-mesh);
+      background-color: var(--bg-page);
+      background-attachment: fixed;
       color: var(--text-main);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      transition: background 0.2s ease, color 0.2s ease;
     }
 
     .admin-layout {
@@ -241,8 +144,10 @@
 
     /* Sidebar Navigation */
     .sidebar {
-      background: var(--bg-sidebar);
+      background: var(--bg-surface);
       border-right: 1px solid var(--border-color);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       padding: 24px 16px;
       display: flex;
       flex-direction: column;
@@ -275,23 +180,15 @@
     .brand-title-text {
       font-size: 17px;
       font-weight: 800;
-      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--text-main);
       letter-spacing: -0.02em;
       line-height: 1.2;
-    }
-
-    body:not(.dark-theme-mode) .brand-title-text {
-      background: linear-gradient(135deg, #0f172a 40%, #334155 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
     }
 
     .brand-version-badge {
       font-size: 10px;
       font-weight: 800;
-      color: #38bdf8;
+      color: var(--accent-cyan);
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
@@ -307,19 +204,19 @@
       font-size: 13.5px;
       cursor: pointer;
       margin-bottom: 6px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
     }
 
     .nav-link:hover {
-      background: rgba(56, 189, 248, 0.08);
-      color: var(--accent-blue);
+      background: var(--bg-secondary);
+      color: var(--accent-cyan);
       transform: translateX(3px);
     }
 
     .nav-link.active {
       background: linear-gradient(90deg, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0.04) 100%);
-      color: #38bdf8;
+      color: var(--accent-cyan);
       font-weight: 700;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
@@ -332,8 +229,8 @@
       bottom: 6px;
       width: 4px;
       border-radius: 0 4px 4px 0;
-      background: #38bdf8;
-      box-shadow: 0 0 10px #38bdf8;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 10px var(--accent-cyan);
     }
 
     .nav-link span {
@@ -342,8 +239,10 @@
 
     /* Top Navigation Header */
     .top-header {
-      background: var(--bg-sidebar);
+      background: var(--bg-surface);
       border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       padding: 12px 32px;
       display: flex;
       align-items: center;
@@ -356,10 +255,10 @@
       padding: 32px;
       overflow-y: auto;
       flex: 1;
-      background: var(--bg-main);
+      background: transparent;
     }
 
-    /* High-Impact Metric Cards */
+    /* High-Impact Glass Cards */
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -372,7 +271,9 @@
       border: 1px solid var(--border-color);
       border-radius: 16px;
       padding: 22px;
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--elevation-1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
@@ -385,7 +286,7 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4), transparent);
+      background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
       opacity: 0;
       transition: opacity 0.3s;
     }
@@ -393,7 +294,7 @@
     .metric-card:hover {
       box-shadow: var(--shadow-md);
       transform: translateY(-3px);
-      border-color: rgba(56, 189, 248, 0.3) !important;
+      border-color: var(--border-glow) !important;
     }
 
     .metric-card:hover::before {
@@ -417,20 +318,23 @@
       font-weight: 800;
       color: var(--text-main);
       letter-spacing: -0.02em;
-      font-feature-settings: 'tnum';
+      font-family: var(--font-mono);
+      font-feature-settings: 'tnum' 1;
       font-variant-numeric: tabular-nums;
     }
 
     .section-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-radius: 18px;
+      border-radius: 16px;
       padding: 26px;
       margin-bottom: 32px;
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--elevation-1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
 
-    /* High-End Glass Data Grid */
+    /* High-End Glass Data Grid with Tabular Numerals */
     .table-custom {
       width: 100%;
       border-collapse: separate;
@@ -445,7 +349,7 @@
       padding: 14px 18px;
       text-align: left;
       border-bottom: 1px solid var(--border-color);
-      font-feature-settings: 'tnum';
+      font-feature-settings: 'tnum' 1;
       font-variant-numeric: tabular-nums;
     }
 
@@ -455,22 +359,22 @@
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      background: var(--bg-subtle);
+      background: var(--bg-secondary);
       position: sticky;
       top: 0;
-      cursor: pointer;
       user-select: none;
     }
 
     .table-custom tr {
       transition: background 0.15s ease;
+      background: transparent;
     }
 
     .table-custom tr:hover {
       background: rgba(56, 189, 248, 0.04);
     }
 
-    /* Glowing Movement Badges */
+    /* Glowing Status Badges Glow Pill System */
     .status-tag {
       font-size: 11.5px;
       font-weight: 800;
@@ -478,34 +382,37 @@
       border-radius: 20px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       letter-spacing: 0.02em;
-      font-feature-settings: 'tnum';
+      font-family: var(--font-mono);
+      font-feature-settings: 'tnum' 1;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
     }
 
-    .tag-active, .tag-surge {
+    .tag-surge {
       background: rgba(16, 185, 129, 0.15);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
     }
 
     .tag-decay {
       background: rgba(244, 63, 94, 0.15);
-      color: #f43f5e;
-      border: 1px solid rgba(244, 63, 94, 0.3);
-      box-shadow: 0 0 10px rgba(244, 63, 94, 0.15);
+      color: var(--accent-rose);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.2);
     }
 
     .tag-stable {
       background: rgba(148, 163, 184, 0.12);
-      color: #94a3b8;
+      color: var(--text-muted);
       border: 1px solid rgba(148, 163, 184, 0.25);
     }
 
     .tag-depleted {
       background: rgba(245, 158, 11, 0.15);
-      color: #f59e0b;
+      color: var(--accent-amber);
       border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
@@ -518,15 +425,37 @@
       animation: crashPulse 1.5s infinite;
     }
 
+    .tag-active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
     @keyframes crashPulse {
       0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(239, 68, 68, 0.5); }
       50% { transform: scale(1.04); box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
     }
 
+    /* Live Animated Pulsing Dot */
+    .live-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      animation: liveDotPulse 2s infinite ease-in-out;
+      display: inline-block;
+    }
+
+    @keyframes liveDotPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+    }
+
     /* Buttons with Rich Modern Gradients & Micro-Interactions */
     .btn-primary {
       background: linear-gradient(135deg, #0284c7, #2563eb);
-      color: white;
+      color: #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.18);
       padding: 10px 20px;
       border-radius: 10px;
@@ -553,7 +482,7 @@
 
     .btn-crash {
       background: linear-gradient(135deg, #ef4444, #b91c1c);
-      color: white;
+      color: #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.2);
       padding: 12px 24px;
       border-radius: 12px;
@@ -561,12 +490,18 @@
       font-size: 13.5px;
       cursor: pointer;
       box-shadow: 0 4px 18px rgba(239, 68, 68, 0.4);
+      animation: crashGlow 2s infinite ease-in-out;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       letter-spacing: 0.02em;
+    }
+
+    @keyframes crashGlow {
+      0%, 100% { box-shadow: 0 4px 18px rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 6px 26px rgba(239, 68, 68, 0.75); }
     }
 
     .btn-crash:hover {
@@ -581,20 +516,21 @@
 
     /* Form Inputs */
     input, select, textarea {
-      background: #ffffff !important;
-      color: #0f172a !important;
-      border: 1px solid #cbd5e1 !important;
+      background: var(--bg-elevated) !important;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border-color) !important;
       border-radius: 10px;
       padding: 10px 14px;
       font-size: 13.5px;
       font-weight: 500;
+      font-family: var(--font-main);
       transition: all 0.2s ease;
     }
 
     input:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: #2563eb !important;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+      border-color: var(--accent-cyan) !important;
+      box-shadow: 0 0 0 3px var(--border-glow);
     }
 
     /* Toast Notification */
@@ -609,9 +545,11 @@
     }
 
     .toast-msg {
-      background: #ffffff;
+      background: var(--bg-card);
       border: 1px solid var(--border-color);
-      color: #0f172a;
+      color: var(--text-main);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       padding: 14px 22px;
       border-radius: 12px;
       font-size: 13.5px;
@@ -638,7 +576,6 @@
       display: flex; align-items: center; justify-content: center;
       z-index: 1000;
     }
-  </style>
   </style>
 </head>
 
@@ -702,18 +639,18 @@
         <div style="display: flex; align-items: center; gap: 14px;">
           <span style="font-size: 14px; font-weight: 700; color: var(--text-muted);">Enterprise Control Node</span>
           
-          <span id="headerMarketStatusPill" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);">
-            <span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span>
-            <span id="headerMarketStatusText">● MARKET ONLINE</span>
+          <span id="headerMarketStatusPill" class="status-tag tag-surge" style="padding: 6px 14px; font-size: 12px; font-weight: 800;">
+            <span class="live-pulse-dot"></span>
+            <span id="headerMarketStatusText">MARKET ONLINE (1-MIN CYCLE)</span>
           </span>
 
-          <button id="themeToggleBtnAdmin" onclick="toggleThemeMode()" style="background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">☀️ Theme: Light</button>
+          <button id="themeToggleBtnAdmin" onclick="toggleThemeMode()" class="btn-primary" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm);">☀️ Theme: Light</button>
           
           <!-- Interlinking Portal Links -->
-          <a href="http://localhost:8000/" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.25); display: flex; align-items: center; gap: 6px;">
+          <a href="http://localhost:8000/" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;">
             🛒 Customer POS (8000)
           </a>
-          <a href="http://localhost:8000/led-display.html" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25); display: flex; align-items: center; gap: 6px;">
+          <a href="http://localhost:8000/led-display.html" target="_blank" style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;">
             📺 LED Ticker
           </a>
         </div>
@@ -975,6 +912,53 @@
               <button class="btn-primary" id="btnPauseMarket" style="background: #eab308; color: #000; font-weight: 800;" onclick="pauseMarketExchange()">⏸️ Pause Exchange</button>
               <button class="btn-primary" id="btnResumeMarket" style="background: #22c55e; color: #fff; font-weight: 800; display: none;" onclick="resumeMarketExchange()">▶️ Resume Exchange</button>
               <button class="btn-primary" id="btnRunPriceEngine" onclick="triggerPriceEngine()">⚡ Run Settlement Cycle</button>
+            </div>
+          </div>
+
+          <!-- Dedicated Pricing Timing & Settlement Interval Configuration Card -->
+          <div class="section-card" style="margin-bottom: 24px; border: 1.5px solid #2563eb; background: var(--bg-surface);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h2 style="font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0;">⚙️ PRICING ENGINE CONFIGURATION</h2>
+                <span id="timingStatusBadge" style="background: #10b981; color: #fff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 9999px;">● ACTIVE</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">
+                SINGLE SOURCE OF TRUTH &bull; BACKEND PERSISTED IN POSTGRESQL
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.3fr; gap: 16px; align-items: center;">
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 800; color: var(--text-main); margin-bottom: 6px; text-transform: uppercase;">
+                  Settlement Interval
+                </label>
+                <select id="pricingIntervalSelect" style="width: 100%; padding: 10px 14px; font-size: 14px; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); cursor: pointer;">
+                  <option value="30">30 Seconds</option>
+                  <option value="60">1 Minute</option>
+                  <option value="120">2 Minutes</option>
+                  <option value="300">5 Minutes</option>
+                  <option value="600">10 Minutes</option>
+                </select>
+              </div>
+
+              <div style="background: var(--bg-subtle); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Current Cycle</div>
+                <div id="timingCurrentCycleDisplay" style="font-size: 16px; font-weight: 800; color: var(--text-main); font-family: monospace;">1-Min DWMA</div>
+              </div>
+
+              <div style="background: var(--bg-subtle); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Next Settlement</div>
+                <div id="timingNextSettlementCountdown" style="font-size: 16px; font-weight: 800; color: #2563eb; font-family: monospace;">--:--</div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <button class="btn-primary" id="btnApplyPricingTiming" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 10px 16px; font-size: 13px; font-weight: 800; width: 100%;" onclick="openTimingConfirmationModal()">
+                  ⚡ APPLY PRICING TIMING
+                </button>
+                <button class="btn-primary" style="background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-muted); padding: 6px 10px; font-size: 11px; font-weight: 700; width: 100%;" onclick="resetPricingTimingToDefault()">
+                  ↺ RESET TO DEFAULT (1 MIN)
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1720,6 +1704,40 @@
         </button>
         <button id="btnConfirmResetExecute" onclick="executeResetLiveMarketPrices()" style="padding: 10px 22px; background: linear-gradient(135deg, #d97706, #b45309); border: none; border-radius: 8px; color: white; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);">
           Confirm Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. Confirm Pricing Settlement Timing Change Modal -->
+  <div id="confirmTimingModal" style="display: none;" class="modal-overlay">
+    <div style="background: var(--bg-card); border: 2px solid #2563eb; border-radius: 20px; width: 500px; padding: 28px; box-shadow: 0 25px 60px rgba(37, 99, 235, 0.3); color: var(--text-main);">
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
+        <div style="font-size: 28px; background: rgba(37, 99, 235, 0.15); border-radius: 12px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; color: #2563eb;">⚙️</div>
+        <div>
+          <h3 style="font-size: 20px; font-weight: 900; color: #2563eb;">Change Pricing Cycle?</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">DWMA Settlement Frequency &amp; Windows</p>
+        </div>
+      </div>
+
+      <div style="background: rgba(37, 99, 235, 0.08); border-left: 4px solid #2563eb; padding: 16px; border-radius: 10px; margin-bottom: 22px; font-size: 14px; line-height: 1.6;">
+        <div style="margin-bottom: 8px;">
+          <strong>Current Interval:</strong> <span id="modalCurrentTimingText">1 Minute</span>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <strong>New Interval:</strong> <span id="modalNewTimingText" style="color: #2563eb; font-weight: 800;">2 Minutes</span>
+        </div>
+        <div style="font-size: 12.5px; color: var(--text-muted); border-top: 1px dashed var(--border-color); padding-top: 8px;">
+          ℹ️ <em>Current settlement will complete before the new interval becomes active. DWMA calculation windows (W0, W1, W2) and target sales will automatically normalize to the new cycle.</em>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button onclick="closeTimingConfirmationModal()" style="padding: 10px 20px; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; font-weight: 700; cursor: pointer;">
+          Cancel
+        </button>
+        <button id="btnConfirmTimingExecute" onclick="executeApplyPricingTiming()" style="padding: 10px 22px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; border-radius: 8px; color: white; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+          Apply Change
         </button>
       </div>
     </div>
@@ -2807,6 +2825,145 @@
       return '🍹';
     }
 
+    // ==========================================
+    // PRICING ENGINE SETTLEMENT INTERVAL TIMING
+    // ==========================================
+    let activePricingTiming = {
+      intervalSeconds: 60,
+      intervalMinutes: 1.0,
+      label: '1 Minute',
+      nextSettlementAt: null
+    };
+    let settlementCountdownInterval = null;
+
+    async function loadPricingTiming() {
+      try {
+        const res = await apiFetch('/admin/pricing/timing');
+        if (res.ok) {
+          const data = await res.json();
+          activePricingTiming = data;
+          applyTimingToUI(data);
+        }
+      } catch (err) {
+        console.warn('Failed to load pricing timing:', err);
+      }
+    }
+
+    function applyTimingToUI(timing) {
+      if (!timing) return;
+      activePricingTiming = timing;
+
+      const sel = document.getElementById('pricingIntervalSelect');
+      if (sel && timing.intervalSeconds) {
+        sel.value = String(timing.intervalSeconds);
+      }
+
+      const cycleDisplay = document.getElementById('timingCurrentCycleDisplay');
+      if (cycleDisplay && timing.intervalSeconds) {
+        const shortLabel = timing.intervalSeconds === 30 ? '30-Sec' :
+          (timing.intervalSeconds % 60 === 0 ? `${timing.intervalSeconds / 60}-Min` : `${timing.intervalSeconds}s`);
+        cycleDisplay.textContent = `${shortLabel} DWMA`;
+      }
+
+      if (document.getElementById('cfgSettlementInterval') && timing.intervalSeconds) {
+        document.getElementById('cfgSettlementInterval').value = timing.intervalSeconds;
+      }
+    }
+
+    function openTimingConfirmationModal() {
+      const sel = document.getElementById('pricingIntervalSelect');
+      const selectedSec = parseInt(sel ? sel.value : '60', 10);
+      const currentSec = activePricingTiming.intervalSeconds || 60;
+
+      const labelMap = {
+        30: '30 Seconds',
+        60: '1 Minute',
+        120: '2 Minutes',
+        300: '5 Minutes',
+        600: '10 Minutes'
+      };
+
+      const curEl = document.getElementById('modalCurrentTimingText');
+      if (curEl) curEl.textContent = labelMap[currentSec] || `${currentSec} Seconds`;
+      const newEl = document.getElementById('modalNewTimingText');
+      if (newEl) newEl.textContent = labelMap[selectedSec] || `${selectedSec} Seconds`;
+
+      const modal = document.getElementById('confirmTimingModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeTimingConfirmationModal() {
+      const modal = document.getElementById('confirmTimingModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function executeApplyPricingTiming() {
+      const btn = document.getElementById('btnConfirmTimingExecute');
+      if (btn) setButtonLoading(btn, true, 'Applying...');
+
+      const sel = document.getElementById('pricingIntervalSelect');
+      const selectedSec = parseInt(sel ? sel.value : '60', 10);
+
+      try {
+        const res = await apiFetch('/admin/pricing/timing', {
+          method: 'PUT',
+          body: JSON.stringify({ intervalSeconds: selectedSec })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          activePricingTiming = data;
+          applyTimingToUI(data);
+          closeTimingConfirmationModal();
+          showToast(`✓ Pricing cycle updated to ${data.label}. Backend scheduler synchronized.`, 'success');
+          loadPricingConfiguration();
+          loadPricingAuditLogs();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.error || 'Failed to update pricing timing', 'error');
+          if (sel) sel.value = String(activePricingTiming.intervalSeconds || 60);
+        }
+      } catch (e) {
+        showToast('Network error while updating pricing timing', 'error');
+      } finally {
+        if (btn) setButtonLoading(btn, false);
+      }
+    }
+
+    async function resetPricingTimingToDefault() {
+      const sel = document.getElementById('pricingIntervalSelect');
+      if (sel) sel.value = '60';
+      openTimingConfirmationModal();
+    }
+
+    function startSettlementCountdownTicker() {
+      if (settlementCountdownInterval) clearInterval(settlementCountdownInterval);
+
+      settlementCountdownInterval = setInterval(() => {
+        const countdownEl = document.getElementById('timingNextSettlementCountdown');
+        if (!countdownEl) return;
+
+        if (!activePricingTiming || !activePricingTiming.nextSettlementAt) {
+          countdownEl.textContent = '--:--';
+          return;
+        }
+
+        const targetTime = new Date(activePricingTiming.nextSettlementAt).getTime();
+        const now = Date.now();
+        const diffMs = targetTime - now;
+
+        if (diffMs <= 0) {
+          countdownEl.textContent = '00:00';
+          return;
+        }
+
+        const totalSec = Math.floor(diffMs / 1000);
+        const mins = Math.floor(totalSec / 60);
+        const secs = totalSec % 60;
+        countdownEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }, 1000);
+    }
+
     // Dynamic Global Engine Configuration Functions
     async function loadPricingConfiguration() {
       try {
@@ -2830,7 +2987,7 @@
         badge.textContent = `VERSION ${config.version}`;
       }
 
-      if (document.getElementById('cfgSettlementInterval')) document.getElementById('cfgSettlementInterval').value = g.settlementIntervalSeconds || 120;
+      if (document.getElementById('cfgSettlementInterval')) document.getElementById('cfgSettlementInterval').value = g.settlementIntervalSeconds || 60;
       if (document.getElementById('cfgCrashDuration')) document.getElementById('cfgCrashDuration').value = g.marketCrashDurationSeconds || 180;
       if (document.getElementById('cfgCrashPrice')) document.getElementById('cfgCrashPrice').value = Number(g.marketCrashPrice || 18).toFixed(2);
       if (document.getElementById('cfgDefaultPrice')) document.getElementById('cfgDefaultPrice').value = Number(g.defaultCupPrice || 25).toFixed(2);
@@ -2846,7 +3003,7 @@
 
       if (document.getElementById('cfgIncreaseStep')) document.getElementById('cfgIncreaseStep').value = Number(g.increaseStep || 1.00).toFixed(2);
       if (document.getElementById('cfgDecreaseStep1')) document.getElementById('cfgDecreaseStep1').value = Number(g.decreaseStep1 || 1.00).toFixed(2);
-      if (document.getElementById('cfgDecreaseStep2')) document.getElementById('cfgDecreaseStep2').value = Number(g.decreaseStep2 || 2.00).toFixed(2);
+      if (document.getElementById('cfgDecreaseStep2')) document.getElementById('cfgDecreaseStep2').value = Number(g.decreaseStep2 || 1.00).toFixed(2);
       if (document.getElementById('cfgMinPrice')) document.getElementById('cfgMinPrice').value = Number(g.minCupPrice || 18.00).toFixed(2);
       if (document.getElementById('cfgMaxPrice')) document.getElementById('cfgMaxPrice').value = Number(g.maxCupPrice || 35.00).toFixed(2);
 
@@ -2869,7 +3026,7 @@
       const btn = document.getElementById('btnSaveGlobalConfig');
       if (btn) setButtonLoading(btn, true, '💾 Saving to DB & Redis...');
 
-      const settlementInterval = parseInt(document.getElementById('cfgSettlementInterval').value) || 120;
+      const settlementInterval = parseInt(document.getElementById('cfgSettlementInterval').value) || 60;
       const crashDuration = parseInt(document.getElementById('cfgCrashDuration').value) || 180;
       const crashPrice = parseFloat(document.getElementById('cfgCrashPrice').value) || 18.00;
       const defaultPrice = parseFloat(document.getElementById('cfgDefaultPrice').value) || 25.00;
@@ -3056,12 +3213,54 @@
       renderLivePricingTable();
     }
 
+    const adminBeverageImages = {
+      1: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=600&auto=format&fit=crop&q=80', // Mango Juice
+      2: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&auto=format&fit=crop&q=80', // Lemon Juice
+      3: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop&q=80', // Cool Mint Cooler
+      4: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=600&auto=format&fit=crop&q=80', // Valencia Orange
+      5: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&auto=format&fit=crop&q=80', // Strawberry Delight
+      6: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=600&auto=format&fit=crop&q=80', // Royal Grape
+      7: 'https://images.unsplash.com/photo-1560512823-829485b8bf24?w=600&auto=format&fit=crop&q=80', // Lychee Mist
+      23: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&auto=format&fit=crop&q=80' // Thunder Energy
+    };
+
+    function getBeverageImageAdmin(p) {
+      if (!p) return adminBeverageImages[1];
+      const pid = p.productId || p.id;
+      if (adminBeverageImages[pid]) return adminBeverageImages[pid];
+      const f = (p.flavour || p.name || p.productName || '').toUpperCase();
+      if (f.includes('MANGO')) return adminBeverageImages[1];
+      if (f.includes('LEMON')) return adminBeverageImages[2];
+      if (f.includes('MINT')) return adminBeverageImages[3];
+      if (f.includes('ORANGE')) return adminBeverageImages[4];
+      if (f.includes('STRAWBERRY')) return adminBeverageImages[5];
+      if (f.includes('GRAPE')) return adminBeverageImages[6];
+      if (f.includes('LYCHEE')) return adminBeverageImages[7];
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return adminBeverageImages[23];
+      return adminBeverageImages[1];
+    }
+
+    function getFruitIconAdmin(p) {
+      if (!p) return '🍹';
+      const f = (p.flavour || p.name || p.productName || '').toUpperCase();
+      if (f.includes('MANGO')) return '🥭';
+      if (f.includes('LEMON')) return '🍋';
+      if (f.includes('ORANGE')) return '🍊';
+      if (f.includes('MINT')) return '🌿';
+      if (f.includes('GRAPE')) return '🍇';
+      if (f.includes('STRAWBERRY')) return '🍓';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return '⚡';
+      if (f.includes('LYCHEE')) return '🍹';
+      return '🍹';
+    }
+
     function renderLivePricingTable() {
       const tbody = document.getElementById('livePricingTableBody');
       if (!tbody) return;
 
       tbody.innerHTML = liveProductsCache.map(p => {
         const icon = getFruitIconAdmin(p);
+        const imgUrl = getBeverageImageAdmin(p);
         const pid = p.productId || p.id;
         const livePrice = Number(p.currentCupPrice || p.currentPrice || 25).toFixed(2);
         const basePrice = Number(p.defaultCupPrice || p.basePrice || 25).toFixed(2);
@@ -3088,7 +3287,15 @@
         return `
           <tr>
             <td style="font-weight: 700; color: var(--text-muted); font-family: monospace;">#${pid}</td>
-            <td style="font-weight: 700; color: #0f172a;">${icon} ${p.name || p.productName}</td>
+            <td style="font-weight: 700; color: var(--text-main);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="${imgUrl}" alt="${p.name || p.productName}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;" />
+                <div>
+                  <div style="font-size: 14px;">${icon} ${p.name || p.productName}</div>
+                  <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">${p.flavour || 'JUICE'}</div>
+                </div>
+              </div>
+            </td>
             <td><span style="font-weight: 900; color: ${isOverride ? '#d97706' : '#059669'}; font-size: 15px; background: ${isOverride ? 'rgba(217,119,6,0.1)' : 'rgba(5,150,105,0.1)'}; padding: 4px 10px; border-radius: 6px;">₹${livePrice}</span></td>
             <td>${modeBadge}</td>
             <td style="font-weight: 700;">₹${basePrice}</td>
@@ -3706,7 +3913,7 @@
             tagText = '▲ +₹1';
           } else if (movement.includes('-') || movement === 'DOWN') {
             tagClass = 'tag-decay';
-            tagText = '▼ -₹4';
+            tagText = '▼ -₹1';
           } else if (movement === 'CRASH') {
             tagClass = 'tag-crash';
             tagText = '🚨 CRASH';
@@ -3792,8 +3999,8 @@
             delta = 0;
             movement = '₹0';
           } else {
-            delta = -4;
-            movement = '-₹4';
+            delta = -1;
+            movement = '-₹1';
           }
           currPrice = Math.min(maxPrice, Math.max(minPrice, currPrice + delta));
           explanation = `Step ${i} (T+${(i-1)*1}m): W0=${w0}, W1=${w1}, W2=${w2} | S_w=${sw.toFixed(2)}, Target=${targetSales.toFixed(2)} cups/min, R_d=${rd.toFixed(2)} => ${movement} (₹${oldP.toFixed(2)} -> ₹${currPrice.toFixed(2)})`;
@@ -3806,7 +4013,7 @@
           tagText = '▲ +₹1';
         } else if (movement.includes('-')) {
           tagClass = 'tag-decay';
-          tagText = '▼ -₹4';
+          tagText = '▼ -₹1';
         } else if (movement === 'CRASH') {
           tagClass = 'tag-crash';
           tagText = '🚨 CRASH';
@@ -4151,8 +4358,22 @@
             if (message.body) {
               try {
                 const cfg = JSON.parse(message.body);
-                currentPricingConfig = cfg;
-                applyPricingConfigToUI(cfg);
+                if (cfg.type === 'PRICING_TIMING_CHANGED' || cfg.intervalSeconds) {
+                  activePricingTiming = {
+                    intervalSeconds: cfg.intervalSeconds,
+                    intervalMinutes: cfg.intervalMinutes || (cfg.intervalSeconds / 60.0),
+                    label: cfg.label || (cfg.intervalSeconds + ' Seconds'),
+                    nextSettlementAt: cfg.nextSettlementAt
+                  };
+                  applyTimingToUI(activePricingTiming);
+                } else if (cfg.global) {
+                  currentPricingConfig = cfg;
+                  applyPricingConfigToUI(cfg);
+                  if (cfg.global.settlementIntervalSeconds) {
+                    activePricingTiming.intervalSeconds = cfg.global.settlementIntervalSeconds;
+                    applyTimingToUI(activePricingTiming);
+                  }
+                }
                 loadPricingAuditLogs();
               } catch (e) {}
             }
@@ -4171,6 +4392,8 @@
       refreshDashboard();
       loadNotifications();
       restoreSimulatorParams();
+      loadPricingTiming();
+      startSettlementCountdownTicker();
       loadPricingConfiguration();
       loadLivePricingProducts();
       loadPricingAuditLogs();
@@ -4202,7 +4425,7 @@
     }
 
     function toggleThemeMode() {
-      const isDark = document.body.classList.contains('dark-theme-mode');
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.body.classList.contains('dark-theme-mode');
       setThemeMode(!isDark);
     }
 
@@ -4212,9 +4435,11 @@
       
       if (isDark) {
         document.body.classList.add('dark-theme-mode');
+        document.documentElement.setAttribute('data-theme', 'dark');
         localStorage.setItem('pubexchange_theme_mode', 'dark');
       } else {
         document.body.classList.remove('dark-theme-mode');
+        document.documentElement.setAttribute('data-theme', 'light');
         localStorage.setItem('pubexchange_theme_mode', 'light');
       }
       updateThemeButtonUI(isDark);
@@ -4223,16 +4448,16 @@
     function updateThemeButtonUI(isDark) {
       const btn = document.getElementById('themeToggleBtnAdmin');
       if (btn) {
-        btn.style.background = isDark ? '#2563eb' : '#ffffff';
-        btn.style.border = isDark ? '1.5px solid #3b82f6' : '1.5px solid #cbd5e1';
-        btn.style.color = isDark ? '#ffffff' : '#0f172a';
-        btn.style.boxShadow = isDark ? '0 2px 8px rgba(37,99,235,0.3)' : '0 1px 3px rgba(0,0,0,0.05)';
+        btn.style.background = isDark ? 'linear-gradient(135deg, #0284c7, #2563eb)' : 'var(--bg-secondary)';
+        btn.style.border = isDark ? '1px solid rgba(255, 255, 255, 0.18)' : '1px solid var(--border-color)';
+        btn.style.color = isDark ? '#ffffff' : 'var(--text-main)';
+        btn.style.boxShadow = isDark ? '0 4px 14px rgba(37, 99, 235, 0.3)' : 'var(--shadow-sm)';
         btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
       }
     }
 
     const savedThemeAdmin = localStorage.getItem('pubexchange_theme_mode');
-    setThemeMode(savedThemeAdmin === 'dark');
+    setThemeMode(savedThemeAdmin !== 'light'); // Default to obsidian dark
   </script>
 </body>
 

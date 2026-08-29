@@ -134,7 +134,14 @@ public class POSController {
             if (details.getMinCupPrice() != null) existing.setMinCupPrice(details.getMinCupPrice());
             if (details.getMaxCupPrice() != null) existing.setMaxCupPrice(details.getMaxCupPrice());
             if (details.getDefaultCupPrice() != null) existing.setDefaultCupPrice(details.getDefaultCupPrice());
-            if (details.getTargetSalesPer2Minute() != null) existing.setTargetSalesPer2Minute(details.getTargetSalesPer2Minute());
+            if (details.getDefaultCupSizeMl() != null) existing.setDefaultCupSizeMl(details.getDefaultCupSizeMl());
+            if (details.getTargetSalesPer1Minute() != null) {
+                existing.setTargetSalesPer1Minute(details.getTargetSalesPer1Minute());
+                existing.setTargetSalesPer2Minute(details.getTargetSalesPer1Minute() * 2.0);
+            } else if (details.getTargetSalesPer2Minute() != null) {
+                existing.setTargetSalesPer2Minute(details.getTargetSalesPer2Minute());
+                existing.setTargetSalesPer1Minute(details.getTargetSalesPer2Minute() / 2.0);
+            }
             if (details.getTargetOrders() != null) existing.setTargetOrders(details.getTargetOrders());
             if (details.getVolatility() != null) existing.setVolatility(details.getVolatility());
             existing.setLastPriceChangeTimestamp(LocalDateTime.now());

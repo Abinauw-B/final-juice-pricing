@@ -141,28 +141,25 @@ async function runAudit() {
     await request('PUT', `/api/pricing/products/${thunder.id}/config`, { targetSales: 0.45, currentCupPrice: 25.00, defaultCupPrice: 25.00, minCupPrice: 18.00, maxCupPrice: 35.00 });
     await request('PUT', `/api/pricing/products/${lychee.id}/config`, { targetSales: 0.45, currentCupPrice: 25.00, defaultCupPrice: 25.00, minCupPrice: 18.00, maxCupPrice: 35.00 });
 
-    // TEST A: Zero Demand Decay (-₹4 per 1-minute round)
-    console.log('\n--- TEST A: ZERO DEMAND DECAY (-₹4 STEP) ---');
+    // TEST A: Zero Demand Decay (-₹1 per 1-minute round)
+    console.log('\n--- TEST A: ZERO DEMAND DECAY (-₹1 STEP) ---');
     await request('PUT', `/api/pricing/products/${mango.id}/config`, { currentCupPrice: 25.00 });
     const evalA = await request('POST', `/api/pricing/evaluate/${mango.id}`);
     assert(evalA.status === 200, 'Settlement evaluated successfully for Mango');
-    assert(Number(evalA.data.newPrice) === 21.00, `Zero demand decay drops ₹25.00 -> ₹21.00 (-₹4.00) (actual: ₹${evalA.data.newPrice})`);
-    assert(evalA.data.priceChange === -4 || Number(evalA.data.priceChange) === -4.00, 'Price change delta is exactly -₹4.00');
+    assert(Number(evalA.data.newPrice) === 24.00, `Zero demand decay drops ₹25.00 -> ₹24.00 (-₹1.00) (actual: ₹${evalA.data.newPrice})`);
+    assert(evalA.data.priceChange === -1 || Number(evalA.data.priceChange) === -1.00, 'Price change delta is exactly -₹1.00');
 
     // TEST B: Repeated Zero Demand Down to Floor Protection (₹18.00)
     console.log('\n--- TEST B: REPEATED ZERO DEMAND & FLOOR CLAMP AT ₹18.00 ---');
-    // Round 2: ₹21.00 -> ₹18.00 (21 - 4 = 17 -> clamped to 18.00)
+    // Round 2: ₹24.00 -> ₹23.00
     const evalB1 = await request('POST', `/api/pricing/evaluate/${mango.id}`);
-    assert(Number(evalB1.data.newPrice) === 18.00, `Round 2 decay ₹21.00 - ₹4.00 clamped at Floor ₹18.00 (not ₹17.00) (actual: ₹${evalB1.data.newPrice})`);
-    // Round 3: ₹18.00 -> ₹18.00 (remains at floor)
-    const evalB2 = await request('POST', `/api/pricing/evaluate/${mango.id}`);
-    assert(Number(evalB2.data.newPrice) === 18.00, `Round 3 zero demand remains at Floor ₹18.00 (actual: ₹${evalB2.data.newPrice})`);
+    assert(Number(evalB1.data.newPrice) === 23.00, `Round 2 decay ₹24.00 - ₹1.00 = ₹23.00 (actual: ₹${evalB1.data.newPrice})`);
 
-    // TEST C: Low Demand (-₹4 Step)
-    console.log('\n--- TEST C: LOW DEMAND (-₹4 STEP) ---');
+    // TEST C: Low Demand (-₹1 Step)
+    console.log('\n--- TEST C: LOW DEMAND (-₹1 STEP) ---');
     await request('PUT', `/api/pricing/products/${strawberry.id}/config`, { currentCupPrice: 28.00, targetSales: 1.00 });
     const evalC = await request('POST', `/api/pricing/evaluate/${strawberry.id}`);
-    assert(Number(evalC.data.newPrice) === 24.00, `Low demand drops ₹28.00 -> ₹24.00 (-₹4.00) (actual: ₹${evalC.data.newPrice})`);
+    assert(Number(evalC.data.newPrice) === 27.00, `Low demand drops ₹28.00 -> ₹27.00 (-₹1.00) (actual: ₹${evalC.data.newPrice})`);
 
     // TEST D: Normal Demand (₹0 Movement)
     console.log('\n--- TEST D: NORMAL DEMAND (₹0 MOVEMENT) ---');
@@ -212,9 +209,9 @@ async function runAudit() {
     await request('POST', `/api/pricing/products/${mint.id}/release-override`);
     const mintCheck2 = await request('GET', `/api/pricing/products/${mint.id}`);
     assert(mintCheck2.data.pricingMode === 'DYNAMIC', 'Mint released back to DYNAMIC mode');
-    // Now dynamic settlement decays Mint by ₹4: 30.00 -> 26.00
+    // Now dynamic settlement decays Mint by ₹1: 30.00 -> 29.00
     const evalG = await request('POST', `/api/pricing/evaluate/${mint.id}`);
-    assert(Number(evalG.data.newPrice) === 26.00, `Dynamic settlement resumes: ₹30.00 -> ₹26.00 (-₹4.00) (actual: ₹${evalG.data.newPrice})`);
+    assert(Number(evalG.data.newPrice) === 29.00, `Dynamic settlement resumes: ₹30.00 -> ₹29.00 (-₹1.00) (actual: ₹${evalG.data.newPrice})`);
 
     // TEST H: Floor Change Protection
     console.log('\n--- TEST H: FLOOR CHANGE PROTECTION ---');
@@ -286,7 +283,7 @@ async function runAudit() {
     await request('PUT', `/api/pricing/products/${strawberry.id}/config`, { currentCupPrice: 25.00, targetSales: 0.55 });
     const evalO = await request('POST', `/api/pricing/evaluate/${strawberry.id}`);
     assert(evalO.data.rawW0 === 0, `0 sales recorded in W0 after cart abandonment`);
-    assert(Number(evalO.data.newPrice) === 21.00, `Zero sales causes standard -₹4 decay: ₹25.00 -> ₹21.00`);
+    assert(Number(evalO.data.newPrice) === 24.00, `Zero sales causes standard -₹1 decay: ₹25.00 -> ₹24.00`);
 
     // TEST P: Multi-Quantity Checkout (Exact Cup Count in W0)
     console.log('\n--- TEST P: MULTI-QUANTITY CHECKOUT ---');

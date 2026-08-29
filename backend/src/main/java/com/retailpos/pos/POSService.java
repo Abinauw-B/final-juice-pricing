@@ -24,27 +24,19 @@ public class POSService {
 
     private final ProductRepository productRepository;
     private final SalesOrderRepository salesOrderRepository;
-    private final PriceHistoryRepository priceHistoryRepository;
     private final JuiceBatchService juiceBatchService;
     private final MarketCrashService marketCrashService;
-    private final com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService;
     private final com.retailpos.pricing.PricingEngineService pricingEngineService;
     private final com.retailpos.pricing.PriceLockService priceLockService;
-    private final com.retailpos.pricing.service.MarketEventService marketEventService;
-    private final SimpMessagingTemplate messagingTemplate;
     private final TransactionTemplate transactionTemplate;
 
-    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService, com.retailpos.pricing.PricingEngineService pricingEngineService, com.retailpos.pricing.PriceLockService priceLockService, com.retailpos.pricing.service.MarketEventService marketEventService, SimpMessagingTemplate messagingTemplate, PlatformTransactionManager transactionManager) {
+    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PricingEngineService pricingEngineService, com.retailpos.pricing.PriceLockService priceLockService, PlatformTransactionManager transactionManager) {
         this.productRepository = productRepository;
         this.salesOrderRepository = salesOrderRepository;
-        this.priceHistoryRepository = priceHistoryRepository;
         this.juiceBatchService = juiceBatchService;
         this.marketCrashService = marketCrashService;
-        this.priceAdjustmentService = priceAdjustmentService;
         this.pricingEngineService = pricingEngineService;
         this.priceLockService = priceLockService;
-        this.marketEventService = marketEventService;
-        this.messagingTemplate = messagingTemplate;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 

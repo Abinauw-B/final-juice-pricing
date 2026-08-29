@@ -114,28 +114,31 @@ public class PricingConfigurationService {
     }
 
     public BigDecimal getIncreaseStep() {
-        return parseDecimal(globalConfigCache.getOrDefault("INCREASE_STEP", "1.00"), new BigDecimal("1.00"));
+        BigDecimal val = parseDecimal(globalConfigCache.getOrDefault("INCREASE_STEP", "1.00"), new BigDecimal("1.00"));
+        return (val.compareTo(BigDecimal.ONE) > 0) ? new BigDecimal("1.00") : val;
     }
 
     public BigDecimal getDecreaseStep1() {
-        return parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_1", "4.00"), new BigDecimal("4.00"));
+        BigDecimal val = parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_1", "1.00"), new BigDecimal("1.00"));
+        return (val.compareTo(BigDecimal.ONE) > 0) ? new BigDecimal("1.00") : val;
     }
 
     public BigDecimal getDecreaseStep2() {
-        return parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_2", "4.00"), new BigDecimal("4.00"));
+        BigDecimal val = parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_2", "1.00"), new BigDecimal("1.00"));
+        return (val.compareTo(BigDecimal.ONE) > 0) ? new BigDecimal("1.00") : val;
     }
 
     public BigDecimal getPriceDecreaseStep() {
-        return parseDecimal(globalConfigCache.getOrDefault("PRICE_DECREASE_STEP", "4.00"), new BigDecimal("4.00"));
+        BigDecimal val = parseDecimal(globalConfigCache.getOrDefault("PRICE_DECREASE_STEP", "1.00"), new BigDecimal("1.00"));
+        return (val.compareTo(BigDecimal.ONE) > 0) ? new BigDecimal("1.00") : val;
     }
 
     public static void validatePriceMovement(BigDecimal delta) {
-        if (delta == null || delta.compareTo(BigDecimal.ZERO) >= 0) return;
+        if (delta == null || delta.compareTo(BigDecimal.ZERO) == 0) return;
         BigDecimal absDelta = delta.abs();
-        BigDecimal[] divRem = absDelta.divideAndRemainder(new BigDecimal("4.00"));
-        if (divRem[1].compareTo(BigDecimal.ZERO) != 0) {
-            log.error("[PRICE_MOVEMENT_VALIDATION] Downward price movement {} is not a multiple of ₹4.00!", delta);
-            throw new IllegalStateException("Downward price movement must be a multiple of ₹4.00. Got: " + delta);
+        if (absDelta.compareTo(new BigDecimal("1.00")) > 0) {
+            log.error("[PRICE_MOVEMENT_VALIDATION] Normal dynamic price movement {} exceeds maximum allowed ₹1.00 per settlement!", delta);
+            throw new IllegalStateException("Normal dynamic price movement must not exceed ₹1.00. Got: " + delta);
         }
     }
 
@@ -322,6 +325,14 @@ public class PricingConfigurationService {
         try {
             if (messagingTemplate != null) {
                 messagingTemplate.convertAndSend("/topic/pricing-config", fullDto);
+                List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+                messagingTemplate.convertAndSend("/topic/prices", activeProducts);
+                messagingTemplate.convertAndSend("/topic/products", activeProducts);
+                Map<String, Object> settlementMsg = new HashMap<>();
+                settlementMsg.put("type", "PRICING_CONFIG_UPDATED");
+                settlementMsg.put("version", newVersion);
+                settlementMsg.put("intervalSeconds", getSettlementIntervalSeconds());
+                messagingTemplate.convertAndSend("/topic/settlement", settlementMsg);
             }
         } catch (Exception e) {
             log.warn("Failed to broadcast pricing config over WebSocket: {}", e.getMessage());
@@ -361,12 +372,10 @@ public class PricingConfigurationService {
         long newVersion = oldVersion + 1;
 
         Double oldTarget = product.getTargetSalesPer1Minute();
-        BigDecimal oldBase = product.getDefaultCupPrice();
-        BigDecimal oldMin = product.getMinCupPrice();
-        BigDecimal oldMax = product.getMaxCupPrice();
 
         if (update.getTargetSales() != null) {
             product.setTargetSalesPer1Minute(update.getTargetSales());
+            product.setTargetSalesPer2Minute(update.getTargetSales() * 2.0);
         }
         if (update.getDefaultCupPrice() != null) product.setDefaultCupPrice(update.getDefaultCupPrice());
         if (update.getMinCupPrice() != null) product.setMinCupPrice(update.getMinCupPrice());
@@ -397,7 +406,9 @@ public class PricingConfigurationService {
             }
             if (messagingTemplate != null) {
                 messagingTemplate.convertAndSend("/topic/pricing-config", getFullConfiguration());
-                messagingTemplate.convertAndSend("/topic/prices", productRepository.findByIsActiveTrueOrderByIdAsc());
+                List<Product> activeProds = productRepository.findByIsActiveTrueOrderByIdAsc();
+                messagingTemplate.convertAndSend("/topic/prices", activeProds);
+                messagingTemplate.convertAndSend("/topic/products", activeProds);
             }
         } catch (Exception e) {}
 
@@ -440,8 +451,11 @@ public class PricingConfigurationService {
         if (config.getWeightW2() != null && config.getWeightW2().compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Weight W2 cannot be negative");
         }
-        if (config.getSettlementIntervalSeconds() != null && config.getSettlementIntervalSeconds() <= 0) {
-            throw new IllegalArgumentException("Settlement interval must be strictly positive (> 0 seconds)");
+        if (config.getSettlementIntervalSeconds() != null) {
+            int interval = config.getSettlementIntervalSeconds();
+            if (!ALLOWED_INTERVALS.contains(interval)) {
+                throw new IllegalArgumentException("Invalid settlement interval: " + interval + "s. Allowed values are: 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600).");
+            }
         }
         if (config.getMarketCrashDurationSeconds() != null && config.getMarketCrashDurationSeconds() <= 0) {
             throw new IllegalArgumentException("Market crash duration must be strictly positive (> 0 seconds)");
@@ -472,5 +486,29 @@ public class PricingConfigurationService {
                 && config.getStableDemandLowerThreshold().compareTo(config.getStableDemandUpperThreshold()) > 0) {
             throw new IllegalArgumentException("Stable demand lower bound cannot exceed upper bound");
         }
+    }
+
+    public static final Set<Integer> ALLOWED_INTERVALS = Set.of(30, 60, 120, 300, 600);
+
+    public String getSettlementIntervalLabel() {
+        int sec = getSettlementIntervalSeconds();
+        return getIntervalLabel(sec);
+    }
+
+    public double getNormalizedTargetSales(Product product, int intervalSeconds) {
+        double storedTarget = getTargetSalesForProduct(product);
+        int storedTargetPeriodSeconds = 60; // Authoritative stored period is 60s
+        return (storedTarget * intervalSeconds) / (double) storedTargetPeriodSeconds;
+    }
+
+    public static String getIntervalLabel(int seconds) {
+        return switch (seconds) {
+            case 30 -> "30 Seconds";
+            case 60 -> "1 Minute";
+            case 120 -> "2 Minutes";
+            case 300 -> "5 Minutes";
+            case 600 -> "10 Minutes";
+            default -> (seconds % 60 == 0) ? (seconds / 60) + " Minutes" : seconds + " Seconds";
+        };
     }
 }

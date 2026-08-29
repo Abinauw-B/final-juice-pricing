@@ -141,7 +141,7 @@ export class PricingSimulatorComponent {
 
   runSimulation() {
     this.http.post('http://localhost:8088/api/pricing/simulate', this.req).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.simulationResult = res;
       },
       error: () => {
@@ -173,12 +173,9 @@ export class PricingSimulatorComponent {
           } else if (rd >= 0.90) {
             delta = 0;
             movement = '₹0';
-          } else if (rd >= 0.50) {
-            delta = -4;
-            movement = '-₹4';
           } else {
-            delta = -4;
-            movement = '-₹4';
+            delta = -1;
+            movement = '-₹1';
           }
           const oldP = price;
           price = Math.min(this.req.maxPrice, Math.max(this.req.minPrice, price + delta));

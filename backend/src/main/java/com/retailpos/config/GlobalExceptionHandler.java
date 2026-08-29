@@ -41,8 +41,11 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now().toString());
         body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "BAD_REQUEST");
-        body.put("message", "Validation failed: " + ex.getBindingResult().getFieldError().getDefaultMessage());
+        String message = "Validation failed";
+        if (ex.getBindingResult().getFieldError() != null && ex.getBindingResult().getFieldError().getDefaultMessage() != null) {
+            message = "Validation failed: " + ex.getBindingResult().getFieldError().getDefaultMessage();
+        }
+        body.put("message", message);
         body.put("path", request.getDescription(false).replace("uri=", ""));
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }

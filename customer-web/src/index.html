@@ -28,58 +28,123 @@
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
   <style>
-    :root {
-      --bg-page: #f8fafc;
-      --bg-surface: #ffffff;
-      --bg-secondary: #f1f5f9;
-      --bg-card: #ffffff;
-      --bg-elevated: #ffffff;
-      --border: #e2e8f0;
-      --border-subtle: #cbd5e1;
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #64748b;
-      --accent-gold: #d97706;
-      --accent-gold-hover: #b45309;
-      --success: #059669;
-      --danger: #e11d48;
-      --warning: #d97706;
-      --info: #0284c7;
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+
+    :root, html[data-theme="dark"], body.dark-theme-mode {
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Dark Theme — "Obsidian" Tokens */
+      --bg-page: #07090E;
+      --bg-surface: rgba(11, 15, 25, 0.88);
+      --bg-secondary: rgba(22, 30, 46, 0.65);
+      --bg-elevated: rgba(22, 31, 48, 0.85);
+      --bg-card: rgba(16, 22, 34, 0.72);
+      --bg-card-hover: rgba(22, 31, 48, 0.85);
+      --bg-subtle: rgba(26, 36, 54, 0.6);
+      
+      --border-color: rgba(255, 255, 255, 0.09);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-glow: rgba(56, 189, 248, 0.35);
+
+      --text-main: #F8FAFC;
+      --text-primary: #F8FAFC;
+      --text-secondary: #CBD5E1;
+      --text-muted: #8E9DB2;
+
+      --accent-cyan: #38BDF8;
+      --accent-emerald: #10B981;
+      --accent-rose: #F43F5E;
+      --accent-amber: #F59E0B;
+      --accent-purple: #C084FC;
+      --accent-blue: #38BDF8;
+
+      --success: #10B981;
+      --danger: #F43F5E;
+      --warning: #F59E0B;
+      --info: #38BDF8;
+
       --radius-card: 16px;
       --radius-btn: 10px;
       --radius-badge: 8px;
-      --shadow-card: 0 4px 20px rgba(0,0,0,0.05);
-    }
 
-    body.dark-theme-mode {
-      --bg-page: #07090e;
-      --bg-surface: rgba(11, 15, 25, 0.88);
-      --bg-secondary: rgba(22, 30, 46, 0.65);
-      --bg-card: rgba(16, 22, 34, 0.72);
-      --bg-elevated: rgba(22, 31, 48, 0.85);
-      --border: rgba(255, 255, 255, 0.09);
-      --border-subtle: rgba(255, 255, 255, 0.06);
-      --text-primary: #f8fafc;
-      --text-secondary: #cbd5e1;
-      --text-muted: #8e9db2;
-      --accent-gold: #f59e0b;
-      --accent-gold-hover: #fbbf24;
-      --success: #10b981;
-      --danger: #f43f5e;
-      --warning: #f59e0b;
-      --info: #38bdf8;
+      --elevation-1: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 12px 36px -4px rgba(0, 0, 0, 0.55);
+      --elevation-2: 0 24px 60px -8px rgba(0, 0, 0, 0.65);
       --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 12px 36px -4px rgba(0, 0, 0, 0.55);
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
 
-      background: radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
-                  radial-gradient(circle at 88% 92%, rgba(192, 132, 252, 0.07) 0%, transparent 45%),
-                  radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
-                  #07090e !important;
-      background-attachment: fixed !important;
-      color: #f8fafc !important;
+      --bg-mesh: radial-gradient(circle at 10% 10%, rgba(245, 158, 11, 0.12) 0%, transparent 40%),
+                 radial-gradient(circle at 90% 15%, rgba(244, 63, 94, 0.12) 0%, transparent 45%),
+                 radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+                 radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.12) 0%, transparent 45%),
+                 linear-gradient(180deg, #07090E 0%, #0B0F19 50%, #07090E 100%);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; letter-spacing: -0.012em; }
-    body { background: var(--bg-page); color: var(--text-primary); min-height: 100vh; padding: 18px 24px; transition: background 0.2s, color 0.2s; -webkit-font-smoothing: antialiased; }
+    html[data-theme="light"], body:not(.dark-theme-mode) {
+      /* Light Theme — "Porcelain" Tokens */
+      --bg-page: #F4F6FB;
+      --bg-surface: rgba(255, 255, 255, 0.94);
+      --bg-secondary: rgba(241, 245, 249, 0.75);
+      --bg-elevated: rgba(255, 255, 255, 0.98);
+      --bg-card: rgba(255, 255, 255, 0.88);
+      --bg-card-hover: rgba(255, 255, 255, 0.98);
+      --bg-subtle: #f1f5f9;
+
+      --border-color: rgba(15, 23, 42, 0.10);
+      --border-subtle: rgba(15, 23, 42, 0.06);
+      --border-glow: rgba(2, 132, 199, 0.35);
+
+      --text-main: #0F172A;
+      --text-primary: #0F172A;
+      --text-secondary: #334155;
+      --text-muted: #64748B;
+
+      --accent-cyan: #0284C7;
+      --accent-emerald: #059669;
+      --accent-rose: #E11D48;
+      --accent-amber: #D97706;
+      --accent-purple: #9333EA;
+      --accent-blue: #2563EB;
+
+      --success: #059669;
+      --danger: #E11D48;
+      --warning: #D97706;
+      --info: #0284C7;
+
+      --radius-card: 16px;
+      --radius-btn: 10px;
+      --radius-badge: 8px;
+
+      --elevation-1: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 12px 32px -6px rgba(15, 23, 42, 0.10);
+      --elevation-2: 0 24px 48px -10px rgba(15, 23, 42, 0.15);
+      --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 28px -4px rgba(15, 23, 42, 0.08);
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+      --bg-mesh: radial-gradient(circle at 8% 8%, rgba(245, 158, 11, 0.10) 0%, transparent 40%),
+                 radial-gradient(circle at 92% 12%, rgba(244, 63, 94, 0.09) 0%, transparent 45%),
+                 radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+                 radial-gradient(circle at 80% 90%, rgba(168, 85, 247, 0.09) 0%, transparent 45%),
+                 linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 50%, #F8FAFC 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: var(--font-main);
+      letter-spacing: -0.012em;
+    }
+
+    body {
+      background: var(--bg-mesh);
+      background-color: var(--bg-page);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 18px 24px;
+      transition: background 0.3s ease, color 0.3s ease;
+      -webkit-font-smoothing: antialiased;
+    }
 
     /* Compact Stock Exchange Header */
     .header-banner {
@@ -88,29 +153,40 @@
       justify-content: space-between;
       align-items: center;
       background: var(--bg-surface);
-      border: 1px solid var(--border);
-      padding: 14px 22px;
+      border: 1.5px solid var(--border-color);
+      padding: 14px 24px;
       border-radius: var(--radius-card);
       margin-bottom: 14px;
-      box-shadow: var(--shadow-card);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      height: 70px;
+      height: 72px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header-banner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f59e0b 0%, #ec4899 33%, #38bdf8 66%, #10b981 100%);
     }
 
     .brand-title { display: flex; align-items: center; gap: 14px; }
     .brand-icon {
-      width: 44px; height: 44px;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(192, 132, 252, 0.2));
-      border: 1px solid rgba(56, 189, 248, 0.35);
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #38bdf8 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+      font-size: 24px;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
     }
     .brand-name {
-      font-size: 19px; font-weight: 800;
-      color: var(--text-primary);
+      font-size: 19.5px; font-weight: 900;
+      background: linear-gradient(135deg, var(--text-primary) 0%, #0284c7 50%, #9333ea 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       line-height: 1.2;
       letter-spacing: -0.02em;
     }
@@ -123,20 +199,35 @@
       border-radius: 20px; display: inline-flex; align-items: center; gap: 8px;
       background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: var(--success);
       box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+      font-family: var(--font-mono);
+      font-feature-settings: 'tnum' 1;
+      font-variant-numeric: tabular-nums;
     }
-    .status-badge-live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .status-badge-live .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success); box-shadow: 0 0 8px var(--success);
+      animation: liveDotPulse 2s infinite ease-in-out;
+    }
 
     .status-badge-offline {
       font-size: 12px; font-weight: 800; padding: 6px 14px;
       border-radius: 20px; display: inline-flex; align-items: center; gap: 8px;
       background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); color: var(--danger);
+      font-family: var(--font-mono);
+      font-feature-settings: 'tnum' 1;
+      font-variant-numeric: tabular-nums;
     }
     .status-badge-offline .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+
+    @keyframes liveDotPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+    }
 
     .btn-compact {
       height: 38px; padding: 0 14px; border-radius: var(--radius-btn);
       font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex;
-      align-items: center; gap: 6px; text-decoration: none; border: 1px solid var(--border);
+      align-items: center; gap: 6px; text-decoration: none; border: 1px solid var(--border-color);
       background: var(--bg-card); color: var(--text-primary); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: var(--shadow-sm);
     }
@@ -146,7 +237,7 @@
     .ticker-wrap {
       width: 100%;
       background: var(--bg-surface);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-color);
       box-shadow: var(--shadow-card);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -164,6 +255,7 @@
     .ticker-content {
       display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none;
       width: 100%; white-space: nowrap; align-items: center;
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
     }
@@ -172,13 +264,14 @@
       font-size: 13px; font-weight: 700; color: var(--text-primary);
       display: inline-flex; align-items: center; gap: 8px;
       border-right: 1px solid var(--border-subtle); padding-right: 20px;
+      font-variant-numeric: tabular-nums;
     }
     .ticker-item:last-child { border-right: none; }
 
     /* Market Summary Metric Overview Bar */
     .market-summary-bar {
       background: var(--bg-surface);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-color);
       border-radius: var(--radius-card);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -202,107 +295,355 @@
       margin: 0 auto;
     }
 
-    /* Clean Professional Product Card */
+    /* Clean Professional Product Card with Appetizing Beverage Photos */
     .flavour-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 20px;
+    }
+
+    /* Flavour-Specific Gradient Themes */
+    .card-theme-mango {
+      --flavour-grad-light: linear-gradient(145deg, rgba(254, 243, 199, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(254, 215, 170, 0.45) 100%);
+      --flavour-grad-dark: linear-gradient(145deg, rgba(245, 158, 11, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(234, 88, 12, 0.10) 100%);
+      --flavour-border: rgba(245, 158, 11, 0.38);
+      --flavour-glow: rgba(245, 158, 11, 0.30);
+      --flavour-btn: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+      --flavour-accent: #f59e0b;
+      --flavour-top-strip: linear-gradient(90deg, #f59e0b, #ea580c);
+    }
+    .card-theme-lemon {
+      --flavour-grad-light: linear-gradient(145deg, rgba(254, 240, 138, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(217, 249, 157, 0.45) 100%);
+      --flavour-grad-dark: linear-gradient(145deg, rgba(234, 179, 8, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(132, 204, 22, 0.10) 100%);
+      --flavour-border: rgba(234, 179, 8, 0.38);
+      --flavour-glow: rgba(234, 179, 8, 0.30);
+      --flavour-btn: linear-gradient(135deg, #eab308 0%, #84cc16 100%);
+      --flavour-accent: #eab308;
+      --flavour-top-strip: linear-gradient(90deg, #eab308, #84cc16);
+    }
+    .card-theme-mint {
+      --flavour-grad-light: linear-gradient(145deg, rgba(209, 250, 229, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(207, 250, 254, 0.45) 100%);
+      --flavour-grad-dark: linear-gradient(145deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(6, 182, 212, 0.10) 100%);
+      --flavour-border: rgba(16, 185, 129, 0.38);
+      --flavour-glow: rgba(16, 185, 129, 0.30);
+      --flavour-btn: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --flavour-accent: #10b981;
+      --flavour-top-strip: linear-gradient(90deg, #10b981, #06b6d4);
+    }
+    .card-theme-orange {
+      --flavour-grad-light: linear-gradient(145deg, rgba(255, 237, 213, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(254, 202, 202, 0.45) 100%);
+      --flavour-grad-dark: linear-gradient(145deg, rgba(249, 115, 22, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(239, 68, 68, 0.10) 100%);
+      --flavour-border: rgba(249, 115, 22, 0.38);
+      --flavour-glow: rgba(249, 115, 22, 0.30);
+      --flavour-btn: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      --flavour-accent: #f97316;
+      --flavour-top-strip: linear-gradient(90deg, #f97316, #ef4444);
+    }
+    .card-theme-strawberry {
+      --flavour-grad-light: linear-gradient(145deg, rgba(255, 228, 230, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(252, 231, 243, 0.45) 100%);
+      --flavour-grad-dark: linear-gradient(145deg, rgba(244, 63, 94, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(219, 39, 119, 0.10) 100%);
+      --flavour-border: rgba(244, 63, 94, 0.38);
+      --flavour-glow: rgba(244, 63, 94, 0.30);
+      --flavour-btn: linear-gradient(135deg, #f43f5e 0%, #db2777 100%);
+      --flavour-accent: #f43f5e;
+      --flavour-top-strip: linear-gradient(90deg, #f43f5e, #db2777);
+    }
+    .card-theme-grape {
+      --flavour-grad-light: linear-gradient(145deg, rgba(243, 232, 255, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(224, 231, 255, 0.45) 100%);
+      --flavour-grad-dark: linear-gradient(145deg, rgba(168, 85, 247, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(99, 102, 241, 0.10) 100%);
+      --flavour-border: rgba(168, 85, 247, 0.38);
+      --flavour-glow: rgba(168, 85, 247, 0.30);
+      --flavour-btn: linear-gradient(135deg, #9333ea 0%, #6366f1 100%);
+      --flavour-accent: #a855f7;
+      --flavour-top-strip: linear-gradient(90deg, #a855f7, #6366f1);
+    }
+    .card-theme-lychee {
+      --flavour-grad-light: linear-gradient(145deg, rgba(252, 231, 243, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(254, 215, 170, 0.45) 100%);
+      --flavour-grad-dark: linear-gradient(145deg, rgba(236, 72, 153, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(251, 146, 60, 0.10) 100%);
+      --flavour-border: rgba(236, 72, 153, 0.38);
+      --flavour-glow: rgba(236, 72, 153, 0.30);
+      --flavour-btn: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+      --flavour-accent: #ec4899;
+      --flavour-top-strip: linear-gradient(90deg, #ec4899, #fb923c);
+    }
+    .card-theme-thunder {
+      --flavour-grad-light: linear-gradient(145deg, rgba(207, 250, 254, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(219, 234, 254, 0.45) 100%);
+      --flavour-grad-dark: linear-gradient(145deg, rgba(6, 182, 212, 0.16) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(59, 130, 246, 0.10) 100%);
+      --flavour-border: rgba(6, 182, 212, 0.42);
+      --flavour-glow: rgba(6, 182, 212, 0.32);
+      --flavour-btn: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+      --flavour-accent: #0284c7;
+      --flavour-top-strip: linear-gradient(90deg, #06b6d4, #3b82f6);
     }
 
     .flavour-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
+      background: var(--flavour-grad-dark);
+      border: 1px solid var(--flavour-border, var(--border-color));
       border-radius: var(--radius-card);
-      padding: 20px;
+      padding: 16px;
       display: flex; flex-direction: column; justify-content: space-between;
-      box-shadow: var(--shadow-card);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 20px var(--flavour-glow, transparent);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
     }
+
+    html[data-theme="light"] .flavour-card,
+    body:not(.dark-theme-mode) .flavour-card {
+      background: var(--flavour-grad-light);
+      box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08), 0 0 16px var(--flavour-glow, transparent);
+    }
+
+    .flavour-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--flavour-top-strip, linear-gradient(90deg, #0284c7, #38bdf8));
+      z-index: 2;
+    }
+
     .flavour-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--border-glow);
-      box-shadow: 0 8px 30px rgba(56, 189, 248, 0.12);
+      transform: translateY(-4px);
+      border-color: var(--flavour-accent, var(--border-glow));
+      box-shadow: 0 14px 38px var(--flavour-glow, rgba(56, 189, 248, 0.25)), 0 0 0 1px var(--flavour-border, var(--border-glow));
     }
 
-    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .card-header-left { display: flex; align-items: center; gap: 10px; }
-    .card-icon { font-size: 24px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2)); }
-    .card-name { font-size: 16.5px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; }
-    .card-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.45; min-height: 38px; }
+    /* Appetizing Beverage Image Banner */
+    .card-img-banner {
+      position: relative;
+      width: 100%;
+      height: 155px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      background: var(--bg-secondary);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    }
+    .beverage-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: block;
+    }
+    .flavour-card:hover .beverage-photo {
+      transform: scale(1.08);
+    }
+    .card-img-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(7, 9, 14, 0.05) 0%, rgba(7, 9, 14, 0.78) 100%);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 10px 12px;
+      pointer-events: none;
+    }
+    .fruit-pill {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      letter-spacing: 0.3px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
 
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .card-header-left { display: flex; align-items: center; gap: 10px; }
+    .card-name { font-size: 17px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.25; }
     .market-badge {
-      font-size: 11.5px; font-weight: 800; padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px;
       display: inline-flex; align-items: center; gap: 4px;
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
+      white-space: nowrap;
+      transition: all 0.3s ease;
     }
     .badge-up {
-      color: #10b981;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+      color: #10B981;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
     }
     .badge-down {
-      color: #f43f5e;
-      background: rgba(244, 63, 94, 0.15);
-      border: 1px solid rgba(244, 63, 94, 0.35);
-      box-shadow: 0 0 10px rgba(244, 63, 94, 0.15);
+      color: #F43F5E;
+      background: rgba(244, 63, 94, 0.2);
+      border: 1px solid rgba(244, 63, 94, 0.5);
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.35);
     }
     .badge-stable {
-      color: #94a3b8;
-      background: rgba(148, 163, 184, 0.12);
-      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: var(--text-muted);
+      background: rgba(148, 163, 184, 0.18);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    /* Mini Sparkline Chart Container */
+    .card-chart-wrap {
+      width: 100%;
+      height: 68px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .card-chart-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .chart-badge-pts {
+      position: absolute;
+      top: 4px; right: 6px;
+      font-size: 9px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      padding: 1px 6px;
+      border-radius: 4px;
+      pointer-events: none;
+      letter-spacing: 0.3px;
     }
 
     .price-section {
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 14px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
     }
     .price-main {
-      font-size: 30px; font-weight: 900; color: #38bdf8; letter-spacing: -0.5px;
+      font-size: 29px; font-weight: 900; color: var(--flavour-accent, var(--accent-cyan)); letter-spacing: -0.5px;
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
+      transition: color 0.4s ease-out, transform 0.3s ease;
+      text-shadow: 0 0 14px var(--flavour-glow, rgba(56, 189, 248, 0.2));
+      display: inline-block;
     }
     .price-unit { font-size: 13px; color: var(--text-muted); font-weight: 600; }
     .price-bounds {
       font-size: 11.5px; color: var(--text-muted); margin-top: 6px; display: flex; justify-content: space-between;
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
     }
 
+    /* Demand Rate & Velocity Bar */
+    .demand-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
     .demand-text {
-      font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; display: flex; justify-content: space-between;
+      font-size: 11.5px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
     }
-    .demand-text strong { color: #38bdf8; font-weight: 800; }
+    .demand-text strong { color: var(--flavour-accent, var(--accent-cyan)); font-weight: 800; }
+    .demand-bar-track {
+      width: 100%;
+      height: 5px;
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+      position: relative;
+    }
+    .demand-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s ease;
+    }
+    .demand-high {
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+    }
+    .demand-normal {
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+    }
+    .demand-low {
+      background: linear-gradient(90deg, #64748b, #38bdf8);
+    }
 
     .add-to-cart-btn {
       width: 100%; height: 44px;
-      background: linear-gradient(135deg, #0284c7, #2563eb);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: var(--flavour-btn, linear-gradient(135deg, #0284c7, #2563eb));
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: var(--radius-btn);
       color: #ffffff; font-weight: 800; font-size: 13.5px;
       cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 4px 16px var(--flavour-glow, rgba(37, 99, 235, 0.35));
     }
     .add-to-cart-btn:hover {
-      filter: brightness(1.12);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--flavour-glow, rgba(37, 99, 235, 0.5));
     }
     .add-to-cart-btn:active { transform: scale(0.98); }
+
+    /* Flash Highlight Animations for Live Dynamic Price Movements */
+    @keyframes flashSurgePulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.6); transform: scale(1.02); border-color: #10B981; }
+      50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.9); border-color: #10B981; }
+      100% { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); transform: scale(1); }
+    }
+    @keyframes flashDecayPulse {
+      0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.8), 0 0 20px rgba(244, 63, 94, 0.6); transform: scale(1.02); border-color: #F43F5E; }
+      50% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0.3), 0 0 30px rgba(244, 63, 94, 0.9); border-color: #F43F5E; }
+      100% { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); transform: scale(1); }
+    }
+    .flash-surge {
+      animation: flashSurgePulse 1.2s ease-out;
+      border-color: var(--accent-emerald) !important;
+    }
+    .flash-decay {
+      animation: flashDecayPulse 1.2s ease-out;
+      border-color: var(--accent-rose) !important;
+    }
+
+    /* Price Tick Pulse Micro-Animation */
+    @keyframes pricePulseUp {
+      0% { transform: scale(1); text-shadow: 0 0 14px rgba(16, 185, 129, 0.8); color: #10B981; }
+      50% { transform: scale(1.10); text-shadow: 0 0 24px rgba(16, 185, 129, 1); color: #10B981; }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes pricePulseDown {
+      0% { transform: scale(1); text-shadow: 0 0 14px rgba(244, 63, 94, 0.8); color: #F43F5E; }
+      50% { transform: scale(1.10); text-shadow: 0 0 24px rgba(244, 63, 94, 1); color: #F43F5E; }
+      100% { transform: scale(1); }
+    }
+
+    .tick-up { animation: pricePulseUp 800ms ease-out; }
+    .tick-down { animation: pricePulseDown 800ms ease-out; }
 
     /* Professional Order Cart Panel */
     .cart-panel {
       background: var(--bg-card);
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border-color);
       border-radius: var(--radius-card);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -310,17 +651,30 @@
       display: flex; flex-direction: column;
       height: calc(100vh - 130px);
       position: sticky; top: 18px;
-      box-shadow: var(--shadow-card);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: hidden;
     }
+    .cart-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%);
+    }
+
     .cart-header {
       font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px;
       display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;
     }
     .cart-badge {
-      font-size: 12px; font-weight: 800; color: #38bdf8;
-      background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 4px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: 800; color: #ffffff;
+      background: linear-gradient(135deg, #0284c7, #2563eb); border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 4px 12px; border-radius: 12px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
     }
 
     .cart-items { flex: 1; overflow-y: auto; margin-bottom: 16px; padding-right: 4px; }
@@ -330,43 +684,47 @@
       border: 1px solid var(--border-subtle); margin-bottom: 10px;
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     }
     .item-title { font-size: 14px; font-weight: 800; color: var(--text-primary); }
     .item-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
     .qty-btn {
-      width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+      width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border-color);
       background: var(--bg-secondary); color: var(--text-primary); font-weight: 800; font-size: 15px; cursor: pointer;
       display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;
     }
-    .qty-btn:hover { background: var(--border-subtle); border-color: var(--info); }
+    .qty-btn:hover { background: var(--border-subtle); border-color: var(--info); transform: scale(1.05); }
 
     .cart-summary {
-      background: var(--bg-secondary); border: 1px solid var(--border-subtle);
-      border-radius: 12px; padding: 16px; margin-bottom: 16px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
+      border: 1.5px solid rgba(16, 185, 129, 0.28);
+      border-radius: 14px; padding: 16px; margin-bottom: 16px;
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
     }
     .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); font-weight: 600; }
     .summary-total {
-      font-size: 22px; font-weight: 900; color: #38bdf8;
-      border-top: 1px solid var(--border); padding-top: 12px; margin-top: 10px;
+      font-size: 24px; font-weight: 900; color: var(--accent-emerald);
+      border-top: 1px solid rgba(16, 185, 129, 0.2); padding-top: 12px; margin-top: 10px;
+      text-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
     }
 
     .checkout-btn {
-      width: 100%; height: 48px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 100%; height: 50px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: var(--radius-btn);
-      color: #ffffff; font-size: 15px; font-weight: 800;
+      color: #ffffff; font-size: 15.5px; font-weight: 900;
       cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+      box-shadow: 0 6px 22px rgba(16, 185, 129, 0.42);
       display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .checkout-btn:hover:not(:disabled) {
-      filter: brightness(1.12);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 22px rgba(16, 185, 129, 0.5);
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 26px rgba(16, 185, 129, 0.55);
     }
     .checkout-btn:active { transform: scale(0.98); }
     .checkout-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
@@ -406,7 +764,7 @@
       display: flex; align-items: center; justify-content: center; z-index: 1000;
     }
     .receipt-modal {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-card);
+      background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-card);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       padding: 28px; width: 440px; box-shadow: var(--shadow-card); color: var(--text-primary);
@@ -418,7 +776,7 @@
 
   <!-- Live Stock Exchange Ticker -->
   <div class="ticker-wrap">
-    <div class="ticker-title">MARKET TICKER</div>
+    <div class="ticker-title">⚡ MARKET TICKER</div>
     <div class="ticker-content" id="stockTickerContent">
       <!-- Live stock price trends rendered here -->
     </div>
@@ -427,14 +785,17 @@
   <!-- Market Status Overview Bar -->
   <div class="market-summary-bar" id="marketSummaryBar">
     <div class="summary-metric">
-      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22C55E; box-shadow:0 0 6px #22C55E;"></span>
-      <strong>Market Open</strong>
+      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22C55E; box-shadow:0 0 8px #22C55E;"></span>
+      <strong id="marketOpenStateText">Market Open (1-Min DWMA)</strong>
     </div>
     <div class="summary-metric">
-      <span>Catalog: <strong id="summaryTotalProds">8 Products</strong></span>
+      <span>Securities: <strong id="summaryTotalProds">8 Products</strong></span>
     </div>
     <div class="summary-metric">
-      <span>Price Dynamics: <strong id="summaryRisingCount" style="color:var(--success);">0 Price Rising</strong> &bull; <strong id="summaryStableCount" style="color:var(--text-muted);">8 Stable/Discounted</strong></span>
+      <span>Next Settlement: <strong id="summarySettlementCountdown" style="color:var(--accent-amber); font-family:var(--font-mono); font-weight:800;">00:45</strong></span>
+    </div>
+    <div class="summary-metric">
+      <span>Sentiment: <strong id="summarySentimentPill" style="color:var(--accent-emerald); font-weight:800;">CALCULATING...</strong></span>
     </div>
     <div class="summary-metric" style="margin-left:auto;">
       <span>Last Sync: <strong id="summaryLastSync" style="font-family:monospace; color:var(--text-primary);">--:--:--</strong></span>
@@ -445,7 +806,7 @@
   <div class="market-crash-banner" id="marketCrashBanner">
     <div class="crash-title">
       <span>🚨 MARKET CRASH ACTIVE!</span>
-      <span style="font-size: 14px; font-weight: 600; opacity: 0.95;" id="marketCrashBannerMsg">All Drink Prices Dropped to Floor Limit ₹18!</span>
+      <span style="font-size: 14px; font-weight: 600; opacity: 0.95;" id="marketCrashBannerMsg">All Drink Prices Dropped to Floor Limit ₹18.00!</span>
     </div>
     <div class="crash-timer" id="crashTimerDisplay">03:00</div>
   </div>
@@ -478,9 +839,16 @@
     <!-- Product Flavour Grid -->
     <main>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h2 style="font-size: 20px; font-weight: 700; color: var(--text-primary);">Live Juice Exchange Market</h2>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); background: var(--bg-surface); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid var(--border);">Base: ₹25 &bull; Floor: ₹18 &bull; Ceiling: ₹35</span>
+        <div>
+          <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing:-0.02em;">📊 Live Juice Exchange Market</h2>
+          <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px;" id="posMarketSubtext">
+            REAL-TIME DWMA PRICING &bull; DYNAMIC LIVE SETTLEMENTS &bull; ATOMIC DISPENSING
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="metaExchangeBounds" style="font-size: 12px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan); background: var(--bg-surface); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+            Base: ₹25.00 &bull; Floor: ₹18.00 &bull; Ceiling: ₹35.00
+          </span>
         </div>
       </div>
       <div class="flavour-grid" id="productGrid">
@@ -562,6 +930,11 @@
     let isBackendOnline = true;
     let isProcessingCheckout = false;
 
+    let priceHistoryMap = {};
+    let previousPriceMap = {};
+    let flashEffectMap = {};
+    let currentPricingConfig = null;
+
     const fruitIcons = {
       1: '🥭',
       2: '🍋',
@@ -569,9 +942,49 @@
       4: '🍊',
       5: '🍓',
       6: '🍇',
-      7: '⚡',
-      23: '🍹'
+      7: '🍹',
+      23: '⚡'
     };
+
+    const beverageImages = {
+      1: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=600&auto=format&fit=crop&q=80', // Mango Juice
+      2: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&auto=format&fit=crop&q=80', // Lemon Juice
+      3: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop&q=80', // Cool Mint Cooler
+      4: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=600&auto=format&fit=crop&q=80', // Valencia Orange
+      5: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&auto=format&fit=crop&q=80', // Strawberry Delight
+      6: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=600&auto=format&fit=crop&q=80', // Royal Grape
+      7: 'https://images.unsplash.com/photo-1560512823-829485b8bf24?w=600&auto=format&fit=crop&q=80', // Lychee Mist
+      23: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&auto=format&fit=crop&q=80' // Thunder Energy
+    };
+
+    function getBeverageImage(p) {
+      if (!p) return beverageImages[1];
+      if (beverageImages[p.id]) return beverageImages[p.id];
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return beverageImages[1];
+      if (f.includes('LEMON')) return beverageImages[2];
+      if (f.includes('MINT')) return beverageImages[3];
+      if (f.includes('ORANGE')) return beverageImages[4];
+      if (f.includes('STRAWBERRY')) return beverageImages[5];
+      if (f.includes('GRAPE')) return beverageImages[6];
+      if (f.includes('LYCHEE')) return beverageImages[7];
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return beverageImages[23];
+      return beverageImages[1];
+    }
+
+    function getFlavourThemeClass(p) {
+      if (!p) return 'card-theme-thunder';
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return 'card-theme-mango';
+      if (f.includes('LEMON')) return 'card-theme-lemon';
+      if (f.includes('MINT')) return 'card-theme-mint';
+      if (f.includes('ORANGE')) return 'card-theme-orange';
+      if (f.includes('STRAWBERRY')) return 'card-theme-strawberry';
+      if (f.includes('GRAPE')) return 'card-theme-grape';
+      if (f.includes('LYCHEE')) return 'card-theme-lychee';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return 'card-theme-thunder';
+      return 'card-theme-thunder';
+    }
 
     function getFruitIcon(p) {
       if (!p) return '🍹';
@@ -585,41 +998,26 @@
       if (f.includes('STRAWBERRY')) return '🍓';
       if (f.includes('THUNDER') || f.includes('ENERGY')) return '⚡';
       if (f.includes('LYCHEE')) return '🍹';
-      if (f.includes('PINEAPPLE')) return '🍍';
-      if (f.includes('APPLE')) return '🍏';
-      if (f.includes('WATERMELON')) return '🍉';
-      if (f.includes('PEACH')) return '🍑';
-      if (f.includes('BERRY')) return '🫐';
-      if (f.includes('KIWI')) return '🥝';
       return '🍹';
     }
 
-    const targetSalesMap = {
-      'MANGO': 0.55,
-      'LEMON': 0.40,
-      'MINT': 0.40,
-      'ORANGE': 0.55,
-      'STRAWBERRY': 0.35,
-      'GRAPE': 0.45,
-      'LYCHEE': 0.45,
-      'THUNDER': 0.45
-    };
-
     let products = [
-      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.55, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.40, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.40, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice loaded with vitamin C', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.55, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.35, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 23, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' }
+      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.125, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.40, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.35, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice loaded with vitamin C', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.50, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.30, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.20, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 23, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.50, trend: '+0.0%', trendDirection: 'FLAT' }
     ];
 
     let cart = [];
     let isMarketCrashActive = false;
     let crashRemainingSeconds = 0;
     let crashTimerInterval = null;
+    let settlementCountdownSeconds = 60;
+    let settlementCountdownInterval = null;
 
     function playMarketCrashSiren() {
       try {
@@ -635,7 +1033,7 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 1.2);
-      } catch (e) { }
+      } catch (e) {}
     }
 
     const pubExchangeChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
@@ -662,6 +1060,7 @@
       if (!msg || !msg.type) return;
       if (msg.type === 'NEW_FLAVOUR_ADDED' || msg.type === 'PRODUCT_PRICE_UPDATE' || msg.type === 'BATCH_PRODUCT_PRICE_UPDATED' || msg.type === 'PRICE_ENGINE_RUN' || msg.type === 'BATCH_UPDATED' || msg.type === 'PRICES_RECALCULATED' || msg.type === 'REFRESH_PRODUCTS') {
         fetchProducts();
+        fetchPricingConfiguration();
       } else if (msg.type === 'MARKET_CRASH_TRIGGER' || msg.type === 'MARKET_CRASH_START') {
         triggerLocalMarketCrash(msg.payload?.durationSeconds || 180);
       } else if (msg.type === 'MARKET_CRASH_STOP') {
@@ -696,7 +1095,6 @@
       isMarketCrashActive = true;
       crashRemainingSeconds = seconds;
 
-      const crashFloor = 18;
       if (!wasActive) playMarketCrashSiren();
 
       products.forEach(p => {
@@ -706,7 +1104,7 @@
 
       const bannerMsg = document.getElementById('marketCrashBannerMsg');
       if (bannerMsg) {
-        bannerMsg.textContent = `🚨 MARKET CRASH ACTIVE! Dynamic promotional crash prices in effect!`;
+        bannerMsg.textContent = `🚨 MARKET CRASH ACTIVE! All beverage prices forced to floor limit!`;
       }
 
       const crashBanner = document.getElementById('marketCrashBanner');
@@ -766,17 +1164,6 @@
       fetchProducts();
     }
 
-    const defaultProducts = [
-      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'UP' },
-      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint & lime mocktail', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'UP' },
-      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'DOWN' },
-      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' },
-      { id: 23, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, trend: '+0%', trendDirection: 'FLAT' }
-    ];
-
     function normalizeProduct(p) {
       if (!p) return null;
       const id = p.id || p.beverageId || p.productId;
@@ -786,14 +1173,43 @@
       const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25.0);
       const targetSalesPer1Minute = (p.targetSalesPer1Minute !== undefined && p.targetSalesPer1Minute !== null) 
         ? Number(p.targetSalesPer1Minute) 
-        : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : ((p.targetSalesPer2Minute !== undefined && p.targetSalesPer2Minute !== null) ? Number(p.targetSalesPer2Minute) / 2.0 : 0.55));
+        : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : ((p.targetSalesPer2Minute !== undefined && p.targetSalesPer2Minute !== null) ? Number(p.targetSalesPer2Minute) / 2.0 : 0.40));
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
       const flavour = p.flavour || p.name || 'JUICE';
-      const description = p.description || 'Fresh handcrafted fruit juice';
-      const trendDirection = p.trendDirection || 'FLAT';
-      const trend = p.trend || '0%';
+      const description = p.description || 'Fresh handcrafted fruit juice cooler';
       const pricingMode = p.pricingMode || 'DYNAMIC';
+
+      // Detect price movement against previous snapshot
+      let tickClass = '';
+      let flashEffect = flashEffectMap[id] || '';
+      if (previousPriceMap[id] !== undefined && previousPriceMap[id] !== currentCupPrice) {
+        const diff = currentCupPrice - previousPriceMap[id];
+        tickClass = diff > 0 ? 'tick-up' : 'tick-down';
+        flashEffect = diff > 0 ? 'flash-surge' : 'flash-decay';
+        flashEffectMap[id] = flashEffect;
+        setTimeout(() => {
+          flashEffectMap[id] = '';
+          const cardEl = document.getElementById(`flavourCard-${id}`);
+          if (cardEl) {
+            cardEl.classList.remove('flash-surge', 'flash-decay');
+          }
+        }, 1300);
+      }
+      previousPriceMap[id] = currentCupPrice;
+
+      // Track in history map
+      if (!priceHistoryMap[id]) priceHistoryMap[id] = [];
+      const nowIso = new Date().toISOString();
+      const lastHist = priceHistoryMap[id][priceHistoryMap[id].length - 1];
+      if (!lastHist || lastHist.price !== currentCupPrice || Math.abs(new Date(nowIso) - new Date(lastHist.timestamp)) > 4000) {
+        priceHistoryMap[id].push({
+          timestamp: nowIso,
+          price: currentCupPrice,
+          oldPrice: basePrice,
+          priceChange: currentCupPrice - basePrice
+        });
+      }
 
       return {
         ...p,
@@ -808,9 +1224,9 @@
         name,
         flavour,
         description,
-        trendDirection,
-        trend,
-        pricingMode
+        pricingMode,
+        tickClass,
+        flashEffect
       };
     }
 
@@ -839,6 +1255,62 @@
       }
     }
 
+    async function fetchPricingConfiguration() {
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/config`);
+        if (res.ok) {
+          const config = await res.json();
+          applyPricingConfiguration(config);
+        }
+      } catch (e) {}
+    }
+
+    function applyPricingConfiguration(config) {
+      if (!config) return;
+      currentPricingConfig = config;
+      const g = config.global || config;
+
+      const basePrice = g.defaultCupPrice !== undefined ? Number(g.defaultCupPrice).toFixed(2) : '25.00';
+      const minPrice = g.minCupPrice !== undefined ? Number(g.minCupPrice).toFixed(2) : '18.00';
+      const maxPrice = g.maxCupPrice !== undefined ? Number(g.maxCupPrice).toFixed(2) : '35.00';
+
+      const boundsEl = document.getElementById('metaExchangeBounds');
+      if (boundsEl) {
+        boundsEl.innerHTML = `Base: ₹${basePrice} &bull; Floor: ₹${minPrice} &bull; Ceiling: ₹${maxPrice}`;
+      }
+
+      if (g.settlementIntervalSeconds) {
+        updatePricingTimingState(g);
+      }
+    }
+
+    async function fetchProductHistory(productId) {
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/history/${productId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const sorted = data.slice().sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp));
+            priceHistoryMap[productId] = sorted.map(item => ({
+              timestamp: item.createdAt || item.timestamp || new Date().toISOString(),
+              price: Number(item.newPrice !== undefined ? item.newPrice : item.price || 25),
+              oldPrice: Number(item.oldPrice !== undefined ? item.oldPrice : item.price || 25),
+              priceChange: Number(item.priceChange !== undefined ? item.priceChange : 0),
+              reason: item.reason || item.explanation || 'Settlement'
+            }));
+          }
+        }
+      } catch (err) {}
+
+      if (!priceHistoryMap[productId]) priceHistoryMap[productId] = [];
+    }
+
+    async function fetchAllPriceHistories() {
+      for (const p of products) {
+        await fetchProductHistory(p.id);
+      }
+    }
+
     async function fetchProducts() {
       try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/pos/products`);
@@ -864,7 +1336,7 @@
 
       if (isMarketCrashActive && products && products.length > 0) {
         products.forEach(p => {
-          p.currentCupPrice = p.minCupPrice || 18;
+          p.currentCupPrice = p.minCupPrice || 18.0;
           p.trendDirection = 'DOWN';
           p.trend = '-10% [CRASH]';
         });
@@ -873,145 +1345,44 @@
       renderProducts();
       renderTicker();
       renderCart();
-    }
-
-    function connectWebSocket() {
-      if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
-      if (isReconnectingWS) return;
-
-      try {
-        const socket = new SockJS(CONFIG.WS_URL);
-        stompClient = Stomp.over(socket);
-        stompClient.debug = null;
-        stompClient.connect({}, function () {
-          isReconnectingWS = false;
-          fetchProducts();
-          checkMarketCrashStatus();
-
-          stompClient.subscribe('/topic/products', function (message) {
-            if (message && message.body) {
-              try {
-                const res = JSON.parse(message.body);
-                if (Array.isArray(res) && res.length > 0) {
-                  products = normalizeProductsList(res);
-                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
-                  renderProducts();
-                  renderTicker();
-                  renderCart();
-                  return;
-                }
-              } catch (e) {}
-            }
-            fetchProducts();
-          });
-          stompClient.subscribe('/topic/batches', function () {
-            fetchProducts();
-          });
-          stompClient.subscribe('/topic/inventory', function () {
-            fetchProducts();
-          });
-          stompClient.subscribe('/topic/prices', function (message) {
-            if (message.body) {
-              const res = JSON.parse(message.body);
-              let incoming = [];
-              if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) {
-                incoming = res.updatedPrices;
-              } else if (res && res.changes && Array.isArray(res.changes)) {
-                incoming = res.changes;
-              } else if (Array.isArray(res)) {
-                incoming = res;
-              } else if (res && (res.id || res.beverageId || res.productId)) {
-                incoming = [res];
-              }
-
-              if (incoming.length > 0) {
-                const normList = normalizeProductsList(incoming);
-                normList.forEach(np => {
-                  const existingIdx = products.findIndex(p => p.id === np.id || (p.name && np.name && p.name.toLowerCase() === np.name.toLowerCase()));
-                  if (existingIdx !== -1) {
-                    const existing = products[existingIdx];
-                    // Stale event protection: ignore updates with lower priceVersion
-                    if (np.priceVersion !== undefined && existing.priceVersion !== undefined && np.priceVersion < existing.priceVersion) {
-                      console.warn(`[STALE_EVENT_IGNORED] Received version ${np.priceVersion} < current version ${existing.priceVersion} for ${np.name}`);
-                      return;
-                    }
-                    products[existingIdx] = { ...existing, ...np };
-                  } else {
-                    products.push(np);
-                  }
-                });
-                products.sort((a, b) => (a.id || 0) - (b.id || 0));
-                renderProducts();
-                renderTicker();
-                renderCart();
-              } else {
-                fetchProducts();
-              }
-            }
-          });
-          stompClient.subscribe('/topic/market-crash', function (message) {
-            if (message.body) {
-              const res = JSON.parse(message.body);
-              if (res && res.active) {
-                triggerLocalMarketCrash(res.remainingSeconds || 180);
-              } else if (res && res.active === false) {
-                stopLocalMarketCrash();
-              } else {
-                checkMarketCrashStatus();
-              }
-            }
-          });
-        }, function () {
-          isReconnectingWS = true;
-          setTimeout(() => {
-            isReconnectingWS = false;
-            connectWebSocket();
-          }, 3000);
-        });
-      } catch (err) {
-        setTimeout(() => {
-          isReconnectingWS = false;
-          connectWebSocket();
-        }, 3000);
-      }
+      renderAllSparklines();
     }
 
     function renderTicker() {
-      if (!products || products.length === 0) {
-        products = JSON.parse(JSON.stringify(defaultProducts));
-      }
+      if (!products || products.length === 0) return;
       products.sort((a, b) => (a.id || 0) - (b.id || 0));
       const container = document.getElementById('stockTickerContent');
       if (!container) return;
 
       let rising = 0;
-      let stableOrDiscounted = 0;
+      let discounted = 0;
+      let stable = 0;
 
       container.innerHTML = products.map(p => {
-        const activePrice = Math.round(Number(p.currentCupPrice || p.currentPrice || 20));
-        const baseP = Math.round(Number(p.basePrice || p.defaultCupPrice || 20));
+        const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+        const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
         const diff = activePrice - baseP;
-        const pct = Math.round(p.priceChangePct !== undefined ? p.priceChangePct : (((activePrice - baseP) / baseP) * 100));
+        const pct = baseP > 0 ? ((diff / baseP) * 100).toFixed(1) : '0.0';
 
         let color = 'var(--text-muted)';
         let sign = '— ';
-        if (diff > 0) {
+        if (diff > 0.05) {
           color = 'var(--success)';
           sign = '▲ +';
           rising++;
-        } else if (diff < 0) {
+        } else if (diff < -0.05) {
           color = 'var(--danger)';
           sign = '▼ ';
-          stableOrDiscounted++;
+          discounted++;
         } else {
-          stableOrDiscounted++;
+          stable++;
         }
 
         const icon = getFruitIcon(p);
         return `
           <div class="ticker-item">
             <span>${icon} ${p.flavour || p.name}:</span>
-            <span style="color: ${color}; font-weight: 700;">₹${activePrice} ${sign}${Math.abs(pct)}%</span>
+            <span style="color: ${color}; font-weight: 700;">₹${activePrice.toFixed(2)} ${sign}${Math.abs(pct)}%</span>
           </div>
         `;
       }).join('');
@@ -1019,100 +1390,262 @@
       const totalEl = document.getElementById('summaryTotalProds');
       if (totalEl) totalEl.textContent = `${products.length} Products`;
 
-      const risingEl = document.getElementById('summaryRisingCount');
-      if (risingEl) risingEl.textContent = `${rising} Price Rising`;
-
-      const stableEl = document.getElementById('summaryStableCount');
-      if (stableEl) stableEl.textContent = `${stableOrDiscounted} Stable/Discounted`;
+      const sentimentPill = document.getElementById('summarySentimentPill');
+      if (sentimentPill) {
+        if (rising > discounted) {
+          sentimentPill.style.color = 'var(--accent-emerald)';
+          sentimentPill.textContent = `BULLISH ▲ (${rising} Surge)`;
+        } else if (discounted > rising) {
+          sentimentPill.style.color = 'var(--accent-rose)';
+          sentimentPill.textContent = `BEARISH ▼ (${discounted} Discount)`;
+        } else {
+          sentimentPill.style.color = 'var(--accent-cyan)';
+          sentimentPill.textContent = `BALANCED ⇄ (${stable} Stable)`;
+        }
+      }
 
       const syncEl = document.getElementById('summaryLastSync');
       if (syncEl) syncEl.textContent = new Date().toLocaleTimeString();
     }
 
     function renderProducts() {
-      if (!products || products.length === 0) {
-        products = JSON.parse(JSON.stringify(defaultProducts));
-      }
+      if (!products || products.length === 0) return;
       products.sort((a, b) => (a.id || 0) - (b.id || 0));
       const grid = document.getElementById('productGrid');
       if (!grid) return;
+
       grid.innerHTML = products.map(p => {
-        const activePrice = Math.round(Number(p.currentCupPrice || p.currentPrice || 25));
-        const baseP = Math.round(Number(p.basePrice || p.defaultCupPrice || 25));
-        const minP = Math.round(Number(p.minCupPrice || 18));
-        const maxP = Math.round(Number(p.maxCupPrice || 35));
+        const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+        const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+        const minP = Number(p.minCupPrice !== undefined ? p.minCupPrice : 18.0);
+        const maxP = Number(p.maxCupPrice !== undefined ? p.maxCupPrice : 35.0);
         const diff = activePrice - baseP;
         const icon = getFruitIcon(p);
+        const imgUrl = getBeverageImage(p);
 
-        const trendDir = p.trendDirection || (p.priceChange > 0 ? 'UP' : (p.priceChange < 0 ? 'DOWN' : (diff > 0 ? 'UP' : (diff < 0 ? 'DOWN' : 'FLAT'))));
-        const pctVal = Math.round(p.priceChangePct !== undefined ? p.priceChangePct : (((activePrice - baseP) / baseP) * 100));
-        const pctStr = (pctVal >= 0 ? '+' : '') + Math.abs(pctVal) + '%';
+        const pctVal = baseP > 0 ? Math.abs(((diff / baseP) * 100).toFixed(1)) : '0.0';
 
         let badgeClass = 'badge-stable';
-        let badgeText = '— 0% STABLE';
+        let badgeText = `— ₹${activePrice.toFixed(2)} BASE RATE`;
         if (isMarketCrashActive) {
           badgeClass = 'badge-down';
-          badgeText = `▼ CRASH ₹${activePrice}`;
-        } else if (trendDir === 'UP') {
+          badgeText = `▼ CRASH ₹${activePrice.toFixed(2)}`;
+        } else if (diff > 0.05) {
           badgeClass = 'badge-up';
-          badgeText = `▲ ${pctStr} RISING`;
-        } else if (trendDir === 'DOWN') {
+          badgeText = `▲ +₹${diff.toFixed(2)} (+${pctVal}%) SURGE`;
+        } else if (diff < -0.05) {
           badgeClass = 'badge-down';
-          badgeText = `▼ ${pctStr} FALLING`;
-        } else {
-          if (diff > 0) {
-            badgeClass = 'badge-up';
-            badgeText = `▲ ${pctStr} HIGH DEMAND`;
-          } else if (diff < 0) {
-            badgeClass = 'badge-down';
-            badgeText = `▼ ${pctStr} DISCOUNT`;
-          } else {
-            badgeClass = 'badge-stable';
-            badgeText = '— 0% STABLE';
-          }
+          badgeText = `▼ -₹${Math.abs(diff).toFixed(2)} (-${pctVal}%) DISCOUNT`;
         }
 
-        const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : (p.targetSales !== undefined ? p.targetSales : (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55))).toFixed(2);
-        const rawCategory = p.demandLevelCategory || (diff > 0 ? 'HIGH' : (diff < 0 ? 'LOW' : 'NORMAL'));
-        const demandCategory = rawCategory.replace('_CONSUMED', '');
-        const demandColor = (demandCategory.includes('HIGH')) ? 'var(--warning)' : (demandCategory.includes('LOW') ? 'var(--info)' : 'var(--text-muted)');
+        const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : 0.40).toFixed(2);
+        
+        let demandCategory = 'NORMAL';
+        let demandColor = 'var(--text-muted)';
+        let demandBarClass = 'demand-normal';
+        let demandPercent = 50;
+
+        if (diff > 0.05) {
+          demandCategory = '🔥 HIGH DEMAND';
+          demandColor = 'var(--warning)';
+          demandBarClass = 'demand-high';
+          demandPercent = Math.min(100, Math.round(50 + (diff / (maxP - baseP || 1)) * 50));
+        } else if (diff < -0.05) {
+          demandCategory = '❄️ DISCOUNT FLOOR';
+          demandColor = 'var(--accent-cyan)';
+          demandBarClass = 'demand-low';
+          demandPercent = Math.max(15, Math.round(50 - (Math.abs(diff) / (baseP - minP || 1)) * 35));
+        } else {
+          demandCategory = '⚡ ACTIVE FLOW';
+          demandColor = 'var(--accent-emerald)';
+          demandBarClass = 'demand-normal';
+          demandPercent = 50;
+        }
+
+        const themeClass = getFlavourThemeClass(p);
 
         return `
-          <div class="flavour-card ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}">
+          <div class="flavour-card ${themeClass} ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}" id="flavourCard-${p.id}">
             <div>
-              <div class="card-top">
-                <div class="card-header-left">
-                  <span class="card-icon">${icon}</span>
-                  <span class="card-name">${p.name}</span>
-                </div>
-                <span class="market-badge ${badgeClass}">${badgeText}</span>
-              </div>
-              <div class="card-desc">${p.description}</div>
-              
-              <div class="price-section">
-                <div>
-                  <span class="price-main">₹${activePrice}</span>
-                  <span class="price-unit">/ ${p.defaultCupSizeMl || 250}ml</span>
-                </div>
-                <div class="price-bounds">
-                  <span>Base ₹${baseP}</span>
-                  <span>Floor ₹${minP}</span>
-                  <span>Ceiling ₹${maxP}</span>
+              <div class="card-img-banner">
+                <img src="${imgUrl}" alt="${p.name}" class="beverage-photo" loading="lazy" />
+                <div class="card-img-overlay">
+                  <span class="fruit-pill">${icon} ${p.flavour || p.name}</span>
+                  <span class="market-badge ${badgeClass}" id="marketBadge-${p.id}">${badgeText}</span>
                 </div>
               </div>
 
-              <div class="demand-text" style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 12px;">
-                <span>Target: <strong>${targetSales} cups / min</strong></span>
-                <strong style="color: ${demandColor};">${demandCategory}</strong>
+              <div class="card-top">
+                <div class="card-header-left">
+                  <span class="card-name">${p.name}</span>
+                </div>
+              </div>
+
+              <!-- Real-Time Mini Price Sparkline -->
+              <div class="card-chart-wrap">
+                <canvas id="posSparkline-${p.id}" class="card-chart-canvas"></canvas>
+                <span class="chart-badge-pts" id="sparklinePts-${p.id}">LIVE DWMA</span>
+              </div>
+              
+              <!-- Dynamic Price Box -->
+              <div class="price-section">
+                <div>
+                  <span class="price-main ${p.tickClass || ''}" id="priceMain-${p.id}">₹${activePrice.toFixed(2)}</span>
+                  <span class="price-unit">/ ${p.defaultCupSizeMl || 250}ml cup</span>
+                </div>
+                <div class="price-bounds">
+                  <span>Base ₹${baseP.toFixed(2)}</span>
+                  <span>Floor ₹${minP.toFixed(2)}</span>
+                  <span>Ceiling ₹${maxP.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <!-- Demand Velocity Progress Bar -->
+              <div class="demand-section">
+                <div class="demand-text">
+                  <span>Target: <strong>${targetSales} cups/min</strong></span>
+                  <strong style="color: ${demandColor}; font-size: 11px;">${demandCategory}</strong>
+                </div>
+                <div class="demand-bar-track">
+                  <div class="demand-bar-fill ${demandBarClass}" style="width: ${demandPercent}%;"></div>
+                </div>
               </div>
             </div>
 
             <button class="add-to-cart-btn" ${!isBackendOnline ? 'disabled="disabled" style="opacity:0.5; cursor:not-allowed; background:#64748b;"' : ''} onclick="addToCart(${p.id})">
-              ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Price ₹${activePrice}` : '+ Add to Cart')}
+              ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Price ₹${activePrice.toFixed(2)}` : '🛒 + Add to Cart')}
             </button>
           </div>
         `;
       }).join('');
+
+      requestAnimationFrame(renderAllSparklines);
+      setTimeout(renderAllSparklines, 60);
+      setTimeout(renderAllSparklines, 250);
+    }
+
+    function renderAllSparklines() {
+      if (!products || products.length === 0) return;
+      products.forEach(p => {
+        drawSparkline(p.id, priceHistoryMap[p.id] || [], p.currentCupPrice, p.basePrice);
+      });
+    }
+
+    function drawSparkline(productId, history, currentPrice, basePrice) {
+      const canvas = document.getElementById(`posSparkline-${productId}`);
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const width = (rect.width && rect.width > 10) ? rect.width : (canvas.offsetWidth > 10 ? canvas.offsetWidth : 260);
+      const height = (rect.height && rect.height > 10) ? rect.height : (canvas.offsetHeight > 10 ? canvas.offsetHeight : 68);
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+
+      let dataPoints = [];
+      if (history && history.length > 0) {
+        dataPoints = history.slice(-25).map(h => ({
+          price: Number(h.price || 25)
+        }));
+      }
+
+      if (dataPoints.length === 0) {
+        dataPoints.push({ price: Number(currentPrice || 25) });
+      }
+      if (dataPoints.length === 1) {
+        dataPoints.unshift({ price: Number(basePrice || 25) });
+      }
+
+      const ptsBadge = document.getElementById(`sparklinePts-${productId}`);
+      if (ptsBadge) ptsBadge.textContent = `${dataPoints.length} PTS • LIVE`;
+
+      const padLeft = 10;
+      const padRight = 14;
+      const padTop = 12;
+      const padBottom = 12;
+      const plotWidth = width - padLeft - padRight;
+      const plotHeight = height - padTop - padBottom;
+
+      const prices = dataPoints.map(d => d.price);
+      let minP = Math.min(18, ...prices);
+      let maxP = Math.max(35, ...prices);
+      const span = Math.max(4, maxP - minP);
+
+      const getY = (val) => padTop + plotHeight - ((val - minP) / span) * plotHeight;
+      const getX = (idx) => padLeft + (idx / (dataPoints.length - 1)) * plotWidth;
+
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light' || !document.body.classList.contains('dark-theme-mode');
+
+      // Reference Baseline
+      const baseY = getY(basePrice);
+      ctx.beginPath();
+      ctx.strokeStyle = isLight ? 'rgba(148, 163, 184, 0.4)' : 'rgba(100, 116, 139, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 3]);
+      ctx.moveTo(padLeft, baseY);
+      ctx.lineTo(width - padRight, baseY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Color based on latest movement
+      const latestP = dataPoints[dataPoints.length - 1].price;
+      let strokeColor = '#0284C7';
+      if (latestP > basePrice + 0.05) strokeColor = '#10B981'; // Green Surge
+      else if (latestP < basePrice - 0.05) strokeColor = '#F43F5E'; // Red Discount
+
+      // Gradient Area
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+      }
+      ctx.lineTo(getX(dataPoints.length - 1), padTop + plotHeight);
+      ctx.lineTo(getX(0), padTop + plotHeight);
+      ctx.closePath();
+
+      const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
+      if (latestP > basePrice + 0.05) {
+        areaGrad.addColorStop(0, 'rgba(16, 185, 129, 0.28)');
+      } else if (latestP < basePrice - 0.05) {
+        areaGrad.addColorStop(0, 'rgba(244, 63, 94, 0.28)');
+      } else {
+        areaGrad.addColorStop(0, 'rgba(2, 132, 199, 0.22)');
+      }
+      areaGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+      ctx.fillStyle = areaGrad;
+      ctx.fill();
+
+      // Smooth Stroke Line
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        ctx.lineTo(getX(i), getY(dataPoints[i].price));
+      }
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2.4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // Beacon Dot on Latest Point
+      const lastX = getX(dataPoints.length - 1);
+      const lastY = getY(latestP);
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = strokeColor;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
+      ctx.fillStyle = latestP > basePrice ? 'rgba(16, 185, 129, 0.35)' : (latestP < basePrice ? 'rgba(244, 63, 94, 0.35)' : 'rgba(2, 132, 199, 0.35)');
+      ctx.fill();
     }
 
     function addToCart(productId) {
@@ -1147,7 +1680,7 @@
       const totalVolume = cart.reduce((sum, i) => sum + (i.cupSizeMl * i.quantity), 0);
       const totalPayable = Math.round(cart.reduce((sum, i) => {
         const liveProduct = products.find(p => p.id === i.product.id) || i.product;
-        const itemPrice = Math.round(isMarketCrashActive ? (liveProduct.minCupPrice || 18) : (liveProduct.currentCupPrice || liveProduct.currentPrice || 20));
+        const itemPrice = isMarketCrashActive ? (liveProduct.minCupPrice || 18.0) : (liveProduct.currentCupPrice || 25.0);
         return sum + (itemPrice * i.quantity);
       }, 0));
 
@@ -1165,15 +1698,19 @@
       } else {
         container.innerHTML = cart.map((item, idx) => {
           const liveProduct = products.find(p => p.id === item.product.id) || item.product;
-          const itemPrice = Math.round(isMarketCrashActive ? (liveProduct.minCupPrice || 18) : (liveProduct.currentCupPrice || liveProduct.currentPrice || 20));
+          const itemPrice = isMarketCrashActive ? (liveProduct.minCupPrice || 18.0) : (liveProduct.currentCupPrice || 25.0);
           const icon = getFruitIcon(liveProduct);
-          const itemTotal = Math.round(itemPrice * item.quantity);
+          const imgUrl = getBeverageImage(liveProduct);
+          const itemTotal = (itemPrice * item.quantity).toFixed(2);
           return `
             <div class="cart-item">
-              <div>
-                <div class="item-title">${icon} ${liveProduct.name}</div>
-                <div class="item-sub">
-                  ₹${itemPrice} &bull; ${item.cupSizeMl}ml &bull; Sub: ₹${itemTotal}
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="${imgUrl}" alt="${liveProduct.name}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;" />
+                <div>
+                  <div class="item-title">${icon} ${liveProduct.name}</div>
+                  <div class="item-sub">
+                    ₹${itemPrice.toFixed(2)} &bull; ${item.cupSizeMl}ml &bull; Sub: ₹${itemTotal}
+                  </div>
                 </div>
               </div>
               <div style="display: flex; align-items: center; gap: 6px;">
@@ -1187,7 +1724,7 @@
 
         summaryBox.style.display = 'block';
         document.getElementById('totalVolumeText').textContent = `${totalVolume} ml (${totalVolume / 250} cups)`;
-        document.getElementById('totalPayableText').textContent = `₹${totalPayable}`;
+        document.getElementById('totalPayableText').textContent = `₹${totalPayable.toFixed(2)}`;
         
         if (!isBackendOnline) {
           checkoutBtn.disabled = true;
@@ -1196,7 +1733,7 @@
         } else {
           checkoutBtn.disabled = false;
           checkoutBtn.style.background = '';
-          checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable})`;
+          checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable.toFixed(2)})`;
         }
       }
     }
@@ -1230,7 +1767,7 @@
             quantity: i.quantity,
             cupSizeMl: i.cupSizeMl,
             priceVersion: liveProduct.priceVersion || 1,
-            lockedPrice: liveProduct.currentCupPrice || liveProduct.currentPrice || 20
+            lockedPrice: liveProduct.currentCupPrice || liveProduct.currentPrice || 25.0
           };
         }),
         paymentMethod
@@ -1259,20 +1796,18 @@
         const orderNumber = data.orderNumber || (data.orderId ? `ORD-${data.orderId}` : `ORD-${Date.now()}`);
         const totalAmount = data.totalAmount !== undefined ? data.totalAmount : completedCart.reduce((sum, i) => {
           const liveP = products.find(p => p.id === i.product.id) || i.product;
-          const p = isMarketCrashActive ? (liveP.minCupPrice || 18) : (liveP.currentCupPrice || 20);
+          const p = isMarketCrashActive ? (liveP.minCupPrice || 18.0) : (liveP.currentCupPrice || 25.0);
           return sum + (p * i.quantity);
         }, 0);
 
-        // PERSISTENCE & PRICING SUCCESS! Clear cart as required
         cart = [];
         renderCart();
 
-        // Render receipt modal with order details
         const modalItemsHtml = completedCart.map(i => {
           const liveProduct = products.find(p => p.id === i.product.id) || i.product;
-          const itemPrice = Math.round(isMarketCrashActive ? (liveProduct.minCupPrice || 18) : (liveProduct.currentCupPrice || 20));
+          const itemPrice = isMarketCrashActive ? (liveProduct.minCupPrice || 18.0) : (liveProduct.currentCupPrice || 25.0);
           const icon = getFruitIcon(liveProduct);
-          const itemTotal = Math.round(itemPrice * i.quantity);
+          const itemTotal = (itemPrice * i.quantity).toFixed(2);
           return `
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #0f172a;">
               <span>${icon} ${liveProduct.name} x ${i.quantity} (${i.cupSizeMl * i.quantity}ml)</span>
@@ -1285,13 +1820,12 @@
         document.getElementById('modalItemsContainer').innerHTML = modalItemsHtml + `
           <div style="border-top: 2px dashed #cbd5e1; margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 900; font-size: 16px; color: #0f172a;">
             <span>TOTAL PAID</span>
-            <span style="color: #059669;">₹${Math.round(totalAmount)}</span>
+            <span style="color: #059669;">₹${Number(totalAmount).toFixed(2)}</span>
           </div>
         `;
         document.getElementById('modalPaymentMethod').textContent = paymentMethod;
         document.getElementById('receiptModal').style.display = 'flex';
 
-        // Refresh product prices and stock from authoritative Spring Boot backend
         await fetchProducts();
 
       } catch (err) {
@@ -1302,7 +1836,6 @@
         } else {
           alert(`✕ POS Checkout Failed: ${err.message || 'Server error. Please try again.'}`);
         }
-        // DO NOT CLEAR THE CART! The cart stays populated so user can retry.
       } finally {
         isProcessingCheckout = false;
         if (checkoutBtn) {
@@ -1310,10 +1843,10 @@
           if (cart.length > 0) {
             const totalPayable = Math.round(cart.reduce((sum, i) => {
               const liveP = products.find(p => p.id === i.product.id) || i.product;
-              const p = isMarketCrashActive ? (liveP.minCupPrice || 18) : (liveP.currentCupPrice || 20);
+              const p = isMarketCrashActive ? (liveP.minCupPrice || 18.0) : (liveP.currentCupPrice || 25.0);
               return sum + (p * i.quantity);
             }, 0));
-            checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable})`;
+            checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable.toFixed(2)})`;
           } else {
             checkoutBtn.textContent = 'Done / Next POS Order';
           }
@@ -1351,14 +1884,242 @@
       }
     }
 
+    let currentPricingTiming = {
+      intervalSeconds: 60,
+      label: '1 Minute',
+      shortLabel: '1-Min',
+      nextSettlementAt: null
+    };
+
+    async function fetchPricingTiming() {
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/timing`);
+        if (res.ok) {
+          const data = await res.json();
+          updatePricingTimingState(data);
+        }
+      } catch (e) {}
+    }
+
+    function updatePricingTimingState(timing) {
+      if (!timing) return;
+      const sec = timing.intervalSeconds || 60;
+      const label = timing.label || (sec + ' Seconds');
+      const shortLabel = sec === 30 ? '30-Sec' : (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`);
+
+      currentPricingTiming = {
+        intervalSeconds: sec,
+        label: label,
+        shortLabel: shortLabel,
+        nextSettlementAt: timing.nextSettlementAt
+      };
+
+      const openStateEl = document.getElementById('marketOpenStateText');
+      if (openStateEl) openStateEl.textContent = `Market Open (${shortLabel} DWMA)`;
+
+      const subtextEl = document.getElementById('posMarketSubtext');
+      if (subtextEl) subtextEl.textContent = `REAL-TIME ${shortLabel.toUpperCase()} DWMA PRICING • DYNAMIC LIVE SETTLEMENTS • ATOMIC DISPENSING`;
+
+      renderAllSparklines();
+    }
+
+    function startSettlementCountdown() {
+      if (settlementCountdownInterval) clearInterval(settlementCountdownInterval);
+      settlementCountdownInterval = setInterval(() => {
+        let remaining = 60;
+        if (currentPricingTiming.nextSettlementAt) {
+          const diffMs = new Date(currentPricingTiming.nextSettlementAt) - new Date();
+          remaining = Math.max(0, Math.floor(diffMs / 1000));
+        } else {
+          settlementCountdownSeconds--;
+          if (settlementCountdownSeconds <= 0) settlementCountdownSeconds = currentPricingTiming.intervalSeconds || 60;
+          remaining = settlementCountdownSeconds;
+        }
+
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        const countdownEl = document.getElementById('summarySettlementCountdown');
+        if (countdownEl) countdownEl.textContent = timeStr;
+      }, 1000);
+    }
+
+    function connectWebSocket() {
+      if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
+      if (isReconnectingWS) return;
+
+      try {
+        const socket = new SockJS(CONFIG.WS_URL);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.connect({}, function () {
+          isReconnectingWS = false;
+          fetchProducts();
+          fetchPricingTiming();
+          fetchPricingConfiguration();
+          checkMarketCrashStatus();
+
+          stompClient.subscribe('/topic/products', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (Array.isArray(res) && res.length > 0) {
+                  products = normalizeProductsList(res);
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderProducts();
+                  renderTicker();
+                  renderCart();
+                  renderAllSparklines();
+                  return;
+                }
+              } catch (e) {}
+            }
+            fetchProducts();
+          });
+
+          stompClient.subscribe('/topic/batches', function () {
+            fetchProducts();
+          });
+
+          stompClient.subscribe('/topic/inventory', function () {
+            fetchProducts();
+          });
+
+          stompClient.subscribe('/topic/prices', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                let incoming = [];
+                if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) {
+                  incoming = res.updatedPrices;
+                } else if (res && res.changes && Array.isArray(res.changes)) {
+                  incoming = res.changes;
+                } else if (Array.isArray(res)) {
+                  incoming = res;
+                } else if (res && (res.id || res.beverageId || res.productId)) {
+                  incoming = [res];
+                }
+
+                if (incoming.length > 0) {
+                  const normList = normalizeProductsList(incoming);
+                  normList.forEach(np => {
+                    const existingIdx = products.findIndex(p => p.id === np.id || (p.name && np.name && p.name.toLowerCase() === np.name.toLowerCase()));
+                    if (existingIdx !== -1) {
+                      const existing = products[existingIdx];
+                      products[existingIdx] = { ...existing, ...np };
+                    } else {
+                      products.push(np);
+                    }
+                  });
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderProducts();
+                  renderTicker();
+                  renderCart();
+                  renderAllSparklines();
+                } else {
+                  fetchProducts();
+                }
+              } catch (e) {
+                fetchProducts();
+              }
+            }
+          });
+
+          stompClient.subscribe('/topic/pricing-config', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                applyPricingConfiguration(res);
+                if (res.products && Array.isArray(res.products) && res.products.length > 0) {
+                  products = normalizeProductsList(res.products);
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderProducts();
+                  renderTicker();
+                  renderCart();
+                  renderAllSparklines();
+                } else {
+                  fetchProducts();
+                }
+              } catch (e) {
+                fetchProducts();
+              }
+            }
+          });
+
+          stompClient.subscribe('/topic/settlement', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (res.type === 'PRICING_TIMING_CHANGED' || res.intervalSeconds) {
+                  updatePricingTimingState(res);
+                }
+              } catch (e) {}
+            }
+            fetchProducts();
+            fetchPricingConfiguration();
+          });
+
+          stompClient.subscribe('/topic/market-crash', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (res && res.active) {
+                  triggerLocalMarketCrash(res.remainingSeconds || 180);
+                } else if (res && res.active === false) {
+                  stopLocalMarketCrash();
+                } else {
+                  checkMarketCrashStatus();
+                }
+              } catch (e) {
+                checkMarketCrashStatus();
+              }
+            }
+          });
+        }, function () {
+          isReconnectingWS = true;
+          wsReconnectAttempts = (wsReconnectAttempts || 0) + 1;
+          const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
+          setTimeout(() => {
+            isReconnectingWS = false;
+            connectWebSocket();
+          }, backoffDelay);
+        });
+      } catch (err) {
+        wsReconnectAttempts = (wsReconnectAttempts || 0) + 1;
+        const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
+        setTimeout(() => {
+          isReconnectingWS = false;
+          connectWebSocket();
+        }, backoffDelay);
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      renderAllSparklines();
+    });
+
+    // Startup
     checkBackendHealth();
-    fetchProducts();
+    fetchPricingTiming();
+    fetchPricingConfiguration();
+    fetchAllPriceHistories().then(() => {
+      fetchProducts();
+    });
     checkMarketCrashStatus();
     connectWebSocket();
+    startSettlementCountdown();
+
     setInterval(checkBackendHealth, 5000);
+    // Background continuous sync to guarantee real-time reflection of admin actions
+    setInterval(() => {
+      fetchProducts();
+      fetchPricingTiming();
+      fetchPricingConfiguration();
+    }, 2500);
 
     function toggleThemeMode() {
-      const isDark = document.body.classList.contains('dark-theme-mode');
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.body.classList.contains('dark-theme-mode');
       setCustomerThemeMode(!isDark);
     }
 
@@ -1368,27 +2129,30 @@
       
       if (isDark) {
         document.body.classList.add('dark-theme-mode');
+        document.documentElement.setAttribute('data-theme', 'dark');
         localStorage.setItem('pubexchange_theme_mode', 'dark');
       } else {
         document.body.classList.remove('dark-theme-mode');
+        document.documentElement.setAttribute('data-theme', 'light');
         localStorage.setItem('pubexchange_theme_mode', 'light');
       }
       updateThemeButtonUICustomer(isDark);
+      renderAllSparklines();
     }
 
     function updateThemeButtonUICustomer(isDark) {
       const btn = document.getElementById('themeToggleBtnCustomer');
       if (btn) {
-        btn.style.background = isDark ? '#2563eb' : '#ffffff';
-        btn.style.border = isDark ? '1.5px solid #3b82f6' : '1.5px solid #cbd5e1';
-        btn.style.color = isDark ? '#ffffff' : '#0f172a';
-        btn.style.boxShadow = isDark ? '0 4px 12px rgba(37, 99, 235, 0.35)' : '0 4px 12px rgba(0,0,0,0.04)';
+        btn.style.background = isDark ? 'linear-gradient(135deg, #0284c7, #2563eb)' : 'var(--bg-secondary)';
+        btn.style.border = isDark ? '1px solid rgba(255, 255, 255, 0.18)' : '1px solid var(--border-color)';
+        btn.style.color = isDark ? '#ffffff' : 'var(--text-main)';
+        btn.style.boxShadow = isDark ? '0 4px 14px rgba(37, 99, 235, 0.3)' : 'var(--shadow-sm)';
         btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
       }
     }
 
     const savedThemeCust = localStorage.getItem('pubexchange_theme_mode');
-    setCustomerThemeMode(savedThemeCust === 'dark');
+    setCustomerThemeMode(savedThemeCust !== 'light'); // Default to obsidian dark
   </script>
 </body>
 </html>

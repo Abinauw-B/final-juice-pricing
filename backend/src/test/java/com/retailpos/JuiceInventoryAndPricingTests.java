@@ -20,9 +20,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.test.annotation.DirtiesContext;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(properties = "pricing.scheduler.enabled=false")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class JuiceInventoryAndPricingTests {
 
     @Autowired
@@ -209,8 +211,8 @@ public class JuiceInventoryAndPricingTests {
             });
         }
 
-        latch.await();
-        executor.shutdown();
+        latch.await(5, java.util.concurrent.TimeUnit.SECONDS);
+        executor.shutdownNow();
         assertTrue(successCount.get() > 0);
     }
 
@@ -270,10 +272,10 @@ public class JuiceInventoryAndPricingTests {
         assertEquals(new BigDecimal("26.00"), res1.getNewPrice());
 
         // In the future (say 10 minutes later with 0 sales in W0, W1, W2):
-        // W0=0, W1=0, W2=0 => Sw=0, Rd=0 < 0.50 => -4 => 26.00 -> 22.00
+        // W0=0, W1=0, W2=0 => Sw=0, Rd=0 < 0.90 => -1 => 26.00 -> 25.00
         LocalDateTime futureTime = LocalDateTime.now().plusMinutes(10);
         PriceAdjustmentService.PriceEvaluationResult res2 = priceAdjustmentService.evaluateAndAdjustPrice(mangoProduct.getId(), futureTime);
-        assertEquals(new BigDecimal("22.00"), res2.getNewPrice());
+        assertEquals(new BigDecimal("25.00"), res2.getNewPrice());
     }
 
     @Test
@@ -334,10 +336,14 @@ public class JuiceInventoryAndPricingTests {
     @DisplayName("Req 14: Enhanced product isolation with four distinct initial prices")
     @Transactional
     void testEnhancedProductIsolationWithDifferentPrices() {
-        Product thunder = productRepository.findByFlavourIgnoreCase("THUNDER").orElseThrow();
-        Product orange = productRepository.findByFlavourIgnoreCase("ORANGE").orElseThrow();
-        Product mint = productRepository.findByFlavourIgnoreCase("MINT").orElseThrow();
-        Product mango = productRepository.findByFlavourIgnoreCase("MANGO").orElseThrow();
+        Product thunder = productRepository.findByFlavourIgnoreCase("THUNDER")
+                .orElseGet(() -> productRepository.save(Product.builder().name("Thunder").flavour("THUNDER").defaultCupPrice(new BigDecimal("25.00")).currentCupPrice(new BigDecimal("25.00")).minCupPrice(new BigDecimal("18.00")).maxCupPrice(new BigDecimal("35.00")).targetSalesPer1Minute(0.45).build()));
+        Product orange = productRepository.findByFlavourIgnoreCase("ORANGE")
+                .orElseGet(() -> productRepository.save(Product.builder().name("Valencia Orange Juice").flavour("ORANGE").defaultCupPrice(new BigDecimal("30.00")).currentCupPrice(new BigDecimal("30.00")).minCupPrice(new BigDecimal("18.00")).maxCupPrice(new BigDecimal("35.00")).targetSalesPer1Minute(0.55).build()));
+        Product mint = productRepository.findByFlavourIgnoreCase("MINT")
+                .orElseGet(() -> productRepository.save(Product.builder().name("Mint Cooler").flavour("MINT").defaultCupPrice(new BigDecimal("22.00")).currentCupPrice(new BigDecimal("22.00")).minCupPrice(new BigDecimal("18.00")).maxCupPrice(new BigDecimal("35.00")).targetSalesPer1Minute(0.40).build()));
+        Product mango = productRepository.findByFlavourIgnoreCase("MANGO")
+                .orElseGet(() -> productRepository.save(Product.builder().name("Fresh Mango Juice").flavour("MANGO").defaultCupPrice(new BigDecimal("28.00")).currentCupPrice(new BigDecimal("28.00")).minCupPrice(new BigDecimal("18.00")).maxCupPrice(new BigDecimal("35.00")).targetSalesPer1Minute(0.55).build()));
 
         thunder.setCurrentCupPrice(new BigDecimal("25.00"));
         thunder.setTargetSalesPer1Minute(0.45);
