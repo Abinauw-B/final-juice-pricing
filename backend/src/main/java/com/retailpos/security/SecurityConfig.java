@@ -15,7 +15,6 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@SuppressWarnings("null")
 public class SecurityConfig {
 
     @Bean

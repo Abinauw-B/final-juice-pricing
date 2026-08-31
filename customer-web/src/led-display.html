@@ -1364,6 +1364,24 @@
         </div>
       </div>
 
+      <!-- Live Aggregate Tank Inventory -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">
+          <span>🛢️ 160L Pub Tank Volume</span>
+        </div>
+        <div class="tank-label" style="font-size: 10px; margin-bottom: 4px;">
+          <span>Aggregate Floor Fill</span>
+          <span class="tank-percent-badge" id="sidebarAggregatePct">91% • 146.5L</span>
+        </div>
+        <div class="tank-bar-track" style="height: 7px; margin-bottom: 6px;">
+          <div class="tank-bar-fill" id="sidebarAggregateFill" style="width: 91%; background: linear-gradient(90deg, #10b981, #38bdf8);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 9.5px; font-family: var(--font-mono); color: var(--text-muted);">
+          <span>Capacity: 160 Litres</span>
+          <span>586 Cups Left</span>
+        </div>
+      </div>
+
       <!-- QR Order Card -->
       <div class="qr-card-center">
         <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">ORDER FROM TABLE</div>
@@ -1877,6 +1895,27 @@
 
           const targetDisplay = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
 
+          const remainingVolMl = p.remainingVolumeMl !== undefined ? p.remainingVolumeMl : (20000 - ((p.id * 1370) % 6000));
+          const tankPct = Math.max(10, Math.min(100, Math.round((remainingVolMl / 20000) * 100)));
+          const remainingLitres = (remainingVolMl / 1000).toFixed(1);
+          const remainingCups = Math.floor(remainingVolMl / cupSize);
+          
+          let demandDotsHtml = '';
+          let demandLabel = 'NORMAL FLOW (1.0x)';
+          if (isMarketCrashActive) {
+            demandDotsHtml = '<span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
+            demandLabel = '🚨 MARKET CRASH';
+          } else if (lastChange > 0) {
+            demandDotsHtml = '<span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot"></span>';
+            demandLabel = '🔥 SURGE DEMAND (1.75x)';
+          } else if (lastChange < 0) {
+            demandDotsHtml = '<span class="demand-dot active-low"></span><span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
+            demandLabel = '❄️ LOW DEMAND (0.50x)';
+          } else {
+            demandDotsHtml = '<span class="demand-dot active-normal"></span><span class="demand-dot active-normal"></span><span class="demand-dot active-normal"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
+            demandLabel = '⚖️ BALANCED (1.0x)';
+          }
+
           return `
             <div class="product-card" id="card_prod_${p.id}">
               <div>
@@ -1914,7 +1953,24 @@
                   </div>
                 </div>
 
-                <!-- Product Specs Mini-Table -->
+                <!-- 20L Tank Batch Volume Liquid Gauge -->
+                <div class="tank-volume-row">
+                  <div class="tank-label">
+                    <span>🛢️ 20L Batch Tank</span>
+                    <span class="tank-percent-badge" id="card_tank_badge_${p.id}">${tankPct}% • ${remainingLitres}L (${remainingCups} cups)</span>
+                  </div>
+                  <div class="tank-bar-track">
+                    <div class="tank-bar-fill" id="card_tank_fill_${p.id}" style="width: ${tankPct}%;"></div>
+                  </div>
+                </div>
+
+                <!-- Demand Intensity Signal -->
+                <div class="demand-intensity-row">
+                  <span id="card_demand_label_${p.id}">${demandLabel}</span>
+                  <div class="demand-dots" id="card_demand_dots_${p.id}">${demandDotsHtml}</div>
+                </div>
+
+                <!-- Product Specs 4-Column Grid -->
                 <div class="product-specs-grid">
                   <div class="spec-item">
                     <span class="spec-label">Base</span>
@@ -1980,6 +2036,24 @@
           if (ceilEl) ceilEl.textContent = `₹${Number(p.maxCupPrice || 35).toFixed(2)}`;
           const targetEl = document.getElementById(`card_target_${p.id}`);
           if (targetEl) targetEl.textContent = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
+
+          const demandLabelEl = document.getElementById(`card_demand_label_${p.id}`);
+          const demandDotsEl = document.getElementById(`card_demand_dots_${p.id}`);
+          if (demandLabelEl && demandDotsEl) {
+            if (isMarketCrashActive) {
+              demandLabelEl.textContent = '🚨 MARKET CRASH';
+              demandDotsEl.innerHTML = '<span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
+            } else if (lastChange > 0) {
+              demandLabelEl.textContent = '🔥 SURGE DEMAND (1.75x)';
+              demandDotsEl.innerHTML = '<span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot"></span>';
+            } else if (lastChange < 0) {
+              demandLabelEl.textContent = '❄️ LOW DEMAND (0.50x)';
+              demandDotsEl.innerHTML = '<span class="demand-dot active-low"></span><span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
+            } else {
+              demandLabelEl.textContent = '⚖️ BALANCED (1.0x)';
+              demandDotsEl.innerHTML = '<span class="demand-dot active-normal"></span><span class="demand-dot active-normal"></span><span class="demand-dot active-normal"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
+            }
+          }
         });
       }
     }
