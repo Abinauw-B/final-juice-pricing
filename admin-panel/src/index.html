@@ -3304,6 +3304,33 @@
       }
     }
 
+    const adminBeverageImages = {
+      1: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=600&auto=format&fit=crop&q=80', // Mango Juice
+      2: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&auto=format&fit=crop&q=80', // Lemon Juice
+      3: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop&q=80', // Cool Mint Cooler
+      4: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=600&auto=format&fit=crop&q=80', // Valencia Orange
+      5: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&auto=format&fit=crop&q=80', // Strawberry Delight
+      6: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=600&auto=format&fit=crop&q=80', // Royal Grape
+      7: 'https://images.unsplash.com/photo-1560512823-829485b8bf24?w=600&auto=format&fit=crop&q=80', // Lychee Mist
+      23: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&auto=format&fit=crop&q=80' // Thunder Energy
+    };
+
+    function getBeverageImageAdmin(p) {
+      if (!p) return adminBeverageImages[1];
+      const pid = p.productId || p.id;
+      if (adminBeverageImages[pid]) return adminBeverageImages[pid];
+      const f = (p.flavour || p.name || p.productName || '').toUpperCase();
+      if (f.includes('MANGO')) return adminBeverageImages[1];
+      if (f.includes('LEMON')) return adminBeverageImages[2];
+      if (f.includes('MINT')) return adminBeverageImages[3];
+      if (f.includes('ORANGE')) return adminBeverageImages[4];
+      if (f.includes('STRAWBERRY')) return adminBeverageImages[5];
+      if (f.includes('GRAPE')) return adminBeverageImages[6];
+      if (f.includes('LYCHEE')) return adminBeverageImages[7];
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return adminBeverageImages[23];
+      return adminBeverageImages[1];
+    }
+
     function getFruitIconAdmin(p) {
       if (!p) return '🍹';
       const fruitIcons = { 1: '🥭', 2: '🍋', 3: '🌿', 4: '🍊', 5: '🍓', 6: '🍇', 7: '🍹', 23: '⚡' };
@@ -3325,6 +3352,9 @@
       if (f.includes('KIWI')) return '🥝';
       return '🍹';
     }
+
+    const getFruitIcon = getFruitIconAdmin;
+    const getBeverageImage = getBeverageImageAdmin;
 
     // ==========================================
     // PRICING ENGINE SETTLEMENT INTERVAL TIMING
@@ -3375,12 +3405,34 @@
 
     function applyTimingToUI(timing) {
       if (!timing) return;
-      const sec = timing.intervalSeconds || timing.settlementIntervalSeconds || 60;
+      const sec = timing.intervalSeconds || timing.settlementIntervalSeconds || (activePricingTiming ? activePricingTiming.intervalSeconds : 60) || 60;
+      const currentSec = activePricingTiming && activePricingTiming.intervalSeconds ? Number(activePricingTiming.intervalSeconds) : null;
+      const intervalChanged = currentSec !== null && currentSec !== Number(sec);
+
+      let targetNextSettlementAt = timing.nextSettlementAt;
+      if (!targetNextSettlementAt) {
+        const stored = localStorage.getItem('pubexchange_next_settlement_at');
+        if (!intervalChanged && stored && !isNaN(new Date(stored).getTime()) && new Date(stored).getTime() > Date.now()) {
+          targetNextSettlementAt = stored;
+        } else if (!intervalChanged && activePricingTiming && activePricingTiming.nextSettlementAt) {
+          const existingTarget = new Date(activePricingTiming.nextSettlementAt).getTime();
+          if (!isNaN(existingTarget) && existingTarget > Date.now()) {
+            targetNextSettlementAt = activePricingTiming.nextSettlementAt;
+          }
+        }
+        if (!targetNextSettlementAt || intervalChanged) {
+          targetNextSettlementAt = new Date(Date.now() + sec * 1000).toISOString();
+        }
+      }
+
+      localStorage.setItem('pubexchange_settlement_interval', String(sec));
+      localStorage.setItem('pubexchange_next_settlement_at', targetNextSettlementAt);
+
       activePricingTiming = {
         ...activePricingTiming,
         ...timing,
         intervalSeconds: sec,
-        nextSettlementAt: timing.nextSettlementAt || new Date(Date.now() + sec * 1000).toISOString()
+        nextSettlementAt: targetNextSettlementAt
       };
 
       const sel = document.getElementById('pricingIntervalSelect');
@@ -3400,7 +3452,10 @@
         document.getElementById('cfgSettlementInterval').value = sec;
       }
 
-      startSettlementCountdownTicker();
+      // Only restart interval ticker if interval actually changed or if ticker was never started
+      if (intervalChanged || !settlementCountdownInterval) {
+        startSettlementCountdownTicker();
+      }
     }
 
     function openTimingConfirmationModal() {
@@ -3447,12 +3502,16 @@
 
         if (res.ok) {
           const data = await res.json();
+          const newTarget = data.nextSettlementAt || new Date(Date.now() + selectedSec * 1000).toISOString();
+          localStorage.setItem('pubexchange_settlement_interval', String(selectedSec));
+          localStorage.setItem('pubexchange_next_settlement_at', newTarget);
           activePricingTiming = {
             ...data,
             intervalSeconds: selectedSec,
-            nextSettlementAt: data.nextSettlementAt || new Date(Date.now() + selectedSec * 1000).toISOString()
+            nextSettlementAt: newTarget
           };
           applyTimingToUI(activePricingTiming);
+          startSettlementCountdownTicker();
           closeTimingConfirmationModal();
           showToast(`✓ Pricing cycle updated to ${data.label}. Countdown restarted to ${selectedSec >= 60 ? (selectedSec / 60) + ' min' : selectedSec + ' sec'}.`, 'success');
           loadPricingConfiguration();
@@ -3482,29 +3541,40 @@
       if (settlementCountdownInterval) clearInterval(settlementCountdownInterval);
 
       const updateAllCountdowns = () => {
-        const intervalSec = (activePricingTiming && activePricingTiming.intervalSeconds) ? Number(activePricingTiming.intervalSeconds) : 60;
+        const intervalSec = (activePricingTiming && activePricingTiming.intervalSeconds) ? Number(activePricingTiming.intervalSeconds) : (parseInt(localStorage.getItem('pubexchange_settlement_interval') || '60', 10) || 60);
         const now = Date.now();
         let remainingSec = intervalSec;
 
-        if (activePricingTiming && activePricingTiming.nextSettlementAt) {
-          const targetTime = new Date(activePricingTiming.nextSettlementAt).getTime();
+        let storedTarget = localStorage.getItem('pubexchange_next_settlement_at');
+        if (!storedTarget && activePricingTiming && activePricingTiming.nextSettlementAt) {
+          storedTarget = activePricingTiming.nextSettlementAt;
+        }
+
+        if (storedTarget) {
+          const targetTime = new Date(storedTarget).getTime();
           if (!isNaN(targetTime)) {
             const diffMs = targetTime - now;
             if (diffMs > 0) {
               remainingSec = Math.min(intervalSec, Math.ceil(diffMs / 1000));
             } else {
-              activePricingTiming.nextSettlementAt = new Date(now + intervalSec * 1000).toISOString();
+              const newTarget = new Date(now + intervalSec * 1000).toISOString();
+              localStorage.setItem('pubexchange_next_settlement_at', newTarget);
+              if (activePricingTiming) activePricingTiming.nextSettlementAt = newTarget;
               remainingSec = intervalSec;
               if (diffMs < -2000 && diffMs > -5000) {
                 loadPricingTiming();
               }
             }
           } else {
-            activePricingTiming.nextSettlementAt = new Date(now + intervalSec * 1000).toISOString();
+            const newTarget = new Date(now + intervalSec * 1000).toISOString();
+            localStorage.setItem('pubexchange_next_settlement_at', newTarget);
+            if (activePricingTiming) activePricingTiming.nextSettlementAt = newTarget;
             remainingSec = intervalSec;
           }
         } else {
-          activePricingTiming.nextSettlementAt = new Date(now + intervalSec * 1000).toISOString();
+          const newTarget = new Date(now + intervalSec * 1000).toISOString();
+          localStorage.setItem('pubexchange_next_settlement_at', newTarget);
+          if (activePricingTiming) activePricingTiming.nextSettlementAt = newTarget;
           remainingSec = intervalSec;
         }
 
@@ -3554,6 +3624,7 @@
         applyTimingToUI({
           intervalSeconds: g.settlementIntervalSeconds,
           settlementIntervalSeconds: g.settlementIntervalSeconds,
+          nextSettlementAt: config.nextSettlementAt || (activePricingTiming ? activePricingTiming.nextSettlementAt : null),
           label: g.settlementIntervalSeconds === 30 ? '30 Seconds' : (g.settlementIntervalSeconds % 60 === 0 ? `${g.settlementIntervalSeconds / 60} Minute` : `${g.settlementIntervalSeconds}s`)
         });
       }
@@ -3783,46 +3854,7 @@
       renderLivePricingTable();
     }
 
-    const adminBeverageImages = {
-      1: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=600&auto=format&fit=crop&q=80', // Mango Juice
-      2: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&auto=format&fit=crop&q=80', // Lemon Juice
-      3: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop&q=80', // Cool Mint Cooler
-      4: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=600&auto=format&fit=crop&q=80', // Valencia Orange
-      5: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&auto=format&fit=crop&q=80', // Strawberry Delight
-      6: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=600&auto=format&fit=crop&q=80', // Royal Grape
-      7: 'https://images.unsplash.com/photo-1560512823-829485b8bf24?w=600&auto=format&fit=crop&q=80', // Lychee Mist
-      23: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&auto=format&fit=crop&q=80' // Thunder Energy
-    };
 
-    function getBeverageImageAdmin(p) {
-      if (!p) return adminBeverageImages[1];
-      const pid = p.productId || p.id;
-      if (adminBeverageImages[pid]) return adminBeverageImages[pid];
-      const f = (p.flavour || p.name || p.productName || '').toUpperCase();
-      if (f.includes('MANGO')) return adminBeverageImages[1];
-      if (f.includes('LEMON')) return adminBeverageImages[2];
-      if (f.includes('MINT')) return adminBeverageImages[3];
-      if (f.includes('ORANGE')) return adminBeverageImages[4];
-      if (f.includes('STRAWBERRY')) return adminBeverageImages[5];
-      if (f.includes('GRAPE')) return adminBeverageImages[6];
-      if (f.includes('LYCHEE')) return adminBeverageImages[7];
-      if (f.includes('THUNDER') || f.includes('ENERGY')) return adminBeverageImages[23];
-      return adminBeverageImages[1];
-    }
-
-    function getFruitIconAdmin(p) {
-      if (!p) return '🍹';
-      const f = (p.flavour || p.name || p.productName || '').toUpperCase();
-      if (f.includes('MANGO')) return '🥭';
-      if (f.includes('LEMON')) return '🍋';
-      if (f.includes('ORANGE')) return '🍊';
-      if (f.includes('MINT')) return '🌿';
-      if (f.includes('GRAPE')) return '🍇';
-      if (f.includes('STRAWBERRY')) return '🍓';
-      if (f.includes('THUNDER') || f.includes('ENERGY')) return '⚡';
-      if (f.includes('LYCHEE')) return '🍹';
-      return '🍹';
-    }
 
     function renderLivePricingTable() {
       populateSimulatorFlavours();
@@ -4397,21 +4429,23 @@
       }
     }
 
-    async function runSimulation() {
+    async function runSimulation(options = {}) {
+      const isManual = options && options.manual === true;
+      const shouldAutoDeploy = options && options.autoDeploy === true;
       saveSimulatorParams();
       const btn = document.getElementById('btnRunSimulation');
-      if (btn) setButtonLoading(btn, true, 'Running...');
+      if (btn && isManual) setButtonLoading(btn, true, 'Running...');
 
       const sel = document.getElementById('simFlavour');
       const selectedText = sel ? (sel.options[sel.selectedIndex]?.text?.replace(/^[^\w\s]+/, '')?.trim() || sel.value) : 'Fresh Mango Juice';
 
       const req = {
         flavourName: selectedText,
-        initialVolumeMl: parseInt(document.getElementById('simVolume').value) || 20000,
-        initialPrice: parseFloat(document.getElementById('simStartPrice').value) || 25,
-        minPrice: parseFloat(document.getElementById('simMinPrice').value) || 18,
-        maxPrice: parseFloat(document.getElementById('simMaxPrice').value) || 35,
-        cupsPerInterval: parseInt(document.getElementById('simCupsPerStep').value) || 4,
+        initialVolumeMl: parseInt(document.getElementById('simVolume')?.value || '20000', 10) || 20000,
+        initialPrice: parseFloat(document.getElementById('simStartPrice')?.value || '25') || 25,
+        minPrice: parseFloat(document.getElementById('simMinPrice')?.value || '18') || 18,
+        maxPrice: parseFloat(document.getElementById('simMaxPrice')?.value || '35') || 35,
+        cupsPerInterval: parseInt(document.getElementById('simCupsPerStep')?.value || '4', 10) || 4,
         intervalMinutes: 2,
         targetSales: 1.00,
         includeCrash: document.getElementById('simIncludeCrash')?.checked || false
@@ -4424,18 +4458,18 @@
         });
         if (res.ok) {
           const simData = await res.json();
-          renderSimulationData(simData);
-          showToast('▶️ Sandbox Simulation Executed by Authoritative Pricing Service!', 'success');
+          renderSimulationData(simData, shouldAutoDeploy);
+          if (isManual) showToast('▶️ Sandbox Simulation Executed by Authoritative Pricing Service!', 'success');
           return;
         }
       } catch (e) { } finally {
-        if (btn) setButtonLoading(btn, false);
+        if (btn && isManual) setButtonLoading(btn, false);
       }
 
-      renderSimulationFallback(req);
+      renderSimulationFallback(req, shouldAutoDeploy);
     }
 
-    function renderSimulationData(sim) {
+    function renderSimulationData(sim, shouldAutoDeploy = false) {
       const grid = document.getElementById('simMetricsGrid');
       const startP = sim.initialPrice !== undefined ? Number(sim.initialPrice) : 25;
       const endP = sim.finalPrice !== undefined ? Number(sim.finalPrice) : 25;
@@ -4561,10 +4595,12 @@
       try {
         localStorage.setItem('pubexchange_sim_params', JSON.stringify(simUpdatePayload));
       } catch (e) {}
-      autoDeploySimulationToLivePOS();
+      if (shouldAutoDeploy) {
+        autoDeploySimulationToLivePOS();
+      }
     }
 
-    function renderSimulationFallback(req) {
+    function renderSimulationFallback(req, shouldAutoDeploy = false) {
       const grid = document.getElementById('simMetricsGrid');
       let currPrice = req.initialPrice || 25.00;
       const startPrice = currPrice;
@@ -4653,7 +4689,7 @@
             <td><span style="padding: 2px 6px; border-radius: 4px; background: rgba(148, 163, 184, 0.12); color: #94a3b8; font-weight: 700; font-family: var(--font-mono);">${w2}</span></td>
             <td><span style="font-family: var(--font-mono); font-weight: 800; color: #38bdf8;">${sw.toFixed(2)}</span></td>
             <td><span style="font-family: var(--font-mono); color: var(--text-muted);">${targetSales.toFixed(2)}</span></td>
-            <td><span style="font-family: var(--font-mono); font-weight: 800; color: ${rdColor};">${rd.toFixed(2)}</span></td>
+            <td><span style="font-family: var(--font-mono); font-weight: 800; color: ${rdColor};">${rd}</span></td>
             <td><span class="status-tag ${tagClass}">${tagText}</span></td>
             <td><span style="font-size: 15px; font-weight: 900; font-family: var(--font-mono); color: #38bdf8;">₹${currPrice.toFixed(2)}</span></td>
             <td><span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); display: block; line-height: 1.4;">${explanation}</span></td>
@@ -4731,7 +4767,9 @@
       try {
         localStorage.setItem('pubexchange_sim_params', JSON.stringify(simUpdatePayload));
       } catch (e) {}
-      autoDeploySimulationToLivePOS();
+      if (shouldAutoDeploy) {
+        autoDeploySimulationToLivePOS();
+      }
     }
 
     async function autoDeploySimulationToLivePOS() {
@@ -5120,10 +5158,6 @@
                 } else if (cfg.global) {
                   currentPricingConfig = cfg;
                   applyPricingConfigToUI(cfg);
-                  if (cfg.global.settlementIntervalSeconds) {
-                    activePricingTiming.intervalSeconds = cfg.global.settlementIntervalSeconds;
-                    applyTimingToUI(activePricingTiming);
-                  }
                 }
                 loadPricingAuditLogs();
               } catch (e) { }

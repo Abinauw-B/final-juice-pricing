@@ -311,7 +311,11 @@ public class PricingController {
 
     @GetMapping({"/config", "/admin/config"})
     public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO> getConfig() {
-        return ResponseEntity.ok(pricingConfigurationService.getFullConfiguration());
+        com.retailpos.pricing.model.PricingConfigDTO dto = pricingConfigurationService.getFullConfiguration();
+        if (pricingEngineService != null && pricingEngineService.getNextSettlementTime() != null) {
+            dto.setNextSettlementAt(pricingEngineService.getNextSettlementTime().toString());
+        }
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping({"/config", "/admin/config"})

@@ -7,6 +7,7 @@ public class PricingConfigDTO {
 
     private Long version;
     private String updatedAt;
+    private String nextSettlementAt;
     private GlobalConfig global;
     private List<ProductConfig> products;
 
@@ -24,6 +25,9 @@ public class PricingConfigDTO {
 
     public String getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getNextSettlementAt() { return nextSettlementAt; }
+    public void setNextSettlementAt(String nextSettlementAt) { this.nextSettlementAt = nextSettlementAt; }
 
     public GlobalConfig getGlobal() { return global; }
     public void setGlobal(GlobalConfig global) { this.global = global; }

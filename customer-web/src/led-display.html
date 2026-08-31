@@ -1710,15 +1710,31 @@
 
     function updatePricingTimingState(timing) {
       if (!timing) return;
-      const sec = timing.intervalSeconds || timing.settlementIntervalSeconds || 60;
+      const sec = timing.intervalSeconds || timing.settlementIntervalSeconds || (currentPricingTiming ? currentPricingTiming.intervalSeconds : 60) || 60;
+      const currentSec = currentPricingTiming && currentPricingTiming.intervalSeconds ? Number(currentPricingTiming.intervalSeconds) : null;
+      const intervalChanged = currentSec !== null && currentSec !== Number(sec);
+
       const label = timing.label || (sec === 10 ? '10 Seconds' : (sec === 30 ? '30 Seconds' : (sec % 60 === 0 ? `${sec / 60} Minute${sec > 60 ? 's' : ''}` : `${sec} Seconds`)));
       const shortLabel = sec === 10 ? '10-Sec' : (sec === 30 ? '30-Sec' : (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`));
+
+      let targetNextSettlementAt = timing.nextSettlementAt;
+      if (!targetNextSettlementAt) {
+        if (!intervalChanged && currentPricingTiming && currentPricingTiming.nextSettlementAt) {
+          const existingTarget = new Date(currentPricingTiming.nextSettlementAt).getTime();
+          if (!isNaN(existingTarget) && existingTarget > Date.now()) {
+            targetNextSettlementAt = currentPricingTiming.nextSettlementAt;
+          }
+        }
+        if (!targetNextSettlementAt) {
+          targetNextSettlementAt = new Date(Date.now() + sec * 1000).toISOString();
+        }
+      }
 
       currentPricingTiming = {
         intervalSeconds: sec,
         label: label,
         shortLabel: shortLabel,
-        nextSettlementAt: timing.nextSettlementAt || new Date(Date.now() + sec * 1000).toISOString()
+        nextSettlementAt: targetNextSettlementAt
       };
 
       const marketStateText = document.getElementById('marketStateText');
