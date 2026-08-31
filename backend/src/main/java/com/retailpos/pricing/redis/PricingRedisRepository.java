@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Repository
+@SuppressWarnings("null")
 public class PricingRedisRepository {
 
     private static final Logger log = LoggerFactory.getLogger(PricingRedisRepository.class);

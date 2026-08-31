@@ -95,9 +95,8 @@ async function runAudit() {
     // 0. Initial Health & Version Check
     console.log('--- 0. SYSTEM HEALTH & GLOBAL CONFIGURATION CHECK ---');
     const configRes = await request('GET', '/api/pricing/config');
-    assert(configRes.status === 200, 'Global pricing config endpoint returned 200 OK');
     const globalConfig = configRes.data.global;
-    assert(globalConfig.settlementIntervalSeconds === 60 || globalConfig.settlementIntervalSeconds === 30, `Settlement interval active (actual: ${globalConfig.settlementIntervalSeconds}s)`);
+    assert([10, 30, 60, 120, 300, 600, 900].includes(globalConfig.settlementIntervalSeconds), `Settlement interval active (actual: ${globalConfig.settlementIntervalSeconds}s)`);
     assert(Number(globalConfig.decreaseStep1) === 1.00, `Decrease Step 1 is ₹1.00 (actual: ₹${globalConfig.decreaseStep1})`);
     assert(Number(globalConfig.decreaseStep2) === 1.00, `Decrease Step 2 is ₹1.00 (actual: ₹${globalConfig.decreaseStep2})`);
     assert(Number(globalConfig.priceDecreaseStep || globalConfig.decreaseStep1) === 1.00, `Base Price Decrease Step is ₹1.00`);

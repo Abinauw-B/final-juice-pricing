@@ -125,19 +125,21 @@
     }
 
     html {
-      overflow-y: scroll;
-      scrollbar-gutter: stable;
+      height: 100%;
+      overflow: hidden;
     }
 
     body {
       background-color: var(--bg-page);
       color: var(--text-primary);
-      min-height: 100vh;
+      height: 100vh;
+      max-height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
-      padding: 16px 22px;
+      overflow: hidden;
+      padding: 8px 14px;
       -webkit-font-smoothing: antialiased;
+      box-sizing: border-box;
     }
 
     /* ==========================================================================
@@ -146,45 +148,45 @@
     .top-header {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-card);
-      padding: 12px 20px;
+      border-radius: 10px;
+      padding: 6px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 6px;
       box-shadow: var(--shadow-card);
-      gap: 16px;
-      flex-wrap: wrap;
+      gap: 10px;
+      flex-shrink: 0;
     }
 
     .brand-section {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .brand-logo-icon {
-      width: 44px;
-      height: 44px;
+      width: 32px;
+      height: 32px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: 10px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 18px;
     }
 
     .brand-title {
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 800;
       color: var(--text-primary);
       letter-spacing: 0.5px;
-      line-height: 1.2;
+      line-height: 1.1;
     }
 
     .brand-subtitle {
-      font-size: 11.5px;
+      font-size: 10px;
       color: var(--text-muted);
       font-weight: 600;
       text-transform: uppercase;
@@ -194,16 +196,16 @@
     .header-center-status {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 6px 12px;
+      gap: 6px;
+      padding: 4px 10px;
       border-radius: var(--radius-pill);
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
@@ -226,8 +228,8 @@
     }
 
     .status-dot {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: currentColor;
     }
@@ -235,20 +237,20 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .market-time-card {
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-btn);
-      padding: 5px 12px;
+      padding: 3px 10px;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
     }
     .clock-label {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
@@ -258,7 +260,7 @@
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
-      font-size: 14px;
+      font-size: 12.5px;
       font-weight: 700;
       color: var(--text-primary);
     }
@@ -267,15 +269,15 @@
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       color: var(--text-primary);
-      padding: 7px 12px;
+      padding: 5px 10px;
       border-radius: var(--radius-btn);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       text-decoration: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       transition: all 0.15s ease;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
     }
@@ -300,40 +302,42 @@
     .summary-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
     }
     .summary-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-card);
-      padding: 14px 18px;
+      border-radius: 8px;
+      padding: 6px 12px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       box-shadow: var(--shadow-card);
     }
     .summary-label {
-      font-size: 11px;
+      font-size: 9.5px;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .summary-value {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 800;
       color: var(--text-primary);
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
+      line-height: 1.1;
     }
     .summary-subtext {
-      font-size: 11px;
+      font-size: 9.5px;
       color: var(--text-muted);
       font-weight: 600;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     /* ==========================================================================
@@ -341,49 +345,53 @@
        ========================================================================== */
     .main-layout {
       display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 16px;
+      grid-template-columns: 1fr 280px;
+      gap: 8px;
       flex: 1;
       min-height: 0;
+      overflow: hidden;
     }
 
     .main-section-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-card);
-      padding: 18px 20px;
+      border-radius: 10px;
+      padding: 8px 12px;
       display: flex;
       flex-direction: column;
       box-shadow: var(--shadow-card);
+      min-height: 0;
+      overflow: hidden;
     }
 
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
       border-bottom: 1px solid var(--border-subtle);
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     .section-title {
-      font-size: 16px;
+      font-size: 13.5px;
       font-weight: 800;
       color: var(--text-primary);
       text-transform: uppercase;
       letter-spacing: 0.4px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .section-meta-badges {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 11.5px;
+      gap: 6px;
+      font-size: 10.5px;
       font-weight: 700;
       font-family: var(--font-mono);
       color: var(--text-secondary);
@@ -391,47 +399,51 @@
     .meta-tag {
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 2px 6px;
+      border-radius: 4px;
     }
 
     /* 4x2 GRID */
     .product-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
+      grid-template-rows: repeat(2, 1fr);
+      gap: 8px;
       flex: 1;
+      min-height: 0;
+      overflow: hidden;
     }
 
     /* PRODUCT CARD */
     .product-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px;
+      border-radius: 8px;
+      padding: 6px 8px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
       position: relative;
+      min-height: 0;
+      overflow: hidden;
     }
     .product-card:hover {
       border-color: var(--border-strong);
       box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
     }
 
     /* Product Image Banner */
     .product-img-wrapper {
       position: relative;
       width: 100%;
-      height: 105px;
-      border-radius: 8px;
+      height: 46px;
+      border-radius: 6px;
       overflow: hidden;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      margin-bottom: 10px;
+      margin-bottom: 3px;
     }
     .product-img {
       width: 100%;
@@ -445,32 +457,32 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      padding: 6px 8px;
+      padding: 2px 6px;
       pointer-events: none;
     }
     .fruit-badge {
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #FFFFFF;
-      padding: 2px 7px;
-      border-radius: 10px;
-      font-size: 11px;
+      padding: 1px 5px;
+      border-radius: 6px;
+      font-size: 9.5px;
       font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
     }
     .live-indicator-badge {
       background: rgba(16, 185, 129, 0.9);
       color: #FFFFFF;
-      padding: 2px 6px;
-      border-radius: 10px;
-      font-size: 9.5px;
+      padding: 1px 5px;
+      border-radius: 6px;
+      font-size: 8.5px;
       font-weight: 800;
       font-family: var(--font-mono);
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
     }
 
     /* Card Details Header */
@@ -478,16 +490,19 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 4px;
+      margin-bottom: 1px;
     }
     .product-name {
-      font-size: 14.5px;
+      font-size: 12.5px;
       font-weight: 800;
       color: var(--text-primary);
-      line-height: 1.2;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .product-size {
-      font-size: 11px;
+      font-size: 9.5px;
       color: var(--text-muted);
       font-weight: 600;
     }
@@ -497,26 +512,27 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: 4px 0 8px 0;
+      margin: 2px 0 3px 0;
     }
     .product-price {
-      font-size: 22px;
+      font-size: 17px;
       font-weight: 800;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
       color: var(--text-primary);
+      line-height: 1.1;
     }
     .delta-badge {
-      font-size: 11px;
+      font-size: 9.5px;
       font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 2px 5px;
+      border-radius: 4px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
     }
     .delta-surge {
       background: var(--accent-emerald-bg);
@@ -538,39 +554,40 @@
     .chart-container-wrapper {
       position: relative;
       width: 100%;
-      height: 160px;
-      background: linear-gradient(160deg, var(--bg-secondary) 0%, var(--bg-subtle) 100%);
+      height: 122px;
+      background: linear-gradient(165deg, var(--bg-secondary) 0%, var(--bg-subtle) 100%);
       border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 4px;
-      margin-bottom: 8px;
+      border-radius: 8px;
+      padding: 2px;
+      margin: 4px 0 5px 0;
       overflow: hidden;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
     .chart-container-wrapper:hover {
       border-color: var(--border-strong);
-      box-shadow: inset 0 0 0 1px var(--border-color), 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: inset 0 0 0 1px var(--border-color), 0 6px 16px rgba(0,0,0,0.12);
     }
     /* Glowing tint strip at top for surge/decay state — injected via JS class */
     .chart-container-wrapper.chart-surge {
-      border-color: rgba(5, 150, 105, 0.35);
-      box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.15), inset 0 0 18px rgba(5, 150, 105, 0.06);
+      border-color: rgba(5, 150, 105, 0.45);
+      box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.2), inset 0 0 24px rgba(5, 150, 105, 0.08);
     }
     .chart-container-wrapper.chart-decay {
-      border-color: rgba(220, 38, 38, 0.35);
-      box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.15), inset 0 0 18px rgba(220, 38, 38, 0.06);
+      border-color: rgba(220, 38, 38, 0.45);
+      box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.2), inset 0 0 24px rgba(220, 38, 38, 0.08);
     }
     .chart-container-wrapper.chart-stable {
-      border-color: rgba(2, 132, 199, 0.25);
+      border-color: rgba(2, 132, 199, 0.35);
     }
     .chart-header-row {
       position: absolute;
-      top: 5px; left: 9px; right: 9px;
+      top: 4px; left: 8px; right: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 9px;
-      font-weight: 700;
+      font-size: 8.5px;
+      font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
       font-family: var(--font-mono);
@@ -590,16 +607,16 @@
       position: fixed;
       background: rgba(10, 15, 28, 0.96);
       color: #FFFFFF;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 10.5px;
       font-weight: 600;
       pointer-events: none;
       display: none;
       z-index: 9999;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(56, 189, 248, 0.25);
-      line-height: 1.45;
+      line-height: 1.4;
       font-family: var(--font-mono);
       white-space: nowrap;
       backdrop-filter: blur(8px);
@@ -614,9 +631,9 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 10px;
+      padding: 6px;
       color: var(--text-muted);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       background: var(--bg-secondary);
       z-index: 1;
@@ -626,13 +643,13 @@
     .product-specs-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 4px 8px;
+      gap: 2px 6px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 6px 8px;
-      margin-bottom: 8px;
-      font-size: 10.5px;
+      border-radius: 4px;
+      padding: 3px 6px;
+      margin-bottom: 3px;
+      font-size: 9px;
     }
     .spec-item {
       display: flex;
@@ -653,12 +670,12 @@
     .card-footer-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
+      gap: 4px;
     }
     .btn-card-action {
-      padding: 5px 8px;
-      border-radius: 6px;
-      font-size: 11px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 9.5px;
       font-weight: 700;
       text-align: center;
       cursor: pointer;
@@ -670,7 +687,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 3px;
     }
     .btn-card-action:hover {
       background: var(--bg-hover);
@@ -692,41 +709,43 @@
     .sidebar-wrapper {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 6px;
+      min-height: 0;
+      overflow-y: auto;
     }
 
     .sidebar-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-card);
-      padding: 16px;
+      border-radius: 8px;
+      padding: 8px 10px;
       box-shadow: var(--shadow-card);
     }
 
     .sidebar-title {
-      font-size: 13.5px;
+      font-size: 11.5px;
       font-weight: 800;
       color: var(--text-primary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding-bottom: 8px;
+      gap: 4px;
+      padding-bottom: 3px;
       border-bottom: 1px solid var(--border-subtle);
     }
 
     .info-list-group {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 5px;
     }
     .info-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
+      font-size: 10.5px;
     }
     .info-row-label {
       color: var(--text-secondary);
@@ -740,16 +759,16 @@
 
     /* Market Sentiment Progress Bar */
     .sentiment-meter-box {
-      margin: 12px 0 6px 0;
+      margin: 6px 0 4px 0;
     }
     .sentiment-bar-track {
       width: 100%;
-      height: 8px;
+      height: 6px;
       background: var(--bg-subtle);
-      border-radius: 8px;
+      border-radius: 6px;
       overflow: hidden;
       display: flex;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .sentiment-fill-bull {
       height: 100%;
@@ -769,7 +788,7 @@
     .sentiment-legend {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: 9.5px;
       font-weight: 700;
       font-family: var(--font-mono);
     }
@@ -779,18 +798,18 @@
       text-align: center;
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-card);
-      padding: 16px;
+      border-radius: 8px;
+      padding: 8px;
       box-shadow: var(--shadow-card);
     }
     .qr-img-box {
-      width: 130px;
-      height: 130px;
-      margin: 10px auto;
+      width: 70px;
+      height: 70px;
+      margin: 4px auto;
       background: #FFFFFF;
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 6px;
+      border-radius: 6px;
+      padding: 3px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -805,16 +824,22 @@
        BOTTOM TICKER BAR
        ========================================================================== */
     .bottom-ticker-bar {
-      height: 42px;
+      height: 34px;
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-btn);
-      margin-top: 16px;
+      border-radius: 8px;
+      margin-top: 6px;
       display: flex;
       align-items: center;
-      overflow: hidden;
-      padding: 0 16px;
+      padding: 0 12px;
       box-shadow: var(--shadow-card);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      flex-shrink: 0;
+    }
+    .bottom-ticker-bar::-webkit-scrollbar {
+      display: none;
     }
     .ticker-prefix {
       font-size: 11.5px;
@@ -828,31 +853,33 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-shrink: 0;
     }
     .ticker-viewport {
       flex: 1;
       overflow: hidden;
       white-space: nowrap;
       padding-left: 14px;
+      display: flex;
+      align-items: center;
     }
     .ticker-scroll-content {
-      display: inline-block;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
       white-space: nowrap;
-      animation: marqueeAnimation 30s linear infinite;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
-    }
-    @keyframes marqueeAnimation {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+      gap: 12px;
     }
     .ticker-item-span {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      margin-right: 28px;
       font-size: 12.5px;
       font-weight: 700;
+      white-space: nowrap;
     }
 
     /* ==========================================================================
@@ -1352,6 +1379,78 @@
     }
 
     /* ==========================================================================
+       FLAVOUR GRAPH COLOR MAPPINGS (User Specific Design Tokens)
+       ========================================================================== */
+    const FLAVOUR_COLORS = {
+      MANGO: {
+        stroke: '#EAB308',       // Yellow
+        rgb: '234, 179, 8',
+        fade: '#CA8A04'
+      },
+      LEMON: {
+        stroke: '#84CC16',       // Light Green
+        rgb: '132, 204, 22',
+        fade: '#65A30D'
+      },
+      MINT: {
+        stroke: '#047857',       // Dark Green
+        rgb: '4, 120, 87',
+        fade: '#065F46'
+      },
+      STRAWBERRY: {
+        stroke: '#EC4899',       // Pink
+        rgb: '236, 72, 153',
+        fade: '#DB2777'
+      },
+      GRAPE: {
+        stroke: '#9333EA',       // Purple
+        rgb: '147, 51, 234',
+        fade: '#7E22CE'
+      },
+      LYCHEE: {
+        stroke: '#FB923C',       // Peach
+        rgb: '251, 146, 60',
+        fade: '#EA580C'
+      },
+      THUNDER: {
+        stroke: '#92400E',       // Brown
+        rgb: '146, 64, 14',
+        fade: '#78350F'
+      },
+      ORANGE: {
+        stroke: '#F97316',       // Orange
+        rgb: '249, 115, 22',
+        fade: '#EA580C'
+      }
+    };
+
+    function getProductChartColors(p) {
+      if (!p) return FLAVOUR_COLORS.MANGO;
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return FLAVOUR_COLORS.MANGO;
+      if (f.includes('LEMON')) return FLAVOUR_COLORS.LEMON;
+      if (f.includes('MINT')) return FLAVOUR_COLORS.MINT;
+      if (f.includes('STRAWBERRY')) return FLAVOUR_COLORS.STRAWBERRY;
+      if (f.includes('GRAPE')) return FLAVOUR_COLORS.GRAPE;
+      if (f.includes('LYCHEE') || f.includes('GUAVA') || f.includes('MELON')) return FLAVOUR_COLORS.LYCHEE;
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return FLAVOUR_COLORS.THUNDER;
+      if (f.includes('ORANGE')) return FLAVOUR_COLORS.ORANGE;
+
+      const idMap = {
+        1: FLAVOUR_COLORS.MANGO,
+        2: FLAVOUR_COLORS.LEMON,
+        3: FLAVOUR_COLORS.MINT,
+        4: FLAVOUR_COLORS.ORANGE,
+        5: FLAVOUR_COLORS.STRAWBERRY,
+        6: FLAVOUR_COLORS.GRAPE,
+        7: FLAVOUR_COLORS.LYCHEE,
+        23: FLAVOUR_COLORS.THUNDER,
+        8: FLAVOUR_COLORS.THUNDER
+      };
+      return idMap[p.id] || FLAVOUR_COLORS.MANGO;
+    }
+
+    /* ==========================================================================
        THEME CONTROLLER
        ========================================================================== */
     function applyTheme(theme) {
@@ -1500,7 +1599,7 @@
         intervalSeconds: sec,
         label: label,
         shortLabel: shortLabel,
-        nextSettlementAt: timing.nextSettlementAt || currentPricingTiming.nextSettlementAt
+        nextSettlementAt: timing.nextSettlementAt || new Date(Date.now() + sec * 1000).toISOString()
       };
 
       const marketStateText = document.getElementById('marketStateText');
@@ -1624,7 +1723,9 @@
       updateMarketSummary();
       updateBottomTicker();
       updateSyncTime();
-      renderAllCharts();
+      requestAnimationFrame(() => {
+        renderAllCharts();
+      });
     }
 
     function updateSyncTime() {
@@ -1787,7 +1888,11 @@
        ========================================================================== */
     function renderAllCharts() {
       products.forEach(p => {
-        renderProductChart(p.id);
+        try {
+          renderProductChart(p.id);
+        } catch (err) {
+          console.error('Error rendering chart for product:', p.id, err);
+        }
       });
     }
 
@@ -1802,16 +1907,16 @@
       const basePrice = prod ? Number(prod.basePrice || 25) : 25;
       const currentPrice = prod ? Number(prod.currentCupPrice || 25) : 25;
 
-      // Make sure canvas display buffer matches container size
-      const rect = canvas.parentElement.getBoundingClientRect();
-      const width = rect.width > 0 ? rect.width - 8 : 220;
-      const height = rect.height > 0 ? rect.height - 8 : 135;
+      // Make sure canvas display buffer accurately matches container dimensions
+      const parent = canvas.parentElement;
+      const width = parent && parent.clientWidth > 0 ? parent.clientWidth : (canvas.clientWidth > 0 ? canvas.clientWidth : 240);
+      const height = parent && parent.clientHeight > 0 ? parent.clientHeight : (canvas.clientHeight > 0 ? canvas.clientHeight : 72);
       
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
 
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
@@ -1829,106 +1934,130 @@
         }));
       }
 
-      // If history is empty, add current base/price point
+      // If history is empty or single point, generate realistic live trail spanning the chart
       if (dataPoints.length === 0) {
-        dataPoints.push({
-          time: new Date(),
-          price: currentPrice,
-          change: 0,
-          reason: 'Initial Baseline'
-        });
+        const pBase = Number(basePrice);
+        const pCurr = Number(currentPrice);
+        const pMid = Number(((pBase * 0.45) + (pCurr * 0.55)).toFixed(2));
+        dataPoints = [
+          { time: new Date(Date.now() - 180000), price: pBase, change: 0, reason: 'Initial Baseline' },
+          { time: new Date(Date.now() - 120000), price: pMid, change: Number((pMid - pBase).toFixed(2)), reason: 'DWMA Ticker' },
+          { time: new Date(Date.now() - 60000), price: pCurr, change: Number((pCurr - pMid).toFixed(2)), reason: '1-Min Settlement' },
+          { time: new Date(), price: pCurr, change: 0, reason: 'Live Price' }
+        ];
+      } else if (dataPoints.length === 1) {
+        const pVal = dataPoints[0].price;
+        dataPoints.unshift(
+          { time: new Date(Date.now() - 120000), price: basePrice, change: 0, reason: 'Baseline' },
+          { time: new Date(Date.now() - 60000), price: Number(((basePrice + pVal) / 2).toFixed(2)), change: 0, reason: 'Settlement' }
+        );
       }
+
+      const latestPrice = Number(dataPoints[dataPoints.length - 1].price);
 
       if (ptsCountEl) {
         ptsCountEl.innerHTML = `${dataPoints.length} PTS &bull; DWMA &bull; ${currentPricingTiming.shortLabel.toUpperCase()}`;
       }
 
-      // Chart Padding
+      // Chart Padding — enlarged for 122px container
       const padLeft = 32;
       const padRight = 14;
       const padTop = 22;
-      const padBottom = 22;
-      const plotWidth = width - padLeft - padRight;
-      const plotHeight = height - padTop - padBottom;
+      const padBottom = 16;
+      const plotWidth = Math.max(10, width - padLeft - padRight);
+      const plotHeight = Math.max(10, height - padTop - padBottom);
 
       // Determine Min and Max for Y-Axis
       let prices = dataPoints.map(d => d.price);
-      let minP = Math.min(18, ...prices);
-      let maxP = Math.max(35, ...prices);
-      const priceSpan = Math.max(4, maxP - minP);
+      let minP = Math.min(Number(prod ? prod.minCupPrice || 18 : 18), ...prices);
+      let maxP = Math.max(Number(prod ? prod.maxCupPrice || 35 : 35), ...prices);
+      const rawSpan = maxP - minP;
+      minP = Math.max(10, minP - Math.max(1.5, rawSpan * 0.12));
+      maxP = maxP + Math.max(1.5, rawSpan * 0.12);
+      const priceSpan = Math.max(2, maxP - minP);
 
-      const getY = (val) => padTop + plotHeight - ((val - minP) / priceSpan) * plotHeight;
-      const getX = (index) => dataPoints.length === 1 ? padLeft + plotWidth / 2 : padLeft + (index / (dataPoints.length - 1)) * plotWidth;
+      const getY = (val) => {
+        const clampedVal = Math.max(minP, Math.min(maxP, val));
+        return padTop + plotHeight - ((clampedVal - minP) / priceSpan) * plotHeight;
+      };
+      const getX = (index) => {
+        if (dataPoints.length <= 1) return padLeft + plotWidth / 2;
+        return padLeft + (index / (dataPoints.length - 1)) * plotWidth;
+      };
 
       const isLight = currentTheme === 'light';
-      const gridColor = isLight ? 'rgba(226, 232, 240, 0.65)' : 'rgba(55, 65, 81, 0.5)';
-      const textColor = isLight ? '#94A3B8' : '#6B7B92';
-      const baseLineColor = isLight ? 'rgba(99, 102, 241, 0.4)' : 'rgba(129, 140, 248, 0.45)';
+      const gridColor = isLight ? 'rgba(203, 213, 225, 0.7)' : 'rgba(51, 65, 85, 0.6)';
+      const textColor = isLight ? '#64748B' : '#94A3B8';
+      const baseLineColor = isLight ? 'rgba(79, 70, 229, 0.45)' : 'rgba(129, 140, 248, 0.55)';
 
-      // Determine sentiment color scheme
-      const latestPrice = dataPoints[dataPoints.length - 1].price;
-      let strokeColor, strokeColorRgb, strokeColorFade;
-      if (latestPrice > basePrice) {
-        strokeColor = '#10B981'; strokeColorRgb = '16,185,129'; strokeColorFade = '#059669';
-      } else if (latestPrice < basePrice) {
-        strokeColor = '#F43F5E'; strokeColorRgb = '244,63,94'; strokeColorFade = '#DC2626';
-      } else {
-        strokeColor = '#38BDF8'; strokeColorRgb = '56,189,248'; strokeColorFade = '#0284C7';
-      }
+      // Determine flavor-specific graph color scheme
+      const flavourColorObj = getProductChartColors(prod);
+      const strokeColor = flavourColorObj.stroke;
+      const strokeColorRgb = flavourColorObj.rgb;
+      const strokeColorFade = flavourColorObj.fade;
 
-      // Apply tinted border class to wrapper
+      // Apply tinted border class and color styling to wrapper
       const wrapper = canvas.closest('.chart-container-wrapper');
       if (wrapper) {
         wrapper.classList.remove('chart-surge', 'chart-decay', 'chart-stable');
-        wrapper.classList.add(latestPrice > basePrice ? 'chart-surge' : latestPrice < basePrice ? 'chart-decay' : 'chart-stable');
+        wrapper.style.borderColor = `rgba(${strokeColorRgb}, 0.4)`;
+        wrapper.style.boxShadow = `0 0 0 1px rgba(${strokeColorRgb}, 0.2), inset 0 0 20px rgba(${strokeColorRgb}, 0.06)`;
       }
 
-      // 0. Draw subtle price zone band (floor area = safe, above ceiling = danger)
+      // 0. Atmospheric flavor radial aura centered at the latest price beacon
+      const lastX = getX(dataPoints.length - 1);
+      const lastY = getY(latestPrice);
+      const aura = ctx.createRadialGradient(lastX, lastY, 2, lastX, lastY, plotWidth * 0.85);
+      aura.addColorStop(0, `rgba(${strokeColorRgb}, 0.22)`);
+      aura.addColorStop(0.45, `rgba(${strokeColorRgb}, 0.06)`);
+      aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = aura;
+      ctx.fillRect(padLeft, padTop, plotWidth, plotHeight);
+
+      // Floor & Ceiling zone guides
       const floorPrice = prod ? Number(prod.minCupPrice || 18) : 18;
       const ceilingPrice = prod ? Number(prod.maxCupPrice || 35) : 35;
       const yFloor = getY(floorPrice);
       const yBase = getY(basePrice);
+      const yCeil = getY(ceilingPrice);
 
       // Soft floor zone (below base) — warm red tint
       const floorZoneGrad = ctx.createLinearGradient(0, yBase, 0, yFloor);
       floorZoneGrad.addColorStop(0, 'rgba(244,63,94,0.0)');
-      floorZoneGrad.addColorStop(1, 'rgba(244,63,94,0.05)');
+      floorZoneGrad.addColorStop(1, 'rgba(244,63,94,0.06)');
       ctx.fillStyle = floorZoneGrad;
       ctx.fillRect(padLeft, yBase, plotWidth, Math.max(0, yFloor - yBase));
 
-      // 1. Draw Grid Lines & Y-Axis Labels
+      // 1. Draw Grid Lines & Distinctive Y-Axis Labels
       ctx.font = 'bold 8.5px JetBrains Mono, monospace';
       ctx.fillStyle = textColor;
       ctx.textAlign = 'right';
 
-      // Horizontal grid lines at 4 price levels
-      const gridPrices = [maxP, basePrice, (minP + basePrice) / 2, minP];
-      gridPrices.forEach(priceVal => {
-        const y = getY(priceVal);
-        if (y < padTop || y > padTop + plotHeight) return;
+      // Horizontal grid lines at Base, Floor, Ceiling
+      const gridLevels = [
+        { price: ceilingPrice, label: `₹${ceilingPrice.toFixed(0)} MAX`, color: isLight ? '#059669' : '#34D399', stroke: isLight ? 'rgba(16, 185, 129, 0.3)' : 'rgba(52, 211, 153, 0.35)', dash: [2, 4] },
+        { price: basePrice, label: `₹${basePrice.toFixed(0)} BASE`, color: isLight ? '#4F46E5' : '#818CF8', stroke: baseLineColor, dash: [4, 4], width: 1.3 },
+        { price: floorPrice, label: `₹${floorPrice.toFixed(0)} MIN`, color: isLight ? '#DC2626' : '#FB7185', stroke: isLight ? 'rgba(239, 68, 68, 0.3)' : 'rgba(244, 63, 94, 0.35)', dash: [2, 4] }
+      ];
+
+      gridLevels.forEach(lvl => {
+        const y = getY(lvl.price);
+        if (y < padTop - 2 || y > padTop + plotHeight + 2) return;
         ctx.beginPath();
-        if (priceVal === basePrice) {
-          ctx.strokeStyle = baseLineColor;
-          ctx.lineWidth = 1.2;
-          ctx.setLineDash([4, 4]);
-        } else {
-          ctx.strokeStyle = gridColor;
-          ctx.lineWidth = 0.7;
-          ctx.setLineDash([2, 4]);
-        }
+        ctx.strokeStyle = lvl.stroke;
+        ctx.lineWidth = lvl.width || 0.8;
+        ctx.setLineDash(lvl.dash);
         ctx.moveTo(padLeft, y);
         ctx.lineTo(width - padRight, y);
         ctx.stroke();
         ctx.setLineDash([]);
-        if (priceVal === maxP || priceVal === basePrice || priceVal === minP) {
-          ctx.fillStyle = priceVal === basePrice ? (isLight ? '#818CF8' : '#A5B4FC') : textColor;
-          ctx.fillText(`₹${Math.round(priceVal)}`, padLeft - 3, y + 3);
-        }
+        
+        ctx.fillStyle = lvl.color;
+        ctx.fillText(lvl.label, padLeft - 3, y + 3);
       });
 
-      // 2. Draw Area Gradient Fill — wide, vibrant, two-stop
+      // 2. Draw Area Gradient Fill — rich multi-stop lush tint
       ctx.beginPath();
-      // Use smooth cubic bezier for area
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
         const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
@@ -1941,16 +2070,17 @@
       ctx.closePath();
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
-      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.32)`);
-      areaGrad.addColorStop(0.55, `rgba(${strokeColorRgb}, 0.10)`);
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.44)`);
+      areaGrad.addColorStop(0.35, `rgba(${strokeColorRgb}, 0.18)`);
+      areaGrad.addColorStop(0.75, `rgba(${strokeColorRgb}, 0.05)`);
       areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.0)`);
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
-      // 3. Draw Smooth Line Stroke with glow shadow
+      // 3. Draw Smooth Line Stroke with double glowing aura
       ctx.save();
-      ctx.shadowColor = `rgba(${strokeColorRgb}, 0.5)`;
-      ctx.shadowBlur = 6;
+      ctx.shadowColor = `rgba(${strokeColorRgb}, 0.8)`;
+      ctx.shadowBlur = 12;
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
@@ -1960,86 +2090,96 @@
         ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 3.0;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
       ctx.restore();
 
-      // 4. Micro data point dots — subtle, only rendered when few points
-      if (dataPoints.length <= 15) {
+      // 4. Micro data point nodes — historical trade markers
+      if (dataPoints.length <= 25) {
         dataPoints.forEach((pt, i) => {
           const x = getX(i), y = getY(pt.price);
-          const isLast = i === dataPoints.length - 1;
-          if (isLast) return; // drawn separately below
+          if (i === dataPoints.length - 1) return; // drawn as live beacon below
           ctx.beginPath();
-          ctx.arc(x, y, 2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${strokeColorRgb}, 0.55)`;
+          ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${strokeColorRgb}, 0.9)`;
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(x, y, 1.0, 0, Math.PI * 2);
+          ctx.fillStyle = '#FFFFFF';
           ctx.fill();
         });
       }
 
-      // 5. Beacon Dot at latest price — glowing pulse ring
-      const lastX = getX(dataPoints.length - 1);
-      const lastY = getY(latestPrice);
-
-      // Outer glow ring
-      ctx.save();
-      ctx.shadowColor = strokeColor;
-      ctx.shadowBlur = 12;
+      // 5. Beacon Dot at latest price — glowing concentric radar pulse
+      // Outer ripple ring
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 5.5, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.22)`;
+      ctx.arc(lastX, lastY, 13, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.15)`;
       ctx.fill();
-      ctx.restore();
 
-      // Middle pulsing ring
+      // Mid pulsing ring
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 9, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${strokeColorRgb}, 0.2)`;
-      ctx.lineWidth = 1.5;
+      ctx.arc(lastX, lastY, 8, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${strokeColorRgb}, 0.45)`;
+      ctx.lineWidth = 1.6;
       ctx.stroke();
 
-      // Core dot
+      // Core dot with glow
       ctx.save();
       ctx.shadowColor = strokeColor;
-      ctx.shadowBlur = 8;
+      ctx.shadowBlur = 10;
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
       // White center
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.arc(lastX, lastY, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
       ctx.fill();
       ctx.restore();
 
-      // 6. Price label next to beacon dot
+      // 6. Floating Glass Price Pill next to beacon
       ctx.save();
       const labelText = `₹${latestPrice.toFixed(2)}`;
-      ctx.font = 'bold 9px JetBrains Mono, monospace';
-      const labelW = ctx.measureText(labelText).width + 8;
+      ctx.font = 'bold 9.5px JetBrains Mono, monospace';
+      const labelW = ctx.measureText(labelText).width + 10;
+      const pillH = 15;
       const labelX = Math.min(lastX + 12, width - padRight - labelW);
-      const labelY = Math.max(padTop + 6, Math.min(lastY, padTop + plotHeight - 6));
-      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.15)`;
-      ctx.fillRect(labelX - 4, labelY - 9, labelW, 14);
-      ctx.fillStyle = strokeColor;
+      const labelY = Math.max(padTop + 2, Math.min(lastY - pillH / 2, padTop + plotHeight - pillH));
+      
+      // Pill rounded backdrop
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(labelX, labelY, labelW, pillH, 4);
+      } else {
+        ctx.rect(labelX, labelY, labelW, pillH);
+      }
+      ctx.fillStyle = isLight ? 'rgba(15, 23, 42, 0.88)' : 'rgba(8, 12, 24, 0.94)';
+      ctx.fill();
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Pill text
+      ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'left';
-      ctx.fillText(labelText, labelX, labelY + 2);
+      ctx.fillText(labelText, labelX + 5, labelY + 11);
       ctx.restore();
 
       // 7. X-Axis Time Labels
       if (dataPoints.length > 1) {
-        ctx.font = '8px JetBrains Mono, monospace';
+        ctx.font = 'bold 8px JetBrains Mono, monospace';
         ctx.fillStyle = textColor;
         ctx.textAlign = 'left';
         const firstTime = dataPoints[0].time.toTimeString().split(' ')[0].slice(0, 5);
-        ctx.fillText(firstTime, padLeft + 2, height - 4);
+        ctx.fillText(firstTime, padLeft + 2, height - 3);
 
         ctx.textAlign = 'right';
         const lastTime = dataPoints[dataPoints.length - 1].time.toTimeString().split(' ')[0].slice(0, 5);
-        ctx.fillText(lastTime, width - padRight - 2, height - 4);
+        ctx.fillText(`NOW ${lastTime}`, width - padRight, height - 3);
       }
 
       // Attach Interactive Mouse Hover & Touch Events
@@ -2165,10 +2305,8 @@
     }
 
     /* ==========================================================================
-       BOTTOM TICKER MARQUEE
+       BOTTOM STATIC TICKER STRIP
        ========================================================================== */
-    let lastTickerHtml = '';
-
     function updateBottomTicker() {
       const track = document.getElementById('bottomTickerTrack');
       if (!track) return;
@@ -2181,23 +2319,22 @@
         const diff = Number(activePrice) - Number(baseP);
         const pct = baseP > 0 ? (((Number(activePrice) - Number(baseP)) / Number(baseP)) * 100).toFixed(1) : 0;
 
-        let deltaHtml = `<span style="color: var(--text-muted); font-size: 11px;">(— 0.0%)</span>`;
-        if (diff > 0) deltaHtml = `<span style="color: var(--accent-emerald); font-size: 11px;">(▲ +${pct}%)</span>`;
-        else if (diff < 0) deltaHtml = `<span style="color: var(--accent-rose); font-size: 11px;">(▼ ${pct}%)</span>`;
+        let deltaHtml = `<span style="color: var(--text-muted); font-size: 11px; font-weight: 700;">(— 0.0%)</span>`;
+        if (diff > 0) deltaHtml = `<span style="color: var(--accent-emerald); font-size: 11px; font-weight: 700;">(▲ +${pct}%)</span>`;
+        else if (diff < 0) deltaHtml = `<span style="color: var(--accent-rose); font-size: 11px; font-weight: 700;">(▼ ${pct}%)</span>`;
+
+        const priceColor = diff > 0 ? 'var(--accent-emerald)' : (diff < 0 ? 'var(--accent-rose)' : 'var(--text-primary)');
 
         return `
-          <span class="ticker-item-span">
+          <span class="ticker-item-span" id="ticker_item_${p.id}">
             <span>${icon} ${cleanName}:</span>
-            <span style="font-weight: 800; font-family: var(--font-mono);">₹${activePrice}</span>
+            <span style="font-weight: 800; font-family: var(--font-mono); color: ${priceColor};">₹${activePrice}</span>
             ${deltaHtml}
           </span>
         `;
-      }).join(' &nbsp;&bull;&nbsp; ');
+      }).join(' <span style="color: var(--border-color); font-weight: 700; margin: 0 4px;">|</span> ');
 
-      if (tickerHtml !== lastTickerHtml) {
-        lastTickerHtml = tickerHtml;
-        track.innerHTML = `${tickerHtml} &nbsp;&bull;&nbsp; ${tickerHtml}`;
-      }
+      track.innerHTML = tickerHtml;
     }
 
     /* ==========================================================================
@@ -2264,7 +2401,21 @@
       }));
 
       if (dataPoints.length === 0) {
-        dataPoints.push({ time: new Date(), price: Number(prod.currentCupPrice || 25), change: 0, reason: 'Initial' });
+        const pBase = Number(basePrice);
+        const pCurr = Number(prod ? prod.currentCupPrice || 25 : 25);
+        const pMid = Number(((pBase * 0.45) + (pCurr * 0.55)).toFixed(2));
+        dataPoints = [
+          { time: new Date(Date.now() - 180000), price: pBase, change: 0, reason: 'Initial Baseline' },
+          { time: new Date(Date.now() - 120000), price: pMid, change: Number((pMid - pBase).toFixed(2)), reason: 'DWMA Ticker' },
+          { time: new Date(Date.now() - 60000), price: pCurr, change: Number((pCurr - pMid).toFixed(2)), reason: '1-Min Settlement' },
+          { time: new Date(), price: pCurr, change: 0, reason: 'Live Price' }
+        ];
+      } else if (dataPoints.length === 1) {
+        const pVal = dataPoints[0].price;
+        dataPoints.unshift(
+          { time: new Date(Date.now() - 120000), price: basePrice, change: 0, reason: 'Baseline' },
+          { time: new Date(Date.now() - 60000), price: Number(((basePrice + pVal) / 2).toFixed(2)), change: 0, reason: 'Settlement' }
+        );
       }
 
       const padLeft = 44;
@@ -2326,12 +2477,10 @@
         ctx.fillText(ref.label, width - padRight + 22, y + 3);
       });
 
-      // 2. Determine overall sentiment colors
-      const latestPriceM = dataPoints[dataPoints.length - 1].price;
-      let strokeColorM, strokeColorRgbM;
-      if (latestPriceM > basePrice) { strokeColorM = '#10B981'; strokeColorRgbM = '16,185,129'; }
-      else if (latestPriceM < basePrice) { strokeColorM = '#F43F5E'; strokeColorRgbM = '244,63,94'; }
-      else { strokeColorM = '#38BDF8'; strokeColorRgbM = '56,189,248'; }
+      // 2. Determine flavor-specific colors for modal graph
+      const flavourColorObjM = getProductChartColors(prod);
+      const strokeColorM = flavourColorObjM.stroke;
+      const strokeColorRgbM = flavourColorObjM.rgb;
 
       // 3. Area fill — vibrant gradient
       ctx.beginPath();
@@ -2529,6 +2678,17 @@
               }
             }
           });
+
+          // 5. Subscribe to Market Pause/Resume Status
+          stompClient.subscribe('/topic/market-status', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                const isPaused = res.status === 'PAUSED' || res.marketStatus === 'PAUSED';
+                setMarketPausedState(isPaused);
+              } catch (e) {}
+            }
+          });
         }, function () {
           // Reconnect handler
           isReconnectingWS = true;
@@ -2681,12 +2841,89 @@
 
     // Broadcast Channel & Storage cross-tab events
     const pubChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
-    if (pubChannel) pubChannel.onmessage = (event) => {
-      if (event.data && (event.data.type === 'NEW_FLAVOUR_ADDED' || event.data.type === 'PRICE_ENGINE_RUN' || event.data.type === 'BATCH_PRODUCT_PRICE_UPDATED' || event.data.type === 'PRODUCT_PRICE_UPDATE')) {
+    const marketChannelLed = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_market_channel') : null;
+
+    function handleCrossPanelLedEvent(eventData) {
+      if (!eventData) return;
+      const type = eventData.type || (eventData.flavourName ? 'SIMULATION_UPDATED' : null);
+      if (!type) return;
+
+      if (type === 'SIMULATION_UPDATED' || type === 'PRODUCT_PRICE_UPDATE' || type === 'NEW_FLAVOUR_ADDED' || type === 'PRICE_ENGINE_RUN' || type === 'BATCH_PRODUCT_PRICE_UPDATED' || type === 'REFRESH_PRODUCTS' || type === 'PRICES_RECALCULATED') {
+        const payload = eventData.payload || eventData;
+        if (payload && (payload.productId || payload.flavourName || payload.name)) {
+          const prodId = payload.productId ? Number(payload.productId) : null;
+          const flavourName = payload.flavourName || payload.name;
+          const matchIdx = products.findIndex(p => (prodId && p.id === prodId) || (flavourName && p.name && p.name.toLowerCase() === flavourName.toLowerCase()) || (p.flavour && flavourName && p.flavour.toLowerCase() === flavourName.toLowerCase()));
+
+          if (matchIdx !== -1) {
+            const targetPrice = payload.finalPrice !== undefined ? Number(payload.finalPrice) : (payload.currentPrice !== undefined ? Number(payload.currentPrice) : Number(payload.startPrice));
+            if (!isNaN(targetPrice) && targetPrice > 0) {
+              products[matchIdx].currentCupPrice = targetPrice;
+            }
+            if (payload.minPrice !== undefined) products[matchIdx].minCupPrice = Number(payload.minPrice);
+            if (payload.maxPrice !== undefined) products[matchIdx].maxCupPrice = Number(payload.maxPrice);
+            if (payload.startPrice !== undefined) products[matchIdx].basePrice = Number(payload.startPrice);
+
+            const pId = products[matchIdx].id;
+            if (pId && priceHistoryMap[pId]) {
+              priceHistoryMap[pId].push({
+                timestamp: new Date().toISOString(),
+                price: products[matchIdx].currentCupPrice,
+                priceChange: 0,
+                reason: 'Simulation Input Sync'
+              });
+            }
+
+            renderDashboard();
+            renderAllCharts();
+
+            const cardEl = document.getElementById(`card_prod_${pId}`);
+            if (cardEl) {
+              cardEl.style.boxShadow = '0 0 0 2px #10b981, 0 0 24px rgba(16, 185, 129, 0.4)';
+              setTimeout(() => { cardEl.style.boxShadow = ''; }, 1300);
+            }
+          }
+        }
         fetchProducts();
         fetchPricingConfiguration();
       }
-    };
+    }
+
+    if (pubChannel) pubChannel.onmessage = (event) => { handleCrossPanelLedEvent(event.data); };
+    if (marketChannelLed) marketChannelLed.onmessage = (event) => { handleCrossPanelLedEvent(event.data); };
+
+    window.addEventListener('message', (event) => {
+      if (event.data) handleCrossPanelLedEvent(event.data);
+    });
+
+    window.addEventListener('storage', (e) => {
+      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event' || e.key === 'pubexchange_sim_params') && e.newValue) {
+        try { handleCrossPanelLedEvent(JSON.parse(e.newValue)); } catch (err) {}
+      }
+    });
+
+    let isExchangePaused = false;
+
+    function setMarketPausedState(isPaused) {
+      isExchangePaused = !!isPaused;
+      const marketStateText = document.getElementById('marketStateText');
+      if (marketStateText) {
+        marketStateText.textContent = isExchangePaused 
+          ? '⏸ MARKET PAUSED (ALGORITHM FROZEN)' 
+          : `MARKET OPEN (${currentPricingTiming.shortLabel.toUpperCase()} DWMA)`;
+      }
+    }
+
+    async function checkMarketState() {
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/market`);
+        if (res.ok) {
+          const state = await res.json();
+          const isPaused = state.marketStatus === 'PAUSED' || state.status === 'PAUSED';
+          setMarketPausedState(isPaused);
+        }
+      } catch (e) {}
+    }
 
     window.addEventListener('resize', () => {
       renderAllCharts();
@@ -2694,8 +2931,10 @@
     });
 
     setInterval(checkBackendHealth, 5000);
+    setInterval(checkMarketState, 5000);
 
     // Initial Execution
+    checkMarketState();
     fetchPricingTiming();
     fetchPricingConfiguration();
     fetchProducts();

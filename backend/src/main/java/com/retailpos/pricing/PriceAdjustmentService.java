@@ -742,6 +742,9 @@ public class PriceAdjustmentService {
         public void setProductId(Long productId) { this.productId = productId; }
         public String getFlavour() { return flavour; }
         public void setFlavour(String flavour) { this.flavour = flavour; }
+        public String getPricingMode() { return pricingMode; }
+        public void setPricingMode(String pricingMode) { this.pricingMode = pricingMode; }
+        private String pricingMode;
         public BigDecimal getCurrentCupPrice() { return currentCupPrice; }
         public void setCurrentCupPrice(BigDecimal currentCupPrice) { this.currentCupPrice = currentCupPrice; }
         public BigDecimal getCurrentPrice() { return currentCupPrice; }
@@ -804,6 +807,9 @@ public class PriceAdjustmentService {
         }
         if (newPrice != null) product.setCurrentCupPrice(newPrice);
         if (request.getVolatility() != null) product.setVolatility(request.getVolatility());
+        if (request.getPricingMode() != null && !request.getPricingMode().isBlank()) {
+            product.setPricingMode(request.getPricingMode());
+        }
 
         product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
         product.setLastPriceChangeTimestamp(LocalDateTime.now());

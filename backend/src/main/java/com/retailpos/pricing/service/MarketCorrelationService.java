@@ -14,6 +14,7 @@ import java.math.RoundingMode;
 import java.util.*;
 
 @Service
+@SuppressWarnings("null")
 public class MarketCorrelationService {
 
     private static final Logger log = LoggerFactory.getLogger(MarketCorrelationService.class);

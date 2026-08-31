@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juice Bar Stock Exchange POS - Customer Terminal</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <script>
     // Suppress Chromium legacy unload permission violation warnings from SockJS
-    (function() {
+    (function () {
       const origAdd = window.addEventListener;
-      window.addEventListener = function(type, listener, options) {
+      window.addEventListener = function (type, listener, options) {
         if (type === 'unload') return;
         return origAdd.call(this, type, listener, options);
       };
       if (window.attachEvent) {
         const origAttach = window.attachEvent;
-        window.attachEvent = function(event, listener) {
+        window.attachEvent = function (event, listener) {
           if (event === 'onunload') return;
           return origAttach.call(this, event, listener);
         };
@@ -30,7 +34,9 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
 
-    :root, html[data-theme="dark"], body.dark-theme-mode {
+    :root,
+    html[data-theme="dark"],
+    body.dark-theme-mode {
       --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
 
@@ -42,7 +48,7 @@
       --bg-card: rgba(16, 22, 34, 0.72);
       --bg-card-hover: rgba(22, 31, 48, 0.85);
       --bg-subtle: rgba(26, 36, 54, 0.6);
-      
+
       --border-color: rgba(255, 255, 255, 0.09);
       --border-subtle: rgba(255, 255, 255, 0.06);
       --border-glow: rgba(56, 189, 248, 0.35);
@@ -74,13 +80,14 @@
       --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
 
       --bg-mesh: radial-gradient(circle at 10% 10%, rgba(245, 158, 11, 0.12) 0%, transparent 40%),
-                 radial-gradient(circle at 90% 15%, rgba(244, 63, 94, 0.12) 0%, transparent 45%),
-                 radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
-                 radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.12) 0%, transparent 45%),
-                 linear-gradient(180deg, #07090E 0%, #0B0F19 50%, #07090E 100%);
+        radial-gradient(circle at 90% 15%, rgba(244, 63, 94, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.12) 0%, transparent 45%),
+        linear-gradient(180deg, #07090E 0%, #0B0F19 50%, #07090E 100%);
     }
 
-    html[data-theme="light"], body:not(.dark-theme-mode) {
+    html[data-theme="light"],
+    body:not(.dark-theme-mode) {
       /* Light Theme — "Porcelain" Tokens */
       --bg-page: #F4F6FB;
       --bg-surface: rgba(255, 255, 255, 0.94);
@@ -121,10 +128,10 @@
       --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
 
       --bg-mesh: radial-gradient(circle at 8% 8%, rgba(245, 158, 11, 0.10) 0%, transparent 40%),
-                 radial-gradient(circle at 92% 12%, rgba(244, 63, 94, 0.09) 0%, transparent 45%),
-                 radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
-                 radial-gradient(circle at 80% 90%, rgba(168, 85, 247, 0.09) 0%, transparent 45%),
-                 linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 50%, #F8FAFC 100%);
+        radial-gradient(circle at 92% 12%, rgba(244, 63, 94, 0.09) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 90%, rgba(168, 85, 247, 0.09) 0%, transparent 45%),
+        linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 50%, #F8FAFC 100%);
     }
 
     * {
@@ -168,74 +175,144 @@
       position: relative;
       overflow: hidden;
     }
+
     .header-banner::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 3px;
       background: linear-gradient(90deg, #f59e0b 0%, #ec4899 33%, #38bdf8 66%, #10b981 100%);
     }
 
-    .brand-title { display: flex; align-items: center; gap: 14px; }
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
     .brand-icon {
-      width: 46px; height: 46px;
+      width: 46px;
+      height: 46px;
       background: linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #38bdf8 100%);
       border: 1.5px solid rgba(255, 255, 255, 0.4);
       border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 24px;
       box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
     }
+
     .brand-name {
-      font-size: 19.5px; font-weight: 900;
+      font-size: 19.5px;
+      font-weight: 900;
       background: linear-gradient(135deg, var(--text-primary) 0%, #0284c7 50%, #9333ea 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       line-height: 1.2;
       letter-spacing: -0.02em;
     }
-    .brand-subtitle { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
 
-    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .brand-subtitle {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
     .status-badge-live {
-      font-size: 12px; font-weight: 800; padding: 6px 14px;
-      border-radius: 20px; display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: var(--success);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: var(--success);
       box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
       font-family: var(--font-mono);
       font-feature-settings: 'tnum' 1;
       font-variant-numeric: tabular-nums;
     }
+
     .status-badge-live .dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--success); box-shadow: 0 0 8px var(--success);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
       animation: liveDotPulse 2s infinite ease-in-out;
     }
 
     .status-badge-offline {
-      font-size: 12px; font-weight: 800; padding: 6px 14px;
-      border-radius: 20px; display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); color: var(--danger);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: var(--danger);
       font-family: var(--font-mono);
       font-feature-settings: 'tnum' 1;
       font-variant-numeric: tabular-nums;
     }
-    .status-badge-offline .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+
+    .status-badge-offline .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+    }
 
     @keyframes liveDotPulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.3); opacity: 0.6; }
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.3);
+        opacity: 0.6;
+      }
     }
 
     .btn-compact {
-      height: 38px; padding: 0 14px; border-radius: var(--radius-btn);
-      font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex;
-      align-items: center; gap: 6px; text-decoration: none; border: 1px solid var(--border-color);
-      background: var(--bg-card); color: var(--text-primary); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      height: 38px;
+      padding: 0 14px;
+      border-radius: var(--radius-btn);
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: var(--shadow-sm);
     }
-    .btn-compact:hover { background: var(--bg-secondary); border-color: var(--info); transform: translateY(-1px); }
+
+    .btn-compact:hover {
+      background: var(--bg-secondary);
+      border-color: var(--info);
+      transform: translateY(-1px);
+    }
 
     /* Stock Ticker Bar */
     .ticker-wrap {
@@ -249,28 +326,55 @@
       overflow: hidden;
       margin-bottom: 14px;
       padding: 10px 18px;
-      display: flex; align-items: center; gap: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
+
     .ticker-title {
-      color: var(--accent-cyan); font-weight: 800; font-size: 11px;
-      white-space: nowrap; letter-spacing: 1.2px; text-transform: uppercase;
-      display: flex; align-items: center; gap: 6px;
+      color: var(--accent-cyan);
+      font-weight: 800;
+      font-size: 11px;
+      white-space: nowrap;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
+
     .ticker-content {
-      display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none;
-      width: 100%; white-space: nowrap; align-items: center;
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      width: 100%;
+      white-space: nowrap;
+      align-items: center;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
     }
-    .ticker-content::-webkit-scrollbar { display: none; }
+
+    .ticker-content::-webkit-scrollbar {
+      display: none;
+    }
+
     .ticker-item {
-      font-size: 13px; font-weight: 700; color: var(--text-primary);
-      display: inline-flex; align-items: center; gap: 8px;
-      border-right: 1px solid var(--border-subtle); padding-right: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-right: 1px solid var(--border-subtle);
+      padding-right: 20px;
       font-variant-numeric: tabular-nums;
     }
-    .ticker-item:last-child { border-right: none; }
+
+    .ticker-item:last-child {
+      border-right: none;
+    }
 
     /* Market Summary Metric Overview Bar */
     .market-summary-bar {
@@ -281,14 +385,27 @@
       -webkit-backdrop-filter: blur(20px);
       padding: 12px 22px;
       margin-bottom: 18px;
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       box-shadow: var(--shadow-card);
       font-size: 13px;
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
     }
-    .summary-metric { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-weight: 600; }
-    .summary-metric strong { color: var(--text-primary); font-weight: 800; }
+
+    .summary-metric {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .summary-metric strong {
+      color: var(--text-primary);
+      font-weight: 800;
+    }
 
     /* Main 12-Column Responsive Layout */
     .pos-container {
@@ -317,6 +434,7 @@
       --flavour-accent: #f59e0b;
       --flavour-top-strip: linear-gradient(90deg, #f59e0b, #ea580c);
     }
+
     .card-theme-lemon {
       --flavour-grad-light: linear-gradient(145deg, rgba(254, 240, 138, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(217, 249, 157, 0.45) 100%);
       --flavour-grad-dark: linear-gradient(145deg, rgba(234, 179, 8, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(132, 204, 22, 0.10) 100%);
@@ -326,6 +444,7 @@
       --flavour-accent: #eab308;
       --flavour-top-strip: linear-gradient(90deg, #eab308, #84cc16);
     }
+
     .card-theme-mint {
       --flavour-grad-light: linear-gradient(145deg, rgba(209, 250, 229, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(207, 250, 254, 0.45) 100%);
       --flavour-grad-dark: linear-gradient(145deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(6, 182, 212, 0.10) 100%);
@@ -335,6 +454,7 @@
       --flavour-accent: #10b981;
       --flavour-top-strip: linear-gradient(90deg, #10b981, #06b6d4);
     }
+
     .card-theme-orange {
       --flavour-grad-light: linear-gradient(145deg, rgba(255, 237, 213, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(254, 202, 202, 0.45) 100%);
       --flavour-grad-dark: linear-gradient(145deg, rgba(249, 115, 22, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(239, 68, 68, 0.10) 100%);
@@ -344,6 +464,7 @@
       --flavour-accent: #f97316;
       --flavour-top-strip: linear-gradient(90deg, #f97316, #ef4444);
     }
+
     .card-theme-strawberry {
       --flavour-grad-light: linear-gradient(145deg, rgba(255, 228, 230, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(252, 231, 243, 0.45) 100%);
       --flavour-grad-dark: linear-gradient(145deg, rgba(244, 63, 94, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(219, 39, 119, 0.10) 100%);
@@ -353,6 +474,7 @@
       --flavour-accent: #f43f5e;
       --flavour-top-strip: linear-gradient(90deg, #f43f5e, #db2777);
     }
+
     .card-theme-grape {
       --flavour-grad-light: linear-gradient(145deg, rgba(243, 232, 255, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(224, 231, 255, 0.45) 100%);
       --flavour-grad-dark: linear-gradient(145deg, rgba(168, 85, 247, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(99, 102, 241, 0.10) 100%);
@@ -362,6 +484,7 @@
       --flavour-accent: #a855f7;
       --flavour-top-strip: linear-gradient(90deg, #a855f7, #6366f1);
     }
+
     .card-theme-lychee {
       --flavour-grad-light: linear-gradient(145deg, rgba(252, 231, 243, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(254, 215, 170, 0.45) 100%);
       --flavour-grad-dark: linear-gradient(145deg, rgba(236, 72, 153, 0.15) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(251, 146, 60, 0.10) 100%);
@@ -371,6 +494,7 @@
       --flavour-accent: #ec4899;
       --flavour-top-strip: linear-gradient(90deg, #ec4899, #fb923c);
     }
+
     .card-theme-thunder {
       --flavour-grad-light: linear-gradient(145deg, rgba(207, 250, 254, 0.75) 0%, rgba(255, 255, 255, 0.95) 45%, rgba(219, 234, 254, 0.45) 100%);
       --flavour-grad-dark: linear-gradient(145deg, rgba(6, 182, 212, 0.16) 0%, rgba(16, 22, 34, 0.85) 50%, rgba(59, 130, 246, 0.10) 100%);
@@ -386,7 +510,9 @@
       border: 1px solid var(--flavour-border, var(--border-color));
       border-radius: var(--radius-card);
       padding: 13px;
-      display: flex; flex-direction: column; justify-content: space-between;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 20px var(--flavour-glow, transparent);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -404,7 +530,9 @@
     .flavour-card::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 3.5px;
       background: var(--flavour-top-strip, linear-gradient(90deg, #0284c7, #38bdf8));
       z-index: 2;
@@ -427,6 +555,7 @@
       background: var(--bg-secondary);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
     }
+
     .beverage-photo {
       width: 100%;
       height: 100%;
@@ -434,9 +563,11 @@
       transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       display: block;
     }
+
     .flavour-card:hover .beverage-photo {
       transform: scale(1.08);
     }
+
     .card-img-overlay {
       position: absolute;
       inset: 0;
@@ -447,6 +578,7 @@
       padding: 8px 10px;
       pointer-events: none;
     }
+
     .fruit-pill {
       background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(10px);
@@ -461,33 +593,59 @@
       align-items: center;
       gap: 4px;
       letter-spacing: 0.3px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-    .card-header-left { display: flex; align-items: center; gap: 8px; }
-    .card-name { font-size: 15px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; line-height: 1.25; }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .card-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
     .market-badge {
-      font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 20px;
-      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
       white-space: nowrap;
       transition: all 0.3s ease;
     }
+
     .badge-up {
       color: #10B981;
       background: rgba(16, 185, 129, 0.2);
       border: 1px solid rgba(16, 185, 129, 0.5);
       box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
     }
+
     .badge-down {
       color: #F43F5E;
       background: rgba(244, 63, 94, 0.2);
       border: 1px solid rgba(244, 63, 94, 0.5);
       box-shadow: 0 0 12px rgba(244, 63, 94, 0.35);
     }
+
     .badge-stable {
       color: var(--text-muted);
       background: rgba(148, 163, 184, 0.18);
@@ -497,23 +655,26 @@
     /* Mini Sparkline Chart Container */
     .card-chart-wrap {
       width: 100%;
-      height: 54px;
+      height: 78px;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
       margin-bottom: 9px;
       position: relative;
       overflow: hidden;
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.12);
     }
+
     .card-chart-canvas {
       width: 100%;
       height: 100%;
       display: block;
     }
+
     .chart-badge-pts {
       position: absolute;
-      top: 3px; right: 5px;
+      top: 3px;
+      right: 5px;
       font-size: 8.5px;
       font-family: var(--font-mono);
       font-weight: 700;
@@ -535,8 +696,12 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
       transition: all 0.3s ease;
     }
+
     .price-main {
-      font-size: 24px; font-weight: 900; color: var(--flavour-accent, var(--accent-cyan)); letter-spacing: -0.5px;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--flavour-accent, var(--accent-cyan));
+      letter-spacing: -0.5px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
@@ -544,9 +709,19 @@
       text-shadow: 0 0 14px var(--flavour-glow, rgba(56, 189, 248, 0.2));
       display: inline-block;
     }
-    .price-unit { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+
+    .price-unit {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
     .price-bounds {
-      font-size: 10.5px; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between;
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
@@ -560,13 +735,23 @@
       padding: 7px 10px;
       margin-bottom: 10px;
     }
+
     .demand-text {
-      font-size: 10.5px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center;
+      font-size: 10.5px;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
     }
-    .demand-text strong { color: var(--flavour-accent, var(--accent-cyan)); font-weight: 800; }
+
+    .demand-text strong {
+      color: var(--flavour-accent, var(--accent-cyan));
+      font-weight: 800;
+    }
+
     .demand-bar-track {
       width: 100%;
       height: 4.5px;
@@ -576,38 +761,53 @@
       margin-top: 5px;
       position: relative;
     }
+
     .demand-bar-fill {
       height: 100%;
       border-radius: 3px;
       transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s ease;
     }
+
     .demand-high {
       background: linear-gradient(90deg, #f59e0b, #ef4444);
       box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
     }
+
     .demand-normal {
       background: linear-gradient(90deg, #38bdf8, #10b981);
     }
+
     .demand-low {
       background: linear-gradient(90deg, #64748b, #38bdf8);
     }
 
     .add-to-cart-btn {
-      width: 100%; height: 38px;
+      width: 100%;
+      height: 38px;
       background: var(--flavour-btn, linear-gradient(135deg, #0284c7, #2563eb));
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: var(--radius-btn);
-      color: #ffffff; font-weight: 800; font-size: 12.5px;
-      cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex; align-items: center; justify-content: center; gap: 6px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       box-shadow: 0 4px 16px var(--flavour-glow, rgba(37, 99, 235, 0.35));
     }
+
     .add-to-cart-btn:hover {
       filter: brightness(1.15);
       transform: translateY(-2px);
       box-shadow: 0 8px 24px var(--flavour-glow, rgba(37, 99, 235, 0.5));
     }
-    .add-to-cart-btn:active { transform: scale(0.98); }
+
+    .add-to-cart-btn:active {
+      transform: scale(0.98);
+    }
 
     /* Responsive Breakpoints for 4-in-a-Row Product Grid */
     @media (max-width: 1400px) {
@@ -615,30 +815,36 @@
         grid-template-columns: 1fr 310px;
         gap: 12px;
       }
+
       .flavour-grid {
         grid-template-columns: repeat(4, 1fr);
         gap: 10px;
       }
     }
+
     @media (max-width: 1120px) {
       .flavour-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 12px;
       }
+
       .pos-container {
         grid-template-columns: 1fr 300px;
       }
     }
+
     @media (max-width: 860px) {
       .pos-container {
         grid-template-columns: 1fr;
         gap: 16px;
       }
+
       .flavour-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
       }
     }
+
     @media (max-width: 520px) {
       .flavour-grid {
         grid-template-columns: 1fr;
@@ -647,19 +853,46 @@
 
     /* Flash Highlight Animations for Live Dynamic Price Movements */
     @keyframes flashSurgePulse {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.6); transform: scale(1.02); border-color: #10B981; }
-      50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.9); border-color: #10B981; }
-      100% { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); transform: scale(1); }
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.6);
+        transform: scale(1.02);
+        border-color: #10B981;
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.9);
+        border-color: #10B981;
+      }
+
+      100% {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        transform: scale(1);
+      }
     }
+
     @keyframes flashDecayPulse {
-      0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.8), 0 0 20px rgba(244, 63, 94, 0.6); transform: scale(1.02); border-color: #F43F5E; }
-      50% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0.3), 0 0 30px rgba(244, 63, 94, 0.9); border-color: #F43F5E; }
-      100% { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); transform: scale(1); }
+      0% {
+        box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.8), 0 0 20px rgba(244, 63, 94, 0.6);
+        transform: scale(1.02);
+        border-color: #F43F5E;
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(244, 63, 94, 0.3), 0 0 30px rgba(244, 63, 94, 0.9);
+        border-color: #F43F5E;
+      }
+
+      100% {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        transform: scale(1);
+      }
     }
+
     .flash-surge {
       animation: flashSurgePulse 1.2s ease-out;
       border-color: var(--accent-emerald) !important;
     }
+
     .flash-decay {
       animation: flashDecayPulse 1.2s ease-out;
       border-color: var(--accent-rose) !important;
@@ -667,19 +900,48 @@
 
     /* Price Tick Pulse Micro-Animation */
     @keyframes pricePulseUp {
-      0% { transform: scale(1); text-shadow: 0 0 14px rgba(16, 185, 129, 0.8); color: #10B981; }
-      50% { transform: scale(1.10); text-shadow: 0 0 24px rgba(16, 185, 129, 1); color: #10B981; }
-      100% { transform: scale(1); }
+      0% {
+        transform: scale(1);
+        text-shadow: 0 0 14px rgba(16, 185, 129, 0.8);
+        color: #10B981;
+      }
+
+      50% {
+        transform: scale(1.10);
+        text-shadow: 0 0 24px rgba(16, 185, 129, 1);
+        color: #10B981;
+      }
+
+      100% {
+        transform: scale(1);
+      }
     }
 
     @keyframes pricePulseDown {
-      0% { transform: scale(1); text-shadow: 0 0 14px rgba(244, 63, 94, 0.8); color: #F43F5E; }
-      50% { transform: scale(1.10); text-shadow: 0 0 24px rgba(244, 63, 94, 1); color: #F43F5E; }
-      100% { transform: scale(1); }
+      0% {
+        transform: scale(1);
+        text-shadow: 0 0 14px rgba(244, 63, 94, 0.8);
+        color: #F43F5E;
+      }
+
+      50% {
+        transform: scale(1.10);
+        text-shadow: 0 0 24px rgba(244, 63, 94, 1);
+        color: #F43F5E;
+      }
+
+      100% {
+        transform: scale(1);
+      }
     }
 
-    .tick-up { animation: pricePulseUp 800ms ease-out; }
-    .tick-down { animation: pricePulseDown 800ms ease-out; }
+    .tick-up {
+      animation: pricePulseUp 800ms ease-out;
+    }
+
+    .tick-down {
+      animation: pricePulseDown 800ms ease-out;
+    }
 
     /* Professional Order Cart Panel */
     .cart-panel {
@@ -689,86 +951,170 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       padding: 22px;
-      display: flex; flex-direction: column;
+      display: flex;
+      flex-direction: column;
       height: calc(100vh - 130px);
-      position: sticky; top: 18px;
+      position: sticky;
+      top: 18px;
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
       position: relative;
       overflow: hidden;
     }
+
     .cart-panel::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 4px;
       background: linear-gradient(90deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%);
     }
 
     .cart-header {
-      font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px;
-      display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
     }
+
     .cart-badge {
-      font-size: 12px; font-weight: 800; color: #ffffff;
-      background: linear-gradient(135deg, #0284c7, #2563eb); border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 4px 12px; border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #ffffff;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 12px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
     }
 
-    .cart-items { flex: 1; overflow-y: auto; margin-bottom: 16px; padding-right: 4px; }
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 16px;
+      padding-right: 4px;
+    }
+
     .cart-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 12px 14px; border-radius: 10px; background: var(--bg-surface);
-      border: 1px solid var(--border-subtle); margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 10px;
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     }
-    .item-title { font-size: 14px; font-weight: 800; color: var(--text-primary); }
-    .item-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .item-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .item-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
 
     .qty-btn {
-      width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border-color);
-      background: var(--bg-secondary); color: var(--text-primary); font-weight: 800; font-size: 15px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
     }
-    .qty-btn:hover { background: var(--border-subtle); border-color: var(--info); transform: scale(1.05); }
+
+    .qty-btn:hover {
+      background: var(--border-subtle);
+      border-color: var(--info);
+      transform: scale(1.05);
+    }
 
     .cart-summary {
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
       border: 1.5px solid rgba(16, 185, 129, 0.28);
-      border-radius: 14px; padding: 16px; margin-bottom: 16px;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
     }
-    .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
     .summary-total {
-      font-size: 24px; font-weight: 900; color: var(--accent-emerald);
-      border-top: 1px solid rgba(16, 185, 129, 0.2); padding-top: 12px; margin-top: 10px;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--accent-emerald);
+      border-top: 1px solid rgba(16, 185, 129, 0.2);
+      padding-top: 12px;
+      margin-top: 10px;
       text-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
     }
 
     .checkout-btn {
-      width: 100%; height: 50px;
+      width: 100%;
+      height: 50px;
       background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: var(--radius-btn);
-      color: #ffffff; font-size: 15.5px; font-weight: 900;
-      cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #ffffff;
+      font-size: 15.5px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 6px 22px rgba(16, 185, 129, 0.42);
-      display: flex; align-items: center; justify-content: center; gap: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
+
     .checkout-btn:hover:not(:disabled) {
       filter: brightness(1.15);
       transform: translateY(-2px);
       box-shadow: 0 8px 26px rgba(16, 185, 129, 0.55);
     }
-    .checkout-btn:active { transform: scale(0.98); }
-    .checkout-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .checkout-btn:active {
+      transform: scale(0.98);
+    }
+
+    .checkout-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
 
     /* Market Crash Alert Header */
     .market-crash-banner {
@@ -778,41 +1124,79 @@
       padding: 16px 24px;
       margin-bottom: 14px;
       display: none;
-      align-items: center; justify-content: space-between;
+      align-items: center;
+      justify-content: space-between;
       color: white;
       box-shadow: 0 4px 20px rgba(239, 68, 68, 0.45);
       animation: crashPulse 1.5s infinite;
     }
-    .crash-title { font-size: 18px; font-weight: 900; display: flex; align-items: center; gap: 12px; letter-spacing: -0.01em; }
+
+    .crash-title {
+      font-size: 18px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.01em;
+    }
+
     .crash-timer {
-      font-size: 24px; font-weight: 900; font-family: var(--font-mono, monospace);
-      background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 4px 18px; border-radius: 8px; color: #facc15;
+      font-size: 24px;
+      font-weight: 900;
+      font-family: var(--font-mono, monospace);
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 4px 18px;
+      border-radius: 8px;
+      color: #facc15;
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
     }
 
     @keyframes crashPulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 14px rgba(239, 68, 68, 0.5); }
-      50% { transform: scale(1.01); box-shadow: 0 0 24px rgba(239, 68, 68, 0.85); }
+
+      0%,
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 14px rgba(239, 68, 68, 0.5);
+      }
+
+      50% {
+        transform: scale(1.01);
+        box-shadow: 0 0 24px rgba(239, 68, 68, 0.85);
+      }
     }
 
     /* Receipt Modal Styling */
     .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(7, 9, 14, 0.75); backdrop-filter: blur(8px);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(7, 9, 14, 0.75);
+      backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center; z-index: 1000;
-    }
-    .receipt-modal {
-      background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      padding: 28px; width: 440px; box-shadow: var(--shadow-card); color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
     }
 
+    .receipt-modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 28px;
+      width: 440px;
+      box-shadow: var(--shadow-card);
+      color: var(--text-primary);
+    }
   </style>
 </head>
+
 <body>
 
   <!-- Live Stock Exchange Ticker -->
@@ -826,20 +1210,24 @@
   <!-- Market Status Overview Bar -->
   <div class="market-summary-bar" id="marketSummaryBar">
     <div class="summary-metric">
-      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22C55E; box-shadow:0 0 8px #22C55E;"></span>
+      <span
+        style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22C55E; box-shadow:0 0 8px #22C55E;"></span>
       <strong id="marketOpenStateText">Market Open (1-Min DWMA)</strong>
     </div>
     <div class="summary-metric">
       <span>Securities: <strong id="summaryTotalProds">8 Products</strong></span>
     </div>
     <div class="summary-metric">
-      <span>Next Settlement: <strong id="summarySettlementCountdown" style="color:var(--accent-amber); font-family:var(--font-mono); font-weight:800;">00:45</strong></span>
+      <span>Next Settlement: <strong id="summarySettlementCountdown"
+          style="color:var(--accent-amber); font-family:var(--font-mono); font-weight:800;">00:45</strong></span>
     </div>
     <div class="summary-metric">
-      <span>Sentiment: <strong id="summarySentimentPill" style="color:var(--accent-emerald); font-weight:800;">CALCULATING...</strong></span>
+      <span>Sentiment: <strong id="summarySentimentPill"
+          style="color:var(--accent-emerald); font-weight:800;">CALCULATING...</strong></span>
     </div>
     <div class="summary-metric" style="margin-left:auto;">
-      <span>Last Sync: <strong id="summaryLastSync" style="font-family:monospace; color:var(--text-primary);">--:--:--</strong></span>
+      <span>Last Sync: <strong id="summaryLastSync"
+          style="font-family:monospace; color:var(--text-primary);">--:--:--</strong></span>
     </div>
   </div>
 
@@ -847,7 +1235,8 @@
   <div class="market-crash-banner" id="marketCrashBanner">
     <div class="crash-title">
       <span>🚨 MARKET CRASH ACTIVE!</span>
-      <span style="font-size: 14px; font-weight: 600; opacity: 0.95;" id="marketCrashBannerMsg">All Drink Prices Dropped to Floor Limit ₹18.00!</span>
+      <span style="font-size: 14px; font-weight: 600; opacity: 0.95;" id="marketCrashBannerMsg">All Drink Prices Dropped
+        to Floor Limit ₹18.00!</span>
     </div>
     <div class="crash-timer" id="crashTimerDisplay">03:00</div>
   </div>
@@ -871,7 +1260,8 @@
         <a href="http://localhost:8001/" target="_blank" class="btn-compact">
           ⚙️ Admin Panel
         </a>
-        <a href="http://localhost:8000/led-display.html" target="_blank" class="btn-compact" style="background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.3); color: var(--info);">
+        <a href="http://localhost:8000/led-display.html" target="_blank" class="btn-compact"
+          style="background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.3); color: var(--info);">
           📺 LED Ticker
         </a>
       </div>
@@ -881,13 +1271,16 @@
     <main>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <div>
-          <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing:-0.02em;">📊 Live Juice Exchange Market</h2>
-          <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px;" id="posMarketSubtext">
+          <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing:-0.02em;">📊 Live
+            Juice Exchange Market</h2>
+          <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px;"
+            id="posMarketSubtext">
             REAL-TIME DWMA PRICING &bull; DYNAMIC LIVE SETTLEMENTS &bull; ATOMIC DISPENSING
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span id="metaExchangeBounds" style="font-size: 12px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan); background: var(--bg-surface); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+          <span id="metaExchangeBounds"
+            style="font-size: 12px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan); background: var(--bg-surface); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
             Base: ₹25.00 &bull; Floor: ₹18.00 &bull; Ceiling: ₹35.00
           </span>
         </div>
@@ -917,7 +1310,8 @@
         </div>
         <div class="summary-row" style="align-items: center;">
           <span>Payment Method</span>
-          <select id="paymentMethodSelect" style="background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px;">
+          <select id="paymentMethodSelect"
+            style="background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px;">
             <option value="CASH">Cash Payment</option>
             <option value="UPI">UPI / QR Code</option>
             <option value="CARD">Debit / Credit Card</option>
@@ -929,7 +1323,8 @@
         </div>
       </div>
 
-      <div id="checkoutErrorBanner" style="display: none; background: #fef2f2; border: 1.5px solid #fca5a5; color: #991b1b; padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-align: center; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);">
+      <div id="checkoutErrorBanner"
+        style="display: none; background: #fef2f2; border: 1.5px solid #fca5a5; color: #991b1b; padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-align: center; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);">
       </div>
 
       <button class="checkout-btn" id="checkoutBtn" disabled onclick="processCheckout()">
@@ -947,16 +1342,20 @@
         <p style="font-size: 15px; color: #475569; font-weight: 700;" id="modalOrderNumber">Invoice #ORD-1001</p>
       </div>
 
-      <div style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 20px; margin-bottom: 24px;" id="modalItemsContainer">
+      <div
+        style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 20px; margin-bottom: 24px;"
+        id="modalItemsContainer">
         <!-- Rendered items -->
       </div>
 
       <div style="font-size: 14px; color: #475569; text-align: center; margin-bottom: 26px; font-weight: 700;">
-        Payment: <strong id="modalPaymentMethod" style="color: #0f172a;">CASH</strong> &bull; Status: <span style="color: #059669; font-weight: 900;">COMPLETED</span><br>
+        Payment: <strong id="modalPaymentMethod" style="color: #0f172a;">CASH</strong> &bull; Status: <span
+          style="color: #059669; font-weight: 900;">COMPLETED</span><br>
         Volume deducted atomically from 20L active container.
       </div>
 
-      <button onclick="closeReceiptModal()" style="width: 100%; padding: 18px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; border-radius: 14px; color: white; font-weight: 900; font-size: 17px; cursor: pointer; box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);">
+      <button onclick="closeReceiptModal()"
+        style="width: 100%; padding: 18px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; border-radius: 14px; color: white; font-weight: 900; font-size: 17px; cursor: pointer; box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);">
         Done / Next POS Order
       </button>
     </div>
@@ -1042,6 +1441,43 @@
       return '🍹';
     }
 
+    const FLAVOUR_COLORS = {
+      MANGO: { stroke: '#EAB308', rgb: '234, 179, 8', fade: '#CA8A04' },
+      LEMON: { stroke: '#84CC16', rgb: '132, 204, 22', fade: '#65A30D' },
+      MINT: { stroke: '#047857', rgb: '4, 120, 87', fade: '#065F46' },
+      STRAWBERRY: { stroke: '#EC4899', rgb: '236, 72, 153', fade: '#DB2777' },
+      GRAPE: { stroke: '#9333EA', rgb: '147, 51, 234', fade: '#7E22CE' },
+      LYCHEE: { stroke: '#FB923C', rgb: '251, 146, 60', fade: '#EA580C' },
+      THUNDER: { stroke: '#92400E', rgb: '146, 64, 14', fade: '#78350F' },
+      ORANGE: { stroke: '#F97316', rgb: '249, 115, 22', fade: '#EA580C' }
+    };
+
+    function getProductChartColors(p) {
+      if (!p) return FLAVOUR_COLORS.MANGO;
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return FLAVOUR_COLORS.MANGO;
+      if (f.includes('LEMON')) return FLAVOUR_COLORS.LEMON;
+      if (f.includes('MINT')) return FLAVOUR_COLORS.MINT;
+      if (f.includes('STRAWBERRY')) return FLAVOUR_COLORS.STRAWBERRY;
+      if (f.includes('GRAPE')) return FLAVOUR_COLORS.GRAPE;
+      if (f.includes('LYCHEE') || f.includes('GUAVA') || f.includes('MELON')) return FLAVOUR_COLORS.LYCHEE;
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return FLAVOUR_COLORS.THUNDER;
+      if (f.includes('ORANGE')) return FLAVOUR_COLORS.ORANGE;
+
+      const idMap = {
+        1: FLAVOUR_COLORS.MANGO,
+        2: FLAVOUR_COLORS.LEMON,
+        3: FLAVOUR_COLORS.MINT,
+        4: FLAVOUR_COLORS.ORANGE,
+        5: FLAVOUR_COLORS.STRAWBERRY,
+        6: FLAVOUR_COLORS.GRAPE,
+        7: FLAVOUR_COLORS.LYCHEE,
+        23: FLAVOUR_COLORS.THUNDER,
+        8: FLAVOUR_COLORS.THUNDER
+      };
+      return idMap[p.id] || FLAVOUR_COLORS.MANGO;
+    }
+
     let products = [
       { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.125, trend: '+0.0%', trendDirection: 'FLAT' },
       { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.40, trend: '+0.0%', trendDirection: 'FLAT' },
@@ -1074,7 +1510,7 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 1.2);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     const pubExchangeChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
@@ -1089,8 +1525,8 @@
     });
 
     window.addEventListener('storage', (e) => {
-      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event') && e.newValue) {
-        try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) {}
+      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event' || e.key === 'pubexchange_sim_params') && e.newValue) {
+        try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) { }
       }
       if (e.key === 'pubexchange_custom_products') {
         fetchProducts();
@@ -1098,13 +1534,54 @@
     });
 
     function handleCrossPanelEvent(msg) {
-      if (!msg || !msg.type) return;
-      if (msg.type === 'NEW_FLAVOUR_ADDED' || msg.type === 'PRODUCT_PRICE_UPDATE' || msg.type === 'BATCH_PRODUCT_PRICE_UPDATED' || msg.type === 'PRICE_ENGINE_RUN' || msg.type === 'BATCH_UPDATED' || msg.type === 'PRICES_RECALCULATED' || msg.type === 'REFRESH_PRODUCTS') {
+      if (!msg) return;
+      const type = msg.type || (msg.flavourName ? 'SIMULATION_UPDATED' : null);
+      if (!type) return;
+
+      if (type === 'SIMULATION_UPDATED' || type === 'PRODUCT_PRICE_UPDATE' || type === 'NEW_FLAVOUR_ADDED' || type === 'BATCH_PRODUCT_PRICE_UPDATED' || type === 'PRICE_ENGINE_RUN' || type === 'BATCH_UPDATED' || type === 'PRICES_RECALCULATED' || type === 'REFRESH_PRODUCTS') {
+        const payload = msg.payload || msg;
+        if (payload && (payload.productId || payload.flavourName || payload.name)) {
+          const prodId = payload.productId ? Number(payload.productId) : null;
+          const flavourName = payload.flavourName || payload.name;
+          const matchIdx = products.findIndex(p => (prodId && p.id === prodId) || (flavourName && p.name && p.name.toLowerCase() === flavourName.toLowerCase()) || (p.flavour && flavourName && p.flavour.toLowerCase() === flavourName.toLowerCase()));
+
+          if (matchIdx !== -1) {
+            const targetPrice = payload.finalPrice !== undefined ? Number(payload.finalPrice) : (payload.currentPrice !== undefined ? Number(payload.currentPrice) : Number(payload.startPrice));
+            if (!isNaN(targetPrice) && targetPrice > 0) {
+              products[matchIdx].currentCupPrice = targetPrice;
+            }
+            if (payload.minPrice !== undefined) products[matchIdx].minCupPrice = Number(payload.minPrice);
+            if (payload.maxPrice !== undefined) products[matchIdx].maxCupPrice = Number(payload.maxPrice);
+            if (payload.startPrice !== undefined) products[matchIdx].basePrice = Number(payload.startPrice);
+
+            const pId = products[matchIdx].id;
+            if (pId && priceHistoryMap[pId]) {
+              priceHistoryMap[pId].push({
+                timestamp: new Date().toISOString(),
+                price: products[matchIdx].currentCupPrice,
+                priceChange: 0,
+                reason: 'Simulation Input Sync'
+              });
+            }
+
+            renderProducts();
+            renderTicker();
+            renderCart();
+            renderAllSparklines();
+
+            const cardEl = document.getElementById(`flavourCard-${pId}`) || document.getElementById(`prod-card-${pId}`);
+            if (cardEl) {
+              cardEl.classList.add('flash-surge');
+              setTimeout(() => cardEl.classList.remove('flash-surge'), 1300);
+            }
+          }
+        }
+
         fetchProducts();
         fetchPricingConfiguration();
-      } else if (msg.type === 'MARKET_CRASH_TRIGGER' || msg.type === 'MARKET_CRASH_START') {
+      } else if (type === 'MARKET_CRASH_TRIGGER' || type === 'MARKET_CRASH_START') {
         triggerLocalMarketCrash(msg.payload?.durationSeconds || 180);
-      } else if (msg.type === 'MARKET_CRASH_STOP') {
+      } else if (type === 'MARKET_CRASH_STOP') {
         stopLocalMarketCrash();
       }
     }
@@ -1122,7 +1599,7 @@
           isCrashActive = data.active;
           remaining = data.remainingSeconds || 180;
         }
-      } catch (err) {}
+      } catch (err) { }
 
       if (isCrashActive) {
         triggerLocalMarketCrash(remaining);
@@ -1152,12 +1629,12 @@
       if (crashBanner) crashBanner.style.display = 'flex';
 
       const healthBadge = document.getElementById('backendHealthBadge');
-      
+
       const updateTimer = () => {
         const mins = Math.floor(Math.max(0, crashRemainingSeconds) / 60);
         const secs = Math.max(0, crashRemainingSeconds) % 60;
         const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        
+
         const timerDisp = document.getElementById('crashTimerDisplay');
         if (timerDisp) timerDisp.textContent = timeStr;
 
@@ -1189,7 +1666,7 @@
     function stopLocalMarketCrash() {
       isMarketCrashActive = false;
       if (crashTimerInterval) clearInterval(crashTimerInterval);
-      
+
       const crashBanner = document.getElementById('marketCrashBanner');
       if (crashBanner) crashBanner.style.display = 'none';
 
@@ -1212,8 +1689,8 @@
       const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : 18.0);
       const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 35.0);
       const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25.0);
-      const targetSalesPer1Minute = (p.targetSalesPer1Minute !== undefined && p.targetSalesPer1Minute !== null) 
-        ? Number(p.targetSalesPer1Minute) 
+      const targetSalesPer1Minute = (p.targetSalesPer1Minute !== undefined && p.targetSalesPer1Minute !== null)
+        ? Number(p.targetSalesPer1Minute)
         : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : ((p.targetSalesPer2Minute !== undefined && p.targetSalesPer2Minute !== null) ? Number(p.targetSalesPer2Minute) / 2.0 : 0.40));
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
@@ -1303,7 +1780,7 @@
           const config = await res.json();
           applyPricingConfiguration(config);
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     function applyPricingConfiguration(config) {
@@ -1345,7 +1822,7 @@
             }));
           }
         }
-      } catch (err) {}
+      } catch (err) { }
 
       if (!priceHistoryMap[productId]) priceHistoryMap[productId] = [];
     }
@@ -1491,7 +1968,7 @@
           }
 
           const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : 0.40).toFixed(2);
-          
+
           let demandCategory = 'NORMAL';
           let demandColor = 'var(--text-muted)';
           let demandBarClass = 'demand-normal';
@@ -1661,10 +2138,15 @@
       }
 
       if (dataPoints.length === 0) {
-        dataPoints.push({ price: Number(currentPrice || 25) });
-      }
-      if (dataPoints.length === 1) {
-        dataPoints.unshift({ price: Number(basePrice || 25) });
+        const p1 = Number(basePrice || 25);
+        const p2 = Number(currentPrice || 25);
+        const mid = Number(((p1 * 0.45) + (p2 * 0.55)).toFixed(2));
+        dataPoints = [{ price: p1 }, { price: mid }, { price: p2 }];
+      } else if (dataPoints.length === 1) {
+        const p1 = Number(basePrice || 25);
+        const p2 = dataPoints[0].price;
+        const mid = Number(((p1 * 0.45) + (p2 * 0.55)).toFixed(2));
+        dataPoints = [{ price: p1 }, { price: mid }, { price: p2 }];
       }
 
       const ptsBadge = document.getElementById(`sparklinePts-${productId}`);
@@ -1698,18 +2180,28 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Color based on latest movement
-      const latestP = dataPoints[dataPoints.length - 1].price;
-      let strokeColor = '#0284C7';
-      if (latestP > basePrice + 0.05) strokeColor = '#10B981';
-      else if (latestP < basePrice - 0.05) strokeColor = '#F43F5E';
+      // Flavor-specific graph color scheme
+      const prod = products.find(p => p.id === productId);
+      const flavourColor = getProductChartColors(prod);
+      const strokeColor = flavourColor.stroke;
+      const strokeColorRgb = flavourColor.rgb;
+
+      // Draw Atmospheric Aura behind curve
+      const lastX = getX(dataPoints.length - 1);
+      const lastY = getY(dataPoints[dataPoints.length - 1].price);
+      const aura = ctx.createRadialGradient(lastX, lastY, 2, lastX, lastY, plotWidth * 0.7);
+      aura.addColorStop(0, `rgba(${strokeColorRgb}, 0.2)`);
+      aura.addColorStop(0.5, `rgba(${strokeColorRgb}, 0.05)`);
+      aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = aura;
+      ctx.fillRect(padLeft, padTop, plotWidth, plotHeight);
 
       // Draw Area Fill with smooth cubic bezier
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
         const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
-        const x1 = getX(i), y1 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
         ctx.bezierCurveTo((x0 + x1) / 2, y0, (x0 + x1) / 2, y1, x1, y1);
       }
       ctx.lineTo(getX(dataPoints.length - 1), padTop + plotHeight);
@@ -1717,54 +2209,43 @@
       ctx.closePath();
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
-      if (latestP > basePrice + 0.05) {
-        areaGrad.addColorStop(0, 'rgba(16, 185, 129, 0.32)');
-        areaGrad.addColorStop(0.6, 'rgba(16, 185, 129, 0.08)');
-      } else if (latestP < basePrice - 0.05) {
-        areaGrad.addColorStop(0, 'rgba(244, 63, 94, 0.32)');
-        areaGrad.addColorStop(0.6, 'rgba(244, 63, 94, 0.08)');
-      } else {
-        areaGrad.addColorStop(0, 'rgba(56, 189, 248, 0.28)');
-        areaGrad.addColorStop(0.6, 'rgba(56, 189, 248, 0.06)');
-      }
-      areaGrad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.38)`);
+      areaGrad.addColorStop(0.4, `rgba(${strokeColorRgb}, 0.12)`);
+      areaGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
-      // Smooth Stroke Line with glow
+      // Smooth Stroke Line with enhanced glow
       ctx.save();
-      ctx.shadowColor = latestP > basePrice + 0.05 ? 'rgba(16, 185, 129, 0.6)' : (latestP < basePrice - 0.05 ? 'rgba(244, 63, 94, 0.6)' : 'rgba(56, 189, 248, 0.6)');
-      ctx.shadowBlur = 6;
+      ctx.shadowColor = `rgba(${strokeColorRgb}, 0.75)`;
+      ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
         const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
-        const x1 = getX(i), y1 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
         ctx.bezierCurveTo((x0 + x1) / 2, y0, (x0 + x1) / 2, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = 2.6;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
       ctx.restore();
 
-      // Beacon Dot on Latest Point
-      const lastX = getX(dataPoints.length - 1);
-      const lastY = getY(latestP);
-
+      // Beacon Dot on Latest Point — Concentric radar pulse
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 6, 0, Math.PI * 2);
-      ctx.fillStyle = latestP > basePrice + 0.05 ? 'rgba(16, 185, 129, 0.25)' : (latestP < basePrice - 0.05 ? 'rgba(244, 63, 94, 0.25)' : 'rgba(56, 189, 248, 0.25)');
+      ctx.arc(lastX, lastY, 8, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.18)`;
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 1.2, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 1.6, 0, Math.PI * 2);
       ctx.fillStyle = '#FFFFFF';
       ctx.fill();
     }
@@ -1846,7 +2327,7 @@
         summaryBox.style.display = 'block';
         document.getElementById('totalVolumeText').textContent = `${totalVolume} ml (${totalVolume / 250} cups)`;
         document.getElementById('totalPayableText').textContent = `₹${totalPayable.toFixed(2)}`;
-        
+
         if (!isBackendOnline) {
           checkoutBtn.disabled = true;
           checkoutBtn.style.background = '#64748b';
@@ -2019,7 +2500,7 @@
           const data = await res.json();
           updatePricingTimingState(data);
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     function updatePricingTimingState(timing) {
@@ -2032,7 +2513,7 @@
         intervalSeconds: sec,
         label: label,
         shortLabel: shortLabel,
-        nextSettlementAt: timing.nextSettlementAt || currentPricingTiming.nextSettlementAt
+        nextSettlementAt: timing.nextSettlementAt || new Date(Date.now() + sec * 1000).toISOString()
       };
 
       const openStateEl = document.getElementById('marketOpenStateText');
@@ -2042,11 +2523,13 @@
       if (subtextEl) subtextEl.textContent = `REAL-TIME ${shortLabel.toUpperCase()} DWMA PRICING • DYNAMIC LIVE SETTLEMENTS • ATOMIC DISPENSING`;
 
       renderAllSparklines();
+      startSettlementCountdown();
     }
 
     function startSettlementCountdown() {
       if (settlementCountdownInterval) clearInterval(settlementCountdownInterval);
-      settlementCountdownInterval = setInterval(() => {
+
+      const updateTicker = () => {
         const intervalSec = currentPricingTiming.intervalSeconds || 60;
         const now = Date.now();
         let remaining = intervalSec;
@@ -2058,16 +2541,19 @@
             if (diffMs > 0) {
               remaining = Math.min(intervalSec, Math.ceil(diffMs / 1000));
             } else {
-              remaining = intervalSec - (Math.floor(now / 1000) % intervalSec);
+              currentPricingTiming.nextSettlementAt = new Date(now + intervalSec * 1000).toISOString();
+              remaining = intervalSec;
               if (diffMs < -2000 && diffMs > -5000) {
                 fetchPricingTiming();
               }
             }
           } else {
-            remaining = intervalSec - (Math.floor(now / 1000) % intervalSec);
+            currentPricingTiming.nextSettlementAt = new Date(now + intervalSec * 1000).toISOString();
+            remaining = intervalSec;
           }
         } else {
-          remaining = intervalSec - (Math.floor(now / 1000) % intervalSec);
+          currentPricingTiming.nextSettlementAt = new Date(now + intervalSec * 1000).toISOString();
+          remaining = intervalSec;
         }
 
         const mins = Math.floor(remaining / 60);
@@ -2076,7 +2562,10 @@
 
         const countdownEl = document.getElementById('summarySettlementCountdown');
         if (countdownEl) countdownEl.textContent = timeStr;
-      }, 1000);
+      };
+
+      updateTicker();
+      settlementCountdownInterval = setInterval(updateTicker, 1000);
     }
 
     function connectWebSocket() {
@@ -2107,7 +2596,7 @@
                   renderAllSparklines();
                   return;
                 }
-              } catch (e) {}
+              } catch (e) { }
             }
             fetchProducts();
           });
@@ -2188,7 +2677,7 @@
                 if (res.type === 'PRICING_TIMING_CHANGED' || res.intervalSeconds) {
                   updatePricingTimingState(res);
                 }
-              } catch (e) {}
+              } catch (e) { }
             }
             fetchProducts();
             fetchPricingConfiguration();
@@ -2210,6 +2699,16 @@
               }
             }
           });
+
+          stompClient.subscribe('/topic/market-status', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                const isPaused = res.status === 'PAUSED' || res.marketStatus === 'PAUSED';
+                setMarketPausedState(isPaused);
+              } catch (e) {}
+            }
+          });
         }, function () {
           isReconnectingWS = true;
           wsReconnectAttempts = (wsReconnectAttempts || 0) + 1;
@@ -2229,12 +2728,24 @@
       }
     }
 
+    async function checkMarketState() {
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/market`);
+        if (res.ok) {
+          const state = await res.json();
+          const isPaused = state.marketStatus === 'PAUSED' || state.status === 'PAUSED';
+          setMarketPausedState(isPaused);
+        }
+      } catch (e) {}
+    }
+
     window.addEventListener('resize', () => {
       renderAllSparklines();
     });
 
     // Startup
     checkBackendHealth();
+    checkMarketState();
     fetchPricingTiming();
     fetchPricingConfiguration();
     fetchAllPriceHistories().then(() => {
@@ -2245,6 +2756,7 @@
     startSettlementCountdown();
 
     setInterval(checkBackendHealth, 5000);
+    setInterval(checkMarketState, 5000);
     // Background continuous sync to guarantee real-time reflection of admin actions
     setInterval(() => {
       fetchProducts();
@@ -2260,7 +2772,7 @@
     function setCustomerThemeMode(isDark) {
       localStorage.removeItem('pubexchange_contrast_mode');
       document.body.classList.remove('high-contrast-black');
-      
+
       if (isDark) {
         document.body.classList.add('dark-theme-mode');
         document.documentElement.setAttribute('data-theme', 'dark');
@@ -2289,4 +2801,5 @@
     setCustomerThemeMode(savedThemeCust !== 'light'); // Default to obsidian dark
   </script>
 </body>
+
 </html>

@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@SuppressWarnings("null")
 public class PriceLockService {
 
     private static final Logger log = LoggerFactory.getLogger(PriceLockService.class);

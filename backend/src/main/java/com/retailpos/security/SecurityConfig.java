@@ -16,6 +16,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@SuppressWarnings("null")
 public class SecurityConfig {
 
     @Bean
@@ -27,7 +28,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(AbstractHttpConfigurer::disable)
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/**", "/api/**", "/h2-console/**").permitAll()
                 .anyRequest().authenticated()

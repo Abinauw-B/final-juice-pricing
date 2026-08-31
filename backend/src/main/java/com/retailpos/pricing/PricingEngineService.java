@@ -54,6 +54,11 @@ public class PricingEngineService {
         return lastSettlementTime;
     }
 
+    public void resetSettlementTiming(int newIntervalSeconds) {
+        int interval = newIntervalSeconds > 0 ? newIntervalSeconds : 60;
+        this.nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
+    }
+
     public LocalDateTime getNextSettlementTime() {
         int interval = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
         if (interval <= 0) interval = 60;

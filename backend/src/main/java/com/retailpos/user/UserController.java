@@ -15,6 +15,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
+@SuppressWarnings("null")
 public class UserController {
 
     private final UserRepository userRepository;

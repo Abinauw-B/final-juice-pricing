@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+@SuppressWarnings("null")
 public class MarketEventService {
 
     private static final Logger log = LoggerFactory.getLogger(MarketEventService.class);

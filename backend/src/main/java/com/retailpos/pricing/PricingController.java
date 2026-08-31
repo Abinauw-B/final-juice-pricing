@@ -64,7 +64,14 @@ public class PricingController {
         Map<String, Object> res = new HashMap<>();
         res.put("success", true);
         res.put("status", "PAUSED");
+        res.put("marketStatus", "PAUSED");
         res.put("message", "Juice Exchange algorithm paused.");
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/market-status", res);
+                messagingTemplate.convertAndSend("/topic/settlement", res);
+            }
+        } catch (Exception ignored) {}
         return ResponseEntity.ok(res);
     }
 
@@ -74,7 +81,14 @@ public class PricingController {
         Map<String, Object> res = new HashMap<>();
         res.put("success", true);
         res.put("status", "OPEN");
+        res.put("marketStatus", "OPEN");
         res.put("message", "Juice Exchange algorithm resumed.");
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/market-status", res);
+                messagingTemplate.convertAndSend("/topic/settlement", res);
+            }
+        } catch (Exception ignored) {}
         return ResponseEntity.ok(res);
     }
 
@@ -305,6 +319,9 @@ public class PricingController {
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
         String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
         com.retailpos.pricing.model.PricingConfigDTO updated = pricingConfigurationService.updateGlobalConfiguration(globalConfig, actor, "ADMIN_UI_UPDATE");
+        if (globalConfig != null && globalConfig.getSettlementIntervalSeconds() != null) {
+            pricingEngineService.resetSettlementTiming(globalConfig.getSettlementIntervalSeconds());
+        }
         return ResponseEntity.ok(updated);
     }
 
@@ -418,6 +435,7 @@ public class PricingController {
         com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig update = new com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig();
         update.setSettlementIntervalSeconds(selectedInterval);
         pricingConfigurationService.updateGlobalConfiguration(update, actor, "ADMIN_SETTLEMENT_INTERVAL_CHANGE");
+        pricingEngineService.resetSettlementTiming(selectedInterval);
 
         String label = PricingConfigurationService.getIntervalLabel(selectedInterval);
         LocalDateTime nextTime = pricingEngineService.getNextSettlementTime();

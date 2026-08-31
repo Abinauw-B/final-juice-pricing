@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@SuppressWarnings("null")
 public class PriceBroadcastService {
 
     private static final Logger log = LoggerFactory.getLogger(PriceBroadcastService.class);
