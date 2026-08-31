@@ -14,6 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping({"/api/pricing", "/api/admin/pricing"})
 @CrossOrigin(origins = "*")
+@SuppressWarnings("null")
 public class PricingController {
 
     private final PriceAdjustmentService priceAdjustmentService;

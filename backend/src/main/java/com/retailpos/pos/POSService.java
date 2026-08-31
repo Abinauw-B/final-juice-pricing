@@ -16,6 +16,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
+@SuppressWarnings("null")
 public class POSService {
 
     private static final Logger log = LoggerFactory.getLogger(POSService.class);

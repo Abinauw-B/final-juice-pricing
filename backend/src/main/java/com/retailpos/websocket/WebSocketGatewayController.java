@@ -1,7 +1,6 @@
 package com.retailpos.websocket;
 
 import com.retailpos.pricing.MarketCrashService;
-import com.retailpos.pricing.PricingEngineService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -15,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 @Controller
 @CrossOrigin(origins = "*")
+@SuppressWarnings("null")
 public class WebSocketGatewayController {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketGatewayController.class);

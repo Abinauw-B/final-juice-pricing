@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
+@SuppressWarnings("null")
 public class PricingEngineService {
 
     private static final Logger log = LoggerFactory.getLogger(PricingEngineService.class);
@@ -56,7 +57,7 @@ public class PricingEngineService {
 
     public void resetSettlementTiming(int newIntervalSeconds) {
         int interval = newIntervalSeconds > 0 ? newIntervalSeconds : 60;
-        this.nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
+        nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
     }
 
     public LocalDateTime getNextSettlementTime() {

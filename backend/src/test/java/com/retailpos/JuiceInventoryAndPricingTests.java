@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(properties = "pricing.scheduler.enabled=false")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@SuppressWarnings("null")
 public class JuiceInventoryAndPricingTests {
 
     @Autowired

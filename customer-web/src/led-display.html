@@ -554,12 +554,12 @@
     .chart-container-wrapper {
       position: relative;
       width: 100%;
-      height: 122px;
+      height: 160px;
       background: linear-gradient(165deg, var(--bg-secondary) 0%, var(--bg-subtle) 100%);
       border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 2px;
-      margin: 4px 0 5px 0;
+      margin: 4px 0;
       overflow: hidden;
       transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -602,6 +602,86 @@
       cursor: crosshair;
     }
 
+    /* 20L Tank Batch Volume Liquid Gauge */
+    .tank-volume-row {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 3px 6px;
+      margin: 3px 0 4px 0;
+    }
+    .tank-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .tank-percent-badge {
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-cyan);
+    }
+    .tank-bar-track {
+      width: 100%;
+      height: 5px;
+      background: var(--bg-subtle);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .tank-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+      background: linear-gradient(90deg, #0284c7, #38bdf8);
+      box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
+    }
+
+    /* Demand Intensity Row */
+    .demand-intensity-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 6px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      margin-bottom: 3px;
+      font-size: 8.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    .demand-dots {
+      display: flex;
+      gap: 2.5px;
+      align-items: center;
+    }
+    .demand-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--border-color);
+    }
+    .demand-dot.active-high {
+      background: #10b981;
+      box-shadow: 0 0 5px rgba(16, 185, 129, 0.8);
+    }
+    .demand-dot.active-normal {
+      background: #38bdf8;
+      box-shadow: 0 0 5px rgba(56, 189, 248, 0.8);
+    }
+    .demand-dot.active-low {
+      background: #f43f5e;
+      box-shadow: 0 0 5px rgba(244, 63, 94, 0.8);
+    }
+
     /* Chart Hover Tooltip Overlay */
     .chart-tooltip {
       position: fixed;
@@ -642,28 +722,43 @@
     /* Product Specs Mini-Table */
     .product-specs-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2px 6px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      border-radius: 4px;
-      padding: 3px 6px;
+      border-radius: 5px;
+      padding: 3px 4px;
       margin-bottom: 3px;
-      font-size: 9px;
+      font-size: 8.5px;
     }
     .spec-item {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2px 1px;
+      border-radius: 4px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
     }
     .spec-label {
       color: var(--text-muted);
-      font-weight: 600;
+      font-size: 7.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
     .spec-val {
       color: var(--text-primary);
-      font-weight: 700;
+      font-weight: 800;
+      font-size: 9.5px;
       font-family: var(--font-mono);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     /* Card Actions Footer */
@@ -671,12 +766,13 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 4px;
+      margin-top: 3px;
     }
     .btn-card-action {
-      padding: 2px 4px;
-      border-radius: 4px;
+      padding: 4px 6px;
+      border-radius: 5px;
       font-size: 9.5px;
-      font-weight: 700;
+      font-weight: 800;
       text-align: center;
       cursor: pointer;
       text-decoration: none;
@@ -688,19 +784,24 @@
       align-items: center;
       justify-content: center;
       gap: 3px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
     }
     .btn-card-action:hover {
       background: var(--bg-hover);
       border-color: var(--border-strong);
+      transform: translateY(-1px);
     }
     .btn-card-action-pos {
-      background: var(--accent-cyan-bg);
-      color: var(--accent-cyan);
-      border-color: var(--accent-cyan-border);
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #FFFFFF;
+      border-color: transparent;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
     }
     .btn-card-action-pos:hover {
-      background: var(--accent-cyan);
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
       color: #FFFFFF;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
     }
 
     /* ==========================================================================
