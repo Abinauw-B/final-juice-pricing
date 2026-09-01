@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@SuppressWarnings("null")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -41,6 +42,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now().toString());
         body.put("status", HttpStatus.BAD_REQUEST.value());
+        String message = "Validation failed for request parameters";
         org.springframework.validation.FieldError fieldError = ex.getBindingResult().getFieldError();
         if (fieldError != null && fieldError.getDefaultMessage() != null) {
             message = "Validation failed: " + fieldError.getDefaultMessage();

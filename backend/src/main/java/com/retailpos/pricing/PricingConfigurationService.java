@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
+@SuppressWarnings("null")
 public class PricingConfigurationService {
 
     private static final Logger log = LoggerFactory.getLogger(PricingConfigurationService.class);

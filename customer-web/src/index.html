@@ -417,11 +417,11 @@
       padding: 0 4px;
     }
 
-    /* 4 in a row beverage product grid */
+    /* Symmetrical 4-column beverage product grid (No empty blank spaces) */
     .flavour-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
+      gap: 16px;
     }
 
     /* Flavour-Specific Gradient Themes */
@@ -548,10 +548,10 @@
     .card-img-banner {
       position: relative;
       width: 100%;
-      height: 125px;
+      height: 110px;
       border-radius: 10px;
       overflow: hidden;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       background: var(--bg-secondary);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
     }
@@ -655,11 +655,11 @@
     /* Mini Sparkline Chart Container */
     .card-chart-wrap {
       width: 100%;
-      height: 78px;
+      height: 52px;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      margin-bottom: 9px;
+      margin-bottom: 8px;
       position: relative;
       overflow: hidden;
       box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.12);
@@ -809,43 +809,40 @@
       transform: scale(0.98);
     }
 
-    /* Responsive Breakpoints for 4-in-a-Row Product Grid */
-    @media (max-width: 1400px) {
+    /* Responsive Breakpoints for 4x2 Symmetrical Grid */
+    @media (max-width: 1350px) {
       .pos-container {
         grid-template-columns: 1fr 310px;
         gap: 12px;
       }
-
       .flavour-grid {
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-      }
-    }
-
-    @media (max-width: 1120px) {
-      .flavour-grid {
-        grid-template-columns: repeat(3, 1fr);
         gap: 12px;
       }
+    }
 
+    @media (max-width: 1080px) {
+      .flavour-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
       .pos-container {
-        grid-template-columns: 1fr 300px;
+        grid-template-columns: 1fr 290px;
       }
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 768px) {
       .pos-container {
         grid-template-columns: 1fr;
         gap: 16px;
       }
-
       .flavour-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
       }
     }
 
-    @media (max-width: 520px) {
+    @media (max-width: 500px) {
       .flavour-grid {
         grid-template-columns: 1fr;
       }
@@ -1426,6 +1423,50 @@
       return 'card-theme-thunder';
     }
 
+    function getShortFlavourLabel(p) {
+      if (!p) return 'Juice';
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return 'Mango';
+      if (f.includes('LEMON')) return 'Lemon';
+      if (f.includes('MINT')) return 'Cool Mint';
+      if (f.includes('ORANGE')) return 'Orange';
+      if (f.includes('STRAWBERRY')) return 'Strawberry';
+      if (f.includes('GRAPE')) return 'Grape';
+      if (f.includes('LYCHEE')) return 'Lychee';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return 'Thunder';
+      return p.name || p.flavour || 'Juice';
+    }
+
+    function getMarketBadgeInfo(p, isCrash) {
+      const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+      const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+      const diff = activePrice - baseP;
+      const pctVal = baseP > 0 ? Math.abs(((diff / baseP) * 100).toFixed(1)) : '0.0';
+
+      if (isCrash) {
+        return {
+          badgeClass: 'badge-down',
+          badgeText: '▼ CRASH'
+        };
+      }
+      if (diff > 0.05) {
+        return {
+          badgeClass: 'badge-up',
+          badgeText: `▲ +${pctVal}%`
+        };
+      }
+      if (diff < -0.05) {
+        return {
+          badgeClass: 'badge-down',
+          badgeText: `▼ -${pctVal}%`
+        };
+      }
+      return {
+        badgeClass: 'badge-stable',
+        badgeText: '— BASE'
+      };
+    }
+
     function getFruitIcon(p) {
       if (!p) return '🍹';
       if (fruitIcons[p.id]) return fruitIcons[p.id];
@@ -1952,21 +1993,8 @@
           const icon = getFruitIcon(p);
           const imgUrl = getBeverageImage(p);
 
-          const pctVal = baseP > 0 ? Math.abs(((diff / baseP) * 100).toFixed(1)) : '0.0';
-
-          let badgeClass = 'badge-stable';
-          let badgeText = `— ₹${activePrice.toFixed(2)} BASE RATE`;
-          if (isMarketCrashActive) {
-            badgeClass = 'badge-down';
-            badgeText = `▼ CRASH ₹${activePrice.toFixed(2)}`;
-          } else if (diff > 0.05) {
-            badgeClass = 'badge-up';
-            badgeText = `▲ +₹${diff.toFixed(2)} (+${pctVal}%) SURGE`;
-          } else if (diff < -0.05) {
-            badgeClass = 'badge-down';
-            badgeText = `▼ -₹${Math.abs(diff).toFixed(2)} (-${pctVal}%) DISCOUNT`;
-          }
-
+          const shortName = getShortFlavourLabel(p);
+          const badgeInfo = getMarketBadgeInfo(p, isMarketCrashActive);
           const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : 0.40).toFixed(2);
 
           let demandCategory = 'NORMAL';
@@ -1999,8 +2027,8 @@
                 <div class="card-img-banner">
                   <img src="${imgUrl}" alt="${p.name}" class="beverage-photo" loading="lazy" />
                   <div class="card-img-overlay">
-                    <span class="fruit-pill">${icon} ${p.flavour || p.name}</span>
-                    <span class="market-badge ${badgeClass}" id="marketBadge-${p.id}">${badgeText}</span>
+                    <span class="fruit-pill">${icon} ${shortName}</span>
+                    <span class="market-badge ${badgeInfo.badgeClass}" id="marketBadge-${p.id}">${badgeInfo.badgeText}</span>
                   </div>
                 </div>
 
@@ -2055,12 +2083,12 @@
           const minP = Number(p.minCupPrice !== undefined ? p.minCupPrice : 18.0);
           const maxP = Number(p.maxCupPrice !== undefined ? p.maxCupPrice : 35.0);
           const diff = activePrice - baseP;
-          const pctVal = baseP > 0 ? Math.abs(((diff / baseP) * 100).toFixed(1)) : '0.0';
 
+          const badgeInfo = getMarketBadgeInfo(p, isMarketCrashActive);
           const badgeEl = document.getElementById(`marketBadge-${p.id}`);
           if (badgeEl) {
-            badgeEl.className = 'market-badge ' + (isMarketCrashActive ? 'badge-down' : (diff > 0.05 ? 'badge-up' : (diff < -0.05 ? 'badge-down' : 'badge-stable')));
-            badgeEl.textContent = isMarketCrashActive ? `▼ CRASH ₹${activePrice.toFixed(2)}` : (diff > 0.05 ? `▲ +₹${diff.toFixed(2)} (+${pctVal}%) SURGE` : (diff < -0.05 ? `▼ -₹${Math.abs(diff).toFixed(2)} (-${pctVal}%) DISCOUNT` : `— ₹${activePrice.toFixed(2)} BASE RATE`));
+            badgeEl.className = 'market-badge ' + badgeInfo.badgeClass;
+            badgeEl.textContent = badgeInfo.badgeText;
           }
 
           const priceEl = document.getElementById(`priceMain-${p.id}`);
