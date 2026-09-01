@@ -509,7 +509,7 @@
       background: var(--flavour-grad-dark);
       border: 1px solid var(--flavour-border, var(--border-color));
       border-radius: var(--radius-card);
-      padding: 13px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -548,10 +548,10 @@
     .card-img-banner {
       position: relative;
       width: 100%;
-      height: 110px;
+      height: 80px;
       border-radius: 10px;
       overflow: hidden;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       background: var(--bg-secondary);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
     }
@@ -600,21 +600,21 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .card-header-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .card-name {
-      font-size: 15px;
+      font-size: 13.5px;
       font-weight: 800;
       color: var(--text-primary);
       letter-spacing: -0.01em;
-      line-height: 1.25;
+      line-height: 1.2;
     }
 
     .market-badge {
@@ -652,17 +652,29 @@
       border: 1px solid rgba(148, 163, 184, 0.35);
     }
 
-    /* Mini Sparkline Chart Container */
+    /* ═══════ PREMIUM LIVE CHART — Full-Width, Zero Dead Space ═══════ */
     .card-chart-wrap {
       width: 100%;
-      height: 52px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
+      height: 160px;
+      background: linear-gradient(180deg, rgba(10, 15, 30, 0.60) 0%, rgba(10, 15, 30, 0.92) 100%);
+      border: 1.5px solid var(--flavour-border, var(--border-subtle));
+      border-radius: 12px;
       margin-bottom: 8px;
       position: relative;
       overflow: hidden;
-      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.12);
+      box-shadow:
+        inset 0 2px 12px rgba(0, 0, 0, 0.35),
+        0 0 18px var(--flavour-glow, rgba(56, 189, 248, 0.1)),
+        0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    html[data-theme="light"] .card-chart-wrap,
+    body:not(.dark-theme-mode) .card-chart-wrap {
+      background: linear-gradient(180deg, rgba(241, 245, 249, 0.92) 0%, rgba(226, 232, 240, 0.98) 100%);
+      box-shadow:
+        inset 0 2px 8px rgba(0, 0, 0, 0.06),
+        0 0 14px var(--flavour-glow, rgba(56, 189, 248, 0.06)),
+        0 3px 10px rgba(0, 0, 0, 0.04);
     }
 
     .card-chart-canvas {
@@ -673,32 +685,90 @@
 
     .chart-badge-pts {
       position: absolute;
-      top: 3px;
-      right: 5px;
+      top: 5px;
+      right: 6px;
       font-size: 8.5px;
       font-family: var(--font-mono);
-      font-weight: 700;
-      color: var(--text-muted);
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(4px);
-      padding: 1px 5px;
-      border-radius: 4px;
+      font-weight: 800;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 2px 7px;
+      border-radius: 5px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
       pointer-events: none;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .chart-label-tag {
+      position: absolute;
+      top: 5px;
+      left: 6px;
+      font-size: 8px;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      color: var(--flavour-accent, #38bdf8);
+      pointer-events: none;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px var(--flavour-glow, rgba(56, 189, 248, 0.5));
+    }
+
+    /* Live price overlay anchored to bottom-left of chart */
+    .chart-price-overlay {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      pointer-events: none;
+    }
+
+    .chart-price-overlay .overlay-price {
+      font-size: 22px;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      color: #ffffff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6), 0 0 16px var(--flavour-glow, rgba(56, 189, 248, 0.4));
+      letter-spacing: -0.5px;
+    }
+
+    .chart-price-overlay .overlay-unit {
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.6);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+
+    html[data-theme="light"] .chart-price-overlay .overlay-price,
+    body:not(.dark-theme-mode) .chart-price-overlay .overlay-price {
+      color: var(--flavour-accent, #0284c7);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    html[data-theme="light"] .chart-price-overlay .overlay-unit,
+    body:not(.dark-theme-mode) .chart-price-overlay .overlay-unit {
+      color: rgba(71, 85, 105, 0.7);
     }
 
     .price-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 8px;
+      margin-bottom: 6px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 9px 12px;
-      margin-bottom: 9px;
+      border-radius: 8px;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
       transition: all 0.3s ease;
     }
 
     .price-main {
-      font-size: 24px;
+      font-size: 18px;
       font-weight: 900;
       color: var(--flavour-accent, var(--accent-cyan));
       letter-spacing: -0.5px;
@@ -711,17 +781,16 @@
     }
 
     .price-unit {
-      font-size: 11.5px;
+      font-size: 10px;
       color: var(--text-muted);
       font-weight: 600;
     }
 
     .price-bounds {
-      font-size: 10.5px;
+      font-size: 9.5px;
       color: var(--text-muted);
-      margin-top: 4px;
       display: flex;
-      justify-content: space-between;
+      gap: 6px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
@@ -732,8 +801,8 @@
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: 8px;
-      padding: 7px 10px;
-      margin-bottom: 10px;
+      padding: 5px 8px;
+      margin-bottom: 6px;
     }
 
     .demand-text {
@@ -1579,7 +1648,7 @@
       const type = msg.type || (msg.flavourName ? 'SIMULATION_UPDATED' : null);
       if (!type) return;
 
-      if (type === 'SIMULATION_UPDATED' || type === 'PRODUCT_PRICE_UPDATE' || type === 'NEW_FLAVOUR_ADDED' || type === 'BATCH_PRODUCT_PRICE_UPDATED' || type === 'PRICE_ENGINE_RUN' || type === 'BATCH_UPDATED' || type === 'PRICES_RECALCULATED' || type === 'REFRESH_PRODUCTS') {
+      if (type === 'PRODUCT_PRICE_UPDATE' || type === 'NEW_FLAVOUR_ADDED' || type === 'BATCH_PRODUCT_PRICE_UPDATED' || type === 'PRICE_ENGINE_RUN' || type === 'BATCH_UPDATED' || type === 'PRICES_RECALCULATED' || type === 'REFRESH_PRODUCTS') {
         const payload = msg.payload || msg;
         if (payload && (payload.productId || payload.flavourName || payload.name)) {
           const prodId = payload.productId ? Number(payload.productId) : null;
@@ -1587,7 +1656,7 @@
           const matchIdx = products.findIndex(p => (prodId && p.id === prodId) || (flavourName && p.name && p.name.toLowerCase() === flavourName.toLowerCase()) || (p.flavour && flavourName && p.flavour.toLowerCase() === flavourName.toLowerCase()));
 
           if (matchIdx !== -1) {
-            const targetPrice = payload.finalPrice !== undefined ? Number(payload.finalPrice) : (payload.currentPrice !== undefined ? Number(payload.currentPrice) : Number(payload.startPrice));
+            const targetPrice = payload.currentPrice !== undefined ? Number(payload.currentPrice) : (payload.startPrice !== undefined ? Number(payload.startPrice) : (payload.price !== undefined ? Number(payload.price) : 25.0));
             if (!isNaN(targetPrice) && targetPrice > 0) {
               products[matchIdx].currentCupPrice = targetPrice;
             }
@@ -1601,7 +1670,7 @@
                 timestamp: new Date().toISOString(),
                 price: products[matchIdx].currentCupPrice,
                 priceChange: 0,
-                reason: 'Simulation Input Sync'
+                reason: 'Live Sync'
               });
             }
 
@@ -1619,6 +1688,10 @@
         }
 
         fetchProducts();
+        fetchPricingConfiguration();
+      } else if (type === 'PRICING_TIMING_CHANGED' || msg.settlementIntervalSeconds || msg.intervalSeconds) {
+        const payload = msg.payload || msg;
+        updatePricingTimingState(payload);
         fetchPricingConfiguration();
       } else if (type === 'MARKET_CRASH_TRIGGER' || type === 'MARKET_CRASH_START') {
         triggerLocalMarketCrash(msg.payload?.durationSeconds || 180);
@@ -2038,22 +2111,27 @@
                   </div>
                 </div>
 
-                <!-- Real-Time Mini Price Sparkline -->
+                <!-- Real-Time Live Price Chart -->
                 <div class="card-chart-wrap">
                   <canvas id="posSparkline-${p.id}" class="card-chart-canvas"></canvas>
+                  <span class="chart-label-tag">PRICE TREND</span>
                   <span class="chart-badge-pts" id="sparklinePts-${p.id}">LIVE DWMA</span>
+                  <div class="chart-price-overlay" id="chartOverlay-${p.id}">
+                    <span class="overlay-price" id="overlayPrice-${p.id}">₹${activePrice.toFixed(2)}</span>
+                    <span class="overlay-unit">/ ${p.defaultCupSizeMl || 250}ml</span>
+                  </div>
                 </div>
                 
-                <!-- Dynamic Price Box -->
+                <!-- Compact Price Bounds Row -->
                 <div class="price-section">
                   <div>
                     <span class="price-main ${p.tickClass || ''}" id="priceMain-${p.id}">₹${activePrice.toFixed(2)}</span>
-                    <span class="price-unit">/ ${p.defaultCupSizeMl || 250}ml cup</span>
+                    <span class="price-unit">/ cup</span>
                   </div>
                   <div class="price-bounds">
                     <span id="posBase-${p.id}">Base ₹${baseP.toFixed(2)}</span>
-                    <span id="posFloor-${p.id}">Floor ₹${minP.toFixed(2)}</span>
-                    <span id="posCeil-${p.id}">Ceiling ₹${maxP.toFixed(2)}</span>
+                    <span id="posFloor-${p.id}">F: ₹${minP.toFixed(2)}</span>
+                    <span id="posCeil-${p.id}">C: ₹${maxP.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -2094,14 +2172,19 @@
           const priceEl = document.getElementById(`priceMain-${p.id}`);
           if (priceEl) priceEl.textContent = `₹${activePrice.toFixed(2)}`;
 
+          // Sync chart overlay price
+          const overlayPriceEl = document.getElementById(`overlayPrice-${p.id}`);
+          if (overlayPriceEl) overlayPriceEl.textContent = `₹${activePrice.toFixed(2)}`;
+
           const baseEl = document.getElementById(`posBase-${p.id}`);
           if (baseEl) baseEl.textContent = `Base ₹${baseP.toFixed(2)}`;
 
           const floorEl = document.getElementById(`posFloor-${p.id}`);
-          if (floorEl) floorEl.textContent = `Floor ₹${minP.toFixed(2)}`;
+          if (floorEl) floorEl.textContent = `F: ₹${minP.toFixed(2)}`;
 
           const ceilEl = document.getElementById(`posCeil-${p.id}`);
-          if (ceilEl) ceilEl.textContent = `Ceiling ₹${maxP.toFixed(2)}`;
+          if (ceilEl) ceilEl.textContent = `C: ₹${maxP.toFixed(2)}`;
+
 
           const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : 0.40).toFixed(2);
           const targetEl = document.getElementById(`posTarget-${p.id}`);
@@ -2146,7 +2229,7 @@
 
       const rect = canvas.getBoundingClientRect();
       const width = (rect.width && rect.width > 10) ? rect.width : (canvas.offsetWidth > 10 ? canvas.offsetWidth : 260);
-      const height = (rect.height && rect.height > 10) ? rect.height : (canvas.offsetHeight > 10 ? canvas.offsetHeight : 68);
+      const height = (rect.height && rect.height > 10) ? rect.height : (canvas.offsetHeight > 10 ? canvas.offsetHeight : 160);
       const dpr = window.devicePixelRatio || 1;
 
       canvas.width = Math.round(width * dpr);
@@ -2160,7 +2243,7 @@
 
       let dataPoints = [];
       if (history && history.length > 0) {
-        dataPoints = history.slice(-25).map(h => ({
+        dataPoints = history.slice(-30).map(h => ({
           price: Number(h.price || 25)
         }));
       }
@@ -2180,33 +2263,22 @@
       const ptsBadge = document.getElementById(`sparklinePts-${productId}`);
       if (ptsBadge) ptsBadge.textContent = `${dataPoints.length} PTS • LIVE`;
 
-      const padLeft = 10;
-      const padRight = 14;
-      const padTop = 12;
-      const padBottom = 12;
+      const padLeft = 32;
+      const padRight = 12;
+      const padTop = 18;
+      const padBottom = 14;
       const plotWidth = width - padLeft - padRight;
       const plotHeight = height - padTop - padBottom;
 
       const prices = dataPoints.map(d => d.price);
-      let minP = Math.min(18, ...prices);
-      let maxP = Math.max(35, ...prices);
+      let minP = Math.min(18, ...prices) - 1;
+      let maxP = Math.max(35, ...prices) + 1;
       const span = Math.max(4, maxP - minP);
 
       const getY = (val) => padTop + plotHeight - ((val - minP) / span) * plotHeight;
-      const getX = (idx) => padLeft + (idx / (dataPoints.length - 1)) * plotWidth;
+      const getX = (idx) => padLeft + (idx / Math.max(1, dataPoints.length - 1)) * plotWidth;
 
       const isLight = document.documentElement.getAttribute('data-theme') === 'light' || !document.body.classList.contains('dark-theme-mode');
-
-      // Reference Baseline
-      const baseY = getY(basePrice);
-      ctx.beginPath();
-      ctx.strokeStyle = isLight ? 'rgba(148, 163, 184, 0.4)' : 'rgba(100, 116, 139, 0.35)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 3]);
-      ctx.moveTo(padLeft, baseY);
-      ctx.lineTo(width - padRight, baseY);
-      ctx.stroke();
-      ctx.setLineDash([]);
 
       // Flavor-specific graph color scheme
       const prod = products.find(p => p.id === productId);
@@ -2214,68 +2286,194 @@
       const strokeColor = flavourColor.stroke;
       const strokeColorRgb = flavourColor.rgb;
 
-      // Draw Atmospheric Aura behind curve
+      // ── Subtle Horizontal Grid Lines ──
+      const gridSteps = 4;
+      ctx.save();
+      ctx.setLineDash([1, 4]);
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= gridSteps; i++) {
+        const val = minP + (span * i / gridSteps);
+        const gy = getY(val);
+        ctx.beginPath();
+        ctx.strokeStyle = isLight ? 'rgba(148, 163, 184, 0.22)' : 'rgba(100, 116, 139, 0.18)';
+        ctx.moveTo(padLeft, gy);
+        ctx.lineTo(width - padRight, gy);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // ── Y-Axis Price Labels ──
+      ctx.save();
+      ctx.font = 'bold 8.5px JetBrains Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = isLight ? 'rgba(71, 85, 105, 0.85)' : 'rgba(203, 213, 225, 0.85)';
+      for (let i = 0; i <= gridSteps; i++) {
+        const val = minP + (span * i / gridSteps);
+        const gy = getY(val);
+        ctx.fillText(`₹${val.toFixed(0)}`, padLeft - 4, gy);
+      }
+      ctx.restore();
+
+      // ── Baseline Reference (Base Price Dashed Line) ──
+      const baseY = getY(basePrice);
+      ctx.beginPath();
+      ctx.strokeStyle = isLight ? 'rgba(59, 130, 246, 0.35)' : 'rgba(96, 165, 250, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.moveTo(padLeft, baseY);
+      ctx.lineTo(width - padRight, baseY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Base label
+      ctx.save();
+      ctx.font = '700 7px monospace';
+      ctx.fillStyle = isLight ? 'rgba(59, 130, 246, 0.55)' : 'rgba(96, 165, 250, 0.5)';
+      ctx.textAlign = 'left';
+      ctx.fillText('BASE', padLeft + 2, baseY - 4);
+      ctx.restore();
+
+      // ── Atmospheric Aura Glow Behind Curve ──
       const lastX = getX(dataPoints.length - 1);
       const lastY = getY(dataPoints[dataPoints.length - 1].price);
-      const aura = ctx.createRadialGradient(lastX, lastY, 2, lastX, lastY, plotWidth * 0.7);
-      aura.addColorStop(0, `rgba(${strokeColorRgb}, 0.2)`);
-      aura.addColorStop(0.5, `rgba(${strokeColorRgb}, 0.05)`);
+      const aura = ctx.createRadialGradient(lastX, lastY, 3, lastX, lastY, plotWidth * 0.6);
+      aura.addColorStop(0, `rgba(${strokeColorRgb}, 0.28)`);
+      aura.addColorStop(0.4, `rgba(${strokeColorRgb}, 0.08)`);
       aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = aura;
       ctx.fillRect(padLeft, padTop, plotWidth, plotHeight);
 
-      // Draw Area Fill with smooth cubic bezier
+      // ── Filled Area Under Curve (Smooth Bézier) ──
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
         const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
         const x1 = getX(i), y1 = getY(dataPoints[i].price);
-        ctx.bezierCurveTo((x0 + x1) / 2, y0, (x0 + x1) / 2, y1, x1, y1);
+        const cpx = (x0 + x1) / 2;
+        ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.lineTo(getX(dataPoints.length - 1), padTop + plotHeight);
       ctx.lineTo(getX(0), padTop + plotHeight);
       ctx.closePath();
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
-      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.38)`);
-      areaGrad.addColorStop(0.4, `rgba(${strokeColorRgb}, 0.12)`);
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.45)`);
+      areaGrad.addColorStop(0.3, `rgba(${strokeColorRgb}, 0.22)`);
+      areaGrad.addColorStop(0.65, `rgba(${strokeColorRgb}, 0.06)`);
       areaGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
-      // Smooth Stroke Line with enhanced glow
+      // ── Glow Shadow Stroke (wide soft glow behind the line) ──
       ctx.save();
-      ctx.shadowColor = `rgba(${strokeColorRgb}, 0.75)`;
-      ctx.shadowBlur = 8;
+      ctx.shadowColor = `rgba(${strokeColorRgb}, 0.65)`;
+      ctx.shadowBlur = 14;
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
         const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
         const x1 = getX(i), y1 = getY(dataPoints[i].price);
-        ctx.bezierCurveTo((x0 + x1) / 2, y0, (x0 + x1) / 2, y1, x1, y1);
+        const cpx = (x0 + x1) / 2;
+        ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.6;
+      ctx.strokeStyle = `rgba(${strokeColorRgb}, 0.35)`;
+      ctx.lineWidth = 6;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
       ctx.restore();
 
-      // Beacon Dot on Latest Point — Concentric radar pulse
+      // ── Primary Stroke Line ──
+      ctx.save();
+      ctx.shadowColor = `rgba(${strokeColorRgb}, 0.85)`;
+      ctx.shadowBlur = 10;
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 8, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.18)`;
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        const cpx = (x0 + x1) / 2;
+        ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
+      }
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2.8;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.restore();
+
+      // ── Data Point Dots (subtle, along the curve) ──
+      if (dataPoints.length <= 15) {
+        for (let i = 0; i < dataPoints.length - 1; i++) {
+          const px = getX(i), py = getY(dataPoints[i].price);
+          ctx.beginPath();
+          ctx.arc(px, py, 2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${strokeColorRgb}, 0.6)`;
+          ctx.fill();
+        }
+      }
+
+      // ── Live Beacon Dot on Latest Point (concentric pulse) ──
+      // Outer pulse ring
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 10, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.12)`;
       ctx.fill();
 
+      // Mid ring
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.3)`;
+      ctx.fill();
+
+      // Core dot
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
 
+      // Inner highlight
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 1.6, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 1.4, 0, Math.PI * 2);
       ctx.fillStyle = '#FFFFFF';
       ctx.fill();
+
+      // ── Live Price Label at Latest Point ──
+      ctx.save();
+      const livePrice = dataPoints[dataPoints.length - 1].price;
+      const labelText = `₹${livePrice.toFixed(2)}`;
+      ctx.font = '800 9px monospace';
+      const textWidth = ctx.measureText(labelText).width;
+      const labelX = Math.min(lastX + 8, width - padRight - textWidth - 6);
+      const labelY = Math.max(lastY - 2, padTop + 10);
+
+      // Label background pill
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.9)`;
+      const pillPad = 4;
+      ctx.beginPath();
+      const rx = labelX - pillPad;
+      const ry = labelY - 7;
+      const rw = textWidth + pillPad * 2;
+      const rh = 13;
+      const rr = 4;
+      ctx.moveTo(rx + rr, ry);
+      ctx.lineTo(rx + rw - rr, ry);
+      ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
+      ctx.lineTo(rx + rw, ry + rh - rr);
+      ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
+      ctx.lineTo(rx + rr, ry + rh);
+      ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rr);
+      ctx.lineTo(rx, ry + rr);
+      ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labelText, labelX, labelY + 0.5);
+      ctx.restore();
     }
 
     function addToCart(productId) {

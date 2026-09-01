@@ -622,6 +622,66 @@
       justify-content: center;
       z-index: 1000;
     }
+
+    /* ═══════ LIQUID MARKET PRODUCT TRADING DRAWER ═══════ */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 7, 13, 0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+    .drawer-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .trading-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 520px;
+      max-width: 95vw;
+      background: var(--bg-surface);
+      border-left: 1.5px solid var(--border-color);
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .drawer-overlay.active .trading-drawer {
+      transform: translateX(0);
+    }
+    .drawer-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .drawer-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      display: flex;
+      gap: 12px;
+    }
   </style>
 </head>
 
@@ -1040,6 +1100,58 @@
             </div>
           </div>
 
+          <!-- ═══════ INTERACTIVE LIVE DWMA DEMAND CASCADE VISUALIZER ═══════ -->
+          <div class="section-card" style="margin-bottom: 24px; border: 1.5px solid rgba(56, 189, 248, 0.4); background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-secondary) 100%); box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 22px;">📊</span>
+                <div>
+                  <h2 style="font-size: 17px; font-weight: 900; color: var(--text-main); margin: 0; letter-spacing: -0.01em;">
+                    LIVE DWMA DEMAND CASCADE &amp; WEIGHTING ENGINE
+                  </h2>
+                  <div style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">
+                    Discrete Weighted Moving Average Pipeline: [W₀ × 1.00 + W₁ × 0.50 + W₂ × 0.25] ➔ S_w ➔ R_d ➔ Movement (±₹1.00)
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <label style="font-size: 12px; font-weight: 800; color: var(--text-muted);">INSPECT BEVERAGE:</label>
+                <select id="dwmaInspectProductSelect" onchange="renderDwmaCascadeVisualizer()"
+                  style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-weight: 800; font-size: 13px; cursor: pointer;">
+                  <option value="1">🥭 Fresh Mango Juice</option>
+                  <option value="2">🍋 Zesty Lemon Juice</option>
+                  <option value="3">🌿 Cool Mint Cooler</option>
+                  <option value="4">🍊 Valencia Orange Juice</option>
+                  <option value="5">🍓 Strawberry Delight</option>
+                  <option value="6">🍇 Royal Grape Juice</option>
+                  <option value="7">🍹 Lychee Mist</option>
+                  <option value="23">⚡ Thunder Energy</option>
+                </select>
+                <button class="btn-primary" onclick="triggerPriceEngine()" style="padding: 6px 14px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb);">
+                  ⚡ Re-Calculate
+                </button>
+              </div>
+            </div>
+
+            <!-- Cascade Step Columns -->
+            <div id="dwmaCascadeGrid" style="display: grid; grid-template-columns: repeat(3, 1fr) 1.2fr; gap: 14px; margin-bottom: 16px;">
+              <!-- Rendered Dynamically via renderDwmaCascadeVisualizer() -->
+            </div>
+
+            <!-- Visual Calculation Pipeline Banner -->
+            <div id="dwmaPipelineFormulaBanner" style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--text-main); flex-wrap: wrap; gap: 8px;">
+              <span id="dwmaFormulaSalesText">Loading live window sales...</span>
+              <span style="color: var(--text-muted);">➔</span>
+              <span id="dwmaFormulaSwText" style="color: var(--accent-cyan);">Weighted Demand S_w: --</span>
+              <span style="color: var(--text-muted);">÷</span>
+              <span id="dwmaFormulaTargetText">Target: --</span>
+              <span style="color: var(--text-muted);">=</span>
+              <span id="dwmaFormulaRdText" style="padding: 3px 8px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan);">Ratio R_d: --</span>
+              <span style="color: var(--text-muted);">➔</span>
+              <span id="dwmaFormulaActionText" style="padding: 3px 8px; border-radius: 6px; font-weight: 900;">Movement: --</span>
+            </div>
+          </div>
+
           <!-- Dedicated Pricing Timing & Settlement Interval Configuration Card -->
           <div class="section-card"
             style="margin-bottom: 24px; border: 1.5px solid #2563eb; background: var(--bg-surface);">
@@ -1096,7 +1208,7 @@
               <div style="display: flex; flex-direction: column; gap: 6px;">
                 <button class="btn-primary" id="btnApplyPricingTiming"
                   style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 10px 16px; font-size: 13px; font-weight: 800; width: 100%;"
-                  onclick="openTimingConfirmationModal()">
+                  onclick="applyPricingTimingDirect()">
                   ⚡ APPLY PRICING TIMING
                 </button>
                 <button class="btn-primary"
@@ -1466,6 +1578,9 @@
                 <button class="btn-primary" id="btnDeploySim"
                   style="width: 100%; padding: 13px; background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);"
                   onclick="deploySimParametersToLivePOS()">🚀 Deploy Parameters to Live POS</button>
+                <button class="btn-primary" id="btnDeployAllSim"
+                  style="width: 100%; padding: 13px; background: linear-gradient(135deg, #2563eb, #1d4ed8); box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);"
+                  onclick="deploySimParametersToAllProducts()">✨ Deploy Changes to ALL Products</button>
                 <button class="btn-primary" id="btnResetLivePrices"
                   style="width: 100%; padding: 13px; background: linear-gradient(135deg, #d97706, #b45309); box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);"
                   onclick="resetLiveMarketPrices()">↺ Reset Live Market Prices (₹25 Base)</button>
@@ -3384,27 +3499,26 @@
       }
     }
 
+    let isSettlingCycle = false;
+
     function onPricingIntervalSelectChanged(val) {
+      // Per specification: Dropdown selection does NOT change "Current Cycle" until "Apply Pricing Timing" is clicked
       const sec = parseInt(val, 10) || 60;
-      const shortLabel = sec === 10 ? '10-Sec' :
-        (sec === 30 ? '30-Sec' :
-          (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`));
-
-      const cycleDisplay = document.getElementById('timingCurrentCycleDisplay');
-      if (cycleDisplay) cycleDisplay.textContent = `${shortLabel} DWMA`;
-
-      // Immediately restart the countdown ticker from the respected interval
-      activePricingTiming = {
-        ...activePricingTiming,
-        intervalSeconds: sec,
-        nextSettlementAt: new Date(Date.now() + sec * 1000).toISOString()
+      const labelMap = {
+        10: '10 Seconds',
+        30: '30 Seconds',
+        60: '1 Minute',
+        120: '2 Minutes',
+        300: '5 Minutes',
+        600: '10 Minutes',
+        900: '15 Minutes'
       };
-
-      if (document.getElementById('cfgSettlementInterval')) {
-        document.getElementById('cfgSettlementInterval').value = sec;
+      const label = labelMap[sec] || `${sec}s`;
+      const btn = document.getElementById('btnApplyPricingTiming');
+      if (btn) {
+        btn.style.boxShadow = '0 0 15px rgba(37, 99, 235, 0.7)';
+        btn.innerHTML = `⚡ APPLY (${label.toUpperCase()})`;
       }
-
-      startSettlementCountdownTicker();
     }
 
     function applyTimingToUI(timing) {
@@ -3414,19 +3528,8 @@
       const intervalChanged = currentSec !== null && currentSec !== Number(sec);
 
       let targetNextSettlementAt = timing.nextSettlementAt;
-      if (!targetNextSettlementAt) {
-        const stored = localStorage.getItem('pubexchange_next_settlement_at');
-        if (!intervalChanged && stored && !isNaN(new Date(stored).getTime()) && new Date(stored).getTime() > Date.now()) {
-          targetNextSettlementAt = stored;
-        } else if (!intervalChanged && activePricingTiming && activePricingTiming.nextSettlementAt) {
-          const existingTarget = new Date(activePricingTiming.nextSettlementAt).getTime();
-          if (!isNaN(existingTarget) && existingTarget > Date.now()) {
-            targetNextSettlementAt = activePricingTiming.nextSettlementAt;
-          }
-        }
-        if (!targetNextSettlementAt || intervalChanged) {
-          targetNextSettlementAt = new Date(Date.now() + sec * 1000).toISOString();
-        }
+      if (!targetNextSettlementAt || intervalChanged) {
+        targetNextSettlementAt = new Date(Date.now() + sec * 1000).toISOString();
       }
 
       localStorage.setItem('pubexchange_settlement_interval', String(sec));
@@ -3452,20 +3555,25 @@
         cycleDisplay.textContent = `${shortLabel} DWMA`;
       }
 
+      const btn = document.getElementById('btnApplyPricingTiming');
+      if (btn) {
+        btn.style.boxShadow = '';
+        btn.innerHTML = `⚡ APPLY PRICING TIMING`;
+      }
+
       if (document.getElementById('cfgSettlementInterval')) {
         document.getElementById('cfgSettlementInterval').value = sec;
       }
 
-      // Only restart interval ticker if interval actually changed or if ticker was never started
-      if (intervalChanged || !settlementCountdownInterval) {
-        startSettlementCountdownTicker();
-      }
+      startSettlementCountdownTicker();
     }
 
-    function openTimingConfirmationModal() {
+    async function applyPricingTimingDirect() {
+      const btn = document.getElementById('btnApplyPricingTiming');
+      if (btn) setButtonLoading(btn, true, 'Applying Timing & Evaluating...');
+
       const sel = document.getElementById('pricingIntervalSelect');
       const selectedSec = parseInt(sel ? sel.value : '60', 10);
-      const currentSec = activePricingTiming.intervalSeconds || 60;
 
       const labelMap = {
         10: '10 Seconds',
@@ -3476,55 +3584,43 @@
         600: '10 Minutes',
         900: '15 Minutes'
       };
-
-      const curEl = document.getElementById('modalCurrentTimingText');
-      if (curEl) curEl.textContent = labelMap[currentSec] || `${currentSec} Seconds`;
-      const newEl = document.getElementById('modalNewTimingText');
-      if (newEl) newEl.textContent = labelMap[selectedSec] || `${selectedSec} Seconds`;
-
-      const modal = document.getElementById('confirmTimingModal');
-      if (modal) modal.style.display = 'flex';
-    }
-
-    function closeTimingConfirmationModal() {
-      const modal = document.getElementById('confirmTimingModal');
-      if (modal) modal.style.display = 'none';
-    }
-
-    async function executeApplyPricingTiming() {
-      const btn = document.getElementById('btnConfirmTimingExecute');
-      if (btn) setButtonLoading(btn, true, 'Applying...');
-
-      const sel = document.getElementById('pricingIntervalSelect');
-      const selectedSec = parseInt(sel ? sel.value : '60', 10);
+      const label = labelMap[selectedSec] || `${selectedSec} Seconds`;
 
       try {
-        const res = await apiFetch('/admin/pricing/timing', {
+        const res = await apiFetch('/pricing/timing', {
           method: 'PUT',
           body: JSON.stringify({ intervalSeconds: selectedSec })
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          const newTarget = data.nextSettlementAt || new Date(Date.now() + selectedSec * 1000).toISOString();
-          localStorage.setItem('pubexchange_settlement_interval', String(selectedSec));
-          localStorage.setItem('pubexchange_next_settlement_at', newTarget);
-          activePricingTiming = {
-            ...data,
-            intervalSeconds: selectedSec,
-            nextSettlementAt: newTarget
-          };
-          applyTimingToUI(activePricingTiming);
-          startSettlementCountdownTicker();
-          closeTimingConfirmationModal();
-          showToast(`✓ Pricing cycle updated to ${data.label}. Countdown restarted to ${selectedSec >= 60 ? (selectedSec / 60) + ' min' : selectedSec + ' sec'}.`, 'success');
-          loadPricingConfiguration();
-          loadPricingAuditLogs();
-        } else {
-          const err = await res.json().catch(() => ({}));
-          showToast(err.error || 'Failed to update pricing timing', 'error');
-          if (sel) sel.value = String(activePricingTiming.intervalSeconds || 60);
-        }
+        const newTarget = new Date(Date.now() + selectedSec * 1000).toISOString();
+        localStorage.setItem('pubexchange_settlement_interval', String(selectedSec));
+        localStorage.setItem('pubexchange_next_settlement_at', newTarget);
+
+        activePricingTiming = {
+          intervalSeconds: selectedSec,
+          intervalMinutes: selectedSec / 60.0,
+          label: label,
+          nextSettlementAt: newTarget
+        };
+
+        // NOW update the "Current Cycle" display after clicking the apply button
+        applyTimingToUI(activePricingTiming);
+        startSettlementCountdownTicker();
+
+        // Broadcast timing change to customer POS and Wall LED Display
+        broadcastEvent('PRICING_TIMING_CHANGED', {
+          intervalSeconds: selectedSec,
+          settlementIntervalSeconds: selectedSec,
+          label: label,
+          nextSettlementAt: newTarget
+        });
+
+        // Trigger dynamic settlement evaluation to update juice prices according to the new timing
+        await triggerPriceEngine({ silent: true });
+
+        showToast(`⚡ DWMA Settlement Cycle updated to ${label}! Juice prices re-evaluated and synchronized.`, 'success');
+        loadPricingConfiguration();
+        loadPricingAuditLogs();
       } catch (e) {
         showToast('Network error while updating pricing timing', 'error');
       } finally {
@@ -3532,13 +3628,39 @@
       }
     }
 
+    async function triggerPriceEngine(options = {}) {
+      const isSilent = options && options.silent === true;
+      const btn = document.getElementById('btnRunPriceEngine');
+      if (btn && !isSilent) setButtonLoading(btn, true, '⚡ Running Settlement Cycle...');
+
+      try {
+        const res = await apiFetch('/pricing/evaluate', { method: 'POST' });
+        if (res.ok) {
+          const cycleResult = await res.json();
+          if (!isSilent) {
+            showToast(`⚡ Dynamic DWMA Settlement Executed! Evaluated ${cycleResult.evaluatedProductsCount || 8} products.`, 'success');
+          }
+          broadcastEvent('PRODUCT_PRICE_UPDATE', { reason: 'SETTLEMENT_CYCLE_RUN', timestamp: Date.now() });
+          broadcastEvent('REFRESH_PRODUCTS', { reason: 'SETTLEMENT_CYCLE_RUN', timestamp: Date.now() });
+          await loadLivePricingProducts();
+          await refreshDashboard({ manual: false });
+          await loadPricingAuditLogs();
+        } else {
+          if (!isSilent) showToast('Failed to execute settlement cycle', 'danger');
+        }
+      } catch (err) {
+        if (!isSilent) showToast(`Settlement error: ${err.message}`, 'danger');
+      } finally {
+        if (btn && !isSilent) setButtonLoading(btn, false);
+      }
+    }
+
     async function resetPricingTimingToDefault() {
       const sel = document.getElementById('pricingIntervalSelect');
       if (sel) {
         sel.value = '60';
-        onPricingIntervalSelectChanged('60');
       }
-      openTimingConfirmationModal();
+      await applyPricingTimingDirect();
     }
 
     function startSettlementCountdownTicker() {
@@ -3561,12 +3683,17 @@
             if (diffMs > 0) {
               remainingSec = Math.min(intervalSec, Math.ceil(diffMs / 1000));
             } else {
+              // Settlement cycle countdown completed -> Trigger dynamic juice pricing evaluation
               const newTarget = new Date(now + intervalSec * 1000).toISOString();
               localStorage.setItem('pubexchange_next_settlement_at', newTarget);
               if (activePricingTiming) activePricingTiming.nextSettlementAt = newTarget;
               remainingSec = intervalSec;
-              if (diffMs < -2000 && diffMs > -5000) {
-                loadPricingTiming();
+
+              if (!isSettlingCycle) {
+                isSettlingCycle = true;
+                triggerPriceEngine({ silent: true }).finally(() => {
+                  setTimeout(() => { isSettlingCycle = false; }, 3000);
+                });
               }
             }
           } else {
@@ -3916,7 +4043,10 @@
             </td>
             <td>${overrideControls}</td>
             <td>
-              <button class="btn-primary" style="padding: 5px 12px; font-size: 12px; background: linear-gradient(135deg, #2563eb, #1d4ed8);" onclick="editProductPricing(${pid})">✏️ Edit Details</button>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb);" onclick="openProductTradingDrawer(${pid})" title="Open granular trading instrument view">🔍 Inspect</button>
+                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main);" onclick="editProductPricing(${pid})" title="Edit basic details">✏️</button>
+              </div>
             </td>
           </tr>
         `;
@@ -4750,83 +4880,8 @@
       if (timeline) {
         timeline.innerHTML = steps.join('');
       }
-
-      // Broadcast Simulation Controls update to customer viewing pages (POS & LED Screen)
-      const selFlavour = document.getElementById('simFlavour');
-      const selectedId = parseInt(selFlavour?.value || '1', 10);
-      const simUpdatePayload = {
-        productId: selectedId,
-        flavourName: req.flavourName || (selFlavour ? selFlavour.options[selFlavour.selectedIndex]?.text?.replace(/^[^\w\s]+/, '')?.trim() : 'Fresh Mango Juice'),
-        startPrice: Number(startPrice),
-        initialPrice: Number(startPrice),
-        finalPrice: Number(currPrice),
-        currentPrice: Number(currPrice),
-        minPrice: parseFloat(document.getElementById('simMinPrice')?.value) || 18,
-        maxPrice: parseFloat(document.getElementById('simMaxPrice')?.value) || 35,
-        cupsPerStep: parseInt(document.getElementById('simCupsPerStep')?.value) || 4,
-        volume: parseInt(document.getElementById('simVolume')?.value) || 20000,
-        timestamp: Date.now()
-      };
-      broadcastEvent('SIMULATION_UPDATED', simUpdatePayload);
-      try {
-        localStorage.setItem('pubexchange_sim_params', JSON.stringify(simUpdatePayload));
-      } catch (e) {}
-      if (shouldAutoDeploy) {
-        autoDeploySimulationToLivePOS();
-      }
-    }
-
-    async function autoDeploySimulationToLivePOS() {
-      const sel = document.getElementById('simFlavour');
-      const selectedId = parseInt(sel?.value || '1', 10);
-      const selectedText = sel ? (sel.options[sel.selectedIndex]?.text?.replace(/^[^\w\s]+/, '')?.trim() || sel.value) : 'Fresh Mango Juice';
-
-      const startPrice = parseFloat(document.getElementById('simStartPrice').value) || 25;
-      const minPrice = parseFloat(document.getElementById('simMinPrice').value) || 18;
-      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 35;
-      const cupsPerStep = parseInt(document.getElementById('simCupsPerStep').value) || 4;
-      const targetPrice = window.lastSimulatedFinalPrice !== undefined ? parseFloat(window.lastSimulatedFinalPrice) : startPrice;
-
-      try {
-        const prodsRes = await apiFetch('/pos/products');
-        if (!prodsRes.ok) return;
-
-        const products = await prodsRes.json();
-        const match = products.find(p => p.id === selectedId) || products.find(p =>
-          p.name.toLowerCase().includes(selectedText.toLowerCase()) ||
-          selectedText.toLowerCase().includes(p.name.toLowerCase()) ||
-          (p.flavour && selectedText.toLowerCase().includes(p.flavour.toLowerCase()))
-        ) || products[0];
-
-        if (!match) return;
-
-        const deployPayload = {
-          productId: match.id,
-          price: targetPrice,
-          currentPrice: targetPrice,
-          defaultPrice: startPrice,
-          minPrice: minPrice,
-          maxPrice: maxPrice,
-          targetSalesPer1Minute: Math.max(0.05, cupsPerStep / 2)
-        };
-
-        const deployRes = await apiFetch('/pricing/deploy', {
-          method: 'POST',
-          body: JSON.stringify(deployPayload)
-        });
-
-        if (deployRes.ok) {
-          const updatedProd = await deployRes.json();
-          broadcastEvent('PRODUCT_PRICE_UPDATE', { 
-            productId: updatedProd.productId || match.id, 
-            flavourName: updatedProd.productName || match.name, 
-            startPrice, minPrice, maxPrice, 
-            currentPrice: targetPrice, 
-            finalPrice: targetPrice 
-          });
-          broadcastEvent('REFRESH_PRODUCTS', { reason: 'SIMULATION_AUTO_DEPLOY' });
-        }
-      } catch (e) {}
+      // Simulation is strictly isolated to the sandbox timeline view
+      console.log(`[SIMULATOR] Completed isolated sandbox simulation for ${req.flavourName}. Final simulated price: ₹${currPrice.toFixed(2)}.`);
     }
 
     async function deploySimParametersToLivePOS() {
@@ -4871,8 +4926,8 @@
         // 2. Execute ONE Atomic Deployment Request in Spring Boot @Transactional boundary
         const deployPayload = {
           productId: match.id,
-          price: targetPrice,
-          currentPrice: targetPrice,
+          price: startPrice,
+          currentPrice: startPrice,
           defaultPrice: startPrice,
           minPrice: minPrice,
           maxPrice: maxPrice,
@@ -4897,17 +4952,110 @@
         if (verifyRes.ok) {
           const vProducts = await verifyRes.json();
           const vProd = vProducts.find(p => p.id === match.id);
-          if (vProd && Number(vProd.currentCupPrice) === Number(targetPrice)) {
-            console.log(`[LIVE SYNC VERIFIED] PostgreSQL price ₹${vProd.currentCupPrice} matches deployment price ₹${targetPrice}`);
+          if (vProd && Number(vProd.currentCupPrice) === Number(startPrice)) {
+            console.log(`[LIVE SYNC VERIFIED] PostgreSQL price ₹${vProd.currentCupPrice} matches base price ₹${startPrice}`);
           }
         }
 
         // ONLY IF ATOMIC TRANSACTION COMMITTED SUCCESSFULLY IN POSTGRESQL:
-        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId: updatedProd.productId || updatedProd.id, flavourName: updatedProd.productName || updatedProd.name, startPrice, minPrice, maxPrice, currentPrice: targetPrice, finalPrice: targetPrice });
+        broadcastEvent('PRODUCT_PRICE_UPDATE', { 
+          productId: updatedProd.productId || updatedProd.id, 
+          flavourName: updatedProd.productName || updatedProd.name, 
+          startPrice, 
+          minPrice, 
+          maxPrice, 
+          currentPrice: startPrice, 
+          finalPrice: startPrice 
+        });
         await refreshDashboard();
-        showToast(`🚀 Successfully Deployed to Live POS!\n"${updatedProd.productName || updatedProd.name}"\n₹${updatedProd.previousPrice || match.currentCupPrice || startPrice} → ₹${updatedProd.currentPrice || targetPrice} (Version ${updatedProd.priceVersion})`, 'success');
+        showToast(`🚀 Successfully Deployed to Live POS!\n"${updatedProd.productName || updatedProd.name}"\nStarted at Base Price ₹${startPrice.toFixed(2)} (Floor: ₹${minPrice.toFixed(2)}, Ceiling: ₹${maxPrice.toFixed(2)})`, 'success');
       } catch (err) {
         showToast(`🔴 Deployment Failed: ${err.message}`, 'danger');
+      } finally {
+        if (btn) setButtonLoading(btn, false);
+      }
+    }
+
+    async function deploySimParametersToAllProducts() {
+      saveSimulatorParams();
+      const btn = document.getElementById('btnDeployAllSim');
+      if (btn) setButtonLoading(btn, true, 'Deploying ALL Products...');
+
+      const startPrice = parseFloat(document.getElementById('simStartPrice').value) || 25;
+      const minPrice = parseFloat(document.getElementById('simMinPrice').value) || 18;
+      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 35;
+      const cupsPerStep = parseInt(document.getElementById('simCupsPerStep').value) || 4;
+
+      try {
+        // 1. Fetch live product list from backend
+        const prodsRes = await apiFetch('/pos/products');
+        if (!prodsRes.ok) {
+          throw new Error(`Could not connect to backend server on port 8088 (HTTP ${prodsRes.status})`);
+        }
+
+        const products = await prodsRes.json();
+        if (!products || !Array.isArray(products) || products.length === 0) {
+          throw new Error('No active products found in database.');
+        }
+
+        console.log(`[DEPLOY ALL] Deploying changes to all ${products.length} products with base start price ₹${startPrice}`);
+
+        // 2. Deploy to each product via backend atomic deploy API (initiating at base startPrice)
+        let successCount = 0;
+        for (const prod of products) {
+          try {
+            const deployPayload = {
+              productId: prod.id,
+              price: startPrice,
+              currentPrice: startPrice,
+              defaultPrice: startPrice,
+              minPrice: minPrice,
+              maxPrice: maxPrice,
+              targetSalesPer1Minute: Math.max(0.05, cupsPerStep / 2)
+            };
+
+            const deployRes = await apiFetch('/pricing/deploy', {
+              method: 'POST',
+              body: JSON.stringify(deployPayload)
+            });
+
+            if (deployRes.ok) {
+              successCount++;
+            }
+          } catch (itemErr) {
+            console.warn(`[DEPLOY ALL] Failed for product ${prod.id}:`, itemErr);
+          }
+        }
+
+        // 3. Update global pricing configuration defaults in backend
+        try {
+          await apiFetch('/pricing/config', {
+            method: 'PUT',
+            body: JSON.stringify({
+              defaultCupPrice: startPrice,
+              minCupPrice: minPrice,
+              maxCupPrice: maxPrice
+            })
+          });
+        } catch (cfgErr) {
+          console.warn('[DEPLOY ALL] Global config update error:', cfgErr);
+        }
+
+        // 4. Broadcast updates across POS & LED boards
+        broadcastEvent('REFRESH_PRODUCTS', { 
+          reason: 'DEPLOY_ALL_PRODUCTS', 
+          currentPrice: startPrice, 
+          startPrice, 
+          minPrice, 
+          maxPrice,
+          timestamp: Date.now() 
+        });
+
+        // 5. Update local storage & dashboard
+        await refreshDashboard();
+        showToast(`✨ Successfully Deployed Changes to ALL ${successCount} Products!\nAll beverage prices initialized to Base Price ₹${startPrice.toFixed(2)} (Floor: ₹${minPrice.toFixed(2)}, Ceiling: ₹${maxPrice.toFixed(2)})`, 'success');
+      } catch (err) {
+        showToast(`🔴 Failed to Deploy All Products: ${err.message}`, 'danger');
       } finally {
         if (btn) setButtonLoading(btn, false);
       }
@@ -5283,9 +5431,401 @@
       }
     }
 
+    // ═══════ LIVE DWMA CASCADE VISUALIZER LOGIC ═══════
+    function renderDwmaCascadeVisualizer() {
+      const grid = document.getElementById('dwmaCascadeGrid');
+      const select = document.getElementById('dwmaInspectProductSelect');
+      if (!grid || !select) return;
+
+      const selectedId = parseInt(select.value) || 1;
+      const prod = liveProductsCache.find(p => (p.id === selectedId || p.productId === selectedId)) || liveProductsCache[0];
+      if (!prod) return;
+
+      const pid = prod.productId || prod.id || selectedId;
+      const name = prod.name || prod.productName || 'Fresh Juice';
+      const icon = getFruitIconAdmin(prod);
+      const currentPrice = Number(prod.currentCupPrice || prod.currentPrice || 25);
+      const basePrice = Number(prod.defaultCupPrice || prod.basePrice || 25);
+      const minPrice = Number(prod.minCupPrice || 18);
+      const maxPrice = Number(prod.maxCupPrice || 35);
+      const targetSales = Number(prod.targetSalesPer1Minute || prod.targetSales || 0.40);
+
+      // Simulation / telemetry readings for windows W0, W1, W2
+      const w0Raw = prod.rawW0 !== undefined ? Number(prod.rawW0) : (Math.floor(Math.random() * 3));
+      const w1Raw = prod.rawW1 !== undefined ? Number(prod.rawW1) : 1;
+      const w2Raw = prod.rawW2 !== undefined ? Number(prod.rawW2) : 0;
+
+      const w0Weighted = (w0Raw * 1.00).toFixed(2);
+      const w1Weighted = (w1Raw * 0.50).toFixed(2);
+      const w2Weighted = (w2Raw * 0.25).toFixed(2);
+      const sw = (Number(w0Weighted) + Number(w1Weighted) + Number(w2Weighted)).toFixed(2);
+      
+      const intervalSec = activePricingTiming.intervalSeconds || 60;
+      const effectiveTarget = Number((targetSales * (intervalSec / 60.0)).toFixed(2)) || 0.40;
+      const rd = effectiveTarget > 0 ? Number((sw / effectiveTarget).toFixed(2)) : 1.00;
+
+      let movementText = '⇄ STABLE (₹0.00)';
+      let movementColor = '#0284c7';
+      let movementBg = 'rgba(2, 132, 199, 0.15)';
+      let nextPrice = currentPrice;
+
+      if (rd >= 1.10) {
+        movementText = '▲ SURGE (+₹1.00)';
+        movementColor = '#10b981';
+        movementBg = 'rgba(16, 185, 129, 0.2)';
+        nextPrice = Math.min(maxPrice, currentPrice + 1.0);
+      } else if (rd <= 0.70) {
+        movementText = '▼ DECAY (-₹1.00)';
+        movementColor = '#f43f5e';
+        movementBg = 'rgba(244, 63, 94, 0.2)';
+        nextPrice = Math.max(minPrice, currentPrice - 1.0);
+      }
+
+      grid.innerHTML = `
+        <!-- Window 0 Card -->
+        <div style="background: var(--bg-surface); border: 1.5px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 14px; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan); text-transform: uppercase;">WINDOW W₀ (ACTIVE)</span>
+            <span style="font-size: 10px; font-weight: 800; background: rgba(56,189,248,0.15); color: var(--accent-cyan); padding: 1px 6px; border-radius: 4px;">WEIGHT 1.00</span>
+          </div>
+          <div style="font-size: 22px; font-weight: 900; font-family: var(--font-mono); color: var(--text-main); line-height: 1.1;">
+            ${w0Raw} <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">cups</span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono);">
+            Score: <strong>${w0Weighted}</strong>
+          </div>
+        </div>
+
+        <!-- Window 1 Card -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">WINDOW W₁ (PREVIOUS)</span>
+            <span style="font-size: 10px; font-weight: 800; background: var(--bg-subtle); color: var(--text-muted); padding: 1px 6px; border-radius: 4px;">WEIGHT 0.50</span>
+          </div>
+          <div style="font-size: 22px; font-weight: 900; font-family: var(--font-mono); color: var(--text-main); line-height: 1.1;">
+            ${w1Raw} <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">cups</span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono);">
+            Score: <strong>${w1Weighted}</strong>
+          </div>
+        </div>
+
+        <!-- Window 2 Card -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">WINDOW W₂ (OLDER)</span>
+            <span style="font-size: 10px; font-weight: 800; background: var(--bg-subtle); color: var(--text-muted); padding: 1px 6px; border-radius: 4px;">WEIGHT 0.25</span>
+          </div>
+          <div style="font-size: 22px; font-weight: 900; font-family: var(--font-mono); color: var(--text-main); line-height: 1.1;">
+            ${w2Raw} <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">cups</span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono);">
+            Score: <strong>${w2Weighted}</strong>
+          </div>
+        </div>
+
+        <!-- Decision Summary Card -->
+        <div style="background: var(--bg-secondary); border: 1.5px solid ${movementColor}; border-radius: 10px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; font-weight: 800; color: var(--text-muted);">SETTLEMENT STEP</span>
+            <span style="font-size: 11px; font-weight: 900; color: ${movementColor}; background: ${movementBg}; padding: 2px 7px; border-radius: 4px;">${movementText}</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 6px;">
+            <span style="font-size: 20px; font-weight: 900; font-family: var(--font-mono); color: var(--text-main);">₹${currentPrice.toFixed(2)}</span>
+            <span style="font-size: 13px; color: var(--text-muted);">➔</span>
+            <span style="font-size: 20px; font-weight: 900; font-family: var(--font-mono); color: ${movementColor};">₹${nextPrice.toFixed(2)}</span>
+          </div>
+        </div>
+      `;
+
+      // Update Formula Text Banner
+      const salesEl = document.getElementById('dwmaFormulaSalesText');
+      const swEl = document.getElementById('dwmaFormulaSwText');
+      const targetEl = document.getElementById('dwmaFormulaTargetText');
+      const rdEl = document.getElementById('dwmaFormulaRdText');
+      const actionEl = document.getElementById('dwmaFormulaActionText');
+
+      if (salesEl) salesEl.innerHTML = `${icon} ${name}: [<strong>${w0Raw}</strong>×1.0 + <strong>${w1Raw}</strong>×0.5 + <strong>${w2Raw}</strong>×0.25]`;
+      if (swEl) swEl.innerHTML = `Weighted S_w: <strong>${sw}</strong>`;
+      if (targetEl) targetEl.innerHTML = `Target: <strong>${effectiveTarget}</strong> (${targetSales}/min)`;
+      if (rdEl) {
+        rdEl.innerHTML = `Ratio R_d: <strong>${rd}x</strong>`;
+        rdEl.style.color = movementColor;
+      }
+      if (actionEl) {
+        actionEl.innerHTML = movementText;
+        actionEl.style.color = movementColor;
+        actionEl.style.background = movementBg;
+      }
+    }
+
+    // ═══════ PRODUCT TRADING DRAWER FUNCTIONS ═══════
+    let currentDrawerProductId = null;
+
+    function openProductTradingDrawer(productId) {
+      const prod = liveProductsCache.find(p => (p.id === productId || p.productId === productId));
+      if (!prod) return;
+
+      currentDrawerProductId = productId;
+      const pid = prod.productId || prod.id;
+      const icon = getFruitIconAdmin(prod);
+      const name = prod.name || prod.productName || 'Beverage Instrument';
+      const livePrice = Number(prod.currentCupPrice || prod.currentPrice || 25).toFixed(2);
+      const basePrice = Number(prod.defaultCupPrice || prod.basePrice || 25).toFixed(2);
+      const minPrice = Number(prod.minCupPrice || 18).toFixed(2);
+      const maxPrice = Number(prod.maxCupPrice || 35).toFixed(2);
+      const target = Number(prod.targetSalesPer1Minute || prod.targetSales || 0.40).toFixed(2);
+      const isOverride = (prod.pricingMode === 'MANUAL_OVERRIDE');
+
+      document.getElementById('drawerProductIcon').textContent = icon;
+      document.getElementById('drawerProductName').textContent = name;
+      document.getElementById('drawerProductFlavour').textContent = `${(prod.flavour || 'JUICE').toUpperCase()} • INSTRUMENT #${pid}`;
+      document.getElementById('drawerLivePrice').textContent = `₹${livePrice}`;
+      document.getElementById('drawerPricingMode').innerHTML = isOverride 
+        ? '<span style="color: #d97706;">🔒 MANUAL OVERRIDE</span>' 
+        : '<span style="color: #2563eb;">⚡ DYNAMIC DWMA</span>';
+      
+      document.getElementById('drawerW0Val').textContent = `${prod.rawW0 || 0} cups`;
+      document.getElementById('drawerW1Val').textContent = `${prod.rawW1 || 0} cups`;
+      document.getElementById('drawerW2Val').textContent = `${prod.rawW2 || 0} cups`;
+
+      document.getElementById('drawerInputBase').value = basePrice;
+      document.getElementById('drawerInputTarget').value = target;
+      document.getElementById('drawerInputFloor').value = minPrice;
+      document.getElementById('drawerInputCeil').value = maxPrice;
+      document.getElementById('drawerInputOverride').value = Math.round(Number(livePrice));
+
+      const overlay = document.getElementById('productTradingDrawerOverlay');
+      if (overlay) overlay.classList.add('active');
+    }
+
+    function closeProductTradingDrawer() {
+      const overlay = document.getElementById('productTradingDrawerOverlay');
+      if (overlay) overlay.classList.remove('active');
+      currentDrawerProductId = null;
+    }
+
+    async function saveDrawerProductPricing() {
+      if (!currentDrawerProductId) return;
+      const basePrice = parseFloat(document.getElementById('drawerInputBase').value);
+      const target = parseFloat(document.getElementById('drawerInputTarget').value);
+      const minPrice = parseFloat(document.getElementById('drawerInputFloor').value);
+      const maxPrice = parseFloat(document.getElementById('drawerInputCeil').value);
+
+      if (isNaN(basePrice) || isNaN(target) || isNaN(minPrice) || isNaN(maxPrice)) {
+        showToast('Please enter valid numeric parameters', 'warning');
+        return;
+      }
+      if (minPrice >= maxPrice) {
+        showToast('Ceiling price must be greater than floor price', 'warning');
+        return;
+      }
+
+      try {
+        const payload = {
+          productId: currentDrawerProductId,
+          defaultPrice: basePrice,
+          startPrice: basePrice,
+          minPrice: minPrice,
+          maxPrice: maxPrice,
+          targetSales: target,
+          targetSalesPer1Minute: target
+        };
+
+        const res = await apiFetch(`/admin/pricing/products/${currentDrawerProductId}/config`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast(`✅ Instrument #${currentDrawerProductId} Parameters Saved to PostgreSQL!`, 'success');
+          closeProductTradingDrawer();
+          loadLivePricingProducts();
+          if (pubExchangeChannel) pubExchangeChannel.postMessage({ type: 'REFRESH_PRODUCTS' });
+        } else {
+          throw new Error('Server returned ' + res.status);
+        }
+      } catch (err) {
+        showToast(`🔴 Failed to save instrument parameters: ${err.message}`, 'danger');
+      }
+    }
+
+    function applyDrawerOverride() {
+      if (!currentDrawerProductId) return;
+      const input = document.getElementById('drawerInputOverride');
+      if (input && input.value) {
+        const targetInput = document.getElementById(`quickPriceInput_${currentDrawerProductId}`);
+        if (targetInput) targetInput.value = input.value;
+        applyManualPriceOverride(currentDrawerProductId);
+        closeProductTradingDrawer();
+      }
+    }
+
+    function releaseDrawerOverride() {
+      if (!currentDrawerProductId) return;
+      releaseManualPriceOverride(currentDrawerProductId);
+      closeProductTradingDrawer();
+    }
+
+    // ═══════ TWO-STAGE SAFE ACTION MODAL ═══════
+    let safeActionCallback = null;
+
+    function openSafeActionModal(title, message, icon, confirmBtnText, onConfirm) {
+      const modal = document.getElementById('safeActionModal');
+      if (!modal) return;
+      document.getElementById('safeModalIcon').textContent = icon || '🚨';
+      document.getElementById('safeModalTitle').textContent = title || 'CONFIRM ACTION';
+      document.getElementById('safeModalMessage').textContent = message || 'Are you sure you want to proceed?';
+      
+      const confirmBtn = document.getElementById('safeModalConfirmBtn');
+      if (confirmBtn) {
+        confirmBtn.textContent = confirmBtnText || 'Confirm Action';
+        confirmBtn.onclick = () => {
+          closeSafeActionModal();
+          if (typeof onConfirm === 'function') onConfirm();
+        };
+      }
+      modal.style.display = 'flex';
+    }
+
+    function closeSafeActionModal() {
+      const modal = document.getElementById('safeActionModal');
+      if (modal) modal.style.display = 'none';
+      safeActionCallback = null;
+    }
+
+    function openCrashConfirmationModal() {
+      openSafeActionModal(
+        'TRIGGER EMERGENCY MARKET CRASH (3 MINS)',
+        'This will immediately force all live beverage prices to drop to the absolute floor limit (₹18.00) across all connected POS terminals and wall LED displays for 180 seconds. WebSockets will sound live sirens.',
+        '🚨',
+        'YES, CRASH THE MARKET',
+        triggerAdminMarketCrash
+      );
+    }
+
+    // Hook renderDwmaCascadeVisualizer into live pricing loads
+    const origRenderLivePricingTable = renderLivePricingTable;
+    renderLivePricingTable = function() {
+      origRenderLivePricingTable();
+      renderDwmaCascadeVisualizer();
+    };
+
     const savedThemeAdmin = localStorage.getItem('pubexchange_theme_mode');
     setThemeMode(savedThemeAdmin !== 'light'); // Default to obsidian dark
   </script>
+
+  <!-- ═══════ SLIDE-OUT PRODUCT TRADING DRAWER ═══════ -->
+  <div class="drawer-overlay" id="productTradingDrawerOverlay" onclick="closeProductTradingDrawer()">
+    <div class="trading-drawer" id="productTradingDrawer" onclick="event.stopPropagation()">
+      <div class="drawer-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span id="drawerProductIcon" style="font-size: 28px;">🍹</span>
+          <div>
+            <div id="drawerProductName" style="font-size: 18px; font-weight: 900; color: var(--text-main);">Beverage Instrument</div>
+            <div id="drawerProductFlavour" style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">FLAVOUR • INSTRUMENT #1</div>
+          </div>
+        </div>
+        <button onclick="closeProductTradingDrawer()" style="background: none; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 6px;">✕</button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Live Trading Snapshot Card -->
+        <div style="background: var(--bg-secondary); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Live Price</div>
+            <div id="drawerLivePrice" style="font-size: 24px; font-weight: 900; font-family: var(--font-mono); color: var(--accent-cyan);">₹25.00</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pricing Mode</div>
+            <div id="drawerPricingMode" style="font-size: 13px; font-weight: 800; margin-top: 4px;">⚡ DYNAMIC</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Demand Ratio</div>
+            <div id="drawerDemandRatio" style="font-size: 20px; font-weight: 900; font-family: var(--font-mono); color: #10b981;">1.00x</div>
+          </div>
+        </div>
+
+        <!-- DWMA Multi-Window Stats for this Instrument -->
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 14px;">
+          <div style="font-size: 12px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">DWMA Volume Windows</div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
+            <div style="background: var(--bg-surface); padding: 8px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+              <div style="font-size: 10px; color: var(--text-muted);">W₀ (Current)</div>
+              <div id="drawerW0Val" style="font-size: 16px; font-weight: 800; font-family: var(--font-mono);">0 cups</div>
+            </div>
+            <div style="background: var(--bg-surface); padding: 8px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+              <div style="font-size: 10px; color: var(--text-muted);">W₁ (Prev)</div>
+              <div id="drawerW1Val" style="font-size: 16px; font-weight: 800; font-family: var(--font-mono);">0 cups</div>
+            </div>
+            <div style="background: var(--bg-surface); padding: 8px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+              <div style="font-size: 10px; color: var(--text-muted);">W₂ (Older)</div>
+              <div id="drawerW2Val" style="font-size: 16px; font-weight: 800; font-family: var(--font-mono);">0 cups</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Circuit Breakers Configuration Form -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+          <div style="font-size: 12px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">⚙️ Instrument Circuit Breakers</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">BASE RATE (₹)</label>
+              <input id="drawerInputBase" type="number" step="0.5" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-weight: 800; font-family: var(--font-mono);">
+            </div>
+            <div>
+              <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">TARGET SALES / MIN</label>
+              <input id="drawerInputTarget" type="number" step="0.05" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-weight: 800; font-family: var(--font-mono);">
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="display: block; font-size: 11px; font-weight: 700; color: #f43f5e; margin-bottom: 4px;">FLOOR LIMIT (MIN ₹)</label>
+              <input id="drawerInputFloor" type="number" step="0.5" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-weight: 800; font-family: var(--font-mono);">
+            </div>
+            <div>
+              <label style="display: block; font-size: 11px; font-weight: 700; color: #10b981; margin-bottom: 4px;">CEILING LIMIT (MAX ₹)</label>
+              <input id="drawerInputCeil" type="number" step="0.5" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-weight: 800; font-family: var(--font-mono);">
+            </div>
+          </div>
+        </div>
+
+        <!-- Manual Override Actions -->
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 14px;">
+          <div style="font-size: 12px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">🔒 Manual Price Lock Override</div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input id="drawerInputOverride" type="number" step="0.5" placeholder="Set price ₹" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-weight: 800; font-family: var(--font-mono);">
+            <button class="btn-primary" style="background: #d97706; padding: 8px 16px; font-size: 12px; font-weight: 800;" onclick="applyDrawerOverride()">🔒 Lock Price</button>
+            <button class="btn-primary" style="background: #2563eb; padding: 8px 14px; font-size: 12px; font-weight: 800;" onclick="releaseDrawerOverride()">🔓 Release</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-footer">
+        <button class="btn-primary" style="flex: 1; background: linear-gradient(135deg, #059669, #047857); padding: 12px; font-weight: 900;" onclick="saveDrawerProductPricing()">💾 Save Parameters to DB</button>
+        <button class="btn-primary" style="background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-muted); padding: 12px 18px;" onclick="closeProductTradingDrawer()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ TWO-STAGE SAFE DESTRUCTIVE ACTION MODAL ═══════ -->
+  <div class="modal-overlay" id="safeActionModal" style="display: none;">
+    <div style="background: var(--bg-surface); border: 2px solid #ef4444; border-radius: 16px; width: 460px; max-width: 90vw; padding: 26px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;">
+      <div id="safeModalIcon" style="font-size: 44px; margin-bottom: 12px;">🚨</div>
+      <h2 id="safeModalTitle" style="font-size: 20px; font-weight: 900; color: #ef4444; margin-bottom: 8px;">CONFIRM CRITICAL ACTION</h2>
+      <p id="safeModalMessage" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 22px;">
+        This action will affect the live trading floor and modify PostgreSQL state.
+      </p>
+      <div style="display: flex; gap: 12px;">
+        <button onclick="closeSafeActionModal()" style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-weight: 800; font-size: 14px; cursor: pointer;">
+          Cancel
+        </button>
+        <button id="safeModalConfirmBtn" style="flex: 1.3; padding: 12px; border-radius: 10px; border: none; background: linear-gradient(135deg, #dc2626, #991b1b); color: #ffffff; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);">
+          Confirm Action
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

@@ -550,19 +550,25 @@
       border: 1px solid var(--border-color);
     }
 
-    /* REAL PRICE HISTORY GRAPH CONTAINER — Premium fintech sparkline */
+    /* REAL PRICE HISTORY GRAPH CONTAINER — Premium enlarged fintech sparkline */
     .chart-container-wrapper {
       position: relative;
       width: 100%;
-      height: 64px;
-      background: linear-gradient(165deg, var(--bg-secondary) 0%, var(--bg-subtle) 100%);
-      border: 1px solid var(--border-color);
+      height: 125px;
+      min-height: 110px;
+      background: linear-gradient(165deg, rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1.5px solid var(--border-color);
       border-radius: 8px;
       padding: 2px;
-      margin: 3px 0;
+      margin: 4px 0;
       overflow: hidden;
       transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25), 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
+    body[data-theme="light"] .chart-container-wrapper,
+    html[data-theme="light"] .chart-container-wrapper {
+      background: linear-gradient(165deg, rgba(241, 245, 249, 0.9) 0%, rgba(226, 232, 240, 0.98) 100%);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
     }
     .chart-container-wrapper:hover {
       border-color: var(--border-strong);
@@ -2101,7 +2107,7 @@
       // Make sure canvas display buffer accurately matches container dimensions
       const parent = canvas.parentElement;
       const width = parent && parent.clientWidth > 0 ? parent.clientWidth : (canvas.clientWidth > 0 ? canvas.clientWidth : 240);
-      const height = parent && parent.clientHeight > 0 ? parent.clientHeight : (canvas.clientHeight > 0 ? canvas.clientHeight : 72);
+      const height = parent && parent.clientHeight > 0 ? parent.clientHeight : (canvas.clientHeight > 0 ? canvas.clientHeight : 125);
       
       const dpr = window.devicePixelRatio || 1;
       canvas.width = Math.round(width * dpr);
@@ -2900,6 +2906,21 @@
           connectWebSocket();
         }, backoffDelay);
       }
+    }
+
+    const ledBroadcastChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
+    if (ledBroadcastChannel) {
+      ledBroadcastChannel.onmessage = (event) => {
+        if (!event || !event.data) return;
+        const msg = event.data;
+        const type = msg.type || (msg.flavourName ? 'SIMULATION_UPDATED' : null);
+        if (type === 'PRICING_TIMING_CHANGED' || msg.settlementIntervalSeconds || msg.intervalSeconds) {
+          updatePricingTimingState(msg.payload || msg);
+          fetchPricingConfiguration();
+        } else if (type === 'PRODUCT_PRICE_UPDATE' || type === 'REFRESH_PRODUCTS') {
+          fetchProducts();
+        }
+      };
     }
 
     function handleIncomingPriceMessage(res) {

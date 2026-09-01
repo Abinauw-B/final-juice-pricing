@@ -318,6 +318,58 @@ public class PricingController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping({"/timing", "/admin/timing"})
+    public ResponseEntity<Map<String, Object>> getPricingTiming() {
+        int sec = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
+        if (sec <= 0) sec = 60;
+        Map<String, Object> res = new HashMap<>();
+        res.put("intervalSeconds", sec);
+        res.put("intervalMinutes", (double) sec / 60.0);
+        res.put("label", sec == 10 ? "10 Seconds" : (sec == 30 ? "30 Seconds" : (sec % 60 == 0 ? (sec / 60) + " Minute" + (sec > 60 ? "s" : "") : sec + " Seconds")));
+        res.put("nextSettlementAt", pricingEngineService != null && pricingEngineService.getNextSettlementTime() != null ? pricingEngineService.getNextSettlementTime().toString() : LocalDateTime.now().plusSeconds(sec).toString());
+        return ResponseEntity.ok(res);
+    }
+
+    @PutMapping({"/timing", "/admin/timing"})
+    public ResponseEntity<Map<String, Object>> updatePricingTiming(@RequestBody Map<String, Object> body, @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
+        int intervalSec = 60;
+        if (body != null) {
+            if (body.containsKey("intervalSeconds")) {
+                intervalSec = ((Number) body.get("intervalSeconds")).intValue();
+            } else if (body.containsKey("settlementIntervalSeconds")) {
+                intervalSec = ((Number) body.get("settlementIntervalSeconds")).intValue();
+            }
+        }
+        if (intervalSec <= 0) intervalSec = 60;
+
+        com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig cfg = new com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig();
+        cfg.setSettlementIntervalSeconds(intervalSec);
+        String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
+        pricingConfigurationService.updateGlobalConfiguration(cfg, actor, "TIMING_UPDATE");
+        if (pricingEngineService != null) {
+            pricingEngineService.resetSettlementTiming(intervalSec);
+        }
+
+        LocalDateTime nextTarget = pricingEngineService != null ? pricingEngineService.getNextSettlementTime() : LocalDateTime.now().plusSeconds(intervalSec);
+        String label = intervalSec == 10 ? "10 Seconds" : (intervalSec == 30 ? "30 Seconds" : (intervalSec % 60 == 0 ? (intervalSec / 60) + " Minute" + (intervalSec > 60 ? "s" : "") : intervalSec + " Seconds"));
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("intervalSeconds", intervalSec);
+        res.put("intervalMinutes", (double) intervalSec / 60.0);
+        res.put("label", label);
+        res.put("nextSettlementAt", nextTarget.toString());
+        res.put("type", "PRICING_TIMING_CHANGED");
+
+        try {
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/pricing-config", res);
+                messagingTemplate.convertAndSend("/topic/settlement", res);
+            }
+        } catch (Exception ignored) {}
+
+        return ResponseEntity.ok(res);
+    }
+
     @PutMapping({"/config", "/admin/config"})
     public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO> updateConfig(
             @RequestBody com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig globalConfig,
