@@ -28,10 +28,7 @@ public class PricingEngineService {
     private final PriceAdjustmentService priceAdjustmentService;
     private final JuiceMarketSettlementRepository settlementRepository;
     private final PricingConfigurationService pricingConfigurationService;
-
-    private static final java.util.concurrent.atomic.AtomicBoolean isSettlementRunning = new java.util.concurrent.atomic.AtomicBoolean(false);
-    private static LocalDateTime lastSettlementTime = LocalDateTime.now();
-    private static LocalDateTime nextSettlementTime = LocalDateTime.now().plusSeconds(60);
+    private final PricingSettlementCoordinator settlementCoordinator;
 
     public PricingEngineService(ProductRepository productRepository,
                                 PriceHistoryRepository priceHistoryRepository,
@@ -40,7 +37,8 @@ public class PricingEngineService {
                                 RedisTemplate<String, Object> redisTemplate,
                                 PriceAdjustmentService priceAdjustmentService,
                                 JuiceMarketSettlementRepository settlementRepository,
-                                PricingConfigurationService pricingConfigurationService) {
+                                PricingConfigurationService pricingConfigurationService,
+                                @org.springframework.context.annotation.Lazy PricingSettlementCoordinator settlementCoordinator) {
         this.productRepository = productRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.marketCrashService = marketCrashService;
@@ -49,24 +47,21 @@ public class PricingEngineService {
         this.priceAdjustmentService = priceAdjustmentService;
         this.settlementRepository = settlementRepository;
         this.pricingConfigurationService = pricingConfigurationService;
+        this.settlementCoordinator = settlementCoordinator;
     }
 
     public LocalDateTime getLastSettlementTime() {
-        return lastSettlementTime;
+        return settlementCoordinator != null ? settlementCoordinator.getLastSettlementTime() : LocalDateTime.now();
     }
 
     public void resetSettlementTiming(int newIntervalSeconds) {
-        int interval = newIntervalSeconds > 0 ? newIntervalSeconds : 60;
-        nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
+        if (settlementCoordinator != null) {
+            settlementCoordinator.resetSettlementTiming(newIntervalSeconds);
+        }
     }
 
     public LocalDateTime getNextSettlementTime() {
-        int interval = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
-        if (interval <= 0) interval = 60;
-        if (nextSettlementTime == null || LocalDateTime.now().isAfter(nextSettlementTime)) {
-            nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
-        }
-        return nextSettlementTime;
+        return settlementCoordinator != null ? settlementCoordinator.getNextSettlementTime() : LocalDateTime.now().plusSeconds(60);
     }
 
     public static class PriceEvaluationCycleResult {
@@ -328,135 +323,15 @@ public class PricingEngineService {
         return getCurrentMarketState();
     }
 
-    @Transactional
     public PriceEvaluationCycleResult executeSettlementCycle(boolean force) {
         return executeSettlementCycle(force, LocalDateTime.now());
     }
 
-    @Transactional
     public PriceEvaluationCycleResult executeSettlementCycle(boolean force, LocalDateTime evaluationTime) {
-        if (!isSettlementRunning.compareAndSet(false, true)) {
-            log.warn("Previous settlement cycle still running. Skipping concurrent trigger.");
-            return getCurrentMarketState();
+        if (settlementCoordinator != null) {
+            return settlementCoordinator.executeSettlement(force, evaluationTime, force ? "FORCE_CYCLE" : "SCHEDULED_CYCLE");
         }
-        try {
-            LocalDateTime now = evaluationTime != null ? evaluationTime : LocalDateTime.now();
-            int intervalSeconds = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
-            log.info("⚡ Running Dynamic Juice Exchange Settlement Cycle (interval={}s) at {} (force={})...", intervalSeconds, now, force);
-
-            long epochSeconds = now.atZone(java.time.ZoneId.systemDefault()).toEpochSecond();
-            long bucket = (epochSeconds / intervalSeconds) * intervalSeconds;
-            String windowStartKey = force ? "SETTLEMENT_FORCE_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 4)
-                    : "SETTLEMENT_" + intervalSeconds + "_" + bucket;
-
-            if (!force && settlementRepository.existsByIdempotencyKey(windowStartKey)) {
-                log.info("Settlement for window {} already executed. Skipping duplicate run.", windowStartKey);
-                return getCurrentMarketState();
-            }
-
-            lastSettlementTime = now;
-            nextSettlementTime = now.plusSeconds(intervalSeconds);
-
-            String currentStatus = "OPEN";
-            if (PriceAdjustmentService.isMarketPaused()) {
-                currentStatus = "PAUSED";
-            } else if (marketCrashService.isCrashActive()) {
-                currentStatus = "CRASH";
-            }
-
-            List<Product> products = productRepository.findByIsActiveTrueOrderByIdAsc();
-            List<ProductPriceDTO> dtoList = new ArrayList<>();
-
-            long startMs = System.currentTimeMillis();
-            for (Product product : products) {
-                BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
-
-                PriceAdjustmentService.PriceEvaluationResult evalResult = priceAdjustmentService.evaluateAndAdjustPrice(product.getId(), now);
-
-                Product reloadedProduct = productRepository.findById(product.getId()).orElse(product);
-                BigDecimal newPrice = evalResult.getNewPrice() != null ? evalResult.getNewPrice() : reloadedProduct.getCurrentCupPrice();
-                BigDecimal basePrice = reloadedProduct.getDefaultCupPrice() != null ? reloadedProduct.getDefaultCupPrice() : BigDecimal.valueOf(25);
-                BigDecimal effectivePrice = marketCrashService.getEffectivePrice(reloadedProduct);
-                BigDecimal priceDelta = evalResult.getPriceChange() != null ? evalResult.getPriceChange() : newPrice.subtract(oldPrice);
-                double changePct = (basePrice.doubleValue() > 0) ? ((newPrice.subtract(basePrice)).doubleValue() / basePrice.doubleValue()) * 100.0 : 0.0;
-                String trendDirection = priceDelta.compareTo(BigDecimal.ZERO) > 0 ? "UP" : (priceDelta.compareTo(BigDecimal.ZERO) < 0 ? "DOWN" : "FLAT");
-
-                boolean crashed = marketCrashService.isProductCrashed(reloadedProduct.getId());
-
-                ProductPriceDTO dto = ProductPriceDTO.builder()
-                        .beverageId(reloadedProduct.getId())
-                        .name(reloadedProduct.getName())
-                        .flavour(reloadedProduct.getFlavour())
-                        .currentPrice(newPrice)
-                        .effectivePrice(effectivePrice)
-                        .previousPrice(oldPrice)
-                        .priceDelta(priceDelta)
-                        .priceChange(priceDelta)
-                        .priceVersion(reloadedProduct.getPriceVersion() != null ? reloadedProduct.getPriceVersion() : 1)
-                        .priceChangePct(BigDecimal.valueOf(changePct).setScale(1, RoundingMode.HALF_UP).doubleValue())
-                        .trendDirection(trendDirection)
-                        .demandRatio(evalResult.getDemandRatio())
-                        .weightedSales(evalResult.getWeightedSales())
-                        .targetSales(evalResult.getTargetSales())
-                        .rawW0(evalResult.getRawW0())
-                        .rawW1(evalResult.getRawW1())
-                        .rawW2(evalResult.getRawW2())
-                        .unconsumedW0(evalResult.getUnconsumedW0())
-                        .demandLevelCategory(evalResult.getDemandLevelCategory())
-                        .isCrashed(crashed)
-                        .minCupPrice(reloadedProduct.getMinCupPrice())
-                        .maxCupPrice(reloadedProduct.getMaxCupPrice())
-                        .build();
-
-                dtoList.add(dto);
-
-                try {
-                    if (redisTemplate != null) {
-                        redisTemplate.opsForValue().set("live_price:" + reloadedProduct.getId(), dto);
-                    }
-                } catch (Exception e) {
-                    log.debug("Redis write bypassed: {}", e.getMessage());
-                }
-            }
-
-            long durationMs = System.currentTimeMillis() - startMs;
-            log.info("✅ Dynamic DWMA Settlement Cycle completed in {}ms. Evaluated {} products.", durationMs, dtoList.size());
-
-            JuiceMarketSettlement settlement = JuiceMarketSettlement.builder()
-                    .settlementWindowStart(now.minusSeconds(intervalSeconds))
-                    .settlementWindowEnd(now)
-                    .idempotencyKey(windowStartKey)
-                    .status("COMPLETED")
-                    .createdAt(now)
-                    .build();
-            settlementRepository.save(settlement);
-
-            PriceEvaluationCycleResult cycleResult = PriceEvaluationCycleResult.builder()
-                    .timestamp(now.toString())
-                    .nextUpdateAt(nextSettlementTime.toString())
-                    .evaluatedProductsCount(dtoList.size())
-                    .updatedPrices(dtoList)
-                    .marketStatus(currentStatus)
-                    .build();
-
-            try {
-                if (messagingTemplate != null) {
-                    messagingTemplate.convertAndSend("/topic/prices", cycleResult);
-                    messagingTemplate.convertAndSend("/topic/settlement", cycleResult);
-                    messagingTemplate.convertAndSend("/topic/products", productRepository.findByIsActiveTrueOrderByIdAsc());
-                    messagingTemplate.convertAndSend("/topic/led-display", cycleResult);
-                    for (ProductPriceDTO dto : dtoList) {
-                        log.info("[STOMP] topic=/topic/prices productId={} price={}", dto.getBeverageId(), dto.getCurrentPrice());
-                    }
-                }
-            } catch (Exception e) {
-                log.debug("WebSocket broadcast bypass: {}", e.getMessage());
-            }
-
-            return cycleResult;
-        } finally {
-            isSettlementRunning.set(false);
-        }
+        return getCurrentMarketState();
     }
 
     public PriceEvaluationCycleResult getCurrentMarketState() {

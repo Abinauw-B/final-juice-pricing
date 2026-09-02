@@ -24,6 +24,7 @@ public class PricingController {
     private final MarketCrashService marketCrashService;
 
     private final PricingEngineService pricingEngineService;
+    private final PricingSettlementCoordinator pricingSettlementCoordinator;
     private final PriceLockService priceLockService;
     private final com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService;
     private final SimpMessagingTemplate messagingTemplate;
@@ -36,6 +37,7 @@ public class PricingController {
             ProductRepository productRepository,
             MarketCrashService marketCrashService,
             PricingEngineService pricingEngineService,
+            PricingSettlementCoordinator pricingSettlementCoordinator,
             PriceLockService priceLockService,
             com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService,
             SimpMessagingTemplate messagingTemplate,
@@ -47,6 +49,7 @@ public class PricingController {
         this.productRepository = productRepository;
         this.marketCrashService = marketCrashService;
         this.pricingEngineService = pricingEngineService;
+        this.pricingSettlementCoordinator = pricingSettlementCoordinator;
         this.priceLockService = priceLockService;
         this.marketCorrelationService = marketCorrelationService;
         this.messagingTemplate = messagingTemplate;
@@ -288,8 +291,7 @@ public class PricingController {
         LocalDateTime time = (evaluationTime != null && !evaluationTime.isBlank())
                 ? LocalDateTime.parse(evaluationTime)
                 : LocalDateTime.now();
-        PricingEngineService.PriceEvaluationCycleResult cycleResult = pricingEngineService.executeSettlementCycle(true,
-                time);
+        PricingEngineService.PriceEvaluationCycleResult cycleResult = pricingSettlementCoordinator.executeForceSettlement(time);
         return ResponseEntity.ok(cycleResult);
     }
 

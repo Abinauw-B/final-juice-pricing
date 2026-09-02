@@ -313,33 +313,17 @@ public class PriceAdjustmentService {
 
         // 1. Time windows based on configured settlement interval: W0 [now - interval, now), W1 [now - 2*interval, now - interval), W2 [now - 3*interval, now - 2*interval)
         int intervalSec = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
-        LocalDateTime marketStart = getMarketStartTime();
 
         LocalDateTime w0Start = now.minusSeconds(intervalSec);
-        if (marketStart != null && w0Start.isBefore(marketStart)) {
-            w0Start = marketStart;
-        }
         int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
 
         LocalDateTime w1Start = now.minusSeconds(2L * intervalSec);
         LocalDateTime w1End = now.minusSeconds(intervalSec);
-        int w1 = 0;
-        if (marketStart == null || w1End.isAfter(marketStart)) {
-            if (marketStart != null && w1Start.isBefore(marketStart)) {
-                w1Start = marketStart;
-            }
-            w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
-        }
+        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
 
         LocalDateTime w2Start = now.minusSeconds(3L * intervalSec);
         LocalDateTime w2End = now.minusSeconds(2L * intervalSec);
-        int w2 = 0;
-        if (marketStart == null || w2End.isAfter(marketStart)) {
-            if (marketStart != null && w2Start.isBefore(marketStart)) {
-                w2Start = marketStart;
-            }
-            w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
-        }
+        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
 
         // 2. Weighted sales: S_w = (weightW0 * W0) + (weightW1 * W1) + (weightW2 * W2)
         BigDecimal sw = BigDecimal.valueOf(w0).multiply(weightW0)
@@ -362,7 +346,7 @@ public class PriceAdjustmentService {
                 : BigDecimal.ZERO;
         double demandRatio = rd.doubleValue();
 
-        // 5. Dynamic movement rules (Strictly +₹1, ₹0, -₹1)
+        // 5. Dynamic movement rules (Strictly +₹1.00, ₹0.00, -₹1.00, -₹2.00)
         BigDecimal deltaP;
         int movement;
         String reason;
@@ -370,8 +354,8 @@ public class PriceAdjustmentService {
 
         if (rd.compareTo(highThresh) >= 0) {
             if (w0 > 0) {
-                deltaP = incStep;
-                movement = incStep.intValue();
+                deltaP = new BigDecimal("1.00");
+                movement = 1;
                 reason = "HIGH_DEMAND_SURGE";
                 demandLevelCategory = "HIGH";
             } else {
@@ -385,14 +369,19 @@ public class PriceAdjustmentService {
             movement = 0;
             reason = "STABLE_DEMAND";
             demandLevelCategory = "NORMAL";
+        } else if (rd.compareTo(lowThresh) >= 0) {
+            deltaP = new BigDecimal("-1.00");
+            movement = -1;
+            reason = "BELOW_NORMAL_DEMAND_DECAY";
+            demandLevelCategory = "LOW";
         } else {
-            deltaP = decStep1.negate();
-            movement = decStep1.negate().intValue();
-            reason = (rd.compareTo(lowThresh) >= 0) ? "BELOW_NORMAL_DEMAND_DECAY" : "ZERO_DEMAND_DECAY";
-            demandLevelCategory = (rd.compareTo(lowThresh) >= 0) ? "LOW" : "VERY_LOW";
+            deltaP = new BigDecimal("-2.00");
+            movement = -2;
+            reason = "ZERO_DEMAND_DECAY";
+            demandLevelCategory = "VERY_LOW";
         }
 
-        // Validate maximum ₹1.00 price movement per normal settlement
+        // Validate strictly allowed price movement (+1.00, 0.00, -1.00, -2.00)
         PricingConfigurationService.validatePriceMovement(deltaP);
 
         // 6. Bounded price: MAX(minCupPrice, MIN(maxCupPrice, oldPrice + deltaP))
@@ -983,9 +972,12 @@ public class PriceAdjustmentService {
         } else if (rd.compareTo(stableLow) >= 0) {
             movement = 0;
             category = "NORMAL";
+        } else if (rd.compareTo(lowThresh) >= 0) {
+            movement = -1;
+            category = "LOW";
         } else {
-            movement = decStep1.negate().intValue();
-            category = (rd.compareTo(lowThresh) >= 0) ? "LOW" : "VERY_LOW";
+            movement = -2;
+            category = "VERY_LOW";
         }
 
         BigDecimal uncappedPrice = currentPrice.add(BigDecimal.valueOf(movement));

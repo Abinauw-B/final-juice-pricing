@@ -134,12 +134,19 @@ public class PricingConfigurationService {
         return (val.compareTo(BigDecimal.ONE) > 0) ? new BigDecimal("1.00") : val;
     }
 
+    public static final java.util.Set<BigDecimal> ALLOWED_DELTAS = java.util.Set.of(
+            new BigDecimal("1.00"),
+            BigDecimal.ZERO,
+            new BigDecimal("-1.00"),
+            new BigDecimal("-2.00")
+    );
+
     public static void validatePriceMovement(BigDecimal delta) {
-        if (delta == null || delta.compareTo(BigDecimal.ZERO) == 0) return;
-        BigDecimal absDelta = delta.abs();
-        if (absDelta.compareTo(new BigDecimal("1.00")) > 0) {
-            log.error("[PRICE_MOVEMENT_VALIDATION] Normal dynamic price movement {} exceeds maximum allowed ₹1.00 per settlement!", delta);
-            throw new IllegalStateException("Normal dynamic price movement must not exceed ₹1.00. Got: " + delta);
+        if (delta == null) return;
+        boolean isAllowed = ALLOWED_DELTAS.stream().anyMatch(allowed -> allowed.compareTo(delta) == 0);
+        if (!isAllowed) {
+            log.error("[PRICE_MOVEMENT_VALIDATION] Dynamic price movement {} is not in allowed set {+1.00, 0.00, -1.00, -2.00}!", delta);
+            throw new IllegalStateException("Dynamic price movement must strictly be +1.00, 0.00, -1.00, or -2.00. Got: " + delta);
         }
     }
 

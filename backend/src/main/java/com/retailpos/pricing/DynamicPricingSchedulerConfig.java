@@ -17,11 +17,11 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
 
     private static final Logger log = LoggerFactory.getLogger(DynamicPricingSchedulerConfig.class);
 
-    private final PricingEngineService pricingEngineService;
+    private final PricingSettlementCoordinator pricingSettlementCoordinator;
     private final PricingConfigurationService pricingConfigService;
 
-    public DynamicPricingSchedulerConfig(PricingEngineService pricingEngineService, PricingConfigurationService pricingConfigService) {
-        this.pricingEngineService = pricingEngineService;
+    public DynamicPricingSchedulerConfig(PricingSettlementCoordinator pricingSettlementCoordinator, PricingConfigurationService pricingConfigService) {
+        this.pricingSettlementCoordinator = pricingSettlementCoordinator;
         this.pricingConfigService = pricingConfigService;
     }
 
@@ -30,7 +30,7 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
         taskRegistrar.addTriggerTask(
                 () -> {
                     try {
-                        pricingEngineService.executeSettlementCycle(false);
+                        pricingSettlementCoordinator.executeScheduledSettlement();
                     } catch (Exception e) {
                         log.error("[DYNAMIC SCHEDULER] Error executing dynamic settlement cycle: {}", e.getMessage(), e);
                     }
@@ -38,7 +38,7 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
                 triggerContext -> {
                     int intervalSeconds = pricingConfigService.getSettlementIntervalSeconds();
                     if (intervalSeconds <= 0) intervalSeconds = 60;
-                    java.time.LocalDateTime nextTarget = pricingEngineService.getNextSettlementTime();
+                    java.time.LocalDateTime nextTarget = pricingSettlementCoordinator.getNextSettlementTime();
                     if (nextTarget != null) {
                         Instant targetInstant = nextTarget.atZone(java.time.ZoneId.systemDefault()).toInstant();
                         if (targetInstant.isAfter(Instant.now())) {
