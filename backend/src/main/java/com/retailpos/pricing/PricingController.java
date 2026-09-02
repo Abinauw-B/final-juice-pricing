@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping({"/api/pricing", "/api/admin/pricing"})
+@RequestMapping({ "/api/pricing", "/api/admin/pricing" })
 @CrossOrigin(origins = "*")
 @SuppressWarnings("null")
 public class PricingController {
@@ -31,16 +31,16 @@ public class PricingController {
     private final PricingConfigAuditLogRepository auditLogRepository;
 
     public PricingController(PriceAdjustmentService priceAdjustmentService,
-                             PricingSimulationService pricingSimulationService,
-                             PriceHistoryRepository priceHistoryRepository,
-                             ProductRepository productRepository,
-                             MarketCrashService marketCrashService,
-                             PricingEngineService pricingEngineService,
-                             PriceLockService priceLockService,
-                             com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService,
-                             SimpMessagingTemplate messagingTemplate,
-                             PricingConfigurationService pricingConfigurationService,
-                             PricingConfigAuditLogRepository auditLogRepository) {
+            PricingSimulationService pricingSimulationService,
+            PriceHistoryRepository priceHistoryRepository,
+            ProductRepository productRepository,
+            MarketCrashService marketCrashService,
+            PricingEngineService pricingEngineService,
+            PriceLockService priceLockService,
+            com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService,
+            SimpMessagingTemplate messagingTemplate,
+            PricingConfigurationService pricingConfigurationService,
+            PricingConfigAuditLogRepository auditLogRepository) {
         this.priceAdjustmentService = priceAdjustmentService;
         this.pricingSimulationService = pricingSimulationService;
         this.priceHistoryRepository = priceHistoryRepository;
@@ -54,12 +54,12 @@ public class PricingController {
         this.auditLogRepository = auditLogRepository;
     }
 
-    @GetMapping({"/market", "/status", "/admin/status"})
+    @GetMapping({ "/market", "/status", "/admin/status" })
     public ResponseEntity<PricingEngineService.PriceEvaluationCycleResult> getMarketState() {
         return ResponseEntity.ok(pricingEngineService.getCurrentMarketState());
     }
 
-    @PostMapping({"/admin/pause", "/pause"})
+    @PostMapping({ "/admin/pause", "/pause" })
     public ResponseEntity<Map<String, Object>> pauseExchange() {
         PriceAdjustmentService.setMarketPaused(true);
         Map<String, Object> res = new HashMap<>();
@@ -72,11 +72,12 @@ public class PricingController {
                 messagingTemplate.convertAndSend("/topic/market-status", res);
                 messagingTemplate.convertAndSend("/topic/settlement", res);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return ResponseEntity.ok(res);
     }
 
-    @PostMapping({"/admin/resume", "/resume"})
+    @PostMapping({ "/admin/resume", "/resume" })
     public ResponseEntity<Map<String, Object>> resumeExchange() {
         PriceAdjustmentService.setMarketPaused(false);
         Map<String, Object> res = new HashMap<>();
@@ -89,11 +90,12 @@ public class PricingController {
                 messagingTemplate.convertAndSend("/topic/market-status", res);
                 messagingTemplate.convertAndSend("/topic/settlement", res);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping({"/live", "/products"})
+    @GetMapping({ "/live", "/products" })
     public ResponseEntity<List<Product>> getLivePrices() {
         return ResponseEntity.ok(productRepository.findByIsActiveTrueOrderByIdAsc());
     }
@@ -120,7 +122,7 @@ public class PricingController {
         return ResponseEntity.ok(metrics);
     }
 
-    @GetMapping({"/history/{productId}", "/history"})
+    @GetMapping({ "/history/{productId}", "/history" })
     public ResponseEntity<List<PriceHistory>> getPriceHistory(@PathVariable(required = false) String productId) {
         if (productId != null && !productId.isBlank()) {
             try {
@@ -169,24 +171,27 @@ public class PricingController {
         return ResponseEntity.ok(breakdown);
     }
 
-    @PostMapping({"/products/{productId}/price", "/admin/products/{productId}/price"})
+    @PostMapping({ "/products/{productId}/price", "/admin/products/{productId}/price" })
     public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> updateManualPrice(
             @PathVariable Long productId,
             @RequestParam BigDecimal newPrice,
             @RequestParam(required = false, defaultValue = "MANUAL_PRICE_OVERRIDE") String reason) {
-        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.updateManualPrice(productId, newPrice, reason);
+        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.updateManualPrice(productId, newPrice,
+                reason);
         try {
             if (messagingTemplate != null) {
                 List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
                 messagingTemplate.convertAndSend("/topic/prices", activeProducts);
                 messagingTemplate.convertAndSend("/topic/products", activeProducts);
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return ResponseEntity.ok(res);
     }
 
-    @PostMapping({"/products/{productId}/release-override", "/admin/products/{productId}/release-override"})
-    public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> releaseManualOverride(@PathVariable Long productId) {
+    @PostMapping({ "/products/{productId}/release-override", "/admin/products/{productId}/release-override" })
+    public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> releaseManualOverride(
+            @PathVariable Long productId) {
         PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.releaseManualOverride(productId);
         try {
             if (messagingTemplate != null) {
@@ -194,12 +199,14 @@ public class PricingController {
                 messagingTemplate.convertAndSend("/topic/prices", activeProducts);
                 messagingTemplate.convertAndSend("/topic/products", activeProducts);
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return ResponseEntity.ok(res);
     }
 
-    @PostMapping({"/deploy", "/admin/deploy"})
-    public ResponseEntity<Map<String, Object>> deployAdminPricing(@RequestBody PriceAdjustmentService.AdminPricingDeployRequest request) {
+    @PostMapping({ "/deploy", "/admin/deploy" })
+    public ResponseEntity<Map<String, Object>> deployAdminPricing(
+            @RequestBody PriceAdjustmentService.AdminPricingDeployRequest request) {
         Product updated = priceAdjustmentService.deployAdminPricing(request);
         try {
             if (messagingTemplate != null) {
@@ -207,10 +214,12 @@ public class PricingController {
                 messagingTemplate.convertAndSend("/topic/prices", allProducts);
                 messagingTemplate.convertAndSend("/topic/products", allProducts);
                 if (pricingConfigurationService != null) {
-                    messagingTemplate.convertAndSend("/topic/pricing-config", pricingConfigurationService.getFullConfiguration());
+                    messagingTemplate.convertAndSend("/topic/pricing-config",
+                            pricingConfigurationService.getFullConfiguration());
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -230,32 +239,36 @@ public class PricingController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping({"/market-crash/status", "/crash/status"})
+    @GetMapping({ "/market-crash/status", "/crash/status" })
     public ResponseEntity<MarketCrashService.MarketCrashStatus> getMarketCrashStatus() {
         return ResponseEntity.ok(marketCrashService.getStatus());
     }
 
-    @PostMapping({"/market-crash/trigger", "/market-crash", "/crash/trigger", "/crash"})
-    public ResponseEntity<MarketCrashService.MarketCrashStatus> triggerMarketCrash(@RequestParam(required = false) Integer durationMinutes) {
+    @PostMapping({ "/market-crash/trigger", "/market-crash", "/crash/trigger", "/crash" })
+    public ResponseEntity<MarketCrashService.MarketCrashStatus> triggerMarketCrash(
+            @RequestParam(required = false) Integer durationMinutes) {
         int duration = (durationMinutes != null && durationMinutes > 0) ? durationMinutes : 0;
         return ResponseEntity.ok(marketCrashService.triggerMarketCrash(duration, "MANUAL_ADMIN"));
     }
 
-    @PostMapping({"/market-crash/stop", "/crash/stop"})
+    @PostMapping({ "/market-crash/stop", "/crash/stop" })
     public ResponseEntity<MarketCrashService.MarketCrashStatus> stopMarketCrash() {
         return ResponseEntity.ok(marketCrashService.stopMarketCrash());
     }
 
-    @PostMapping({"/reset-all", "/admin/reset-all", "/reset", "/admin/reset"})
+    @PostMapping({ "/reset-all", "/admin/reset-all", "/reset", "/admin/reset" })
     public ResponseEntity<PriceAdjustmentService.ResetAllResponse> resetAllPrices(
             @RequestHeader(value = "X-Request-ID", required = false) String headerReqId,
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
 
-        String reqId = (headerReqId != null && !headerReqId.isBlank()) ? headerReqId : "REQ-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        String reqId = (headerReqId != null && !headerReqId.isBlank()) ? headerReqId
+                : "REQ-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
 
-        // 1. Transactional Database Reset Execution (Commit occurs before method returns)
-        PriceAdjustmentService.ResetAllResponse response = priceAdjustmentService.resetAllProductsToDefault(reqId, actor);
+        // 1. Transactional Database Reset Execution (Commit occurs before method
+        // returns)
+        PriceAdjustmentService.ResetAllResponse response = priceAdjustmentService.resetAllProductsToDefault(reqId,
+                actor);
 
         // 2. Broadcast STOMP ONLY AFTER TRANSACTION COMMIT SUCCESS
         try {
@@ -263,18 +276,20 @@ public class PricingController {
                 messagingTemplate.convertAndSend("/topic/prices", response.getPrices());
                 messagingTemplate.convertAndSend("/topic/products", response.getPrices());
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         return ResponseEntity.ok(response);
     }
 
-    @RequestMapping(value = {"/evaluate", "/admin/evaluate"}, method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = { "/evaluate", "/admin/evaluate" }, method = { RequestMethod.GET, RequestMethod.POST })
     public ResponseEntity<PricingEngineService.PriceEvaluationCycleResult> evaluateAllPrices(
             @RequestParam(required = false) String evaluationTime) {
         LocalDateTime time = (evaluationTime != null && !evaluationTime.isBlank())
                 ? LocalDateTime.parse(evaluationTime)
                 : LocalDateTime.now();
-        PricingEngineService.PriceEvaluationCycleResult cycleResult = pricingEngineService.executeSettlementCycle(true, time);
+        PricingEngineService.PriceEvaluationCycleResult cycleResult = pricingEngineService.executeSettlementCycle(true,
+                time);
         return ResponseEntity.ok(cycleResult);
     }
 
@@ -285,31 +300,34 @@ public class PricingController {
         LocalDateTime time = (evaluationTime != null && !evaluationTime.isBlank())
                 ? LocalDateTime.parse(evaluationTime)
                 : LocalDateTime.now();
-        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.evaluateAndAdjustPrice(productId, time);
+        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.evaluateAndAdjustPrice(productId,
+                time);
         try {
             if (messagingTemplate != null) {
                 messagingTemplate.convertAndSend("/topic/prices", productRepository.findByIsActiveTrueOrderByIdAsc());
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return ResponseEntity.ok(res);
     }
 
-    @GetMapping({"/debug", "/admin/debug"})
+    @GetMapping({ "/debug", "/admin/debug" })
     public ResponseEntity<List<PriceAdjustmentService.PriceDebugDTO>> getDebugEvaluationAll() {
         return ResponseEntity.ok(priceAdjustmentService.getDebugEvaluationAll());
     }
 
-    @GetMapping({"/debug/{productId}", "/admin/debug/{productId}"})
+    @GetMapping({ "/debug/{productId}", "/admin/debug/{productId}" })
     public ResponseEntity<PriceAdjustmentService.PriceDebugDTO> getDebugEvaluation(@PathVariable Long productId) {
         return ResponseEntity.ok(priceAdjustmentService.getDebugEvaluation(productId));
     }
 
     @PostMapping("/simulate")
-    public ResponseEntity<PricingSimulationService.SimulationResponse> simulatePricing(@RequestBody PricingSimulationService.SimulationRequest request) {
+    public ResponseEntity<PricingSimulationService.SimulationResponse> simulatePricing(
+            @RequestBody PricingSimulationService.SimulationRequest request) {
         return ResponseEntity.ok(pricingSimulationService.runSimulation(request));
     }
 
-    @GetMapping({"/config", "/admin/config"})
+    @GetMapping({ "/config", "/admin/config" })
     public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO> getConfig() {
         com.retailpos.pricing.model.PricingConfigDTO dto = pricingConfigurationService.getFullConfiguration();
         if (pricingEngineService != null && pricingEngineService.getNextSettlementTime() != null) {
@@ -318,45 +336,47 @@ public class PricingController {
         return ResponseEntity.ok(dto);
     }
 
-    @PutMapping({"/config", "/admin/config"})
+    @PutMapping({ "/config", "/admin/config" })
     public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO> updateConfig(
             @RequestBody com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig globalConfig,
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
         String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
-        com.retailpos.pricing.model.PricingConfigDTO updated = pricingConfigurationService.updateGlobalConfiguration(globalConfig, actor, "ADMIN_UI_UPDATE");
+        com.retailpos.pricing.model.PricingConfigDTO updated = pricingConfigurationService
+                .updateGlobalConfiguration(globalConfig, actor, "ADMIN_UI_UPDATE");
         if (globalConfig != null && globalConfig.getSettlementIntervalSeconds() != null) {
             pricingEngineService.resetSettlementTiming(globalConfig.getSettlementIntervalSeconds());
         }
         return ResponseEntity.ok(updated);
     }
 
-    @GetMapping({"/products/{productId}/config", "/admin/products/{productId}/config"})
-    public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO.ProductConfig> getProductConfig(@PathVariable Long productId) {
+    @GetMapping({ "/products/{productId}/config", "/admin/products/{productId}/config" })
+    public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO.ProductConfig> getProductConfig(
+            @PathVariable Long productId) {
         Product p = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
         return ResponseEntity.ok(new com.retailpos.pricing.model.PricingConfigDTO.ProductConfig(
                 p.getId(), p.getName(), p.getFlavour(),
                 p.getTargetSalesPer1Minute() != null ? p.getTargetSalesPer1Minute() : 0.55,
-                p.getDefaultCupPrice(), p.getCurrentCupPrice(), p.getMinCupPrice(), p.getMaxCupPrice()
-        ));
+                p.getDefaultCupPrice(), p.getCurrentCupPrice(), p.getMinCupPrice(), p.getMaxCupPrice()));
     }
 
-    @PutMapping({"/products/{productId}/config", "/admin/products/{productId}/config"})
+    @PutMapping({ "/products/{productId}/config", "/admin/products/{productId}/config" })
     public ResponseEntity<com.retailpos.pricing.model.PricingConfigDTO.ProductConfig> updateProductConfig(
             @PathVariable Long productId,
             @RequestBody com.retailpos.pricing.model.PricingConfigDTO.ProductConfig productConfig,
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
         String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
-        com.retailpos.pricing.model.PricingConfigDTO.ProductConfig updated = pricingConfigurationService.updateProductConfiguration(productId, productConfig, actor, "ADMIN_PRODUCT_CONFIG_UPDATE");
+        com.retailpos.pricing.model.PricingConfigDTO.ProductConfig updated = pricingConfigurationService
+                .updateProductConfiguration(productId, productConfig, actor, "ADMIN_PRODUCT_CONFIG_UPDATE");
         return ResponseEntity.ok(updated);
     }
 
-    @GetMapping({"/config/audit", "/admin/config/audit"})
+    @GetMapping({ "/config/audit", "/admin/config/audit" })
     public ResponseEntity<List<com.retailpos.domain.PricingConfigAuditLog>> getPricingAuditLogs() {
         return ResponseEntity.ok(auditLogRepository.findAllByOrderByCreatedAtDesc());
     }
 
-    @PostMapping({"/quote", "/lock"})
+    @PostMapping({ "/quote", "/lock" })
     public ResponseEntity<com.retailpos.pricing.model.PriceQuote> requestPriceQuote(
             @RequestParam Long productId,
             @RequestParam(required = false, defaultValue = "1") Integer quantity) {
@@ -364,7 +384,7 @@ public class PricingController {
         return ResponseEntity.ok(priceLockService.createQuote(productId, qty));
     }
 
-    @GetMapping({"/correlations", "/admin/correlations"})
+    @GetMapping({ "/correlations", "/admin/correlations" })
     public ResponseEntity<List<com.retailpos.domain.ProductCorrelation>> getCorrelations() {
         return ResponseEntity.ok(marketCorrelationService.getAllCorrelations());
     }
@@ -375,20 +395,47 @@ public class PricingController {
         private BigDecimal coefficient;
         private Boolean enabled;
 
-        public UpdateCorrelationRequest() {}
-        public Long getSourceProductId() { return sourceProductId; }
-        public void setSourceProductId(Long sourceProductId) { this.sourceProductId = sourceProductId; }
-        public Long getTargetProductId() { return targetProductId; }
-        public void setTargetProductId(Long targetProductId) { this.targetProductId = targetProductId; }
-        public BigDecimal getCoefficient() { return coefficient; }
-        public void setCoefficient(BigDecimal coefficient) { this.coefficient = coefficient; }
-        public Boolean getEnabled() { return enabled; }
-        public void setEnabled(Boolean enabled) { this.enabled = enabled; }
+        public UpdateCorrelationRequest() {
+        }
+
+        public Long getSourceProductId() {
+            return sourceProductId;
+        }
+
+        public void setSourceProductId(Long sourceProductId) {
+            this.sourceProductId = sourceProductId;
+        }
+
+        public Long getTargetProductId() {
+            return targetProductId;
+        }
+
+        public void setTargetProductId(Long targetProductId) {
+            this.targetProductId = targetProductId;
+        }
+
+        public BigDecimal getCoefficient() {
+            return coefficient;
+        }
+
+        public void setCoefficient(BigDecimal coefficient) {
+            this.coefficient = coefficient;
+        }
+
+        public Boolean getEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(Boolean enabled) {
+            this.enabled = enabled;
+        }
     }
 
-    @PutMapping({"/correlations", "/admin/correlations"})
-    public ResponseEntity<com.retailpos.domain.ProductCorrelation> updateCorrelation(@RequestBody UpdateCorrelationRequest req) {
-        return ResponseEntity.ok(marketCorrelationService.updateCorrelation(req.getSourceProductId(), req.getTargetProductId(), req.getCoefficient(), req.getEnabled()));
+    @PutMapping({ "/correlations", "/admin/correlations" })
+    public ResponseEntity<com.retailpos.domain.ProductCorrelation> updateCorrelation(
+            @RequestBody UpdateCorrelationRequest req) {
+        return ResponseEntity.ok(marketCorrelationService.updateCorrelation(req.getSourceProductId(),
+                req.getTargetProductId(), req.getCoefficient(), req.getEnabled()));
     }
 
     @GetMapping({"/timing", "/admin/timing"})
@@ -410,25 +457,38 @@ public class PricingController {
         private Integer intervalSeconds;
         private Integer settlementIntervalSeconds;
 
-        public PricingTimingUpdateRequest() {}
-        public PricingTimingUpdateRequest(Integer intervalSeconds) { this.intervalSeconds = intervalSeconds; }
-
-        public Integer getIntervalSeconds() { 
-            return intervalSeconds != null ? intervalSeconds : settlementIntervalSeconds; 
+        public PricingTimingUpdateRequest() {
         }
-        public void setIntervalSeconds(Integer intervalSeconds) { this.intervalSeconds = intervalSeconds; }
 
-        public Integer getSettlementIntervalSeconds() { return settlementIntervalSeconds; }
-        public void setSettlementIntervalSeconds(Integer settlementIntervalSeconds) { this.settlementIntervalSeconds = settlementIntervalSeconds; }
+        public PricingTimingUpdateRequest(Integer intervalSeconds) {
+            this.intervalSeconds = intervalSeconds;
+        }
+
+        public Integer getIntervalSeconds() {
+            return intervalSeconds != null ? intervalSeconds : settlementIntervalSeconds;
+        }
+
+        public void setIntervalSeconds(Integer intervalSeconds) {
+            this.intervalSeconds = intervalSeconds;
+        }
+
+        public Integer getSettlementIntervalSeconds() {
+            return settlementIntervalSeconds;
+        }
+
+        public void setSettlementIntervalSeconds(Integer settlementIntervalSeconds) {
+            this.settlementIntervalSeconds = settlementIntervalSeconds;
+        }
     }
 
-    @RequestMapping(value = {"/timing", "/admin/timing"}, method = {RequestMethod.PUT, RequestMethod.POST})
+    @RequestMapping(value = { "/timing", "/admin/timing" }, method = { RequestMethod.PUT, RequestMethod.POST })
     public ResponseEntity<Map<String, Object>> updatePricingTiming(
             @RequestBody(required = false) PricingTimingUpdateRequest req,
             @RequestParam(required = false) Integer intervalSeconds,
             @RequestHeader(value = "X-User-Role", required = false) String roleHeader) {
 
-        Integer selectedInterval = (req != null && req.getIntervalSeconds() != null) ? req.getIntervalSeconds() : intervalSeconds;
+        Integer selectedInterval = (req != null && req.getIntervalSeconds() != null) ? req.getIntervalSeconds()
+                : intervalSeconds;
         if (selectedInterval == null) {
             Map<String, Object> err = new HashMap<>();
             err.put("error", "intervalSeconds is required");
@@ -438,7 +498,8 @@ public class PricingController {
 
         if (!PricingConfigurationService.ALLOWED_INTERVALS.contains(selectedInterval)) {
             Map<String, Object> err = new HashMap<>();
-            err.put("error", "Invalid settlement interval: " + selectedInterval + "s. Allowed values are: 10s (10), 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600), 15 min (900).");
+            err.put("error", "Invalid settlement interval: " + selectedInterval
+                    + "s. Allowed values are: 10s (10), 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600), 15 min (900).");
             err.put("allowedIntervals", List.of(10, 30, 60, 120, 300, 600, 900));
             return ResponseEntity.badRequest().body(err);
         }
@@ -452,7 +513,9 @@ public class PricingController {
         }
 
         String label = PricingConfigurationService.getIntervalLabel(selectedInterval);
-        LocalDateTime nextTime = pricingEngineService != null && pricingEngineService.getNextSettlementTime() != null ? pricingEngineService.getNextSettlementTime() : LocalDateTime.now().plusSeconds(selectedInterval);
+        LocalDateTime nextTime = pricingEngineService != null && pricingEngineService.getNextSettlementTime() != null
+                ? pricingEngineService.getNextSettlementTime()
+                : LocalDateTime.now().plusSeconds(selectedInterval);
 
         Map<String, Object> res = new HashMap<>();
         res.put("success", true);
@@ -476,9 +539,9 @@ public class PricingController {
                 messagingTemplate.convertAndSend("/topic/pricing-config", wsMsg);
                 messagingTemplate.convertAndSend("/topic/settlement", wsMsg);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         return ResponseEntity.ok(res);
     }
 }
-

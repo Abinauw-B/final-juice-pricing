@@ -3615,10 +3615,8 @@
           nextSettlementAt: newTarget
         });
 
-        // Trigger dynamic settlement evaluation to update juice prices according to the new timing
-        await triggerPriceEngine({ silent: true });
-
-        showToast(`⚡ DWMA Settlement Cycle updated to ${label}! Juice prices re-evaluated and synchronized.`, 'success');
+        // Do NOT immediately alter prices; prices remain steady until the full duration countdown elapses
+        showToast(`⏱️ Settlement duration set to ${label}. Prices remain steady and will recalculate when the countdown completes.`, 'success');
         loadPricingConfiguration();
         loadPricingAuditLogs();
       } catch (e) {
