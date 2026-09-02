@@ -943,7 +943,7 @@
       position: relative;
       transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
       flex: 1;
-      min-height: 240px;
+      min-height: 250px;
     }
     .naruto-mascot-card:hover {
       border-color: #F97316;
@@ -953,28 +953,30 @@
     .naruto-img-wrapper {
       position: relative;
       width: 100%;
-      height: 230px;
-      max-height: 260px;
+      height: 250px;
       border-radius: 8px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at center, rgba(249, 115, 22, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
+      background: radial-gradient(circle at center, rgba(249, 115, 22, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
       border: 1px solid rgba(249, 115, 22, 0.3);
     }
     .naruto-img-wrapper img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: top center;
+      object-position: center top;
       border-radius: 8px;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: high-quality;
+      image-rendering: auto;
+      image-rendering: smooth;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      transform: translateZ(0);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .naruto-mascot-card:hover .naruto-img-wrapper img {
-      transform: scale(1.04);
+      transform: scale(1.04) translateZ(0);
     }
     .naruto-badge {
       position: absolute;
@@ -1479,7 +1481,7 @@
       <!-- Naruto Pub Mascot Card — 8K Ultra HD Edition -->
       <div class="naruto-mascot-card">
         <div class="naruto-img-wrapper">
-          <img src="assets/naruto.jpg?v=8k" alt="Naruto Uzumaki 8K Pub Mascot" onerror="this.onerror=null; this.src='naruto.jpg?v=8k';" />
+          <img src="assets/naruto.jpg?v=ultra_hd_v2" alt="Naruto Uzumaki 8K Pub Mascot" onerror="this.onerror=null; this.src='naruto.jpg?v=ultra_hd_v2';" />
           <div class="naruto-badge">🔥 8K ULTRA-HD • PUB MASCOT</div>
         </div>
         <div class="naruto-quote">"🍜 Dattebayo! Savor 8K Fresh Flavor at Live Market Rates!"</div>
