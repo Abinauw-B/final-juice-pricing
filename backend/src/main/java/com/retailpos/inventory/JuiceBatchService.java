@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@SuppressWarnings("null")
 public class JuiceBatchService {
 
     private final JuiceBatchRepository batchRepository;
