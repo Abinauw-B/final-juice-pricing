@@ -125,21 +125,21 @@ public class PricingConfigurationService {
     }
 
     public BigDecimal getDecreaseStep2() {
-        BigDecimal val = parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_2", "1.00"), new BigDecimal("1.00"));
-        return (val.compareTo(BigDecimal.ONE) > 0) ? new BigDecimal("1.00") : val;
+        BigDecimal val = parseDecimal(globalConfigCache.getOrDefault("DECREASE_STEP_2", "2.00"), new BigDecimal("2.00"));
+        return (val.compareTo(new BigDecimal("2.00")) > 0) ? new BigDecimal("2.00") : val;
     }
 
     public BigDecimal getPriceDecreaseStep() {
         BigDecimal val = parseDecimal(globalConfigCache.getOrDefault("PRICE_DECREASE_STEP", "1.00"), new BigDecimal("1.00"));
-        return (val.compareTo(BigDecimal.ONE) > 0) ? new BigDecimal("1.00") : val;
+        return (val.compareTo(new BigDecimal("2.00")) > 0) ? new BigDecimal("2.00") : val;
     }
 
     public static void validatePriceMovement(BigDecimal delta) {
         if (delta == null || delta.compareTo(BigDecimal.ZERO) == 0) return;
         BigDecimal absDelta = delta.abs();
-        if (absDelta.compareTo(new BigDecimal("1.00")) > 0) {
-            log.error("[PRICE_MOVEMENT_VALIDATION] Normal dynamic price movement {} exceeds maximum allowed ₹1.00 per settlement!", delta);
-            throw new IllegalStateException("Normal dynamic price movement must not exceed ₹1.00. Got: " + delta);
+        if (absDelta.compareTo(new BigDecimal("2.00")) > 0) {
+            log.error("[PRICE_MOVEMENT_VALIDATION] Normal dynamic price movement {} exceeds maximum allowed ₹2.00 per settlement!", delta);
+            throw new IllegalStateException("Normal dynamic price movement must not exceed ₹2.00. Got: " + delta);
         }
     }
 
