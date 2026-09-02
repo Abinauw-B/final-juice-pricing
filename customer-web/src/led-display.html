@@ -1113,7 +1113,7 @@
       <div style="font-size: 48px; margin-bottom: 12px;">🚨</div>
       <h1 style="font-size: 28px; font-weight: 900; color: #EF4444;">MARKET CRASH IN PROGRESS</h1>
       <p style="font-size: 16px; margin: 10px 0; color: #F8FAFC;">
-        All drink prices reduced to Absolute Floor: <span style="color: #FACC15; font-size: 22px; font-weight: 800;">₹18.00</span>
+        All drink prices reduced to Absolute Floor: <span style="color: #FACC15; font-size: 22px; font-weight: 800;">₹20.00</span>
       </p>
       <div id="crashTimerText" style="font-size: 48px; font-family: var(--font-mono); font-weight: 900; color: #FACC15; margin: 12px 0;">03:00</div>
       <p style="font-size: 13px; color: #94A3B8;">Prices will reset to DWMA recalculation when timer expires.</p>
@@ -1145,7 +1145,7 @@
           </div>
           <div class="summary-card" style="padding: 10px 14px;">
             <div class="summary-label">Floor / Ceiling</div>
-            <div class="summary-value" style="font-size: 16px;">₹18 / ₹35</div>
+            <div class="summary-value" style="font-size: 16px;">₹20 / ₹30</div>
           </div>
           <div class="summary-card" style="padding: 10px 14px;">
             <div class="summary-label">Target Demand</div>
@@ -1243,7 +1243,7 @@
         <div class="summary-label">Market Base Rate</div>
         <div class="summary-value" id="sumMarketBaseRate" style="color: var(--accent-cyan);">₹25.00</div>
       </div>
-      <div class="summary-subtext" id="sumMarketBaseRateSubtext">Floor: ₹18.00 &bull; Ceiling: ₹35.00</div>
+      <div class="summary-subtext" id="sumMarketBaseRateSubtext">Floor: ₹20.00 &bull; Ceiling: ₹30.00</div>
     </div>
 
     <div class="summary-card">
@@ -1277,8 +1277,8 @@
         </div>
         <div class="section-meta-badges">
           <span class="meta-tag" id="metaBaseRate">Base: ₹25.00</span>
-          <span class="meta-tag" id="metaFloorLimit">Floor: ₹18.00</span>
-          <span class="meta-tag" id="metaCeilingLimit">Ceiling: ₹35.00</span>
+          <span class="meta-tag" id="metaFloorLimit">Floor: ₹20.00</span>
+          <span class="meta-tag" id="metaCeilingLimit">Ceiling: ₹30.00</span>
           <span class="meta-tag" id="metaSettlementTag">Settlement: 1 min</span>
           <span class="meta-tag" id="metaDownStep">Down Step: ₹1.00</span>
         </div>
@@ -1305,11 +1305,11 @@
           </div>
           <div class="info-row">
             <span class="info-row-label">Floor Limit</span>
-            <span class="info-row-val" id="sidebarFloorLimit" style="color: var(--accent-rose);">₹18.00</span>
+            <span class="info-row-val" id="sidebarFloorLimit" style="color: var(--accent-rose);">₹20.00</span>
           </div>
           <div class="info-row">
             <span class="info-row-label">Ceiling Limit</span>
-            <span class="info-row-val" id="sidebarCeilingLimit" style="color: var(--accent-emerald);">₹35.00</span>
+            <span class="info-row-val" id="sidebarCeilingLimit" style="color: var(--accent-emerald);">₹30.00</span>
           </div>
           <div class="info-row">
             <span class="info-row-label">Settlement Cycle</span>
@@ -1654,14 +1654,14 @@
       const g = config.global || config;
 
       const basePrice = g.defaultCupPrice !== undefined ? Number(g.defaultCupPrice).toFixed(2) : '25.00';
-      const minPrice = g.minCupPrice !== undefined ? Number(g.minCupPrice).toFixed(2) : '18.00';
-      const maxPrice = g.maxCupPrice !== undefined ? Number(g.maxCupPrice).toFixed(2) : '35.00';
+      const minPrice = g.minCupPrice !== undefined ? Number(g.minCupPrice).toFixed(2) : '20.00';
+      const maxPrice = g.maxCupPrice !== undefined ? Number(g.maxCupPrice).toFixed(2) : '30.00';
       const w0 = g.weightW0 !== undefined ? Number(g.weightW0).toFixed(2) : '1.00';
       const w1 = g.weightW1 !== undefined ? Number(g.weightW1).toFixed(2) : '0.50';
       const w2 = g.weightW2 !== undefined ? Number(g.weightW2).toFixed(2) : '0.25';
       const downStep = g.priceDecreaseStep || g.decreaseStep1 || 1.00;
       const incStep = g.increaseStep || 1.00;
-      const crashFloor = g.marketCrashPrice !== undefined ? Number(g.marketCrashPrice).toFixed(2) : '18.00';
+      const crashFloor = g.marketCrashPrice !== undefined ? Number(g.marketCrashPrice).toFixed(2) : '20.00';
 
       const sumBaseRate = document.getElementById('sumMarketBaseRate');
       if (sumBaseRate) sumBaseRate.textContent = `₹${basePrice}`;
@@ -1768,8 +1768,8 @@
       if (!p) return null;
       const id = p.id || p.beverageId || p.productId;
       const currentCupPrice = p.currentCupPrice !== undefined ? Number(p.currentCupPrice) : (p.currentPrice !== undefined ? Number(p.currentPrice) : 25);
-      const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : 18);
-      const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 35);
+      const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : 20);
+      const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 30);
       const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25);
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
@@ -1808,14 +1808,14 @@
       // Fallback default 8 products if backend unreachable
       if (!products || products.length === 0) {
         products = [
-          { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.125, pricingMode: 'DYNAMIC' },
-          { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.40, pricingMode: 'DYNAMIC' },
-          { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.35, pricingMode: 'DYNAMIC' },
-          { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.50, pricingMode: 'DYNAMIC' },
-          { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.30, pricingMode: 'DYNAMIC' },
-          { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.45, pricingMode: 'DYNAMIC' },
-          { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.20, pricingMode: 'DYNAMIC' },
-          { id: 23, name: 'Thunder Energy', flavour: 'THUNDER', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, basePrice: 25, targetSalesPer1Minute: 0.50, pricingMode: 'DYNAMIC' }
+          { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.125, pricingMode: 'DYNAMIC' },
+          { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.40, pricingMode: 'DYNAMIC' },
+          { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.35, pricingMode: 'DYNAMIC' },
+          { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.50, pricingMode: 'DYNAMIC' },
+          { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.30, pricingMode: 'DYNAMIC' },
+          { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.45, pricingMode: 'DYNAMIC' },
+          { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.20, pricingMode: 'DYNAMIC' },
+          { id: 23, name: 'Thunder Energy', flavour: 'THUNDER', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.50, pricingMode: 'DYNAMIC' }
         ];
       }
 

@@ -840,7 +840,7 @@
                 <span class="status-tag tag-active" id="dashCrashStatusTag">TRADING NORMAL</span>
               </div>
               <p style="font-size: 13px; color: var(--text-muted);">Triggers digital siren gong and instantly drops all
-                drink prices to absolute floor (₹18) for 3 minutes.</p>
+                drink prices to absolute floor (₹20) for 3 minutes.</p>
             </div>
             <div style="display: flex; gap: 12px; align-items: center;">
               <span
@@ -965,7 +965,7 @@
               <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">🚨 Market
                 Crash Control Panel</h1>
               <p style="color: var(--text-muted);">Force temporary market-wide price decline to absolute floor limit
-                (₹18.00) across all POS &amp; LED displays.</p>
+                (₹20.00) across all POS &amp; LED displays.</p>
             </div>
             <div id="crashTabStatusTag" class="status-tag tag-active" style="font-size: 14px; padding: 6px 16px;">
               TRADING NORMAL</div>
@@ -982,13 +982,13 @@
                 </div>
                 <p style="color: var(--text-main); font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
                   Activating a Market Crash Event immediately forces all beverage prices across the Pub Stock Exchange
-                  to drop to their absolute minimum floor price (₹18.00). The event automatically expires after 3
+                  to drop to their absolute minimum floor price (₹20.00). The event automatically expires after 3
                   minutes (180s) and is broadcast live via WebSockets.
                 </p>
 
                 <div style="display: flex; gap: 24px; font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
                   <div>⏱️ <strong>Event Duration:</strong> 3 Minutes (180s)</div>
-                  <div>📉 <strong>Floor Price:</strong> ₹18.00 Limit</div>
+                  <div>📉 <strong>Floor Price:</strong> ₹20.00 Limit</div>
                   <div>📡 <strong>Channels:</strong> POS, LED, WebSocket</div>
                 </div>
               </div>
@@ -1227,7 +1227,7 @@
                 <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">🍹 Live
                   Beverage Pricing &amp; Market Limits Maintenance</h2>
                 <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Admin can maintain and vary baseline
-                  prices, circuit breaker floors (₹18), ceilings (₹35), or set manual live price overrides.</p>
+                  prices, circuit breaker floors (₹20), ceilings (₹30), or set manual live price overrides.</p>
               </div>
               <div style="display: flex; gap: 8px;">
                 <button class="btn-primary"
@@ -1421,14 +1421,14 @@
                   <label
                     style="display: block; font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Min
                     Circuit Floor (₹)</label>
-                  <input type="number" id="cfgMinPrice" value="18.00" step="0.50" min="0"
+                  <input type="number" id="cfgMinPrice" value="20.00" step="0.50" min="0"
                     style="width: 100%; padding: 8px; font-weight: 700; border-radius: 6px;">
                 </div>
                 <div>
                   <label
                     style="display: block; font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Max
                     Circuit Ceiling (₹)</label>
-                  <input type="number" id="cfgMaxPrice" value="35.00" step="0.50" min="0"
+                  <input type="number" id="cfgMaxPrice" value="30.00" step="0.50" min="0"
                     style="width: 100%; padding: 8px; font-weight: 700; border-radius: 6px;">
                 </div>
               </div>
@@ -3570,7 +3570,7 @@
 
     async function applyPricingTimingDirect() {
       const btn = document.getElementById('btnApplyPricingTiming');
-      if (btn) setButtonLoading(btn, true, 'Applying Timing & Evaluating...');
+      if (btn) setButtonLoading(btn, true, 'Applying Timing...');
 
       const sel = document.getElementById('pricingIntervalSelect');
       const selectedSec = parseInt(sel ? sel.value : '60', 10);
@@ -3759,7 +3759,7 @@
       }
       if (document.getElementById('cfgSettlementInterval')) document.getElementById('cfgSettlementInterval').value = g.settlementIntervalSeconds || 60;
       if (document.getElementById('cfgCrashDuration')) document.getElementById('cfgCrashDuration').value = g.marketCrashDurationSeconds || 180;
-      if (document.getElementById('cfgCrashPrice')) document.getElementById('cfgCrashPrice').value = Number(g.marketCrashPrice || 18).toFixed(2);
+      if (document.getElementById('cfgCrashPrice')) document.getElementById('cfgCrashPrice').value = Number(g.marketCrashPrice || 20).toFixed(2);
       if (document.getElementById('cfgDefaultPrice')) document.getElementById('cfgDefaultPrice').value = Number(g.defaultCupPrice || 25).toFixed(2);
 
       if (document.getElementById('cfgWeightW0')) document.getElementById('cfgWeightW0').value = Number(g.weightW0 || 1.00).toFixed(2);
@@ -3774,8 +3774,8 @@
       if (document.getElementById('cfgIncreaseStep')) document.getElementById('cfgIncreaseStep').value = Number(g.increaseStep || 1.00).toFixed(2);
       if (document.getElementById('cfgDecreaseStep1')) document.getElementById('cfgDecreaseStep1').value = Number(g.decreaseStep1 || 1.00).toFixed(2);
       if (document.getElementById('cfgDecreaseStep2')) document.getElementById('cfgDecreaseStep2').value = Number(g.decreaseStep2 || 1.00).toFixed(2);
-      if (document.getElementById('cfgMinPrice')) document.getElementById('cfgMinPrice').value = Number(g.minCupPrice || 18.00).toFixed(2);
-      if (document.getElementById('cfgMaxPrice')) document.getElementById('cfgMaxPrice').value = Number(g.maxCupPrice || 35.00).toFixed(2);
+      if (document.getElementById('cfgMinPrice')) document.getElementById('cfgMinPrice').value = Number(g.minCupPrice || 20.00).toFixed(2);
+      if (document.getElementById('cfgMaxPrice')) document.getElementById('cfgMaxPrice').value = Number(g.maxCupPrice || 30.00).toFixed(2);
 
       if (config.products && Array.isArray(config.products)) {
         liveProductsCache = config.products.map(p => ({
@@ -3974,8 +3974,8 @@
           name: flavoursMap[id],
           currentCupPrice: 25.00,
           defaultCupPrice: 25.00,
-          minCupPrice: 18.00,
-          maxCupPrice: 35.00,
+          minCupPrice: 20.00,
+          maxCupPrice: 30.00,
           targetSalesPer1Minute: 0.55,
           volatility: 0.08
         }));
@@ -3996,8 +3996,8 @@
         const pid = p.productId || p.id;
         const livePrice = Number(p.currentCupPrice || p.currentPrice || 25).toFixed(2);
         const basePrice = Number(p.defaultCupPrice || p.basePrice || 25).toFixed(2);
-        const minPrice = Number(p.minCupPrice || 18).toFixed(2);
-        const maxPrice = Number(p.maxCupPrice || 35).toFixed(2);
+        const minPrice = Number(p.minCupPrice || 20).toFixed(2);
+        const maxPrice = Number(p.maxCupPrice || 30).toFixed(2);
         const target = p.targetSalesPer1Minute || p.targetSales || (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55);
         const isOverride = (p.pricingMode === 'MANUAL_OVERRIDE');
 
@@ -4053,7 +4053,7 @@
 
     function editProductPricing(productId) {
       const p = liveProductsCache.find(prod => prod.id === productId) || {
-        id: productId, name: flavoursMap[productId] || `Product #${productId}`, description: 'Fresh handcrafted juice', currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 18, maxCupPrice: 35, targetSalesPer1Minute: 0.55, volatility: 0.08
+        id: productId, name: flavoursMap[productId] || `Product #${productId}`, description: 'Fresh handcrafted juice', currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, targetSalesPer1Minute: 0.55, volatility: 0.08
       };
 
       document.getElementById('editPricingProductId').value = p.id;
@@ -4061,8 +4061,8 @@
       document.getElementById('editPricingJuiceDesc').value = p.description || 'Fresh handcrafted juice cooler';
       document.getElementById('editPricingCurrentPrice').value = p.currentCupPrice || 25;
       document.getElementById('editPricingBasePrice').value = p.defaultCupPrice || 25;
-      document.getElementById('editPricingMinPrice').value = p.minCupPrice || 18;
-      document.getElementById('editPricingMaxPrice').value = p.maxCupPrice || 35;
+      document.getElementById('editPricingMinPrice').value = p.minCupPrice || 20;
+      document.getElementById('editPricingMaxPrice').value = p.maxCupPrice || 30;
       document.getElementById('editPricingTargetSales').value = p.targetSalesPer1Minute || (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55);
       document.getElementById('editPricingVolatility').value = p.volatility || 0.08;
 
@@ -4191,7 +4191,7 @@
 
       const prod = liveProductsCache.find(p => p.id === productId) || {
         id: productId, name: flavoursMap[productId] || `Product #${productId}`, description: 'Fresh handcrafted juice cooler',
-        currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 18, maxCupPrice: 35
+        currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 20, maxCupPrice: 30
       };
 
       document.getElementById('editBatchCode').value = batchCode;
@@ -4200,8 +4200,8 @@
       document.getElementById('editJuiceDesc').value = prod.description || 'Fresh handcrafted juice cooler';
       document.getElementById('editLivePrice').value = prod.currentCupPrice || prod.defaultCupPrice || 25;
       document.getElementById('editBasePrice').value = prod.defaultCupPrice || 25;
-      document.getElementById('editMinPrice').value = prod.minCupPrice || 18;
-      document.getElementById('editMaxPrice').value = prod.maxCupPrice || 35;
+      document.getElementById('editMinPrice').value = prod.minCupPrice || 20;
+      document.getElementById('editMaxPrice').value = prod.maxCupPrice || 30;
       document.getElementById('editRemainingVol').value = batch.remainingVolumeMl || 20000;
       document.getElementById('editStatus').value = batch.status || 'ACTIVE';
 
@@ -4517,8 +4517,8 @@
       const prod = liveProductsCache ? liveProductsCache.find(p => p.id === pid) : null;
       if (prod) {
         if (document.getElementById('simStartPrice')) document.getElementById('simStartPrice').value = Number(prod.currentCupPrice || 25).toFixed(2);
-        if (document.getElementById('simMinPrice')) document.getElementById('simMinPrice').value = Number(prod.minCupPrice || 18).toFixed(2);
-        if (document.getElementById('simMaxPrice')) document.getElementById('simMaxPrice').value = Number(prod.maxCupPrice || 35).toFixed(2);
+        if (document.getElementById('simMinPrice')) document.getElementById('simMinPrice').value = Number(prod.minCupPrice || 20).toFixed(2);
+        if (document.getElementById('simMaxPrice')) document.getElementById('simMaxPrice').value = Number(prod.maxCupPrice || 30).toFixed(2);
         if (document.getElementById('simCupsPerStep')) {
           const target1m = Number(prod.targetSalesPer1Minute || 0.55);
           document.getElementById('simCupsPerStep').value = Math.max(1, Math.round(target1m * 2));
@@ -5317,6 +5317,17 @@
             if (message.body) {
               try {
                 const data = JSON.parse(message.body);
+                if (data.type === 'PRICING_TIMING_CHANGED' || data.intervalSeconds) {
+                  if (data.nextSettlementAt) {
+                    activePricingTiming.nextSettlementAt = data.nextSettlementAt;
+                  }
+                  if (data.intervalSeconds) {
+                    activePricingTiming.intervalSeconds = data.intervalSeconds;
+                    activePricingTiming.settlementIntervalSeconds = data.intervalSeconds;
+                    applyTimingToUI(activePricingTiming);
+                  }
+                  return;
+                }
                 if (data.nextSettlementAt) {
                   activePricingTiming.nextSettlementAt = data.nextSettlementAt;
                 }
@@ -5444,8 +5455,8 @@
       const icon = getFruitIconAdmin(prod);
       const currentPrice = Number(prod.currentCupPrice || prod.currentPrice || 25);
       const basePrice = Number(prod.defaultCupPrice || prod.basePrice || 25);
-      const minPrice = Number(prod.minCupPrice || 18);
-      const maxPrice = Number(prod.maxCupPrice || 35);
+      const minPrice = Number(prod.minCupPrice || 20);
+      const maxPrice = Number(prod.maxCupPrice || 30);
       const targetSales = Number(prod.targetSalesPer1Minute || prod.targetSales || 0.40);
 
       // Simulation / telemetry readings for windows W0, W1, W2
@@ -5570,8 +5581,8 @@
       const name = prod.name || prod.productName || 'Beverage Instrument';
       const livePrice = Number(prod.currentCupPrice || prod.currentPrice || 25).toFixed(2);
       const basePrice = Number(prod.defaultCupPrice || prod.basePrice || 25).toFixed(2);
-      const minPrice = Number(prod.minCupPrice || 18).toFixed(2);
-      const maxPrice = Number(prod.maxCupPrice || 35).toFixed(2);
+      const minPrice = Number(prod.minCupPrice || 20).toFixed(2);
+      const maxPrice = Number(prod.maxCupPrice || 30).toFixed(2);
       const target = Number(prod.targetSalesPer1Minute || prod.targetSales || 0.40).toFixed(2);
       const isOverride = (prod.pricingMode === 'MANUAL_OVERRIDE');
 

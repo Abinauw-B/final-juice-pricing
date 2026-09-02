@@ -77,8 +77,8 @@ public class MarketEventService {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + purchasedId));
 
         BigDecimal oldMainPrice = mainProduct.getCurrentCupPrice() != null ? mainProduct.getCurrentCupPrice() : mainProduct.getDefaultCupPrice();
-        BigDecimal minPrice = mainProduct.getMinCupPrice() != null ? mainProduct.getMinCupPrice() : new BigDecimal("18.00");
-        BigDecimal maxPrice = mainProduct.getMaxCupPrice() != null ? mainProduct.getMaxCupPrice() : new BigDecimal("35.00");
+        BigDecimal minPrice = mainProduct.getMinCupPrice() != null ? mainProduct.getMinCupPrice() : new BigDecimal("20.00");
+        BigDecimal maxPrice = mainProduct.getMaxCupPrice() != null ? mainProduct.getMaxCupPrice() : new BigDecimal("30.00");
 
         // Direct demand impact shift calculation: ONE SUCCESSFUL ORDER = ONE MARKET EVENT (+₹1.00)
         int directShift = 1;
@@ -166,8 +166,8 @@ public class MarketEventService {
 
             if (secondaryDelta.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal targetOldPrice = targetProduct.getCurrentCupPrice() != null ? targetProduct.getCurrentCupPrice() : targetProduct.getDefaultCupPrice();
-                BigDecimal targetMin = targetProduct.getMinCupPrice() != null ? targetProduct.getMinCupPrice() : new BigDecimal("18.00");
-                BigDecimal targetMax = targetProduct.getMaxCupPrice() != null ? targetProduct.getMaxCupPrice() : new BigDecimal("35.00");
+                BigDecimal targetMin = targetProduct.getMinCupPrice() != null ? targetProduct.getMinCupPrice() : new BigDecimal("20.00");
+                BigDecimal targetMax = targetProduct.getMaxCupPrice() != null ? targetProduct.getMaxCupPrice() : new BigDecimal("30.00");
 
                 BigDecimal targetNewPrice = targetOldPrice.add(secondaryDelta).max(targetMin).min(targetMax).setScale(2, RoundingMode.HALF_UP);
 

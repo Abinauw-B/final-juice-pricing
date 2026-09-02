@@ -261,7 +261,7 @@ async function runStage3Validation() {
     const crashProdsRes = await apiRequest('/pos/products');
     const crashProds = crashProdsRes.data;
 
-    const allAtFloor = crashProds.every(p => Number(p.currentCupPrice) === 18.00 || Number(p.minCupPrice) === 18.00);
+    const allAtFloor = crashProds.every(p => Number(p.currentCupPrice) === 20.00 || Number(p.minCupPrice) === 20.00);
 
     const crashStatus = await apiRequest('/pricing/market-crash/status');
 
@@ -270,12 +270,12 @@ async function runStage3Validation() {
 
     report(
       "6. Market Crash Across ALL Active Products in Database",
-      "ALL products drop to floor ₹18.00; active=true -> active=false",
-      `Total products=${crashProds.length}, All floor=18: ${allAtFloor}, Active=${crashStatus.data.active}, Stopped=${stoppedStatus.data.active}`,
+      "ALL products drop to floor ₹20.00; active=true -> active=false",
+      `Total products=${crashProds.length}, All floor=20: ${allAtFloor}, Active=${crashStatus.data.active}, Stopped=${stoppedStatus.data.active}`,
       allAtFloor && crashStatus.data.active === true && stoppedStatus.data.active === false
     );
   } catch (err) {
-    report("6. Market Crash Across ALL Active Products", "Floor ₹18 for all products", err.message, false);
+    report("6. Market Crash Across ALL Active Products", "Floor ₹20 for all products", err.message, false);
   }
 
   // ------------------------------------------------------------------

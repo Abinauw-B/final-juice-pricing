@@ -194,8 +194,8 @@ export class JuiceBatchesComponent implements OnInit {
   newFlavourName: string = '';
   newFlavourDesc: string = '';
   newFlavourBasePrice: number = 25;
-  newFlavourMinPrice: number = 18;
-  newFlavourMaxPrice: number = 35;
+  newFlavourMinPrice: number = 20;
+  newFlavourMaxPrice: number = 30;
   newFlavourVolume: number = 20000;
 
   constructor(private http: HttpClient) {}
@@ -305,8 +305,8 @@ export class JuiceBatchesComponent implements OnInit {
   editJuiceName: string = '';
   editJuiceDesc: string = '';
   editBasePrice: number = 25;
-  editMinPrice: number = 18;
-  editMaxPrice: number = 35;
+  editMinPrice: number = 20;
+  editMaxPrice: number = 30;
   editRemainingVol: number = 20000;
   editStatus: string = 'ACTIVE';
 
@@ -316,20 +316,19 @@ export class JuiceBatchesComponent implements OnInit {
     this.editRemainingVol = batch.remainingVolumeMl;
     this.editStatus = batch.status;
 
-    const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
     const prod = customProds.find((p: any) => p.id === batch.productId) || {
       name: `Product #${batch.productId}`,
       description: 'Fresh handcrafted juice cooler',
       basePrice: 25,
-      minCupPrice: 18,
-      maxCupPrice: 35
+      minCupPrice: 20,
+      maxCupPrice: 30
     };
 
     this.editJuiceName = prod.name;
     this.editJuiceDesc = prod.description || 'Fresh handcrafted juice cooler';
     this.editBasePrice = prod.basePrice || prod.currentCupPrice || 25;
-    this.editMinPrice = prod.minCupPrice || 18;
-    this.editMaxPrice = prod.maxCupPrice || 35;
+    this.editMinPrice = prod.minCupPrice || 20;
+    this.editMaxPrice = prod.maxCupPrice || 30;
 
     this.showEditModal = true;
   }

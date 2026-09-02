@@ -15,8 +15,8 @@ public class PricingSimulationService {
         private String flavourName = "Fresh Mango Juice";
         private Integer initialVolumeMl = 20000;
         private BigDecimal initialPrice = new BigDecimal("25.00");
-        private BigDecimal minPrice = new BigDecimal("18.00");
-        private BigDecimal maxPrice = new BigDecimal("35.00");
+        private BigDecimal minPrice = new BigDecimal("20.00");
+        private BigDecimal maxPrice = new BigDecimal("30.00");
         private Integer totalSimulatedPurchases = 40;
         private Integer cupsPerInterval = 4;
         private Integer intervalMinutes = 1;
@@ -229,8 +229,8 @@ public class PricingSimulationService {
     public SimulationResponse runSimulation(SimulationRequest request) {
         int volume = (request.getInitialVolumeMl() != null) ? request.getInitialVolumeMl() : 20000;
         BigDecimal currentPrice = (request.getInitialPrice() != null) ? request.getInitialPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00");
-        BigDecimal minPrice = (request.getMinPrice() != null) ? request.getMinPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("18.00");
-        BigDecimal maxPrice = (request.getMaxPrice() != null) ? request.getMaxPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("35.00");
+        BigDecimal minPrice = (request.getMinPrice() != null) ? request.getMinPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("20.00");
+        BigDecimal maxPrice = (request.getMaxPrice() != null) ? request.getMaxPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("30.00");
 
         int cupsPerStep = (request.getCupsPerInterval() != null) ? request.getCupsPerInterval() : 4;
         int intervalMins = (request.getIntervalMinutes() != null && request.getIntervalMinutes() > 0) ? request.getIntervalMinutes() : 1;

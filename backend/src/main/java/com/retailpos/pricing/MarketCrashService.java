@@ -167,7 +167,7 @@ public class MarketCrashService {
             remaining = Math.max(0, crashEndTime.toEpochSecond(ZoneOffset.UTC) - LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
         }
 
-        BigDecimal displayCrashPrice = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashPrice() : new BigDecimal("18.00");
+        BigDecimal displayCrashPrice = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashPrice() : new BigDecimal("20.00");
 
         return MarketCrashStatus.builder()
                 .active(crashActive)
@@ -227,7 +227,7 @@ public class MarketCrashService {
         this.currentCrashCode = "CRASH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         this.triggerSource = (triggerType != null) ? triggerType : "MANUAL_ADMIN";
 
-        BigDecimal configuredCrashPrice = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashPrice() : new BigDecimal("18.00");
+        BigDecimal configuredCrashPrice = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashPrice() : new BigDecimal("20.00");
 
         List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
         crashedProductIds.clear();
@@ -316,7 +316,7 @@ public class MarketCrashService {
                 restoredPrice = p.getDefaultCupPrice() != null ? p.getDefaultCupPrice() : new BigDecimal("25.00");
             }
 
-            BigDecimal currentPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : new BigDecimal("18.00");
+            BigDecimal currentPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : new BigDecimal("20.00");
             p.setCurrentCupPrice(restoredPrice);
             p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
             p.setLastPriceChangeTimestamp(now);

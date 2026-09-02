@@ -154,7 +154,7 @@ public class PricingConfigurationService {
     }
 
     public BigDecimal getMarketCrashPrice() {
-        return parseDecimal(globalConfigCache.getOrDefault("MARKET_CRASH_PRICE", "18.00"), new BigDecimal("18.00"));
+        return parseDecimal(globalConfigCache.getOrDefault("MARKET_CRASH_PRICE", "20.00"), new BigDecimal("20.00"));
     }
 
     public BigDecimal getDefaultCupPrice() {
@@ -162,11 +162,11 @@ public class PricingConfigurationService {
     }
 
     public BigDecimal getMinCupPrice() {
-        return parseDecimal(globalConfigCache.getOrDefault("MIN_CUP_PRICE", "18.00"), new BigDecimal("18.00"));
+        return parseDecimal(globalConfigCache.getOrDefault("MIN_CUP_PRICE", "20.00"), new BigDecimal("20.00"));
     }
 
     public BigDecimal getMaxCupPrice() {
-        return parseDecimal(globalConfigCache.getOrDefault("MAX_CUP_PRICE", "35.00"), new BigDecimal("35.00"));
+        return parseDecimal(globalConfigCache.getOrDefault("MAX_CUP_PRICE", "30.00"), new BigDecimal("30.00"));
     }
 
     public double getTargetSalesForProduct(Product product) {
@@ -222,8 +222,8 @@ public class PricingConfigurationService {
                     target,
                     p.getDefaultCupPrice() != null ? p.getDefaultCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00"),
                     p.getCurrentCupPrice() != null ? p.getCurrentCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00"),
-                    p.getMinCupPrice() != null ? p.getMinCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("18.00"),
-                    p.getMaxCupPrice() != null ? p.getMaxCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("35.00"),
+                    p.getMinCupPrice() != null ? p.getMinCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("20.00"),
+                    p.getMaxCupPrice() != null ? p.getMaxCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("30.00"),
                     p.getPricingMode()
             ));
         }

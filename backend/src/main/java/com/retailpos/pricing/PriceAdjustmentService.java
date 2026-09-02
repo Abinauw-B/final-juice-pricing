@@ -204,10 +204,10 @@ public class PriceAdjustmentService {
         BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
         BigDecimal floor = (product.getMinCupPrice() != null)
                 ? product.getMinCupPrice()
-                : (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("18.00"));
+                : (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("20.00"));
         BigDecimal ceiling = (product.getMaxCupPrice() != null)
                 ? product.getMaxCupPrice()
-                : (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("35.00"));
+                : (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("30.00"));
         int orderCount = product.getOrderCount() != null ? product.getOrderCount() : 0;
 
         // Check Market Paused
@@ -665,8 +665,8 @@ public class PriceAdjustmentService {
 
         int resetCount = 0;
         BigDecimal basePrice = pricingConfigurationService != null ? pricingConfigurationService.getDefaultCupPrice() : new BigDecimal("25.00");
-        BigDecimal minPrice = pricingConfigurationService != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("18.00");
-        BigDecimal maxPrice = pricingConfigurationService != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("35.00");
+        BigDecimal minPrice = pricingConfigurationService != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("20.00");
+        BigDecimal maxPrice = pricingConfigurationService != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("30.00");
 
         for (Product p : products) {
             BigDecimal oldPrice = p.getCurrentCupPrice();
@@ -935,10 +935,10 @@ public class PriceAdjustmentService {
         BigDecimal currentPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
         BigDecimal floor = (p.getMinCupPrice() != null)
                 ? p.getMinCupPrice()
-                : (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("18.00"));
+                : (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("20.00"));
         BigDecimal ceiling = (p.getMaxCupPrice() != null)
                 ? p.getMaxCupPrice()
-                : (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("35.00"));
+                : (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("30.00"));
 
         BigDecimal weightW0 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW0() : new BigDecimal("1.0000");
         BigDecimal weightW1 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW1() : new BigDecimal("0.5000");

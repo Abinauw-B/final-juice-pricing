@@ -38,11 +38,22 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
                 triggerContext -> {
                     int intervalSeconds = pricingConfigService.getSettlementIntervalSeconds();
                     if (intervalSeconds <= 0) intervalSeconds = 60;
+                    java.time.LocalDateTime nextTarget = pricingEngineService.getNextSettlementTime();
+                    if (nextTarget != null) {
+                        Instant targetInstant = nextTarget.atZone(java.time.ZoneId.systemDefault()).toInstant();
+                        if (targetInstant.isAfter(Instant.now())) {
+                            return targetInstant;
+                        }
+                    }
                     Instant lastActual = triggerContext.lastActualExecution();
                     if (lastActual == null) {
                         return Instant.now().plusSeconds(intervalSeconds);
                     }
-                    return lastActual.plusSeconds(intervalSeconds);
+                    Instant nextFromLast = lastActual.plusSeconds(intervalSeconds);
+                    if (nextFromLast.isBefore(Instant.now())) {
+                        return Instant.now().plusSeconds(intervalSeconds);
+                    }
+                    return nextFromLast;
                 }
         );
         log.info("[DYNAMIC SCHEDULER] Dynamic DWMA Settlement Scheduler registered successfully with live interval trigger.");

@@ -24,16 +24,16 @@ public class Product {
     private Integer defaultCupSizeMl = 250;
 
     @Column(name = "default_cup_price", nullable = false)
-    private BigDecimal defaultCupPrice = new BigDecimal("20.00");
+    private BigDecimal defaultCupPrice = new BigDecimal("25.00");
 
     @Column(name = "current_cup_price", nullable = false)
-    private BigDecimal currentCupPrice = new BigDecimal("20.00");
+    private BigDecimal currentCupPrice = new BigDecimal("25.00");
 
     @Column(name = "min_cup_price", nullable = false)
-    private BigDecimal minCupPrice = new BigDecimal("18.00");
+    private BigDecimal minCupPrice = new BigDecimal("20.00");
 
     @Column(name = "max_cup_price", nullable = false)
-    private BigDecimal maxCupPrice = new BigDecimal("25.00");
+    private BigDecimal maxCupPrice = new BigDecimal("30.00");
 
     @Column(name = "target_sales_per_1_minute")
     private Double targetSalesPer1Minute = 0.55;
@@ -78,8 +78,8 @@ public class Product {
         this.defaultCupSizeMl = defaultCupSizeMl != null ? defaultCupSizeMl : 250;
         this.defaultCupPrice = defaultCupPrice != null ? defaultCupPrice : new BigDecimal("25.00");
         this.currentCupPrice = currentCupPrice != null ? currentCupPrice : new BigDecimal("25.00");
-        this.minCupPrice = minCupPrice != null ? minCupPrice : new BigDecimal("18.00");
-        this.maxCupPrice = maxCupPrice != null ? maxCupPrice : new BigDecimal("35.00");
+        this.minCupPrice = minCupPrice != null ? minCupPrice : new BigDecimal("20.00");
+        this.maxCupPrice = maxCupPrice != null ? maxCupPrice : new BigDecimal("30.00");
         this.targetSalesPer1Minute = targetSalesPer1Minute != null ? targetSalesPer1Minute : 0.55;
         this.targetSalesPer2Minute = this.targetSalesPer1Minute * 2.0;
         this.orderCount = orderCount != null ? orderCount : 0;
@@ -163,8 +163,8 @@ public class Product {
         private Integer defaultCupSizeMl = 250;
         private BigDecimal defaultCupPrice = new BigDecimal("25.00");
         private BigDecimal currentCupPrice = new BigDecimal("25.00");
-        private BigDecimal minCupPrice = new BigDecimal("18.00");
-        private BigDecimal maxCupPrice = new BigDecimal("35.00");
+        private BigDecimal minCupPrice = new BigDecimal("20.00");
+        private BigDecimal maxCupPrice = new BigDecimal("30.00");
         private Double targetSalesPer1Minute = 0.55;
         private Double targetSalesPer2Minute = 1.10;
         private Integer orderCount = 0;
