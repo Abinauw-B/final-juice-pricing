@@ -310,7 +310,6 @@ public class PriceAdjustmentService {
         BigDecimal lowThresh = pricingConfigurationService != null ? pricingConfigurationService.getLowDemandThreshold() : new BigDecimal("0.5000");
         BigDecimal incStep = pricingConfigurationService != null ? pricingConfigurationService.getIncreaseStep() : new BigDecimal("1.00");
         BigDecimal decStep1 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep1() : new BigDecimal("1.00");
-        BigDecimal decStep2 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep2() : new BigDecimal("2.00");
 
         // 1. Time windows based on configured settlement interval: W0 [now - interval, now), W1 [now - 2*interval, now - interval), W2 [now - 3*interval, now - 2*interval)
         int intervalSec = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
@@ -386,16 +385,11 @@ public class PriceAdjustmentService {
             movement = 0;
             reason = "STABLE_DEMAND";
             demandLevelCategory = "NORMAL";
-        } else if (rd.compareTo(lowThresh) >= 0) {
+        } else {
             deltaP = decStep1.negate();
             movement = decStep1.negate().intValue();
-            reason = "BELOW_NORMAL_DEMAND_DECAY";
-            demandLevelCategory = "LOW";
-        } else {
-            deltaP = decStep2.negate();
-            movement = decStep2.negate().intValue();
-            reason = "ZERO_DEMAND_DECAY";
-            demandLevelCategory = "VERY_LOW";
+            reason = (rd.compareTo(lowThresh) >= 0) ? "BELOW_NORMAL_DEMAND_DECAY" : "ZERO_DEMAND_DECAY";
+            demandLevelCategory = (rd.compareTo(lowThresh) >= 0) ? "LOW" : "VERY_LOW";
         }
 
         // Validate maximum ₹1.00 price movement per normal settlement
@@ -954,7 +948,6 @@ public class PriceAdjustmentService {
         BigDecimal lowThresh = pricingConfigurationService != null ? pricingConfigurationService.getLowDemandThreshold() : new BigDecimal("0.5000");
         BigDecimal incStep = pricingConfigurationService != null ? pricingConfigurationService.getIncreaseStep() : new BigDecimal("1.00");
         BigDecimal decStep1 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep1() : new BigDecimal("1.00");
-        BigDecimal decStep2 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep2() : new BigDecimal("2.00");
 
         double targetSales = pricingConfigurationService != null
                 ? pricingConfigurationService.getTargetSalesForProduct(p)
@@ -990,12 +983,9 @@ public class PriceAdjustmentService {
         } else if (rd.compareTo(stableLow) >= 0) {
             movement = 0;
             category = "NORMAL";
-        } else if (rd.compareTo(lowThresh) >= 0) {
-            movement = decStep1.negate().intValue();
-            category = "LOW";
         } else {
-            movement = decStep2.negate().intValue();
-            category = "VERY_LOW";
+            movement = decStep1.negate().intValue();
+            category = (rd.compareTo(lowThresh) >= 0) ? "LOW" : "VERY_LOW";
         }
 
         BigDecimal uncappedPrice = currentPrice.add(BigDecimal.valueOf(movement));
