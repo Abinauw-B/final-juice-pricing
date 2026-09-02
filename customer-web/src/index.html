@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Juice Bar Stock Exchange POS - Customer Terminal</title>
+  <title>Juice Bar Stock Exchange — Live Beverage Trading Terminal</title>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <script>
-    // Suppress Chromium legacy unload permission violation warnings from SockJS
+    // Suppress legacy unload permission violation warnings from SockJS
     (function () {
       const origAdd = window.addEventListener;
       window.addEventListener = function (type, listener, options) {
@@ -31,77 +31,75 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
 
+  <style>
     :root,
     html[data-theme="dark"],
     body.dark-theme-mode {
       --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
 
-      /* Dark Theme — "Obsidian" Tokens */
-      --bg-page: #07090E;
-      --bg-surface: rgba(11, 15, 25, 0.88);
-      --bg-secondary: rgba(22, 30, 46, 0.65);
-      --bg-elevated: rgba(22, 31, 48, 0.85);
-      --bg-card: rgba(16, 22, 34, 0.72);
-      --bg-card-hover: rgba(22, 31, 48, 0.85);
-      --bg-subtle: rgba(26, 36, 54, 0.6);
+      /* Dark Theme — "Obsidian Market" Design Tokens */
+      --bg-page: #080B11;
+      --bg-surface: rgba(13, 18, 29, 0.85);
+      --bg-secondary: rgba(22, 30, 48, 0.65);
+      --bg-elevated: rgba(26, 36, 56, 0.85);
+      --bg-card: rgba(15, 22, 35, 0.78);
+      --bg-card-hover: rgba(20, 29, 46, 0.95);
+      --bg-subtle: rgba(255, 255, 255, 0.04);
+      --bg-input: rgba(15, 23, 42, 0.9);
 
-      --border-color: rgba(255, 255, 255, 0.09);
-      --border-subtle: rgba(255, 255, 255, 0.06);
-      --border-glow: rgba(56, 189, 248, 0.35);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-focus: rgba(56, 189, 248, 0.4);
 
-      --text-main: #F8FAFC;
       --text-primary: #F8FAFC;
       --text-secondary: #CBD5E1;
-      --text-muted: #8E9DB2;
+      --text-muted: #8E9EB5;
 
       --accent-cyan: #38BDF8;
       --accent-emerald: #10B981;
       --accent-rose: #F43F5E;
       --accent-amber: #F59E0B;
       --accent-purple: #C084FC;
-      --accent-blue: #38BDF8;
+      --accent-blue: #3B82F6;
 
       --success: #10B981;
       --danger: #F43F5E;
       --warning: #F59E0B;
       --info: #38BDF8;
 
-      --radius-card: 16px;
-      --radius-btn: 10px;
-      --radius-badge: 8px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-card: 14px;
+      --radius-pill: 9999px;
 
-      --elevation-1: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 12px 36px -4px rgba(0, 0, 0, 0.55);
-      --elevation-2: 0 24px 60px -8px rgba(0, 0, 0, 0.65);
-      --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 12px 36px -4px rgba(0, 0, 0, 0.55);
-      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+      --shadow-hover: 0 10px 28px -4px rgba(0, 0, 0, 0.55);
 
-      --bg-mesh: radial-gradient(circle at 10% 10%, rgba(245, 158, 11, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 90% 15%, rgba(244, 63, 94, 0.12) 0%, transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.12) 0%, transparent 45%),
-        linear-gradient(180deg, #07090E 0%, #0B0F19 50%, #07090E 100%);
+      --bg-mesh: radial-gradient(circle at 15% 10%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+        linear-gradient(180deg, #080B11 0%, #0B101A 100%);
     }
 
     html[data-theme="light"],
     body:not(.dark-theme-mode) {
-      /* Light Theme — "Porcelain" Tokens */
-      --bg-page: #F4F6FB;
-      --bg-surface: rgba(255, 255, 255, 0.94);
-      --bg-secondary: rgba(241, 245, 249, 0.75);
+      /* Light Theme — "Porcelain Market" Design Tokens */
+      --bg-page: #F3F5F9;
+      --bg-surface: rgba(255, 255, 255, 0.92);
+      --bg-secondary: rgba(241, 245, 249, 0.85);
       --bg-elevated: rgba(255, 255, 255, 0.98);
-      --bg-card: rgba(255, 255, 255, 0.88);
-      --bg-card-hover: rgba(255, 255, 255, 0.98);
-      --bg-subtle: #f1f5f9;
+      --bg-card: rgba(255, 255, 255, 0.92);
+      --bg-card-hover: #FFFFFF;
+      --bg-subtle: rgba(15, 23, 42, 0.03);
+      --bg-input: #FFFFFF;
 
-      --border-color: rgba(15, 23, 42, 0.10);
-      --border-subtle: rgba(15, 23, 42, 0.06);
-      --border-glow: rgba(2, 132, 199, 0.35);
+      --border-color: rgba(15, 23, 42, 0.09);
+      --border-subtle: rgba(15, 23, 42, 0.05);
+      --border-focus: rgba(2, 132, 199, 0.4);
 
-      --text-main: #0F172A;
       --text-primary: #0F172A;
       --text-secondary: #334155;
       --text-muted: #64748B;
@@ -118,20 +116,13 @@
       --warning: #D97706;
       --info: #0284C7;
 
-      --radius-card: 16px;
-      --radius-btn: 10px;
-      --radius-badge: 8px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+      --shadow-card: 0 4px 18px -2px rgba(15, 23, 42, 0.06);
+      --shadow-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.12);
 
-      --elevation-1: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 12px 32px -6px rgba(15, 23, 42, 0.10);
-      --elevation-2: 0 24px 48px -10px rgba(15, 23, 42, 0.15);
-      --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 28px -4px rgba(15, 23, 42, 0.08);
-      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
-
-      --bg-mesh: radial-gradient(circle at 8% 8%, rgba(245, 158, 11, 0.10) 0%, transparent 40%),
-        radial-gradient(circle at 92% 12%, rgba(244, 63, 94, 0.09) 0%, transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 90%, rgba(168, 85, 247, 0.09) 0%, transparent 45%),
-        linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 50%, #F8FAFC 100%);
+      --bg-mesh: radial-gradient(circle at 12% 8%, rgba(245, 158, 11, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 88% 12%, rgba(56, 189, 248, 0.05) 0%, transparent 45%),
+        linear-gradient(180deg, #F8FAFC 0%, #EEF2F6 100%);
     }
 
     * {
@@ -153,72 +144,72 @@
       background-attachment: fixed;
       color: var(--text-primary);
       min-height: 100vh;
-      padding: 18px 24px;
+      padding: 16px 20px;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Compact Stock Exchange Header */
+    /* ═══════ 1. COMMAND HEADER BAR ═══════ */
     .header-banner {
-      grid-column: 1 / -1;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: var(--bg-surface);
-      border: 1.5px solid var(--border-color);
-      padding: 14px 24px;
+      border: 1px solid var(--border-color);
+      padding: 12px 20px;
       border-radius: var(--radius-card);
-      margin-bottom: 14px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      height: 72px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       position: relative;
-      overflow: hidden;
-    }
-
-    .header-banner::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #f59e0b 0%, #ec4899 33%, #38bdf8 66%, #10b981 100%);
     }
 
     .brand-title {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
     .brand-icon {
-      width: 46px;
-      height: 46px;
-      background: linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #38bdf8 100%);
-      border: 1.5px solid rgba(255, 255, 255, 0.4);
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(56, 189, 248, 0.2) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+      font-size: 20px;
     }
 
     .brand-name {
-      font-size: 19.5px;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--text-primary) 0%, #0284c7 50%, #9333ea 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-primary);
       line-height: 1.2;
       letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.25);
     }
 
     .brand-subtitle {
-      font-size: 11.5px;
+      font-size: 11px;
       color: var(--text-muted);
       font-weight: 600;
+      letter-spacing: 0.2px;
     }
 
     .header-actions {
@@ -227,42 +218,49 @@
       gap: 10px;
     }
 
-    .status-badge-live {
-      font-size: 12px;
-      font-weight: 800;
-      padding: 6px 14px;
-      border-radius: 20px;
-      display: inline-flex;
+    .status-group {
+      display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding-right: 12px;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .status-badge-live {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
       color: var(--success);
-      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
       font-family: var(--font-mono);
       font-feature-settings: 'tnum' 1;
       font-variant-numeric: tabular-nums;
     }
 
     .status-badge-live .dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: var(--success);
-      box-shadow: 0 0 8px var(--success);
+      box-shadow: 0 0 6px var(--success);
       animation: liveDotPulse 2s infinite ease-in-out;
     }
 
     .status-badge-offline {
-      font-size: 12px;
-      font-weight: 800;
-      padding: 6px 14px;
-      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(244, 63, 94, 0.15);
-      border: 1px solid rgba(244, 63, 94, 0.35);
+      gap: 7px;
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.25);
       color: var(--danger);
       font-family: var(--font-mono);
       font-feature-settings: 'tnum' 1;
@@ -270,31 +268,28 @@
     }
 
     .status-badge-offline .dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: var(--danger);
     }
 
     @keyframes liveDotPulse {
-
-      0%,
-      100% {
+      0%, 100% {
         transform: scale(1);
         opacity: 1;
       }
-
       50% {
-        transform: scale(1.3);
-        opacity: 0.6;
+        transform: scale(1.35);
+        opacity: 0.55;
       }
     }
 
-    .btn-compact {
-      height: 38px;
-      padding: 0 14px;
-      border-radius: var(--radius-btn);
-      font-size: 12.5px;
+    .btn-action-nav {
+      height: 34px;
+      padding: 0 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       display: inline-flex;
@@ -304,39 +299,86 @@
       border: 1px solid var(--border-color);
       background: var(--bg-card);
       color: var(--text-primary);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: var(--shadow-sm);
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .btn-compact:hover {
+    .btn-action-nav:hover {
       background: var(--bg-secondary);
-      border-color: var(--info);
+      border-color: var(--accent-cyan);
       transform: translateY(-1px);
     }
 
-    /* Stock Ticker Bar */
+    /* ═══════ 2. MARKET STRIP & TICKER ═══════ */
+    .market-status-bar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 10px 18px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum' 1;
+    }
+
+    .market-status-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .market-metric-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .market-metric-chip strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .countdown-highlight {
+      font-family: var(--font-mono);
+      color: var(--accent-amber);
+      font-weight: 800;
+      background: rgba(245, 158, 11, 0.1);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
     .ticker-wrap {
       width: 100%;
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-radius: var(--radius-card);
       overflow: hidden;
-      margin-bottom: 14px;
-      padding: 10px 18px;
+      margin-bottom: 16px;
+      padding: 8px 16px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
     }
 
     .ticker-title {
       color: var(--accent-cyan);
       font-weight: 800;
-      font-size: 11px;
+      font-size: 10.5px;
       white-space: nowrap;
-      letter-spacing: 1.2px;
+      letter-spacing: 1px;
       text-transform: uppercase;
       display: flex;
       align-items: center;
@@ -345,7 +387,7 @@
 
     .ticker-content {
       display: flex;
-      gap: 20px;
+      gap: 16px;
       overflow-x: auto;
       scrollbar-width: none;
       width: 100%;
@@ -361,129 +403,170 @@
     }
 
     .ticker-item {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--text-primary);
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       border-right: 1px solid var(--border-subtle);
-      padding-right: 20px;
-      font-variant-numeric: tabular-nums;
+      padding-right: 16px;
     }
 
     .ticker-item:last-child {
       border-right: none;
     }
 
-    /* Market Summary Metric Overview Bar */
-    .market-summary-bar {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
+    /* ═══════ 3. MARKET CRASH ALERT BANNER ═══════ */
+    .market-crash-banner {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(185, 28, 28, 0.95) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: var(--radius-card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      padding: 12px 22px;
-      margin-bottom: 18px;
-      display: flex;
+      padding: 12px 20px;
+      margin-bottom: 14px;
+      display: none;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      box-shadow: var(--shadow-card);
-      font-size: 13px;
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: 'tnum' 1;
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.35);
+      animation: crashPulse 2s infinite ease-in-out;
     }
 
-    .summary-metric {
+    .crash-title {
+      font-size: 15px;
+      font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 8px;
-      color: var(--text-secondary);
-      font-weight: 600;
+      gap: 10px;
     }
 
-    .summary-metric strong {
-      color: var(--text-primary);
+    .crash-timer {
+      font-size: 18px;
       font-weight: 800;
+      font-family: var(--font-mono);
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 3px 14px;
+      border-radius: var(--radius-md);
+      color: #FDE047;
+      font-variant-numeric: tabular-nums;
     }
 
-    /* Main 12-Column Responsive Layout */
+    @keyframes crashPulse {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.7);
+      }
+    }
+
+    /* ═══════ 4. MAIN LAYOUT (GRID + STICKY POS CART) ═══════ */
     .pos-container {
       display: grid;
       grid-template-columns: 1fr 340px;
       gap: 16px;
       max-width: 100%;
       margin: 0 auto;
-      padding: 0 4px;
+      align-items: start;
     }
 
-    /* Symmetrical 4-column beverage product grid (No empty blank spaces) */
+    .market-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .market-section-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .market-section-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 1px;
+    }
+
+    .exchange-bounds-pill {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+      background: var(--bg-surface);
+      padding: 5px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Symmetrical 4-Column Product Grid (Responsive) */
     .flavour-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      gap: 14px;
     }
 
-    /* Flavour-Specific Subtle Themes (Clean Accent Colors, Zero Neon Bleed) */
+    /* ═══════ 5. FLAVOR THEMES (SUBTLE ACCENT SYSTEM) ═══════ */
     .card-theme-mango {
-      --flavour-accent: #f59e0b;
-      --flavour-top-strip: linear-gradient(90deg, #f59e0b, #d97706);
+      --flavour-accent: #F59E0B;
+      --flavour-strip: linear-gradient(90deg, #F59E0B, #D97706);
     }
 
     .card-theme-lemon {
-      --flavour-accent: #84cc16;
-      --flavour-top-strip: linear-gradient(90deg, #84cc16, #65a30d);
+      --flavour-accent: #84CC16;
+      --flavour-strip: linear-gradient(90deg, #84CC16, #65A30D);
     }
 
     .card-theme-mint {
-      --flavour-accent: #10b981;
-      --flavour-top-strip: linear-gradient(90deg, #10b981, #059669);
+      --flavour-accent: #10B981;
+      --flavour-strip: linear-gradient(90deg, #10B981, #059669);
     }
 
     .card-theme-orange {
-      --flavour-accent: #f97316;
-      --flavour-top-strip: linear-gradient(90deg, #f97316, #ea580c);
+      --flavour-accent: #F97316;
+      --flavour-strip: linear-gradient(90deg, #F97316, #EA580C);
     }
 
     .card-theme-strawberry {
-      --flavour-accent: #f43f5e;
-      --flavour-top-strip: linear-gradient(90deg, #f43f5e, #e11d48);
+      --flavour-accent: #F43F5E;
+      --flavour-strip: linear-gradient(90deg, #F43F5E, #E11D48);
     }
 
     .card-theme-grape {
-      --flavour-accent: #a855f7;
-      --flavour-top-strip: linear-gradient(90deg, #a855f7, #9333ea);
+      --flavour-accent: #A855F7;
+      --flavour-strip: linear-gradient(90deg, #A855F7, #9333EA);
     }
 
     .card-theme-lychee {
-      --flavour-accent: #ec4899;
-      --flavour-top-strip: linear-gradient(90deg, #ec4899, #db2777);
+      --flavour-accent: #EC4899;
+      --flavour-strip: linear-gradient(90deg, #EC4899, #DB2777);
     }
 
     .card-theme-thunder {
-      --flavour-accent: #0284c7;
-      --flavour-top-strip: linear-gradient(90deg, #0284c7, #0369a1);
+      --flavour-accent: #0284C7;
+      --flavour-strip: linear-gradient(90deg, #0284C7, #0369A1);
     }
 
-    /* ═══════ REFINED PREMIUM PRODUCT CARD ═══════ */
+    /* ═══════ 6. REFINED PRODUCT CARD ═══════ */
     .flavour-card {
-      background: var(--bg-surface);
+      background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-card);
       padding: 12px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+      box-shadow: var(--shadow-card);
       transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
       position: relative;
       overflow: hidden;
-    }
-
-    html[data-theme="light"] .flavour-card,
-    body:not(.dark-theme-mode) .flavour-card {
-      background: var(--bg-surface);
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
     }
 
     .flavour-card::before {
@@ -493,22 +576,22 @@
       left: 0;
       right: 0;
       height: 2.5px;
-      background: var(--flavour-top-strip, linear-gradient(90deg, #0284c7, #38bdf8));
+      background: var(--flavour-strip, linear-gradient(90deg, #0284C7, #38BDF8));
       z-index: 2;
     }
 
     .flavour-card:hover {
       transform: translateY(-2px);
-      border-color: var(--flavour-accent, var(--border-glow));
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      border-color: var(--flavour-accent, var(--border-focus));
+      box-shadow: var(--shadow-hover);
     }
 
-    /* Product Visual Banner */
+    /* 1. Visual Banner Area */
     .card-img-banner {
       position: relative;
       width: 100%;
-      height: 75px;
-      border-radius: 8px;
+      height: 78px;
+      border-radius: var(--radius-md);
       overflow: hidden;
       margin-bottom: 8px;
       background: var(--bg-secondary);
@@ -523,28 +606,28 @@
     }
 
     .flavour-card:hover .beverage-photo {
-      transform: scale(1.05);
+      transform: scale(1.04);
     }
 
     .fruit-pill {
       position: absolute;
       bottom: 6px;
       left: 6px;
-      background: rgba(15, 23, 42, 0.82);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(11, 16, 26, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       padding: 2px 7px;
-      border-radius: 6px;
+      border-radius: var(--radius-sm);
       font-size: 10px;
       font-weight: 700;
-      color: #ffffff;
+      color: #FFFFFF;
       display: flex;
       align-items: center;
       gap: 4px;
     }
 
-    /* Card Identity Header */
+    /* 2. Product Identity */
     .card-header-info {
       margin-bottom: 6px;
     }
@@ -555,6 +638,9 @@
       color: var(--text-primary);
       line-height: 1.25;
       letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .card-size {
@@ -563,7 +649,7 @@
       color: var(--text-muted);
     }
 
-    /* ═══════ DOMINANT PRICE HERO SECTION ═══════ */
+    /* 3. Dominant Live Price Hero Section */
     .price-hero-section {
       display: flex;
       justify-content: space-between;
@@ -602,7 +688,7 @@
       font-size: 10px;
       font-weight: 800;
       padding: 3px 7px;
-      border-radius: 5px;
+      border-radius: var(--radius-sm);
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       display: inline-flex;
@@ -611,15 +697,15 @@
     }
 
     .badge-up {
-      color: #10B981;
+      color: var(--success);
       background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.35);
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
     .badge-down {
-      color: #F43F5E;
+      color: var(--danger);
       background: rgba(244, 63, 94, 0.12);
-      border: 1px solid rgba(244, 63, 94, 0.35);
+      border: 1px solid rgba(244, 63, 94, 0.3);
     }
 
     .badge-stable {
@@ -628,13 +714,13 @@
       border: 1px solid var(--border-color);
     }
 
-    /* ═══════ CLEAN MINI PRICE CHART ═══════ */
+    /* 4. Mini Price Trend Chart */
     .card-chart-wrap {
       width: 100%;
-      height: 75px;
+      height: 72px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       margin-bottom: 6px;
       position: relative;
       overflow: hidden;
@@ -654,12 +740,12 @@
       font-family: var(--font-mono);
       font-weight: 700;
       color: var(--text-muted);
-      opacity: 0.85;
+      opacity: 0.8;
       pointer-events: none;
       letter-spacing: 0.4px;
     }
 
-    /* Compact Limits & Demand Row */
+    /* 5. Compact Market Limits & Demand Row */
     .card-meta-row {
       display: flex;
       justify-content: space-between;
@@ -678,18 +764,18 @@
       font-weight: 800;
     }
 
-    /* Clean Add to Cart Button */
+    /* 6. Primary Action: Add to Cart */
     .add-to-cart-btn {
       width: 100%;
       height: 35px;
       background: var(--bg-subtle);
-      border: 1.5px solid var(--flavour-accent, var(--accent-cyan));
-      border-radius: 8px;
+      border: 1px solid var(--flavour-accent, var(--accent-cyan));
+      border-radius: var(--radius-md);
       color: var(--text-primary);
       font-weight: 800;
       font-size: 12px;
       cursor: pointer;
-      transition: all 0.18s ease;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -698,28 +784,259 @@
 
     .add-to-cart-btn:hover:not(:disabled) {
       background: var(--flavour-accent, var(--accent-cyan));
-      color: #ffffff;
+      color: #FFFFFF;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .add-to-cart-btn:active {
       transform: scale(0.98);
     }
 
-    /* Responsive Breakpoints for 4x2 Symmetrical Grid */
-    @media (max-width: 1350px) {
-      .pos-container {
-        grid-template-columns: 1fr 310px;
-        gap: 12px;
+    /* Micro-Animations on Price Movement */
+    @keyframes subtleSurge {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        border-color: var(--success);
       }
+      50% {
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+      }
+      100% {
+        box-shadow: none;
+      }
+    }
+
+    @keyframes subtleDecay {
+      0% {
+        box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4);
+        border-color: var(--danger);
+      }
+      50% {
+        box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.15);
+      }
+      100% {
+        box-shadow: none;
+      }
+    }
+
+    .flash-surge {
+      animation: subtleSurge 1.2s ease-out;
+    }
+
+    .flash-decay {
+      animation: subtleDecay 1.2s ease-out;
+    }
+
+    /* ═══════ 7. STICKY POS ORDER CART ═══════ */
+    .cart-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 16px;
+      box-shadow: var(--shadow-card);
+      max-height: calc(100vh - 32px);
+    }
+
+    .cart-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #10B981 0%, #06B6D4 50%, #3B82F6 100%);
+      border-radius: var(--radius-card) var(--radius-card) 0 0;
+    }
+
+    .cart-header {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+    }
+
+    .cart-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: #FFFFFF;
+      background: var(--accent-blue);
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 14px;
+      padding-right: 2px;
+      max-height: 280px;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .item-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .item-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-family: var(--font-mono);
+    }
+
+    .qty-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .qty-btn:hover {
+      background: var(--border-color);
+      border-color: var(--accent-cyan);
+    }
+
+    .cart-summary {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .summary-total {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--accent-emerald);
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 8px;
+      margin-top: 6px;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      height: 44px;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-md);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .checkout-btn:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+    }
+
+    .checkout-btn:active {
+      transform: scale(0.98);
+    }
+
+    .checkout-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* ═══════ 8. RECEIPT MODAL ═══════ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(8, 11, 17, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .receipt-modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 24px;
+      width: 420px;
+      box-shadow: var(--shadow-card);
+      color: var(--text-primary);
+    }
+
+    /* ═══════ 9. RESPONSIVE BREAKPOINTS ═══════ */
+    @media (max-width: 1300px) {
       .flavour-grid {
         grid-template-columns: repeat(4, 1fr);
         gap: 12px;
       }
+      .pos-container {
+        grid-template-columns: 1fr 310px;
+        gap: 12px;
+      }
     }
 
-    @media (max-width: 1080px) {
+    @media (max-width: 1050px) {
       .flavour-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
@@ -738,363 +1055,88 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
       }
+      .header-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .cart-panel {
+        position: static;
+        max-height: none;
+      }
     }
 
-    @media (max-width: 500px) {
+    @media (max-width: 480px) {
       .flavour-grid {
         grid-template-columns: 1fr;
       }
-    }
-
-    /* Flash Highlight Animations for Live Dynamic Price Movements */
-    @keyframes flashSurgePulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.6);
-        transform: scale(1.02);
-        border-color: #10B981;
+      body {
+        padding: 10px 12px;
       }
-
-      50% {
-        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.9);
-        border-color: #10B981;
-      }
-
-      100% {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        transform: scale(1);
-      }
-    }
-
-    @keyframes flashDecayPulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.8), 0 0 20px rgba(244, 63, 94, 0.6);
-        transform: scale(1.02);
-        border-color: #F43F5E;
-      }
-
-      50% {
-        box-shadow: 0 0 0 8px rgba(244, 63, 94, 0.3), 0 0 30px rgba(244, 63, 94, 0.9);
-        border-color: #F43F5E;
-      }
-
-      100% {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        transform: scale(1);
-      }
-    }
-
-    .flash-surge {
-      animation: flashSurgePulse 1.2s ease-out;
-      border-color: var(--accent-emerald) !important;
-    }
-
-    .flash-decay {
-      animation: flashDecayPulse 1.2s ease-out;
-      border-color: var(--accent-rose) !important;
-    }
-
-    /* Price Tick Pulse Micro-Animation */
-    @keyframes pricePulseUp {
-      0% {
-        transform: scale(1);
-        text-shadow: 0 0 14px rgba(16, 185, 129, 0.8);
-        color: #10B981;
-      }
-
-      50% {
-        transform: scale(1.10);
-        text-shadow: 0 0 24px rgba(16, 185, 129, 1);
-        color: #10B981;
-      }
-
-      100% {
-        transform: scale(1);
-      }
-    }
-
-    @keyframes pricePulseDown {
-      0% {
-        transform: scale(1);
-        text-shadow: 0 0 14px rgba(244, 63, 94, 0.8);
-        color: #F43F5E;
-      }
-
-      50% {
-        transform: scale(1.10);
-        text-shadow: 0 0 24px rgba(244, 63, 94, 1);
-        color: #F43F5E;
-      }
-
-      100% {
-        transform: scale(1);
-      }
-    }
-
-    .tick-up {
-      animation: pricePulseUp 800ms ease-out;
-    }
-
-    .tick-down {
-      animation: pricePulseDown 800ms ease-out;
-    }
-
-    /* Professional Order Cart Panel */
-    .cart-panel {
-      background: var(--bg-card);
-      border: 1.5px solid var(--border-color);
-      border-radius: var(--radius-card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - 130px);
-      position: sticky;
-      top: 18px;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .cart-panel::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%);
-    }
-
-    .cart-header {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--text-primary);
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 12px;
-    }
-
-    .cart-badge {
-      font-size: 12px;
-      font-weight: 800;
-      color: #ffffff;
-      background: linear-gradient(135deg, #0284c7, #2563eb);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
-    }
-
-    .cart-items {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 16px;
-      padding-right: 4px;
-    }
-
-    .cart-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      margin-bottom: 10px;
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: 'tnum' 1;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-    }
-
-    .item-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-
-    .item-sub {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .qty-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      font-weight: 800;
-      font-size: 15px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s ease;
-    }
-
-    .qty-btn:hover {
-      background: var(--border-subtle);
-      border-color: var(--info);
-      transform: scale(1.05);
-    }
-
-    .cart-summary {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
-      border: 1.5px solid rgba(16, 185, 129, 0.28);
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 16px;
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: 'tnum' 1;
-    }
-
-    .summary-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 600;
-    }
-
-    .summary-total {
-      font-size: 24px;
-      font-weight: 900;
-      color: var(--accent-emerald);
-      border-top: 1px solid rgba(16, 185, 129, 0.2);
-      padding-top: 12px;
-      margin-top: 10px;
-      text-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
-    }
-
-    .checkout-btn {
-      width: 100%;
-      height: 50px;
-      background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: var(--radius-btn);
-      color: #ffffff;
-      font-size: 15.5px;
-      font-weight: 900;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 6px 22px rgba(16, 185, 129, 0.42);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .checkout-btn:hover:not(:disabled) {
-      filter: brightness(1.15);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 26px rgba(16, 185, 129, 0.55);
-    }
-
-    .checkout-btn:active {
-      transform: scale(0.98);
-    }
-
-    .checkout-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    /* Market Crash Alert Header */
-    .market-crash-banner {
-      background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: var(--radius-card);
-      padding: 16px 24px;
-      margin-bottom: 14px;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      color: white;
-      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.45);
-      animation: crashPulse 1.5s infinite;
-    }
-
-    .crash-title {
-      font-size: 18px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      letter-spacing: -0.01em;
-    }
-
-    .crash-timer {
-      font-size: 24px;
-      font-weight: 900;
-      font-family: var(--font-mono, monospace);
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 4px 18px;
-      border-radius: 8px;
-      color: #facc15;
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: 'tnum' 1;
-    }
-
-    @keyframes crashPulse {
-
-      0%,
-      100% {
-        transform: scale(1);
-        box-shadow: 0 0 14px rgba(239, 68, 68, 0.5);
-      }
-
-      50% {
-        transform: scale(1.01);
-        box-shadow: 0 0 24px rgba(239, 68, 68, 0.85);
-      }
-    }
-
-    /* Receipt Modal Styling */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(7, 9, 14, 0.75);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .receipt-modal {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      padding: 28px;
-      width: 440px;
-      box-shadow: var(--shadow-card);
-      color: var(--text-primary);
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Live Stock Exchange Ticker -->
+  <!-- 1. Live Stock Exchange Command Header -->
+  <header class="header-banner">
+    <div class="brand-title">
+      <div class="brand-icon">🍹</div>
+      <div>
+        <div class="brand-name">
+          Juice Bar Stock Exchange
+          <span class="brand-badge">PRO POS</span>
+        </div>
+        <div class="brand-subtitle">LIVE MARKET PRICING SYSTEM &bull; ATOMIC DISPENSING</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-group">
+        <span id="backendHealthBadge" class="status-badge-live">
+          <span class="dot"></span> LIVE &bull; Backend Connected
+        </span>
+      </div>
+      <button id="themeToggleBtnCustomer" onclick="toggleThemeMode()" class="btn-action-nav">
+        ☀️ Theme: Light
+      </button>
+      <a href="http://localhost:8001/" target="_blank" class="btn-action-nav">
+        ⚙️ Admin Panel
+      </a>
+      <a href="http://localhost:8000/led-display.html" target="_blank" class="btn-action-nav"
+        style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.25); color: var(--accent-cyan);">
+        📺 LED Ticker
+      </a>
+    </div>
+  </header>
+
+  <!-- 2. Market Status Strip -->
+  <div class="market-status-bar" id="marketSummaryBar">
+    <div class="market-status-left">
+      <div class="market-metric-chip">
+        <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success);"></span>
+        <strong id="marketOpenStateText">Market Open (1-Min DWMA)</strong>
+      </div>
+      <div class="market-metric-chip">
+        Securities: <strong id="summaryTotalProds">8 Products</strong>
+      </div>
+      <div class="market-metric-chip">
+        Next Settlement: <span class="countdown-highlight" id="summarySettlementCountdown">00:45</span>
+      </div>
+      <div class="market-metric-chip">
+        Sentiment: <strong id="summarySentimentPill" style="color:var(--accent-emerald);">CALCULATING...</strong>
+      </div>
+    </div>
+    <div class="market-metric-chip" style="margin-left:auto;">
+      Last Sync: <strong id="summaryLastSync" style="font-family:var(--font-mono);">--:--:--</strong>
+    </div>
+  </div>
+
+  <!-- 3. Real-Time Market Ticker -->
   <div class="ticker-wrap">
     <div class="ticker-title">⚡ MARKET TICKER</div>
     <div class="ticker-content" id="stockTickerContent">
@@ -1102,90 +1144,40 @@
     </div>
   </div>
 
-  <!-- Market Status Overview Bar -->
-  <div class="market-summary-bar" id="marketSummaryBar">
-    <div class="summary-metric">
-      <span
-        style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22C55E; box-shadow:0 0 8px #22C55E;"></span>
-      <strong id="marketOpenStateText">Market Open (1-Min DWMA)</strong>
-    </div>
-    <div class="summary-metric">
-      <span>Securities: <strong id="summaryTotalProds">8 Products</strong></span>
-    </div>
-    <div class="summary-metric">
-      <span>Next Settlement: <strong id="summarySettlementCountdown"
-          style="color:var(--accent-amber); font-family:var(--font-mono); font-weight:800;">00:45</strong></span>
-    </div>
-    <div class="summary-metric">
-      <span>Sentiment: <strong id="summarySentimentPill"
-          style="color:var(--accent-emerald); font-weight:800;">CALCULATING...</strong></span>
-    </div>
-    <div class="summary-metric" style="margin-left:auto;">
-      <span>Last Sync: <strong id="summaryLastSync"
-          style="font-family:monospace; color:var(--text-primary);">--:--:--</strong></span>
-    </div>
-  </div>
-
-  <!-- Market Crash Banner -->
+  <!-- 4. Market Crash Alert Header -->
   <div class="market-crash-banner" id="marketCrashBanner">
     <div class="crash-title">
       <span>🚨 MARKET CRASH ACTIVE!</span>
-      <span style="font-size: 14px; font-weight: 600; opacity: 0.95;" id="marketCrashBannerMsg">All Drink Prices Dropped
-        to Floor Limit ₹18.00!</span>
+      <span style="font-size: 13px; font-weight: 600; opacity: 0.95;" id="marketCrashBannerMsg">
+        All Drink Prices Dropped to Floor Limit ₹18.00!
+      </span>
     </div>
     <div class="crash-timer" id="crashTimerDisplay">03:00</div>
   </div>
 
+  <!-- 5. Main POS Grid + Sticky Cart Container -->
   <div class="pos-container">
-    <header class="header-banner">
-      <div class="brand-title">
-        <div class="brand-icon">🍹</div>
-        <div>
-          <div class="brand-name">Juice Bar Stock Exchange</div>
-          <div class="brand-subtitle">Real-Time Market Pricing &amp; Dynamic POS Terminal</div>
-        </div>
-      </div>
-      <div class="header-actions">
-        <span id="backendHealthBadge" class="status-badge-live">
-          <span class="dot"></span> LIVE &bull; Backend Connected
-        </span>
-        <button id="themeToggleBtnCustomer" onclick="toggleThemeMode()" class="btn-compact">
-          ☀️ Theme: Light
-        </button>
-        <a href="http://localhost:8001/" target="_blank" class="btn-compact">
-          ⚙️ Admin Panel
-        </a>
-        <a href="http://localhost:8000/led-display.html" target="_blank" class="btn-compact"
-          style="background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.3); color: var(--info);">
-          📺 LED Ticker
-        </a>
-      </div>
-    </header>
-
-    <!-- Product Flavour Grid -->
     <main>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div class="market-section-header">
         <div>
-          <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); letter-spacing:-0.02em;">📊 Live
-            Juice Exchange Market</h2>
-          <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px;"
-            id="posMarketSubtext">
-            REAL-TIME DWMA PRICING &bull; DYNAMIC LIVE SETTLEMENTS &bull; ATOMIC DISPENSING
+          <h2 class="market-section-title">📊 Live Beverage Market</h2>
+          <div class="market-section-subtitle" id="posMarketSubtext">
+            REAL-TIME DWMA PRICING &bull; DYNAMIC LIVE SETTLEMENTS
           </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span id="metaExchangeBounds"
-            style="font-size: 12px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan); background: var(--bg-surface); padding: 6px 14px; border-radius: var(--radius-btn); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+        <div>
+          <span class="exchange-bounds-pill" id="metaExchangeBounds">
             Base: ₹25.00 &bull; Floor: ₹18.00 &bull; Ceiling: ₹35.00
           </span>
         </div>
       </div>
+
       <div class="flavour-grid" id="productGrid">
         <!-- Rendered dynamically -->
       </div>
     </main>
 
-    <!-- Cart Summary Panel -->
+    <!-- Sticky Order Cart Panel -->
     <aside class="cart-panel">
       <div class="cart-header">
         <span>Order Cart</span>
@@ -1193,9 +1185,7 @@
       </div>
 
       <div class="cart-items" id="cartItemsContainer">
-        <div style="text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 14px;">
-          🛒 Cart is empty.<br>Click "+ Add to Cart" to build order.
-        </div>
+        <!-- Empty cart or items rendered dynamically -->
       </div>
 
       <div class="cart-summary" id="cartSummaryBox" style="display: none;">
@@ -1206,7 +1196,7 @@
         <div class="summary-row" style="align-items: center;">
           <span>Payment Method</span>
           <select id="paymentMethodSelect"
-            style="background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px;">
+            style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: var(--radius-sm); font-weight: 600; font-size: 12px;">
             <option value="CASH">Cash Payment</option>
             <option value="UPI">UPI / QR Code</option>
             <option value="CARD">Debit / Credit Card</option>
@@ -1219,7 +1209,7 @@
       </div>
 
       <div id="checkoutErrorBanner"
-        style="display: none; background: #fef2f2; border: 1.5px solid #fca5a5; color: #991b1b; padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-align: center; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);">
+        style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; padding: 10px 12px; border-radius: var(--radius-md); font-size: 12px; font-weight: 700; margin-bottom: 12px; text-align: center;">
       </div>
 
       <button class="checkout-btn" id="checkoutBtn" disabled onclick="processCheckout()">
@@ -1228,29 +1218,29 @@
     </aside>
   </div>
 
-  <!-- Receipt Modal -->
+  <!-- 6. Receipt Modal -->
   <div class="modal-overlay" id="receiptModal" style="display: none;">
     <div class="receipt-modal">
-      <div style="text-align: center; margin-bottom: 24px;">
-        <div style="font-size: 52px; margin-bottom: 10px;">✅</div>
-        <h2 style="font-size: 26px; font-weight: 900; color: #059669;">Order Completed</h2>
-        <p style="font-size: 15px; color: #475569; font-weight: 700;" id="modalOrderNumber">Invoice #ORD-1001</p>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 44px; margin-bottom: 8px;">✅</div>
+        <h2 style="font-size: 22px; font-weight: 900; color: var(--success);">Order Completed</h2>
+        <p style="font-size: 13.5px; color: var(--text-muted); font-weight: 700;" id="modalOrderNumber">Invoice #ORD-1001</p>
       </div>
 
       <div
-        style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 20px; margin-bottom: 24px;"
+        style="background: var(--bg-secondary); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;"
         id="modalItemsContainer">
         <!-- Rendered items -->
       </div>
 
-      <div style="font-size: 14px; color: #475569; text-align: center; margin-bottom: 26px; font-weight: 700;">
-        Payment: <strong id="modalPaymentMethod" style="color: #0f172a;">CASH</strong> &bull; Status: <span
-          style="color: #059669; font-weight: 900;">COMPLETED</span><br>
-        Volume deducted atomically from 20L active container.
+      <div style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 20px; font-weight: 600;">
+        Payment: <strong id="modalPaymentMethod" style="color: var(--text-primary);">CASH</strong> &bull; Status: <span
+          style="color: var(--success); font-weight: 800;">COMPLETED</span><br>
+        <span style="font-size: 11.5px; opacity: 0.85;">Volume deducted atomically from active dispenser container.</span>
       </div>
 
       <button onclick="closeReceiptModal()"
-        style="width: 100%; padding: 18px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; border-radius: 14px; color: white; font-weight: 900; font-size: 17px; cursor: pointer; box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);">
+        style="width: 100%; padding: 14px; background: var(--accent-blue); border: none; border-radius: var(--radius-md); color: white; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);">
         Done / Next POS Order
       </button>
     </div>
@@ -1261,9 +1251,9 @@
       API_BASE_URL: 'http://localhost:8088/api',
       WS_URL: 'http://localhost:8088/ws'
     };
-    const API_BASE_URL = CONFIG.API_BASE_URL;
     let isBackendOnline = true;
     let isProcessingCheckout = false;
+    let wsReconnectAttempts = 0;
 
     let priceHistoryMap = {};
     let previousPriceMap = {};
@@ -1381,13 +1371,13 @@
     }
 
     const FLAVOUR_COLORS = {
-      MANGO: { stroke: '#EAB308', rgb: '234, 179, 8', fade: '#CA8A04' },
+      MANGO: { stroke: '#F59E0B', rgb: '245, 158, 11', fade: '#D97706' },
       LEMON: { stroke: '#84CC16', rgb: '132, 204, 22', fade: '#65A30D' },
-      MINT: { stroke: '#047857', rgb: '4, 120, 87', fade: '#065F46' },
-      STRAWBERRY: { stroke: '#EC4899', rgb: '236, 72, 153', fade: '#DB2777' },
-      GRAPE: { stroke: '#9333EA', rgb: '147, 51, 234', fade: '#7E22CE' },
-      LYCHEE: { stroke: '#FB923C', rgb: '251, 146, 60', fade: '#EA580C' },
-      THUNDER: { stroke: '#92400E', rgb: '146, 64, 14', fade: '#78350F' },
+      MINT: { stroke: '#10B981', rgb: '16, 185, 129', fade: '#059669' },
+      STRAWBERRY: { stroke: '#F43F5E', rgb: '244, 63, 94', fade: '#E11D48' },
+      GRAPE: { stroke: '#A855F7', rgb: '168, 85, 247', fade: '#9333EA' },
+      LYCHEE: { stroke: '#EC4899', rgb: '236, 72, 153', fade: '#DB2777' },
+      THUNDER: { stroke: '#0284C7', rgb: '2, 132, 199', fade: '#0369A1' },
       ORANGE: { stroke: '#F97316', rgb: '249, 115, 22', fade: '#EA580C' }
     };
 
@@ -1411,13 +1401,12 @@
         5: FLAVOUR_COLORS.STRAWBERRY,
         6: FLAVOUR_COLORS.GRAPE,
         7: FLAVOUR_COLORS.LYCHEE,
-        23: FLAVOUR_COLORS.THUNDER,
-        8: FLAVOUR_COLORS.THUNDER
+        23: FLAVOUR_COLORS.THUNDER
       };
       return idMap[p.id] || FLAVOUR_COLORS.MANGO;
     }
 
-    let products = [
+    let defaultSeedProducts = [
       { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.125, trend: '+0.0%', trendDirection: 'FLAT' },
       { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.40, trend: '+0.0%', trendDirection: 'FLAT' },
       { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.35, trend: '+0.0%', trendDirection: 'FLAT' },
@@ -1428,6 +1417,7 @@
       { id: 23, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 18.0, maxCupPrice: 35.0, basePrice: 25.0, targetSalesPer1Minute: 0.50, trend: '+0.0%', trendDirection: 'FLAT' }
     ];
 
+    let products = [...defaultSeedProducts];
     let cart = [];
     let isMarketCrashActive = false;
     let crashRemainingSeconds = 0;
@@ -1443,12 +1433,12 @@
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(440, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 1.2);
+        osc.stop(audioCtx.currentTime + 1.0);
       } catch (e) { }
     }
 
@@ -1508,10 +1498,10 @@
             renderCart();
             renderAllSparklines();
 
-            const cardEl = document.getElementById(`flavourCard-${pId}`) || document.getElementById(`prod-card-${pId}`);
+            const cardEl = document.getElementById(`flavourCard-${pId}`);
             if (cardEl) {
               cardEl.classList.add('flash-surge');
-              setTimeout(() => cardEl.classList.remove('flash-surge'), 1300);
+              setTimeout(() => cardEl.classList.remove('flash-surge'), 1200);
             }
           }
         }
@@ -1565,7 +1555,7 @@
 
       const bannerMsg = document.getElementById('marketCrashBannerMsg');
       if (bannerMsg) {
-        bannerMsg.textContent = `🚨 MARKET CRASH ACTIVE! All beverage prices forced to floor limit!`;
+        bannerMsg.textContent = `All beverage prices dropped to floor limit ₹18.00!`;
       }
 
       const crashBanner = document.getElementById('marketCrashBanner');
@@ -1583,10 +1573,7 @@
 
         if (healthBadge) {
           healthBadge.className = 'status-badge-offline';
-          healthBadge.style.background = 'rgba(239, 68, 68, 0.2)';
-          healthBadge.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-          healthBadge.style.color = '#ef4444';
-          healthBadge.innerHTML = `<span class="dot" style="background:#ef4444;"></span> 🚨 MARKET CRASH ACTIVE (${timeStr})`;
+          healthBadge.innerHTML = `<span class="dot"></span> 🚨 MARKET CRASH (${timeStr})`;
         }
       };
 
@@ -1616,9 +1603,6 @@
       const healthBadge = document.getElementById('backendHealthBadge');
       if (healthBadge) {
         healthBadge.className = 'status-badge-live';
-        healthBadge.style.background = 'rgba(34, 197, 94, 0.1)';
-        healthBadge.style.borderColor = 'rgba(34, 197, 94, 0.25)';
-        healthBadge.style.color = 'var(--success)';
         healthBadge.innerHTML = `<span class="dot"></span> LIVE &bull; Backend Connected`;
       }
 
@@ -1634,19 +1618,15 @@
       const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25.0);
       const targetSalesPer1Minute = (p.targetSalesPer1Minute !== undefined && p.targetSalesPer1Minute !== null)
         ? Number(p.targetSalesPer1Minute)
-        : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : ((p.targetSalesPer2Minute !== undefined && p.targetSalesPer2Minute !== null) ? Number(p.targetSalesPer2Minute) / 2.0 : 0.40));
+        : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : 0.40);
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
       const flavour = p.flavour || p.name || 'JUICE';
       const description = p.description || 'Fresh handcrafted fruit juice cooler';
-      const pricingMode = p.pricingMode || 'DYNAMIC';
 
-      // Detect price movement against previous snapshot
-      let tickClass = '';
       let flashEffect = flashEffectMap[id] || '';
       if (previousPriceMap[id] !== undefined && previousPriceMap[id] !== currentCupPrice) {
         const diff = currentCupPrice - previousPriceMap[id];
-        tickClass = diff > 0 ? 'tick-up' : 'tick-down';
         flashEffect = diff > 0 ? 'flash-surge' : 'flash-decay';
         flashEffectMap[id] = flashEffect;
         setTimeout(() => {
@@ -1655,11 +1635,10 @@
           if (cardEl) {
             cardEl.classList.remove('flash-surge', 'flash-decay');
           }
-        }, 1300);
+        }, 1200);
       }
       previousPriceMap[id] = currentCupPrice;
 
-      // Track in history map
       if (!priceHistoryMap[id]) priceHistoryMap[id] = [];
       const nowIso = new Date().toISOString();
       const lastHist = priceHistoryMap[id][priceHistoryMap[id].length - 1];
@@ -1680,13 +1659,10 @@
         maxCupPrice,
         basePrice,
         targetSalesPer1Minute,
-        targetSalesPer2Minute: targetSalesPer1Minute * 2.0,
         defaultCupSizeMl,
         name,
         flavour,
         description,
-        pricingMode,
-        tickClass,
         flashEffect
       };
     }
@@ -1699,18 +1675,12 @@
     function updateBackendStatusUI(isOnline) {
       isBackendOnline = isOnline;
       const healthBadge = document.getElementById('backendHealthBadge');
-      if (healthBadge) {
+      if (healthBadge && !isMarketCrashActive) {
         if (!isOnline) {
           healthBadge.className = 'status-badge-offline';
-          healthBadge.style.background = 'rgba(239, 68, 68, 0.2)';
-          healthBadge.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-          healthBadge.style.color = '#ef4444';
-          healthBadge.innerHTML = `<span class="dot" style="background:#ef4444;"></span> 🔴 MARKET CONNECTION LOST`;
-        } else if (!isMarketCrashActive) {
+          healthBadge.innerHTML = `<span class="dot"></span> 🔴 DISCONNECTED`;
+        } else {
           healthBadge.className = 'status-badge-live';
-          healthBadge.style.background = 'rgba(34, 197, 94, 0.1)';
-          healthBadge.style.borderColor = 'rgba(34, 197, 94, 0.25)';
-          healthBadge.style.color = 'var(--success)';
           healthBadge.innerHTML = `<span class="dot"></span> LIVE &bull; Backend Connected`;
         }
       }
@@ -1718,7 +1688,10 @@
 
     async function fetchPricingConfiguration() {
       try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/config`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/config`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const config = await res.json();
           applyPricingConfiguration(config);
@@ -1751,7 +1724,10 @@
 
     async function fetchProductHistory(productId) {
       try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/history/${productId}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/history/${productId}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -1771,20 +1747,22 @@
     }
 
     async function fetchAllPriceHistories() {
-      for (const p of products) {
-        await fetchProductHistory(p.id);
-      }
+      try {
+        await Promise.allSettled(products.map(p => fetchProductHistory(p.id)));
+      } catch (e) { }
     }
 
     async function fetchProducts() {
       try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/pos/products`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pos/products`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
           if (data && Array.isArray(data) && data.length > 0) {
             isBackendOnline = true;
-            const normData = normalizeProductsList(data);
-            products = normData;
+            products = normalizeProductsList(data);
             updateBackendStatusUI(true);
           } else {
             isBackendOnline = false;
@@ -1897,34 +1875,22 @@
 
           const shortName = getShortFlavourLabel(p);
           const badgeInfo = getMarketBadgeInfo(p, isMarketCrashActive);
-          const targetSales = Number(p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : 0.40).toFixed(2);
 
-          let demandCategory = 'NORMAL';
-          let demandColor = 'var(--text-muted)';
-          let demandBarClass = 'demand-normal';
-          let demandPercent = 50;
+          let demandCategory = '⚡ ACTIVE FLOW';
+          let demandColor = 'var(--accent-emerald)';
 
           if (diff > 0.05) {
             demandCategory = '🔥 HIGH DEMAND';
             demandColor = 'var(--warning)';
-            demandBarClass = 'demand-high';
-            demandPercent = Math.min(100, Math.round(50 + (diff / (maxP - baseP || 1)) * 50));
           } else if (diff < -0.05) {
             demandCategory = '❄️ DISCOUNT FLOOR';
             demandColor = 'var(--accent-cyan)';
-            demandBarClass = 'demand-low';
-            demandPercent = Math.max(15, Math.round(50 - (Math.abs(diff) / (baseP - minP || 1)) * 35));
-          } else {
-            demandCategory = '⚡ ACTIVE FLOW';
-            demandColor = 'var(--accent-emerald)';
-            demandBarClass = 'demand-normal';
-            demandPercent = 50;
           }
 
           const themeClass = getFlavourThemeClass(p);
 
           return `
-            <div class="flavour-card ${themeClass} ${isMarketCrashActive ? 'crash-mode' : ''} ${p.flashEffect || ''}" id="flavourCard-${p.id}">
+            <div class="flavour-card ${themeClass} ${p.flashEffect || ''}" id="flavourCard-${p.id}">
               <div>
                 <!-- 1. Product Visual Area -->
                 <div class="card-img-banner">
@@ -1934,43 +1900,43 @@
 
                 <!-- 2. Product Identity -->
                 <div class="card-header-info">
-                  <div class="card-name">${p.name}</div>
+                  <div class="card-name" title="${p.name}">${p.name}</div>
                   <div class="card-size">${p.defaultCupSizeMl || 250}ml standard cup</div>
                 </div>
 
-                <!-- 3. Current Live Price (DOMINANT!) & Market Movement Status -->
+                <!-- 3. Current Live Price (Dominant Hero) & Market Movement Badge -->
                 <div class="price-hero-section">
                   <div class="price-primary-col">
-                    <span class="price-main ${p.tickClass || ''}" id="priceMain-${p.id}">₹${activePrice.toFixed(2)}</span>
-                    <span class="price-rate-label">LIVE CUP RATE</span>
+                    <span class="price-main" id="priceMain-${p.id}">₹${activePrice.toFixed(2)}</span>
+                    <span class="price-rate-label">LIVE CUP PRICE</span>
                   </div>
                   <span class="price-status-badge ${badgeInfo.badgeClass}" id="marketBadge-${p.id}">
                     ${badgeInfo.badgeText}
                   </span>
                 </div>
 
-                <!-- 4. Mini Price Trend Chart (Clean 75px, subtle bézier curve) -->
+                <!-- 4. Mini Price Trend Chart -->
                 <div class="card-chart-wrap">
                   <canvas id="posSparkline-${p.id}" class="card-chart-canvas"></canvas>
-                  <span class="chart-micro-tag" id="sparklinePts-${p.id}">30 PTS • LIVE</span>
+                  <span class="chart-micro-tag" id="sparklinePts-${p.id}">30 PTS &bull; LIVE</span>
                 </div>
                 
-                <!-- 5. Compact Market Limits & Demand Row -->
+                <!-- 5. Compact Market Limits & Demand Info -->
                 <div class="card-meta-row">
-                  <span class="limits-text" id="posLimits-${p.id}">Base ₹${baseP.toFixed(0)} • F: ₹${minP.toFixed(0)} • C: ₹${maxP.toFixed(0)}</span>
+                  <span class="limits-text" id="posLimits-${p.id}">Base ₹${baseP.toFixed(0)} &bull; F: ₹${minP.toFixed(0)} &bull; C: ₹${maxP.toFixed(0)}</span>
                   <span class="demand-pill" id="posDemandCat-${p.id}" style="color: ${demandColor};">${demandCategory}</span>
                 </div>
               </div>
 
-              <!-- 6. Action Button -->
-              <button class="add-to-cart-btn" id="posAddToCart-${p.id}" ${!isBackendOnline ? 'disabled="disabled" style="opacity:0.5; cursor:not-allowed; background:#64748b;"' : ''} onclick="addToCart(${p.id})">
-                ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Rate ₹${activePrice.toFixed(2)}` : '🛒 + Add to Cart')}
+              <!-- 6. Primary Action Button -->
+              <button class="add-to-cart-btn" id="posAddToCart-${p.id}" onclick="addToCart(${p.id})">
+                ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Rate ₹${activePrice.toFixed(2)}` : '+ ADD TO ORDER')}
               </button>
             </div>
           `;
         }).join('');
       } else {
-        // Fast in-place DOM updates - NO layout recalculations, smooth static page
+        // Smooth in-place DOM updates
         products.forEach(p => {
           const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
           const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
@@ -1989,7 +1955,7 @@
           if (priceEl) priceEl.textContent = `₹${activePrice.toFixed(2)}`;
 
           const limitsEl = document.getElementById(`posLimits-${p.id}`);
-          if (limitsEl) limitsEl.textContent = `Base ₹${baseP.toFixed(0)} • F: ₹${minP.toFixed(0)} • C: ₹${maxP.toFixed(0)}`;
+          if (limitsEl) limitsEl.innerHTML = `Base ₹${baseP.toFixed(0)} &bull; F: ₹${minP.toFixed(0)} &bull; C: ₹${maxP.toFixed(0)}`;
 
           const demandCatEl = document.getElementById(`posDemandCat-${p.id}`);
           if (demandCatEl) {
@@ -2022,8 +1988,8 @@
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
-      const width = (rect.width && rect.width > 10) ? rect.width : (canvas.offsetWidth > 10 ? canvas.offsetWidth : 260);
-      const height = (rect.height && rect.height > 10) ? rect.height : (canvas.offsetHeight > 10 ? canvas.offsetHeight : 75);
+      const width = (rect.width && rect.width > 10) ? rect.width : (canvas.offsetWidth > 10 ? canvas.offsetWidth : 240);
+      const height = (rect.height && rect.height > 10) ? rect.height : (canvas.offsetHeight > 10 ? canvas.offsetHeight : 72);
       const dpr = window.devicePixelRatio || 1;
 
       canvas.width = Math.round(width * dpr);
@@ -2055,12 +2021,12 @@
       }
 
       const ptsBadge = document.getElementById(`sparklinePts-${productId}`);
-      if (ptsBadge) ptsBadge.textContent = `${dataPoints.length} PTS • LIVE`;
+      if (ptsBadge) ptsBadge.innerHTML = `${dataPoints.length} PTS &bull; LIVE`;
 
       const padLeft = 24;
       const padRight = 8;
-      const padTop = 10;
-      const padBottom = 10;
+      const padTop = 8;
+      const padBottom = 8;
       const plotWidth = width - padLeft - padRight;
       const plotHeight = height - padTop - padBottom;
 
@@ -2074,16 +2040,15 @@
 
       const isLight = document.documentElement.getAttribute('data-theme') === 'light' || !document.body.classList.contains('dark-theme-mode');
 
-      // Flavor-specific graph color scheme
       const prod = products.find(p => p.id === productId);
       const flavourColor = getProductChartColors(prod);
       const strokeColor = flavourColor.stroke;
       const strokeColorRgb = flavourColor.rgb;
 
-      // ── Subtle Baseline Reference (Base Price Dashed Line) ──
+      // Base Price Dashed Reference Baseline
       const baseY = getY(basePrice);
       ctx.beginPath();
-      ctx.strokeStyle = isLight ? 'rgba(100, 116, 139, 0.25)' : 'rgba(148, 163, 184, 0.2)';
+      ctx.strokeStyle = isLight ? 'rgba(100, 116, 139, 0.22)' : 'rgba(148, 163, 184, 0.18)';
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
       ctx.moveTo(padLeft, baseY);
@@ -2091,22 +2056,22 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // ── Y-Axis Min/Max Labels ──
+      // Y-Axis Labels
       ctx.save();
       ctx.font = 'bold 7.5px JetBrains Mono, monospace';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = isLight ? 'rgba(100, 116, 139, 0.7)' : 'rgba(148, 163, 184, 0.7)';
+      ctx.fillStyle = isLight ? 'rgba(100, 116, 139, 0.7)' : 'rgba(148, 163, 184, 0.65)';
       ctx.fillText(`₹${Math.round(maxP)}`, padLeft - 3, padTop + 2);
       ctx.fillText(`₹${Math.round(minP)}`, padLeft - 3, padTop + plotHeight - 2);
       ctx.restore();
 
-      // ── Filled Area Under Curve (Smooth Bézier) ──
+      // Area Under Curve (Bézier Smooth)
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
         const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
-        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i - 1].price);
         const cpx = (x0 + x1) / 2;
         ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
@@ -2115,52 +2080,39 @@
       ctx.closePath();
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
-      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.25)`);
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.22)`);
       areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.0)`);
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
-      // ── Primary Stroke Line ──
+      // Main Stroke Line
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
         const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
-        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i - 1].price);
         const cpx = (x0 + x1) / 2;
         ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.0;
+      ctx.lineWidth = 1.8;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
 
-      // ── Live Beacon Dot on Latest Point ──
+      // Latest Point Beacon Dot
       const lastX = getX(dataPoints.length - 1);
       const lastY = getY(dataPoints[dataPoints.length - 1].price);
 
-      // Outer pulse halo
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(${strokeColorRgb}, 0.25)`;
       ctx.fill();
 
-      // Core dot
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 2.5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 2.2, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
-    }
-      ctx.lineTo(rx, ry + rr);
-      ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.fillStyle = '#FFFFFF';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(labelText, labelX, labelY + 0.5);
-      ctx.restore();
     }
 
     function addToCart(productId) {
@@ -2203,8 +2155,10 @@
 
       if (cart.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 14px;">
-            🛒 Cart is empty.<br>Click "+ Add to Cart" to build order.
+          <div style="text-align: center; color: var(--text-muted); padding: 40px 10px; font-size: 13px;">
+            <div style="font-size: 32px; margin-bottom: 8px; opacity: 0.8;">🛒</div>
+            <div style="font-weight: 800; color: var(--text-primary); margin-bottom: 4px; font-size: 13.5px; letter-spacing: 0.3px;">YOUR MARKET ORDER IS EMPTY</div>
+            <div style="font-size: 11.5px; opacity: 0.8;">Select a beverage to begin.</div>
           </div>
         `;
         summaryBox.style.display = 'none';
@@ -2219,8 +2173,8 @@
           const itemTotal = (itemPrice * item.quantity).toFixed(2);
           return `
             <div class="cart-item">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="${imgUrl}" alt="${liveProduct.name}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;" />
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="${imgUrl}" alt="${liveProduct.name}" style="width: 36px; height: 36px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;" />
                 <div>
                   <div class="item-title">${icon} ${liveProduct.name}</div>
                   <div class="item-sub">
@@ -2228,9 +2182,9 @@
                   </div>
                 </div>
               </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 4px;">
                 <button class="qty-btn" onclick="updateQty(${idx}, -1)">-</button>
-                <span style="font-weight: 700; font-size: 14px; width: 22px; text-align: center; color: var(--text-primary);">${item.quantity}</span>
+                <span style="font-weight: 800; font-size: 13px; width: 20px; text-align: center; color: var(--text-primary); font-family: var(--font-mono);">${item.quantity}</span>
                 <button class="qty-btn" onclick="updateQty(${idx}, 1)">+</button>
               </div>
             </div>
@@ -2238,16 +2192,14 @@
         }).join('');
 
         summaryBox.style.display = 'block';
-        document.getElementById('totalVolumeText').textContent = `${totalVolume} ml (${totalVolume / 250} cups)`;
+        document.getElementById('totalVolumeText').textContent = `${totalVolume} ml (${(totalVolume / 250).toFixed(0)} cups)`;
         document.getElementById('totalPayableText').textContent = `₹${totalPayable.toFixed(2)}`;
 
         if (!isBackendOnline) {
           checkoutBtn.disabled = true;
-          checkoutBtn.style.background = '#64748b';
-          checkoutBtn.textContent = '🔴 MARKET CONNECTION LOST (Ordering Disabled)';
+          checkoutBtn.textContent = '🔴 MARKET OFFLINE';
         } else {
           checkoutBtn.disabled = false;
-          checkoutBtn.style.background = '';
           checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable.toFixed(2)})`;
         }
       }
@@ -2268,9 +2220,6 @@
 
       const paymentMethod = document.getElementById('paymentMethodSelect').value || 'CASH';
       const completedCart = [...cart];
-      const totalCups = completedCart.reduce((sum, i) => sum + i.quantity, 0);
-      const totalVolumeMl = completedCart.reduce((sum, i) => sum + (i.cupSizeMl * i.quantity), 0);
-
       const idempotencyKey = 'IDEM-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
 
       const apiPayload = {
@@ -2324,18 +2273,18 @@
           const icon = getFruitIcon(liveProduct);
           const itemTotal = (itemPrice * i.quantity).toFixed(2);
           return `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #0f172a;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13.5px; font-weight: 700; color: var(--text-primary);">
               <span>${icon} ${liveProduct.name} x ${i.quantity} (${i.cupSizeMl * i.quantity}ml)</span>
-              <span style="color: #059669;">₹${itemTotal}</span>
+              <span style="color: var(--success); font-family: var(--font-mono);">₹${itemTotal}</span>
             </div>
           `;
         }).join('');
 
         document.getElementById('modalOrderNumber').textContent = `Receipt #${orderNumber}`;
         document.getElementById('modalItemsContainer').innerHTML = modalItemsHtml + `
-          <div style="border-top: 2px dashed #cbd5e1; margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 900; font-size: 16px; color: #0f172a;">
+          <div style="border-top: 1px dashed var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 900; font-size: 15px; color: var(--text-primary);">
             <span>TOTAL PAID</span>
-            <span style="color: #059669;">₹${Number(totalAmount).toFixed(2)}</span>
+            <span style="color: var(--success); font-family: var(--font-mono);">₹${Number(totalAmount).toFixed(2)}</span>
           </div>
         `;
         document.getElementById('modalPaymentMethod').textContent = paymentMethod;
@@ -2379,7 +2328,10 @@
 
     async function checkBackendHealth() {
       try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/health`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/health`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         const badge = document.getElementById('backendHealthBadge');
         if (badge && !isMarketCrashActive) {
           if (res.ok) {
@@ -2408,7 +2360,10 @@
 
     async function fetchPricingTiming() {
       try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/timing`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/timing`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const data = await res.json();
           updatePricingTimingState(data);
@@ -2449,7 +2404,7 @@
       if (openStateEl) openStateEl.textContent = `Market Open (${shortLabel} DWMA)`;
 
       const subtextEl = document.getElementById('posMarketSubtext');
-      if (subtextEl) subtextEl.textContent = `REAL-TIME ${shortLabel.toUpperCase()} DWMA PRICING • DYNAMIC LIVE SETTLEMENTS • ATOMIC DISPENSING`;
+      if (subtextEl) subtextEl.innerHTML = `REAL-TIME ${shortLabel.toUpperCase()} DWMA PRICING &bull; DYNAMIC LIVE SETTLEMENTS`;
 
       renderAllSparklines();
       if (intervalChanged || !settlementCountdownInterval) {
@@ -2509,6 +2464,7 @@
         stompClient.debug = null;
         stompClient.connect({}, function () {
           isReconnectingWS = false;
+          wsReconnectAttempts = 0;
           fetchProducts();
           fetchPricingTiming();
           fetchPricingConfiguration();
@@ -2630,19 +2586,9 @@
               }
             }
           });
-
-          stompClient.subscribe('/topic/market-status', function (message) {
-            if (message && message.body) {
-              try {
-                const res = JSON.parse(message.body);
-                const isPaused = res.status === 'PAUSED' || res.marketStatus === 'PAUSED';
-                setMarketPausedState(isPaused);
-              } catch (e) {}
-            }
-          });
         }, function () {
           isReconnectingWS = true;
-          wsReconnectAttempts = (wsReconnectAttempts || 0) + 1;
+          wsReconnectAttempts++;
           const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
           setTimeout(() => {
             isReconnectingWS = false;
@@ -2650,7 +2596,7 @@
           }, backoffDelay);
         });
       } catch (err) {
-        wsReconnectAttempts = (wsReconnectAttempts || 0) + 1;
+        wsReconnectAttempts++;
         const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
         setTimeout(() => {
           isReconnectingWS = false;
@@ -2659,24 +2605,15 @@
       }
     }
 
-    async function checkMarketState() {
-      try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/market`);
-        if (res.ok) {
-          const state = await res.json();
-          const isPaused = state.marketStatus === 'PAUSED' || state.status === 'PAUSED';
-          setMarketPausedState(isPaused);
-        }
-      } catch (e) {}
-    }
-
     window.addEventListener('resize', () => {
       renderAllSparklines();
     });
 
-    // Startup
+    // Startup Initialization
+    renderProducts();
+    renderTicker();
+    renderCart();
     checkBackendHealth();
-    checkMarketState();
     fetchPricingTiming();
     fetchPricingConfiguration();
     fetchAllPriceHistories().then(() => {
@@ -2687,8 +2624,6 @@
     startSettlementCountdown();
 
     setInterval(checkBackendHealth, 5000);
-    setInterval(checkMarketState, 5000);
-    // Background continuous sync to guarantee real-time reflection of admin actions
     setInterval(() => {
       fetchProducts();
       fetchPricingTiming();
@@ -2701,9 +2636,6 @@
     }
 
     function setCustomerThemeMode(isDark) {
-      localStorage.removeItem('pubexchange_contrast_mode');
-      document.body.classList.remove('high-contrast-black');
-
       if (isDark) {
         document.body.classList.add('dark-theme-mode');
         document.documentElement.setAttribute('data-theme', 'dark');
@@ -2720,16 +2652,12 @@
     function updateThemeButtonUICustomer(isDark) {
       const btn = document.getElementById('themeToggleBtnCustomer');
       if (btn) {
-        btn.style.background = isDark ? 'linear-gradient(135deg, #0284c7, #2563eb)' : 'var(--bg-secondary)';
-        btn.style.border = isDark ? '1px solid rgba(255, 255, 255, 0.18)' : '1px solid var(--border-color)';
-        btn.style.color = isDark ? '#ffffff' : 'var(--text-main)';
-        btn.style.boxShadow = isDark ? '0 4px 14px rgba(37, 99, 235, 0.3)' : 'var(--shadow-sm)';
         btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
       }
     }
 
     const savedThemeCust = localStorage.getItem('pubexchange_theme_mode');
-    setCustomerThemeMode(savedThemeCust !== 'light'); // Default to obsidian dark
+    setCustomerThemeMode(savedThemeCust !== 'light'); // Default to Obsidian dark
   </script>
 </body>
 
