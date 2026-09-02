@@ -927,13 +927,13 @@
       object-fit: contain;
     }
 
-    /* Naruto Mascot Card */
+    /* Naruto Mascot Card — 8K Ultra HD Edition */
     .naruto-mascot-card {
       background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 6px;
-      box-shadow: var(--shadow-card);
+      border: 1.5px solid rgba(249, 115, 22, 0.4);
+      border-radius: 10px;
+      padding: 8px;
+      box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15), var(--shadow-card);
       text-align: center;
       display: flex;
       flex-direction: column;
@@ -941,58 +941,66 @@
       justify-content: center;
       overflow: hidden;
       position: relative;
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      flex: 1;
+      min-height: 240px;
     }
     .naruto-mascot-card:hover {
-      border-color: rgba(249, 115, 22, 0.5);
-      box-shadow: 0 4px 16px rgba(249, 115, 22, 0.15);
-      transform: translateY(-1px);
+      border-color: #F97316;
+      box-shadow: 0 8px 28px rgba(249, 115, 22, 0.3), 0 0 15px rgba(249, 115, 22, 0.2);
+      transform: translateY(-2px);
     }
     .naruto-img-wrapper {
       position: relative;
       width: 100%;
-      max-height: 160px;
-      border-radius: 6px;
+      height: 230px;
+      max-height: 260px;
+      border-radius: 8px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(56, 189, 248, 0.1));
+      background: radial-gradient(circle at center, rgba(249, 115, 22, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(249, 115, 22, 0.3);
     }
     .naruto-img-wrapper img {
       width: 100%;
       height: 100%;
-      max-height: 155px;
       object-fit: cover;
-      border-radius: 6px;
-      transition: transform 0.3s ease;
+      object-position: top center;
+      border-radius: 8px;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .naruto-mascot-card:hover .naruto-img-wrapper img {
-      transform: scale(1.03);
+      transform: scale(1.04);
     }
     .naruto-badge {
       position: absolute;
-      bottom: 4px;
+      bottom: 6px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.92);
       color: #F97316;
-      font-size: 8.5px;
+      font-size: 9.5px;
       font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 12px;
-      border: 1px solid rgba(249, 115, 22, 0.4);
+      padding: 3px 10px;
+      border-radius: 14px;
+      border: 1.5px solid rgba(249, 115, 22, 0.6);
       white-space: nowrap;
-      backdrop-filter: blur(4px);
-      letter-spacing: 0.3px;
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.4px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     }
     .naruto-quote {
-      font-size: 9.5px;
+      font-size: 10.5px;
       font-weight: 700;
-      color: var(--text-secondary);
-      margin-top: 5px;
+      color: var(--text-primary);
+      margin-top: 6px;
       font-style: italic;
-      line-height: 1.2;
+      line-height: 1.25;
+      letter-spacing: -0.1px;
     }
 
     /* ==========================================================================
@@ -1468,13 +1476,13 @@
         </div>
       </div>
 
-      <!-- Naruto Pub Mascot Card -->
+      <!-- Naruto Pub Mascot Card — 8K Ultra HD Edition -->
       <div class="naruto-mascot-card">
         <div class="naruto-img-wrapper">
-          <img src="assets/naruto.jpg" alt="Naruto Juice Mascot" onerror="this.onerror=null; this.src='naruto.jpg';" />
-          <div class="naruto-badge">🍜 Pub Mascot • Naruto</div>
+          <img src="assets/naruto.jpg?v=8k" alt="Naruto Uzumaki 8K Pub Mascot" onerror="this.onerror=null; this.src='naruto.jpg?v=8k';" />
+          <div class="naruto-badge">🔥 8K ULTRA-HD • PUB MASCOT</div>
         </div>
-        <div class="naruto-quote">"Believe it! Fresh juice deals every minute!"</div>
+        <div class="naruto-quote">"🍜 Dattebayo! Savor 8K Fresh Flavor at Live Market Rates!"</div>
       </div>
 
     </div>
