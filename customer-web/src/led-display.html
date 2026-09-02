@@ -927,7 +927,7 @@
       object-fit: contain;
     }
 
-    /* Naruto Mascot Card — 8K Ultra HD Edition */
+    /* Naruto Mascot Card — Ultra HD Edition */
     .naruto-mascot-card {
       background: var(--bg-surface);
       border: 1.5px solid rgba(249, 115, 22, 0.4);
@@ -959,24 +959,27 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at center, rgba(249, 115, 22, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+      background: radial-gradient(circle at 50% 35%, rgba(249, 115, 22, 0.25) 0%, rgba(56, 189, 248, 0.15) 50%, rgba(15, 23, 42, 0.95) 100%);
       border: 1px solid rgba(249, 115, 22, 0.3);
+      padding: 6px;
     }
     .naruto-img-wrapper img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      object-position: center top;
-      border-radius: 8px;
+      object-fit: contain;
+      object-position: center;
+      border-radius: 6px;
       image-rendering: auto;
       image-rendering: smooth;
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
       transform: translateZ(0);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
     }
     .naruto-mascot-card:hover .naruto-img-wrapper img {
-      transform: scale(1.04) translateZ(0);
+      transform: scale(1.05) translateZ(0);
+      filter: drop-shadow(0 12px 24px rgba(249, 115, 22, 0.4));
     }
     .naruto-badge {
       position: absolute;
@@ -1478,13 +1481,13 @@
         </div>
       </div>
 
-      <!-- Naruto Pub Mascot Card — 8K Ultra HD Edition -->
+      <!-- Naruto Pub Mascot Card — Ultra HD Edition -->
       <div class="naruto-mascot-card">
         <div class="naruto-img-wrapper">
-          <img src="assets/naruto.jpg?v=ultra_hd_v2" alt="Naruto Uzumaki 8K Pub Mascot" onerror="this.onerror=null; this.src='naruto.jpg?v=ultra_hd_v2';" />
-          <div class="naruto-badge">🔥 8K ULTRA-HD • PUB MASCOT</div>
+          <img src="assets/naruto.png?v=official_hd" alt="Naruto Uzumaki Official Mascot" onerror="this.onerror=null; this.src='naruto.png?v=official_hd';" />
+          <div class="naruto-badge">🍜 PUB MASCOT • NARUTO</div>
         </div>
-        <div class="naruto-quote">"🍜 Dattebayo! Savor 8K Fresh Flavor at Live Market Rates!"</div>
+        <div class="naruto-quote">"🍜 Dattebayo! Savor Fresh Flavors at Live Market Rates!"</div>
       </div>
 
     </div>
