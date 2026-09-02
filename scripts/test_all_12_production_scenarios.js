@@ -250,12 +250,12 @@ async function runSuite() {
       const dbRes = await pg.query(`SELECT id, current_cup_price FROM products WHERE is_active = true ORDER BY id ASC`);
       
       const allSynced = dbRes.rows.every(row => {
-        const p = prodsRes.body.find(prod => prod.id === row.id);
+        const p = prodsRes.body.find(prod => Number(prod.id) === Number(row.id));
         return p && Number(p.currentCupPrice) === Number(row.current_cup_price);
       });
       const cfgSynced = Number(cfgRes.body.global.minCupPrice) === 20.00 && Number(cfgRes.body.global.maxCupPrice) === 30.00;
       const passed = allSynced && cfgSynced;
-      logScenario(7, "Hard Refresh / Cold Fetch Consistency", passed, `All ${dbRes.rows.length} products 100% matched DB state on cold fetch`);
+      logScenario(7, "Hard Refresh / Cold Fetch Consistency", passed, `All ${dbRes.rows.length} products 100% matched DB state on cold fetch (Synced=${allSynced}, Config=${cfgSynced})`);
     } catch (err) {
       logScenario(7, "Hard Refresh / Cold Fetch Consistency", false, err.message);
     }
