@@ -484,51 +484,65 @@
       100% { transform: translate3d(-50%, 0, 0); }
     }
 
-    /* Distinctive Electronic Trading Instrument Badge */
+    /* Distinctive Juice-Themed Electronic Trading Instrument Badge */
     .ticker-tape-item {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 4px 12px;
+      gap: 9px;
+      padding: 5px 14px;
       font-size: 13px;
       font-weight: 700;
       white-space: nowrap;
       cursor: pointer;
       user-select: none;
-      border-radius: 7px;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 8px;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
     }
 
     html[data-theme="light"] .ticker-tape-item, body:not(.dark-theme-mode) .ticker-tape-item {
-      background: #FFFFFF;
-      border: 1px solid #E2E8F0;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      background: var(--juice-bg-light, #FFFFFF);
+      border: 1.5px solid var(--juice-border-light, #CBD5E1);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05), 0 0 10px var(--juice-shadow-light, transparent);
     }
 
     html[data-theme="light"] .ticker-tape-item:hover, body:not(.dark-theme-mode) .ticker-tape-item:hover {
-      background: #F8FAFC;
-      border-color: #0284C7;
-      transform: translateY(-1.5px);
-      box-shadow: 0 3px 10px rgba(2, 132, 199, 0.12);
+      transform: translateY(-2px) scale(1.03);
+      border-color: var(--juice-accent, #0284C7);
+      box-shadow: 0 4px 16px var(--juice-glow, rgba(2, 132, 199, 0.2));
+      z-index: 10;
     }
 
     html[data-theme="dark"] .ticker-tape-item, body.dark-theme-mode .ticker-tape-item {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.22);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      background: var(--juice-bg-dark, rgba(15, 23, 42, 0.85));
+      border: 1.5px solid var(--juice-border-dark, rgba(56, 189, 248, 0.3));
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px var(--juice-shadow-dark, transparent);
+      backdrop-filter: blur(8px);
     }
 
     html[data-theme="dark"] .ticker-tape-item:hover, body.dark-theme-mode .ticker-tape-item:hover {
-      background: rgba(30, 41, 59, 0.95);
-      border-color: #38BDF8;
-      transform: translateY(-1.5px);
-      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+      transform: translateY(-2px) scale(1.03);
+      border-color: var(--juice-accent, #38BDF8);
+      box-shadow: 0 6px 20px var(--juice-glow, rgba(56, 189, 248, 0.4));
+      z-index: 10;
     }
 
-    .ticker-tape-icon {
-      font-size: 16px;
+    /* Fruit Aura Capsule */
+    .ticker-fruit-aura {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      font-size: 15px;
       line-height: 1;
-      display: inline-block;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      transition: transform 0.2s ease;
+    }
+    .ticker-tape-item:hover .ticker-fruit-aura {
+      transform: scale(1.15) rotate(6deg);
     }
 
     .ticker-tape-name {
@@ -536,14 +550,7 @@
       font-weight: 800;
       letter-spacing: 0.4px;
       font-size: 12.5px;
-    }
-
-    html[data-theme="light"] .ticker-tape-name, body:not(.dark-theme-mode) .ticker-tape-name {
-      color: #0F172A;
-    }
-
-    html[data-theme="dark"] .ticker-tape-name, body.dark-theme-mode .ticker-tape-name {
-      color: #F8FAFC;
+      text-transform: uppercase;
     }
 
     .ticker-tape-price {
@@ -554,12 +561,12 @@
     }
 
     html[data-theme="light"] .ticker-tape-price, body:not(.dark-theme-mode) .ticker-tape-price {
-      color: #0284C7;
+      color: #0F172A;
     }
 
     html[data-theme="dark"] .ticker-tape-price, body.dark-theme-mode .ticker-tape-price {
-      color: #38BDF8;
-      text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+      color: #FFFFFF;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
     }
 
     /* Delta Badges */
@@ -1580,8 +1587,127 @@
       if (f.includes('GRAPE')) return '🍇';
       if (f.includes('STRAWBERRY')) return '🍓';
       if (f.includes('THUNDER') || f.includes('ENERGY')) return '⚡';
-      if (f.includes('LYCHEE')) return '🍹';
+      if (f.includes('LYCHEE')) return '🍈';
       return '🍹';
+    }
+
+    function getJuiceThemeTokens(p) {
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) {
+        return {
+          rgb: '245, 158, 11',
+          accent: '#F59E0B',
+          bgDark: 'linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
+          bgLight: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+          borderDark: 'rgba(245, 158, 11, 0.7)',
+          borderLight: '#F59E0B',
+          shadowDark: 'rgba(245, 158, 11, 0.25)',
+          shadowLight: 'rgba(245, 158, 11, 0.18)',
+          glow: 'rgba(245, 158, 11, 0.5)'
+        };
+      }
+      if (f.includes('STRAWBERRY')) {
+        return {
+          rgb: '244, 63, 94',
+          accent: '#F43F5E',
+          bgDark: 'linear-gradient(135deg, rgba(244, 63, 94, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
+          bgLight: 'linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%)',
+          borderDark: 'rgba(244, 63, 94, 0.7)',
+          borderLight: '#F43F5E',
+          shadowDark: 'rgba(244, 63, 94, 0.25)',
+          shadowLight: 'rgba(244, 63, 94, 0.18)',
+          glow: 'rgba(244, 63, 94, 0.5)'
+        };
+      }
+      if (f.includes('ORANGE')) {
+        return {
+          rgb: '249, 115, 22',
+          accent: '#F97316',
+          bgDark: 'linear-gradient(135deg, rgba(249, 115, 22, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
+          bgLight: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
+          borderDark: 'rgba(249, 115, 22, 0.7)',
+          borderLight: '#F97316',
+          shadowDark: 'rgba(249, 115, 22, 0.25)',
+          shadowLight: 'rgba(249, 115, 22, 0.18)',
+          glow: 'rgba(249, 115, 22, 0.5)'
+        };
+      }
+      if (f.includes('GRAPE')) {
+        return {
+          rgb: '168, 85, 247',
+          accent: '#A855F7',
+          bgDark: 'linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
+          bgLight: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
+          borderDark: 'rgba(168, 85, 247, 0.7)',
+          borderLight: '#A855F7',
+          shadowDark: 'rgba(168, 85, 247, 0.25)',
+          shadowLight: 'rgba(168, 85, 247, 0.18)',
+          glow: 'rgba(168, 85, 247, 0.5)'
+        };
+      }
+      if (f.includes('LEMON')) {
+        return {
+          rgb: '234, 179, 8',
+          accent: '#EAB308',
+          bgDark: 'linear-gradient(135deg, rgba(234, 179, 8, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
+          bgLight: 'linear-gradient(135deg, #FEFCE8 0%, #FEF9C3 100%)',
+          borderDark: 'rgba(234, 179, 8, 0.7)',
+          borderLight: '#EAB308',
+          shadowDark: 'rgba(234, 179, 8, 0.25)',
+          shadowLight: 'rgba(234, 179, 8, 0.18)',
+          glow: 'rgba(234, 179, 8, 0.5)'
+        };
+      }
+      if (f.includes('MINT')) {
+        return {
+          rgb: '16, 185, 129',
+          accent: '#10B981',
+          bgDark: 'linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
+          bgLight: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
+          borderDark: 'rgba(16, 185, 129, 0.7)',
+          borderLight: '#10B981',
+          shadowDark: 'rgba(16, 185, 129, 0.25)',
+          shadowLight: 'rgba(16, 185, 129, 0.18)',
+          glow: 'rgba(16, 185, 129, 0.5)'
+        };
+      }
+      if (f.includes('LYCHEE') || f.includes('MELON') || f.includes('GUAVA')) {
+        return {
+          rgb: '251, 113, 133',
+          accent: '#FB7185',
+          bgDark: 'linear-gradient(135deg, rgba(251, 113, 133, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
+          bgLight: 'linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%)',
+          borderDark: 'rgba(251, 113, 133, 0.7)',
+          borderLight: '#FB7185',
+          shadowDark: 'rgba(251, 113, 133, 0.25)',
+          shadowLight: 'rgba(251, 113, 133, 0.18)',
+          glow: 'rgba(251, 113, 133, 0.5)'
+        };
+      }
+      if (f.includes('THUNDER') || f.includes('ENERGY') || f.includes('MOJITO') || f.includes('BLUE')) {
+        return {
+          rgb: '6, 182, 212',
+          accent: '#06B6D4',
+          bgDark: 'linear-gradient(135deg, rgba(6, 182, 212, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
+          bgLight: 'linear-gradient(135deg, #ECFEFF 0%, #CFFAFE 100%)',
+          borderDark: 'rgba(6, 182, 212, 0.7)',
+          borderLight: '#06B6D4',
+          shadowDark: 'rgba(6, 182, 212, 0.25)',
+          shadowLight: 'rgba(6, 182, 212, 0.18)',
+          glow: 'rgba(6, 182, 212, 0.5)'
+        };
+      }
+      return {
+        rgb: '245, 158, 11',
+        accent: '#F59E0B',
+        bgDark: 'linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
+        bgLight: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+        borderDark: 'rgba(245, 158, 11, 0.7)',
+        borderLight: '#F59E0B',
+        shadowDark: 'rgba(245, 158, 11, 0.25)',
+        shadowLight: 'rgba(245, 158, 11, 0.18)',
+        glow: 'rgba(245, 158, 11, 0.5)'
+      };
     }
 
     const FLAVOUR_COLORS = {
@@ -2029,10 +2155,22 @@
           badgeText = `▼ ${pct}%`;
         }
 
+        const t = getJuiceThemeTokens(p);
+
         return `
-          <div class="ticker-tape-item" onclick="showProductDetailsModal(${p.id || 0})" title="Click to inspect ${cleanName}">
-            <span class="ticker-tape-icon">${icon}</span>
-            <span class="ticker-tape-name">${cleanName}</span>
+          <div class="ticker-tape-item" onclick="showProductDetailsModal(${p.id || 0})" title="Click to inspect ${cleanName}"
+            style="
+              --juice-accent: ${t.accent};
+              --juice-bg-dark: ${t.bgDark};
+              --juice-bg-light: ${t.bgLight};
+              --juice-border-dark: ${t.borderDark};
+              --juice-border-light: ${t.borderLight};
+              --juice-shadow-dark: ${t.shadowDark};
+              --juice-shadow-light: ${t.shadowLight};
+              --juice-glow: ${t.glow};
+            ">
+            <span class="ticker-fruit-aura" style="background: rgba(${t.rgb}, 0.16); border: 1.5px solid rgba(${t.rgb}, 0.45);">${icon}</span>
+            <span class="ticker-tape-name" style="color: ${t.accent};">${cleanName}</span>
             <span class="ticker-tape-price">₹${activePrice}</span>
             <span class="ticker-tape-badge ${badgeClass}">${badgeText}</span>
           </div>
