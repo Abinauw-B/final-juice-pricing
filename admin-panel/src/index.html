@@ -4014,7 +4014,7 @@
           <div style="display: flex; align-items: center; gap: 6px;">
             <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 7px; border-radius: 6px; font-size: 11px; font-weight: 800; user-select: none; border: 1.5px solid ${isOverride ? '#d97706' : 'var(--border-color)'}; background: ${isOverride ? 'rgba(217,119,6,0.12)' : 'var(--bg-subtle)'}; color: ${isOverride ? '#d97706' : 'var(--text-muted)'};" title="${isOverride ? 'Price is LOCKED. Uncheck to release back to dynamic mode.' : 'Click to lock price at entered amount.'}">
               <input type="checkbox" id="lockCheckbox_${pid}" ${isOverride ? 'checked' : ''} onchange="toggleManualPriceLock(${pid}, this.checked)" style="cursor: pointer; accent-color: #d97706; width: 14px; height: 14px;">
-              <span>${isOverride ? '🔒 Locked' : '🔓 Auto'}</span>
+              <span>${isOverride ? '🔒 Locked' : '🔓 Lock'}</span>
             </label>
             <input id="quickPriceInput_${pid}" type="number" step="0.5" value="${Math.round(Number(livePrice))}" style="width: 54px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid ${isOverride ? '#d97706' : '#cbd5e1'}; border-radius: 6px; font-size: 13px;">
             <button class="btn-primary" style="padding: 5px 9px; font-size: 11px; font-weight: 800; background: #d97706; white-space: nowrap;" onclick="applyManualPriceOverride(${pid})" title="${isOverride ? 'Update locked price' : 'Lock price with manual override'}">${isOverride ? '🔒 Update' : '🔒 Lock'}</button>
