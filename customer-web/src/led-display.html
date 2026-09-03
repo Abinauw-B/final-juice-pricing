@@ -1190,9 +1190,7 @@
       white-space: nowrap;
       display: flex;
       align-items: center;
-      margin-left: 10px;
-      mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
-      -webkit-mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+      margin-left: 8px;
     }
 
     .ticker-scroll-content {
@@ -1213,7 +1211,6 @@
     .ticker-inner-stream {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
       flex-shrink: 0;
     }
 
@@ -1227,122 +1224,111 @@
       }
     }
 
-    /* Ticker Pill Chips */
-    .ticker-chip {
+    /* Professional Financial Ticker Tape Items */
+    .ticker-tape-item {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 3px 10px;
-      border-radius: 7px;
+      gap: 7px;
+      padding: 4px 10px;
       font-size: 12px;
       font-weight: 700;
       white-space: nowrap;
       cursor: pointer;
       user-select: none;
-      transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
-    }
-    .ticker-chip:hover {
-      transform: translateY(-1px) scale(1.03);
+      border-radius: 5px;
+      transition: background 0.15s ease, transform 0.15s ease;
     }
 
-    /* Light Theme Chip */
-    html[data-theme="light"] .ticker-chip {
-      background: rgba(241, 245, 249, 0.9);
-      border: 1px solid #e2e8f0;
-      color: #0f172a;
-    }
-    html[data-theme="light"] .ticker-chip:hover {
-      background: #ffffff;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-      border-color: #cbd5e1;
-    }
-    html[data-theme="light"] .ticker-chip.is-up .ticker-chip-price {
-      color: #047857;
-      font-weight: 800;
-    }
-    html[data-theme="light"] .ticker-chip.is-down .ticker-chip-price {
-      color: #b91c1c;
-      font-weight: 800;
-    }
-    html[data-theme="light"] .ticker-chip.is-flat .ticker-chip-price {
-      color: #334155;
-      font-weight: 700;
+    .ticker-tape-item:hover {
+      background: var(--bg-hover);
+      transform: translateY(-1px);
     }
 
-    /* Dark Theme Chip */
-    html[data-theme="dark"] .ticker-chip, body.dark-theme-mode .ticker-chip {
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(71, 85, 105, 0.4);
-      color: #f8fafc;
-    }
-    html[data-theme="dark"] .ticker-chip:hover, body.dark-theme-mode .ticker-chip:hover {
-      background: rgba(51, 65, 85, 0.9);
-      border-color: rgba(56, 189, 248, 0.5);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
-    }
-    html[data-theme="dark"] .ticker-chip.is-up .ticker-chip-price, body.dark-theme-mode .ticker-chip.is-up .ticker-chip-price {
-      color: #10b981;
+    .ticker-tape-name {
+      font-family: var(--font-main);
       font-weight: 800;
-      text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+      letter-spacing: 0.3px;
     }
-    html[data-theme="dark"] .ticker-chip.is-down .ticker-chip-price, body.dark-theme-mode .ticker-chip.is-down .ticker-chip-price {
-      color: #f43f5e;
+
+    html[data-theme="light"] .ticker-tape-name, body:not(.dark-theme-mode) .ticker-tape-name {
+      color: #0F172A;
+    }
+
+    html[data-theme="dark"] .ticker-tape-name, body.dark-theme-mode .ticker-tape-name {
+      color: #F8FAFC;
+    }
+
+    .ticker-tape-price {
+      font-family: var(--font-mono);
       font-weight: 800;
-      text-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+      font-size: 12.5px;
     }
-    html[data-theme="dark"] .ticker-chip.is-flat .ticker-chip-price, body.dark-theme-mode .ticker-chip.is-flat .ticker-chip-price {
-      color: #94a3b8;
-      font-weight: 700;
+
+    html[data-theme="light"] .ticker-tape-price, body:not(.dark-theme-mode) .ticker-tape-price {
+      color: #0F172A;
+    }
+
+    html[data-theme="dark"] .ticker-tape-price, body.dark-theme-mode .ticker-tape-price {
+      color: #FFFFFF;
     }
 
     /* Delta Badges */
-    .ticker-chip-delta {
-      font-size: 10px;
+    .ticker-tape-badge {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
       font-weight: 800;
-      padding: 1px 5px;
+      padding: 1px 6px;
       border-radius: 4px;
-      line-height: 1.2;
+      line-height: 1.3;
     }
-    html[data-theme="light"] .ticker-chip-delta.is-up {
-      background: #ecfdf5;
+
+    /* Light Theme Badges */
+    html[data-theme="light"] .ticker-tape-badge.is-up, body:not(.dark-theme-mode) .ticker-tape-badge.is-up {
+      background: #ECFDF5;
       color: #047857;
-      border: 1px solid #a7f3d0;
+      border: 1px solid #A7F3D0;
     }
-    html[data-theme="light"] .ticker-chip-delta.is-down {
-      background: #fef2f2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
+
+    html[data-theme="light"] .ticker-tape-badge.is-down, body:not(.dark-theme-mode) .ticker-tape-badge.is-down {
+      background: #FEF2F2;
+      color: #B91C1C;
+      border: 1px solid #FECACA;
     }
-    html[data-theme="light"] .ticker-chip-delta.is-flat {
-      background: #f1f5f9;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
+
+    html[data-theme="light"] .ticker-tape-badge.is-flat, body:not(.dark-theme-mode) .ticker-tape-badge.is-flat {
+      background: #F1F5F9;
+      color: #475569;
+      border: 1px solid #CBD5E1;
     }
-    html[data-theme="dark"] .ticker-chip-delta.is-up, body.dark-theme-mode .ticker-chip-delta.is-up {
+
+    /* Dark Theme Badges */
+    html[data-theme="dark"] .ticker-tape-badge.is-up, body.dark-theme-mode .ticker-tape-badge.is-up {
       background: rgba(16, 185, 129, 0.18);
-      color: #34d399;
+      color: #34D399;
       border: 1px solid rgba(16, 185, 129, 0.4);
       text-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
     }
-    html[data-theme="dark"] .ticker-chip-delta.is-down, body.dark-theme-mode .ticker-chip-delta.is-down {
+
+    html[data-theme="dark"] .ticker-tape-badge.is-down, body.dark-theme-mode .ticker-tape-badge.is-down {
       background: rgba(244, 63, 94, 0.18);
-      color: #fb7185;
+      color: #FB7185;
       border: 1px solid rgba(244, 63, 94, 0.4);
       text-shadow: 0 0 6px rgba(244, 63, 94, 0.4);
     }
-    html[data-theme="dark"] .ticker-chip-delta.is-flat, body.dark-theme-mode .ticker-chip-delta.is-flat {
+
+    html[data-theme="dark"] .ticker-tape-badge.is-flat, body.dark-theme-mode .ticker-tape-badge.is-flat {
       background: rgba(51, 65, 85, 0.5);
-      color: #cbd5e1;
+      color: #CBD5E1;
       border: 1px solid rgba(71, 85, 105, 0.4);
     }
 
-    .ticker-chip-divider {
-      color: var(--border-color);
-      opacity: 0.7;
-      font-size: 8px;
-      margin: 0 4px;
-      display: inline-flex;
-      align-items: center;
+    .ticker-tape-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--border-color);
+      margin: 0 8px;
+      opacity: 0.5;
+      display: inline-block;
     }
     html[data-theme="dark"] .ticker-chip-divider, body.dark-theme-mode .ticker-chip-divider {
       color: rgba(56, 189, 248, 0.4);
@@ -2899,7 +2885,7 @@
       const track = document.getElementById('bottomTickerTrack');
       if (!track || !products || products.length === 0) return;
 
-      const buildItemHtml = (p) => {
+      const buildTapeItemHtml = (p) => {
         const icon = getFruitIcon(p);
         const cleanName = getCleanFlavourName(p).toUpperCase();
         const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
@@ -2909,25 +2895,31 @@
         const isUp = diff > 0.001;
         const isDown = diff < -0.001;
 
-        let deltaHtml = `<span class="ticker-chip-delta is-flat">— 0.0%</span>`;
-        if (isUp) deltaHtml = `<span class="ticker-chip-delta is-up">▲ +${pct}%</span>`;
-        else if (isDown) deltaHtml = `<span class="ticker-chip-delta is-down">▼ ${pct}%</span>`;
+        let badgeClass = 'is-flat';
+        let badgeText = '— 0.0%';
+        if (isUp) {
+          badgeClass = 'is-up';
+          badgeText = `▲ +${pct}%`;
+        } else if (isDown) {
+          badgeClass = 'is-down';
+          badgeText = `▼ ${pct}%`;
+        }
 
         return `
-          <div class="ticker-chip ${isUp ? 'is-up' : (isDown ? 'is-down' : 'is-flat')}" id="ticker_item_${p.id}" onclick="openProductModal(${p.id})" title="Click to inspect ${cleanName} live analytics">
-            <span class="ticker-chip-icon">${icon}</span>
-            <span class="ticker-chip-name">${cleanName}:</span>
-            <span class="ticker-chip-price">₹${activePrice}</span>
-            ${deltaHtml}
+          <div class="ticker-tape-item" id="ticker_item_${p.id}" onclick="openProductModal(${p.id})" title="Click to inspect ${cleanName} live analytics">
+            <span>${icon}</span>
+            <span class="ticker-tape-name">${cleanName}</span>
+            <span class="ticker-tape-price">₹${activePrice}</span>
+            <span class="ticker-tape-badge ${badgeClass}">${badgeText}</span>
           </div>
         `;
       };
 
-      const singleLoopHtml = products.map(buildItemHtml).join('<span class="ticker-chip-divider">◆</span>');
+      const singleLoopHtml = products.map(buildTapeItemHtml).join('<span class="ticker-tape-divider"></span>');
       // Duplicate stream for seamless, gap-free infinite scrolling marquee
       track.innerHTML = `
         <div class="ticker-inner-stream">${singleLoopHtml}</div>
-        <span class="ticker-chip-divider">◆</span>
+        <span class="ticker-tape-divider"></span>
         <div class="ticker-inner-stream" aria-hidden="true">${singleLoopHtml}</div>
       `;
     }
