@@ -952,8 +952,7 @@
     .naruto-img-wrapper {
       position: relative;
       width: 100%;
-      aspect-ratio: 682 / 1024;
-      max-height: 480px;
+      aspect-ratio: 1 / 1;
       border-radius: 10px;
       overflow: hidden;
       display: flex;
@@ -966,7 +965,7 @@
     .naruto-img-wrapper img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
       object-position: center center;
       border-radius: 8px;
       image-rendering: auto;
@@ -1765,7 +1764,7 @@
       <div class="naruto-mascot-card" onclick="openMascotLightbox()" title="Click to view full-size Ultra HD mascot">
         <div class="naruto-img-wrapper">
           <span class="mascot-expand-hint">🔍 Expand HD</span>
-          <img src="assets/mascot.jpg?v=planet_sodaa_v2" alt="Mojito Exchange Planet Sodaa Official Mascot" onerror="this.onerror=null; this.src='mascot.jpg?v=planet_sodaa_v2';" />
+          <img src="assets/mascot.jpg?v=square_hd_v3" alt="Mojito Exchange Planet Sodaa Official Mascot" onerror="this.onerror=null; this.src='mascot.jpg?v=square_hd_v3';" />
           <div class="naruto-badge">🥤 MOJITO EXCHANGE • PLANET SODAA</div>
         </div>
         <div class="naruto-quote">"🥤 Planet Sodaa — Savor Fresh Flavors at Live Market Rates!"</div>
@@ -1791,7 +1790,7 @@
   <div id="mascotLightboxModal" class="mascot-lightbox-overlay" onclick="closeMascotLightbox()">
     <div class="mascot-lightbox-content" onclick="event.stopPropagation()">
       <button class="mascot-lightbox-close" onclick="closeMascotLightbox()" title="Close">&times;</button>
-      <img src="assets/mascot.jpg?v=planet_sodaa_v2" alt="Mojito Exchange Planet Sodaa Mascot Fullscreen" />
+      <img src="assets/mascot.jpg?v=square_hd_v3" alt="Mojito Exchange Planet Sodaa Mascot Fullscreen" />
       <div class="mascot-lightbox-caption">
         <span class="mascot-lightbox-badge">🥤 MOJITO EXCHANGE • PLANET SODAA</span>
         <div style="font-size: 13px; font-weight: 700; color: #cbd5e1; margin-top: 5px;">Fresh Juice Always — Trade at Live Market Rates</div>
