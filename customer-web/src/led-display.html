@@ -927,7 +927,7 @@
       object-fit: contain;
     }
 
-    /* Mojito Exchange Mascot Card — Ultra HD Edition */
+    /* Mojito Exchange Mascot Card — Full Sized Edition */
     .naruto-mascot-card {
       background: var(--bg-surface);
       border: 1.5px solid rgba(245, 158, 11, 0.45);
@@ -938,12 +938,11 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       overflow: hidden;
       position: relative;
       transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-      flex: 1;
-      min-height: 270px;
+      cursor: pointer;
     }
     .naruto-mascot-card:hover {
       border-color: #f59e0b;
@@ -953,21 +952,22 @@
     .naruto-img-wrapper {
       position: relative;
       width: 100%;
-      height: 265px;
+      aspect-ratio: 682 / 1024;
+      max-height: 480px;
       border-radius: 10px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 25%, rgba(245, 158, 11, 0.25) 0%, rgba(139, 92, 246, 0.2) 50%, rgba(15, 23, 42, 0.95) 100%);
+      background: radial-gradient(circle at 50% 25%, rgba(245, 158, 11, 0.2) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(15, 23, 42, 0.98) 100%);
       border: 1px solid rgba(245, 158, 11, 0.35);
-      padding: 2px;
+      padding: 0;
     }
     .naruto-img-wrapper img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      object-position: center top;
+      object-fit: contain;
+      object-position: center center;
       border-radius: 8px;
       image-rendering: auto;
       image-rendering: smooth;
@@ -978,8 +978,28 @@
       filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.55));
     }
     .naruto-mascot-card:hover .naruto-img-wrapper img {
-      transform: scale(1.04) translateZ(0);
+      transform: scale(1.03) translateZ(0);
       filter: drop-shadow(0 12px 26px rgba(245, 158, 11, 0.4));
+    }
+    .mascot-expand-hint {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      color: #f59e0b;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+    }
+    .naruto-mascot-card:hover .mascot-expand-hint {
+      opacity: 1;
+      transform: scale(1.05);
     }
     .naruto-badge {
       position: absolute;
@@ -1006,6 +1026,84 @@
       font-style: italic;
       line-height: 1.25;
       letter-spacing: -0.1px;
+    }
+
+    /* Fullscreen Mascot Lightbox */
+    .mascot-lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 15, 30, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .mascot-lightbox-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+    .mascot-lightbox-content {
+      position: relative;
+      max-width: 92vw;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(17, 24, 39, 0.96);
+      border: 1.5px solid rgba(245, 158, 11, 0.5);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 30px rgba(245, 158, 11, 0.25);
+    }
+    .mascot-lightbox-content img {
+      max-height: 78vh;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+    .mascot-lightbox-close {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f59e0b;
+      color: #0f172a;
+      border: 2px solid #ffffff;
+      font-size: 22px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease;
+      line-height: 1;
+    }
+    .mascot-lightbox-close:hover {
+      transform: scale(1.1) rotate(90deg);
+    }
+    .mascot-lightbox-caption {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .mascot-lightbox-badge {
+      display: inline-block;
+      background: rgba(245, 158, 11, 0.2);
+      color: #f59e0b;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      letter-spacing: 0.5px;
     }
 
     /* ==========================================================================
@@ -1663,9 +1761,10 @@
         </div>
       </div>
 
-      <!-- Mojito Exchange Mascot Card — Ultra HD Edition -->
-      <div class="naruto-mascot-card">
+      <!-- Mojito Exchange Mascot Card — Full Sized Edition -->
+      <div class="naruto-mascot-card" onclick="openMascotLightbox()" title="Click to view full-size Ultra HD mascot">
         <div class="naruto-img-wrapper">
+          <span class="mascot-expand-hint">🔍 Expand HD</span>
           <img src="assets/mascot.jpg?v=planet_sodaa_v2" alt="Mojito Exchange Planet Sodaa Official Mascot" onerror="this.onerror=null; this.src='mascot.jpg?v=planet_sodaa_v2';" />
           <div class="naruto-badge">🥤 MOJITO EXCHANGE • PLANET SODAA</div>
         </div>
@@ -1688,10 +1787,30 @@
     </div>
   </div>
 
+  <!-- Mascot Fullscreen Lightbox Modal -->
+  <div id="mascotLightboxModal" class="mascot-lightbox-overlay" onclick="closeMascotLightbox()">
+    <div class="mascot-lightbox-content" onclick="event.stopPropagation()">
+      <button class="mascot-lightbox-close" onclick="closeMascotLightbox()" title="Close">&times;</button>
+      <img src="assets/mascot.jpg?v=planet_sodaa_v2" alt="Mojito Exchange Planet Sodaa Mascot Fullscreen" />
+      <div class="mascot-lightbox-caption">
+        <span class="mascot-lightbox-badge">🥤 MOJITO EXCHANGE • PLANET SODAA</span>
+        <div style="font-size: 13px; font-weight: 700; color: #cbd5e1; margin-top: 5px;">Fresh Juice Always — Trade at Live Market Rates</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Chart Hover Tooltip Element -->
   <div id="chartTooltip" class="chart-tooltip"></div>
 
   <script>
+    function openMascotLightbox() {
+      const modal = document.getElementById('mascotLightboxModal');
+      if (modal) modal.classList.add('active');
+    }
+    function closeMascotLightbox() {
+      const modal = document.getElementById('mascotLightboxModal');
+      if (modal) modal.classList.remove('active');
+    }
     /* ==========================================================================
        CONFIGURATION & STATE MANAGEMENT
        ========================================================================== */
