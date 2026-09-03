@@ -374,13 +374,13 @@ public class PriceAdjustmentService {
             reason = "BELOW_NORMAL_DEMAND_DECAY";
             demandLevelCategory = "LOW";
         } else {
-            deltaP = new BigDecimal("-2.00");
-            movement = -2;
+            deltaP = new BigDecimal("-1.00");
+            movement = -1;
             reason = "ZERO_DEMAND_DECAY";
             demandLevelCategory = "VERY_LOW";
         }
 
-        // Validate strictly allowed price movement (+1.00, 0.00, -1.00, -2.00)
+        // Validate strictly allowed price movement (+1.00, 0.00, -1.00)
         PricingConfigurationService.validatePriceMovement(deltaP);
 
         // 6. Bounded price: MAX(minCupPrice, MIN(maxCupPrice, oldPrice + deltaP))
@@ -974,7 +974,7 @@ public class PriceAdjustmentService {
             movement = -1;
             category = "LOW";
         } else {
-            movement = -2;
+            movement = -1;
             category = "VERY_LOW";
         }
 
