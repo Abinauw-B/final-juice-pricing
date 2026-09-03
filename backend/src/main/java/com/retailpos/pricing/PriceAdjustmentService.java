@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+@SuppressWarnings("null")
 public class PriceAdjustmentService {
 
     private static final Logger log = LoggerFactory.getLogger(PriceAdjustmentService.class);
@@ -308,8 +309,6 @@ public class PriceAdjustmentService {
         BigDecimal highThresh = pricingConfigurationService != null ? pricingConfigurationService.getHighDemandThreshold() : new BigDecimal("1.1000");
         BigDecimal stableLow = pricingConfigurationService != null ? pricingConfigurationService.getStableDemandLowerThreshold() : new BigDecimal("0.9000");
         BigDecimal lowThresh = pricingConfigurationService != null ? pricingConfigurationService.getLowDemandThreshold() : new BigDecimal("0.5000");
-        BigDecimal incStep = pricingConfigurationService != null ? pricingConfigurationService.getIncreaseStep() : new BigDecimal("1.00");
-        BigDecimal decStep1 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep1() : new BigDecimal("1.00");
 
         // 1. Time windows based on configured settlement interval: W0 [now - interval, now), W1 [now - 2*interval, now - interval), W2 [now - 3*interval, now - 2*interval)
         int intervalSec = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
@@ -936,7 +935,6 @@ public class PriceAdjustmentService {
         BigDecimal stableLow = pricingConfigurationService != null ? pricingConfigurationService.getStableDemandLowerThreshold() : new BigDecimal("0.9000");
         BigDecimal lowThresh = pricingConfigurationService != null ? pricingConfigurationService.getLowDemandThreshold() : new BigDecimal("0.5000");
         BigDecimal incStep = pricingConfigurationService != null ? pricingConfigurationService.getIncreaseStep() : new BigDecimal("1.00");
-        BigDecimal decStep1 = pricingConfigurationService != null ? pricingConfigurationService.getDecreaseStep1() : new BigDecimal("1.00");
 
         double targetSales = pricingConfigurationService != null
                 ? pricingConfigurationService.getTargetSalesForProduct(p)

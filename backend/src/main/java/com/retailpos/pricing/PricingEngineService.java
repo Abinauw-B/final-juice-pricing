@@ -1,7 +1,6 @@
 package com.retailpos.pricing;
 
 import com.retailpos.domain.*;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,29 +23,20 @@ public class PricingEngineService {
     private final PriceHistoryRepository priceHistoryRepository;
     private final MarketCrashService marketCrashService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final RedisTemplate<String, Object> redisTemplate;
     private final PriceAdjustmentService priceAdjustmentService;
-    private final JuiceMarketSettlementRepository settlementRepository;
-    private final PricingConfigurationService pricingConfigurationService;
     private final PricingSettlementCoordinator settlementCoordinator;
 
     public PricingEngineService(ProductRepository productRepository,
                                 PriceHistoryRepository priceHistoryRepository,
                                 MarketCrashService marketCrashService,
                                 SimpMessagingTemplate messagingTemplate,
-                                RedisTemplate<String, Object> redisTemplate,
                                 PriceAdjustmentService priceAdjustmentService,
-                                JuiceMarketSettlementRepository settlementRepository,
-                                PricingConfigurationService pricingConfigurationService,
                                 @org.springframework.context.annotation.Lazy PricingSettlementCoordinator settlementCoordinator) {
         this.productRepository = productRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.marketCrashService = marketCrashService;
         this.messagingTemplate = messagingTemplate;
-        this.redisTemplate = redisTemplate;
         this.priceAdjustmentService = priceAdjustmentService;
-        this.settlementRepository = settlementRepository;
-        this.pricingConfigurationService = pricingConfigurationService;
         this.settlementCoordinator = settlementCoordinator;
     }
 

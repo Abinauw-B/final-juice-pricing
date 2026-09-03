@@ -12,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
-@SuppressWarnings("null")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)

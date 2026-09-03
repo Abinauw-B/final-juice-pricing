@@ -19,7 +19,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -35,13 +34,13 @@ import java.util.concurrent.locks.ReentrantLock;
  * 7. Unique settlementExecutionId for complete traceability.
  */
 @Service
+@SuppressWarnings("null")
 public class PricingSettlementCoordinator {
 
     private static final Logger log = LoggerFactory.getLogger(PricingSettlementCoordinator.class);
     private static final long PG_ADVISORY_LOCK_ID = 788325001L;
 
     private final ProductRepository productRepository;
-    private final PriceHistoryRepository priceHistoryRepository;
     private final JuiceMarketSettlementRepository settlementRepository;
     private final PricingConfigurationService pricingConfigurationService;
     private final PriceAdjustmentService priceAdjustmentService;
@@ -53,13 +52,11 @@ public class PricingSettlementCoordinator {
     private final TransactionTemplate transactionTemplate;
 
     private final ReentrantLock localMutationLock = new ReentrantLock();
-    private final AtomicBoolean isExecutionRunning = new AtomicBoolean(false);
 
     private static volatile LocalDateTime lastSettlementTime = LocalDateTime.now();
     private static volatile LocalDateTime nextSettlementTime = LocalDateTime.now().plusSeconds(60);
 
     public PricingSettlementCoordinator(ProductRepository productRepository,
-                                        PriceHistoryRepository priceHistoryRepository,
                                         JuiceMarketSettlementRepository settlementRepository,
                                         PricingConfigurationService pricingConfigurationService,
                                         PriceAdjustmentService priceAdjustmentService,
@@ -70,7 +67,6 @@ public class PricingSettlementCoordinator {
                                         DataSource dataSource,
                                         PlatformTransactionManager transactionManager) {
         this.productRepository = productRepository;
-        this.priceHistoryRepository = priceHistoryRepository;
         this.settlementRepository = settlementRepository;
         this.pricingConfigurationService = pricingConfigurationService;
         this.priceAdjustmentService = priceAdjustmentService;
