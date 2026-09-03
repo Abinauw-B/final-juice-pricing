@@ -186,6 +186,10 @@ public class PricingController {
                 List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
                 messagingTemplate.convertAndSend("/topic/prices", activeProducts);
                 messagingTemplate.convertAndSend("/topic/products", activeProducts);
+                if (pricingConfigurationService != null) {
+                    messagingTemplate.convertAndSend("/topic/pricing-config",
+                            pricingConfigurationService.getFullConfiguration());
+                }
             }
         } catch (Exception e) {
         }
@@ -201,6 +205,10 @@ public class PricingController {
                 List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
                 messagingTemplate.convertAndSend("/topic/prices", activeProducts);
                 messagingTemplate.convertAndSend("/topic/products", activeProducts);
+                if (pricingConfigurationService != null) {
+                    messagingTemplate.convertAndSend("/topic/pricing-config",
+                            pricingConfigurationService.getFullConfiguration());
+                }
             }
         } catch (Exception e) {
         }

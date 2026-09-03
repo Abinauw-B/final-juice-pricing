@@ -3779,13 +3779,18 @@
 
       if (config.products && Array.isArray(config.products)) {
         liveProductsCache = config.products.map(p => ({
+          ...p,
           id: p.productId || p.id,
+          productId: p.productId || p.id,
           name: p.productName || p.name,
           flavour: p.flavour,
           currentCupPrice: p.currentCupPrice,
           defaultCupPrice: p.defaultCupPrice,
           minCupPrice: p.minCupPrice,
           maxCupPrice: p.maxCupPrice,
+          pricingMode: p.pricingMode || 'DYNAMIC',
+          targetSales: p.targetSales,
+          targetSalesPer1Minute: p.targetSalesPer1Minute || p.targetSales,
           targetSalesPer2Minute: p.targetSales || p.targetSalesPer2Minute || 1.0
         }));
         renderLivePricingTable();
@@ -4129,13 +4134,32 @@
       }
     }
 
-    async function applyManualPriceOverride(productId) {
-      const input = document.getElementById('quickPriceInput_' + productId);
-      if (!input) return;
-      const newPrice = parseFloat(input.value);
-      if (isNaN(newPrice) || newPrice <= 0) {
+    async function applyManualPriceOverride(productId, explicitPrice = null) {
+      let newPrice = explicitPrice;
+      if (newPrice == null) {
+        const input = document.getElementById('quickPriceInput_' + productId);
+        if (input) newPrice = parseFloat(input.value);
+      }
+      if (newPrice == null || isNaN(newPrice) || newPrice <= 0) {
         showToast('Please enter a valid price amount', 'warning');
         return;
+      }
+
+      const prod = liveProductsCache.find(p => (p.id === productId || p.productId === productId));
+      if (prod) {
+        const floor = Number(prod.minCupPrice || 20);
+        const ceil = Number(prod.maxCupPrice || 30);
+        if (newPrice < floor || newPrice > ceil) {
+          showToast(`Price ₹${newPrice.toFixed(2)} must be between Floor ₹${floor.toFixed(2)} and Ceiling ₹${ceil.toFixed(2)}`, 'warning');
+          return;
+        }
+      }
+
+      // Optimistically update local cache and table
+      if (prod) {
+        prod.currentCupPrice = newPrice;
+        prod.pricingMode = 'MANUAL_OVERRIDE';
+        renderLivePricingTable();
       }
 
       try {
@@ -4159,6 +4183,13 @@
     }
 
     async function releaseManualPriceOverride(productId) {
+      const prod = liveProductsCache.find(p => (p.id === productId || p.productId === productId));
+      // Optimistically update local cache and table
+      if (prod) {
+        prod.pricingMode = 'DYNAMIC';
+        renderLivePricingTable();
+      }
+
       try {
         const res = await apiFetch(`/pricing/products/${productId}/release-override`, {
           method: 'POST'
@@ -4184,10 +4215,15 @@
     }
 
     async function toggleManualPriceLock(productId, shouldLock) {
-      if (shouldLock) {
-        await applyManualPriceOverride(productId);
-      } else {
-        await releaseManualPriceOverride(productId);
+      const cb = document.getElementById('lockCheckbox_' + productId);
+      try {
+        if (shouldLock) {
+          await applyManualPriceOverride(productId);
+        } else {
+          await releaseManualPriceOverride(productId);
+        }
+      } catch (err) {
+        if (cb) cb.checked = !shouldLock;
       }
     }
 
@@ -5690,9 +5726,10 @@
       if (!currentDrawerProductId) return;
       const input = document.getElementById('drawerInputOverride');
       if (input && input.value) {
+        const val = parseFloat(input.value);
         const targetInput = document.getElementById(`quickPriceInput_${currentDrawerProductId}`);
-        if (targetInput) targetInput.value = input.value;
-        applyManualPriceOverride(currentDrawerProductId);
+        if (targetInput) targetInput.value = val;
+        applyManualPriceOverride(currentDrawerProductId, val);
         closeProductTradingDrawer();
       }
     }
