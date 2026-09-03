@@ -391,15 +391,16 @@
     }
 
     html[data-theme="light"] .ticker-wrap, body:not(.dark-theme-mode) .ticker-wrap {
-      background: #FFFFFF;
-      border: 1.5px solid #CBD5E1;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+      background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 50%, #F1F5F9 100%);
+      border: 1.5px solid #94A3B8;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     }
 
+    /* Dark Theme Styling — Deep Obsidian Glass */
     html[data-theme="dark"] .ticker-wrap, body.dark-theme-mode .ticker-wrap {
-      background: #0F172A;
-      border: 1.5px solid rgba(56, 189, 248, 0.35);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 12px rgba(56, 189, 248, 0.08);
+      background: linear-gradient(90deg, #020408 0%, #060a14 50%, #020408 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.28);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.85), 0 0 16px rgba(56, 189, 248, 0.08);
     }
 
     .ticker-title {
@@ -514,10 +515,10 @@
     }
 
     html[data-theme="dark"] .ticker-tape-item, body.dark-theme-mode .ticker-tape-item {
-      background: var(--juice-bg-dark, rgba(15, 23, 42, 0.85));
+      background: var(--juice-bg-dark, #04070e);
       border: 1.5px solid var(--juice-border-dark, rgba(56, 189, 248, 0.3));
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px var(--juice-shadow-dark, transparent);
-      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65), 0 0 12px var(--juice-shadow-dark, transparent);
+      backdrop-filter: blur(12px);
     }
 
     html[data-theme="dark"] .ticker-tape-item:hover, body.dark-theme-mode .ticker-tape-item:hover {
@@ -1597,116 +1598,116 @@
         return {
           rgb: '245, 158, 11',
           accent: '#F59E0B',
-          bgDark: 'linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
-          bgLight: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
-          borderDark: 'rgba(245, 158, 11, 0.7)',
+          bgDark: 'linear-gradient(145deg, rgba(245, 158, 11, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(245, 158, 11, 0.75)',
           borderLight: '#F59E0B',
-          shadowDark: 'rgba(245, 158, 11, 0.25)',
-          shadowLight: 'rgba(245, 158, 11, 0.18)',
-          glow: 'rgba(245, 158, 11, 0.5)'
+          shadowDark: 'rgba(245, 158, 11, 0.3)',
+          shadowLight: 'rgba(245, 158, 11, 0.2)',
+          glow: 'rgba(245, 158, 11, 0.55)'
         };
       }
       if (f.includes('STRAWBERRY')) {
         return {
           rgb: '244, 63, 94',
           accent: '#F43F5E',
-          bgDark: 'linear-gradient(135deg, rgba(244, 63, 94, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
-          bgLight: 'linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%)',
-          borderDark: 'rgba(244, 63, 94, 0.7)',
+          bgDark: 'linear-gradient(145deg, rgba(244, 63, 94, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FFE4E6 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(244, 63, 94, 0.75)',
           borderLight: '#F43F5E',
-          shadowDark: 'rgba(244, 63, 94, 0.25)',
-          shadowLight: 'rgba(244, 63, 94, 0.18)',
-          glow: 'rgba(244, 63, 94, 0.5)'
+          shadowDark: 'rgba(244, 63, 94, 0.3)',
+          shadowLight: 'rgba(244, 63, 94, 0.2)',
+          glow: 'rgba(244, 63, 94, 0.55)'
         };
       }
       if (f.includes('ORANGE')) {
         return {
           rgb: '249, 115, 22',
           accent: '#F97316',
-          bgDark: 'linear-gradient(135deg, rgba(249, 115, 22, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
-          bgLight: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
-          borderDark: 'rgba(249, 115, 22, 0.7)',
+          bgDark: 'linear-gradient(145deg, rgba(249, 115, 22, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FFEDD5 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(249, 115, 22, 0.75)',
           borderLight: '#F97316',
-          shadowDark: 'rgba(249, 115, 22, 0.25)',
-          shadowLight: 'rgba(249, 115, 22, 0.18)',
-          glow: 'rgba(249, 115, 22, 0.5)'
+          shadowDark: 'rgba(249, 115, 22, 0.3)',
+          shadowLight: 'rgba(249, 115, 22, 0.2)',
+          glow: 'rgba(249, 115, 22, 0.55)'
         };
       }
       if (f.includes('GRAPE')) {
         return {
           rgb: '168, 85, 247',
           accent: '#A855F7',
-          bgDark: 'linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
-          bgLight: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
-          borderDark: 'rgba(168, 85, 247, 0.7)',
+          bgDark: 'linear-gradient(145deg, rgba(168, 85, 247, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #F3E8FF 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(168, 85, 247, 0.75)',
           borderLight: '#A855F7',
-          shadowDark: 'rgba(168, 85, 247, 0.25)',
-          shadowLight: 'rgba(168, 85, 247, 0.18)',
-          glow: 'rgba(168, 85, 247, 0.5)'
+          shadowDark: 'rgba(168, 85, 247, 0.3)',
+          shadowLight: 'rgba(168, 85, 247, 0.2)',
+          glow: 'rgba(168, 85, 247, 0.55)'
         };
       }
       if (f.includes('LEMON')) {
         return {
           rgb: '234, 179, 8',
           accent: '#EAB308',
-          bgDark: 'linear-gradient(135deg, rgba(234, 179, 8, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
-          bgLight: 'linear-gradient(135deg, #FEFCE8 0%, #FEF9C3 100%)',
-          borderDark: 'rgba(234, 179, 8, 0.7)',
+          bgDark: 'linear-gradient(145deg, rgba(234, 179, 8, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FEF9C3 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(234, 179, 8, 0.75)',
           borderLight: '#EAB308',
-          shadowDark: 'rgba(234, 179, 8, 0.25)',
-          shadowLight: 'rgba(234, 179, 8, 0.18)',
-          glow: 'rgba(234, 179, 8, 0.5)'
+          shadowDark: 'rgba(234, 179, 8, 0.3)',
+          shadowLight: 'rgba(234, 179, 8, 0.2)',
+          glow: 'rgba(234, 179, 8, 0.55)'
         };
       }
       if (f.includes('MINT')) {
         return {
           rgb: '16, 185, 129',
           accent: '#10B981',
-          bgDark: 'linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
-          bgLight: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
-          borderDark: 'rgba(16, 185, 129, 0.7)',
+          bgDark: 'linear-gradient(145deg, rgba(16, 185, 129, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #D1FAE5 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(16, 185, 129, 0.75)',
           borderLight: '#10B981',
-          shadowDark: 'rgba(16, 185, 129, 0.25)',
-          shadowLight: 'rgba(16, 185, 129, 0.18)',
-          glow: 'rgba(16, 185, 129, 0.5)'
+          shadowDark: 'rgba(16, 185, 129, 0.3)',
+          shadowLight: 'rgba(16, 185, 129, 0.2)',
+          glow: 'rgba(16, 185, 129, 0.55)'
         };
       }
       if (f.includes('LYCHEE') || f.includes('MELON') || f.includes('GUAVA')) {
         return {
           rgb: '251, 113, 133',
           accent: '#FB7185',
-          bgDark: 'linear-gradient(135deg, rgba(251, 113, 133, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
-          bgLight: 'linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%)',
-          borderDark: 'rgba(251, 113, 133, 0.7)',
+          bgDark: 'linear-gradient(145deg, rgba(251, 113, 133, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FFE4E6 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(251, 113, 133, 0.75)',
           borderLight: '#FB7185',
-          shadowDark: 'rgba(251, 113, 133, 0.25)',
-          shadowLight: 'rgba(251, 113, 133, 0.18)',
-          glow: 'rgba(251, 113, 133, 0.5)'
+          shadowDark: 'rgba(251, 113, 133, 0.3)',
+          shadowLight: 'rgba(251, 113, 133, 0.2)',
+          glow: 'rgba(251, 113, 133, 0.55)'
         };
       }
       if (f.includes('THUNDER') || f.includes('ENERGY') || f.includes('MOJITO') || f.includes('BLUE')) {
         return {
           rgb: '6, 182, 212',
           accent: '#06B6D4',
-          bgDark: 'linear-gradient(135deg, rgba(6, 182, 212, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
-          bgLight: 'linear-gradient(135deg, #ECFEFF 0%, #CFFAFE 100%)',
-          borderDark: 'rgba(6, 182, 212, 0.7)',
+          bgDark: 'linear-gradient(145deg, rgba(6, 182, 212, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #CFFAFE 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(6, 182, 212, 0.75)',
           borderLight: '#06B6D4',
-          shadowDark: 'rgba(6, 182, 212, 0.25)',
-          shadowLight: 'rgba(6, 182, 212, 0.18)',
-          glow: 'rgba(6, 182, 212, 0.5)'
+          shadowDark: 'rgba(6, 182, 212, 0.3)',
+          shadowLight: 'rgba(6, 182, 212, 0.2)',
+          glow: 'rgba(6, 182, 212, 0.55)'
         };
       }
       return {
         rgb: '245, 158, 11',
         accent: '#F59E0B',
-        bgDark: 'linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(15, 23, 42, 0.92) 100%)',
-        bgLight: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
-        borderDark: 'rgba(245, 158, 11, 0.7)',
+        bgDark: 'linear-gradient(145deg, rgba(245, 158, 11, 0.20) 0%, #080c14 45%, #020408 100%)',
+        bgLight: 'linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%)',
+        borderDark: 'rgba(245, 158, 11, 0.75)',
         borderLight: '#F59E0B',
-        shadowDark: 'rgba(245, 158, 11, 0.25)',
-        shadowLight: 'rgba(245, 158, 11, 0.18)',
-        glow: 'rgba(245, 158, 11, 0.5)'
+        shadowDark: 'rgba(245, 158, 11, 0.3)',
+        shadowLight: 'rgba(245, 158, 11, 0.2)',
+        glow: 'rgba(245, 158, 11, 0.55)'
       };
     }
 
