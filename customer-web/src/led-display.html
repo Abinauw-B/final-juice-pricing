@@ -1009,65 +1009,247 @@
     }
 
     /* ==========================================================================
-       BOTTOM TICKER BAR
+       BOTTOM DYNAMIC TICKER BAR (ANTICLOCKWISE / RIGHT-TO-LEFT INFINITE MARQUEE)
        ========================================================================== */
     .bottom-ticker-bar {
-      height: 34px;
+      height: 40px;
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      margin-top: 6px;
+      border-radius: 10px;
+      margin-top: 8px;
       display: flex;
       align-items: center;
       padding: 0 12px;
       box-shadow: var(--shadow-card);
-      overflow-x: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+      overflow: hidden;
       flex-shrink: 0;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .bottom-ticker-bar::-webkit-scrollbar {
-      display: none;
+
+    /* Light Theme Styling */
+    html[data-theme="light"] .bottom-ticker-bar {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
+
+    /* Dark Theme Styling */
+    html[data-theme="dark"] .bottom-ticker-bar, body.dark-theme-mode .bottom-ticker-bar {
+      background: linear-gradient(90deg, #0d1322 0%, #111827 50%, #0b0f19 100%);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 15px rgba(56, 189, 248, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
     .ticker-prefix {
       font-size: 11.5px;
-      font-weight: 800;
-      color: var(--accent-cyan);
+      font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding-right: 14px;
-      border-right: 1px solid var(--border-color);
+      letter-spacing: 0.8px;
+      padding: 4px 12px;
+      border-radius: 6px;
       white-space: nowrap;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
+      flex-shrink: 0;
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    html[data-theme="light"] .ticker-prefix {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+    }
+
+    html[data-theme="dark"] .ticker-prefix, body.dark-theme-mode .ticker-prefix {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.3) 0%, rgba(56, 189, 248, 0.2) 100%);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+
+    .ticker-radar-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      animation: tickerRadarPulse 1.8s infinite;
       flex-shrink: 0;
     }
+
+    @keyframes tickerRadarPulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
     .ticker-viewport {
       flex: 1;
       overflow: hidden;
+      position: relative;
       white-space: nowrap;
-      padding-left: 14px;
       display: flex;
       align-items: center;
+      margin-left: 10px;
+      mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
     }
+
     .ticker-scroll-content {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      width: 100%;
+      width: max-content;
       white-space: nowrap;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
-      gap: 12px;
+      will-change: transform;
+      animation: tickerAntiClockwiseScroll 32s linear infinite;
     }
-    .ticker-item-span {
+
+    .bottom-ticker-bar:hover .ticker-scroll-content {
+      animation-play-state: paused;
+    }
+
+    .ticker-inner-stream {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    /* Continuous Seamless Anticlockwise (Right to Left) Scrolling Animation */
+    @keyframes tickerAntiClockwiseScroll {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+      100% {
+        transform: translate3d(-50%, 0, 0);
+      }
+    }
+
+    /* Ticker Pill Chips */
+    .ticker-chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 12.5px;
+      padding: 3px 10px;
+      border-radius: 7px;
+      font-size: 12px;
       font-weight: 700;
       white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+    .ticker-chip:hover {
+      transform: translateY(-1px) scale(1.03);
+    }
+
+    /* Light Theme Chip */
+    html[data-theme="light"] .ticker-chip {
+      background: rgba(241, 245, 249, 0.9);
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+    }
+    html[data-theme="light"] .ticker-chip:hover {
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+      border-color: #cbd5e1;
+    }
+    html[data-theme="light"] .ticker-chip.is-up .ticker-chip-price {
+      color: #047857;
+      font-weight: 800;
+    }
+    html[data-theme="light"] .ticker-chip.is-down .ticker-chip-price {
+      color: #b91c1c;
+      font-weight: 800;
+    }
+    html[data-theme="light"] .ticker-chip.is-flat .ticker-chip-price {
+      color: #334155;
+      font-weight: 700;
+    }
+
+    /* Dark Theme Chip */
+    html[data-theme="dark"] .ticker-chip, body.dark-theme-mode .ticker-chip {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(71, 85, 105, 0.4);
+      color: #f8fafc;
+    }
+    html[data-theme="dark"] .ticker-chip:hover, body.dark-theme-mode .ticker-chip:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+    }
+    html[data-theme="dark"] .ticker-chip.is-up .ticker-chip-price, body.dark-theme-mode .ticker-chip.is-up .ticker-chip-price {
+      color: #10b981;
+      font-weight: 800;
+      text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+    html[data-theme="dark"] .ticker-chip.is-down .ticker-chip-price, body.dark-theme-mode .ticker-chip.is-down .ticker-chip-price {
+      color: #f43f5e;
+      font-weight: 800;
+      text-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+    }
+    html[data-theme="dark"] .ticker-chip.is-flat .ticker-chip-price, body.dark-theme-mode .ticker-chip.is-flat .ticker-chip-price {
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    /* Delta Badges */
+    .ticker-chip-delta {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+      line-height: 1.2;
+    }
+    html[data-theme="light"] .ticker-chip-delta.is-up {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+    html[data-theme="light"] .ticker-chip-delta.is-down {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    html[data-theme="light"] .ticker-chip-delta.is-flat {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+    html[data-theme="dark"] .ticker-chip-delta.is-up, body.dark-theme-mode .ticker-chip-delta.is-up {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      text-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+    }
+    html[data-theme="dark"] .ticker-chip-delta.is-down, body.dark-theme-mode .ticker-chip-delta.is-down {
+      background: rgba(244, 63, 94, 0.18);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      text-shadow: 0 0 6px rgba(244, 63, 94, 0.4);
+    }
+    html[data-theme="dark"] .ticker-chip-delta.is-flat, body.dark-theme-mode .ticker-chip-delta.is-flat {
+      background: rgba(51, 65, 85, 0.5);
+      color: #cbd5e1;
+      border: 1px solid rgba(71, 85, 105, 0.4);
+    }
+
+    .ticker-chip-divider {
+      color: var(--border-color);
+      opacity: 0.7;
+      font-size: 8px;
+      margin: 0 4px;
+      display: inline-flex;
+      align-items: center;
+    }
+    html[data-theme="dark"] .ticker-chip-divider, body.dark-theme-mode .ticker-chip-divider {
+      color: rgba(56, 189, 248, 0.4);
+      text-shadow: 0 0 4px rgba(56, 189, 248, 0.3);
     }
 
     /* ==========================================================================
@@ -1493,14 +1675,15 @@
     </div>
   </div>
 
-  <!-- Bottom Ticker Bar -->
+  <!-- Bottom Dynamic Ticker Bar -->
   <div class="bottom-ticker-bar">
     <div class="ticker-prefix">
+      <span class="ticker-radar-dot"></span>
       <span>⚡ LIVE TICKER</span>
     </div>
     <div class="ticker-viewport">
       <div class="ticker-scroll-content" id="bottomTickerTrack">
-        <!-- Rendered dynamically -->
+        <!-- Rendered dynamically with dual-stream infinite loop -->
       </div>
     </div>
   </div>
@@ -2592,36 +2775,43 @@
     }
 
     /* ==========================================================================
-       BOTTOM STATIC TICKER STRIP
+       BOTTOM DYNAMIC TICKER STRIP (SEAMLESS ANTICLOCKWISE / RIGHT-TO-LEFT STREAM)
        ========================================================================== */
     function updateBottomTicker() {
       const track = document.getElementById('bottomTickerTrack');
-      if (!track) return;
+      if (!track || !products || products.length === 0) return;
 
-      const tickerHtml = products.map(p => {
+      const buildItemHtml = (p) => {
         const icon = getFruitIcon(p);
         const cleanName = getCleanFlavourName(p).toUpperCase();
         const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
         const baseP = Number(p.basePrice || 25).toFixed(2);
         const diff = Number(activePrice) - Number(baseP);
-        const pct = baseP > 0 ? (((Number(activePrice) - Number(baseP)) / Number(baseP)) * 100).toFixed(1) : 0;
+        const pct = baseP > 0 ? (((Number(activePrice) - Number(baseP)) / Number(baseP)) * 100).toFixed(1) : '0.0';
+        const isUp = diff > 0.001;
+        const isDown = diff < -0.001;
 
-        let deltaHtml = `<span style="color: var(--text-muted); font-size: 11px; font-weight: 700;">(— 0.0%)</span>`;
-        if (diff > 0) deltaHtml = `<span style="color: var(--accent-emerald); font-size: 11px; font-weight: 700;">(▲ +${pct}%)</span>`;
-        else if (diff < 0) deltaHtml = `<span style="color: var(--accent-rose); font-size: 11px; font-weight: 700;">(▼ ${pct}%)</span>`;
-
-        const priceColor = diff > 0 ? 'var(--accent-emerald)' : (diff < 0 ? 'var(--accent-rose)' : 'var(--text-primary)');
+        let deltaHtml = `<span class="ticker-chip-delta is-flat">— 0.0%</span>`;
+        if (isUp) deltaHtml = `<span class="ticker-chip-delta is-up">▲ +${pct}%</span>`;
+        else if (isDown) deltaHtml = `<span class="ticker-chip-delta is-down">▼ ${pct}%</span>`;
 
         return `
-          <span class="ticker-item-span" id="ticker_item_${p.id}">
-            <span>${icon} ${cleanName}:</span>
-            <span style="font-weight: 800; font-family: var(--font-mono); color: ${priceColor};">₹${activePrice}</span>
+          <div class="ticker-chip ${isUp ? 'is-up' : (isDown ? 'is-down' : 'is-flat')}" id="ticker_item_${p.id}" onclick="openProductModal(${p.id})" title="Click to inspect ${cleanName} live analytics">
+            <span class="ticker-chip-icon">${icon}</span>
+            <span class="ticker-chip-name">${cleanName}:</span>
+            <span class="ticker-chip-price">₹${activePrice}</span>
             ${deltaHtml}
-          </span>
+          </div>
         `;
-      }).join(' <span style="color: var(--border-color); font-weight: 700; margin: 0 4px;">|</span> ');
+      };
 
-      track.innerHTML = tickerHtml;
+      const singleLoopHtml = products.map(buildItemHtml).join('<span class="ticker-chip-divider">◆</span>');
+      // Duplicate stream for seamless, gap-free infinite scrolling marquee
+      track.innerHTML = `
+        <div class="ticker-inner-stream">${singleLoopHtml}</div>
+        <span class="ticker-chip-divider">◆</span>
+        <div class="ticker-inner-stream" aria-hidden="true">${singleLoopHtml}</div>
+      `;
     }
 
     /* ==========================================================================

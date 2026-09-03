@@ -367,54 +367,126 @@
       border-radius: var(--radius-card);
       overflow: hidden;
       margin-bottom: 16px;
-      padding: 8px 16px;
+      padding: 6px 14px;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
+      height: 42px;
+      position: relative;
     }
 
     .ticker-title {
-      color: var(--accent-cyan);
-      font-weight: 800;
-      font-size: 10.5px;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 11px;
       white-space: nowrap;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
       display: flex;
       align-items: center;
       gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    body.dark-mode .ticker-title, [data-theme="dark"] .ticker-title {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.3) 0%, rgba(56, 189, 248, 0.2) 100%);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
+
+    .ticker-radar-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      animation: tickerRadarPulseCust 1.8s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes tickerRadarPulseCust {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .ticker-viewport-wrap {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
     }
 
     .ticker-content {
-      display: flex;
-      gap: 16px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      width: 100%;
-      white-space: nowrap;
+      display: inline-flex;
       align-items: center;
+      width: max-content;
+      white-space: nowrap;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
-      font-feature-settings: 'tnum' 1;
+      will-change: transform;
+      animation: tickerCustomerScroll 30s linear infinite;
     }
 
-    .ticker-content::-webkit-scrollbar {
-      display: none;
+    .ticker-wrap:hover .ticker-content {
+      animation-play-state: paused;
     }
 
-    .ticker-item {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-primary);
+    .ticker-stream-loop {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    @keyframes tickerCustomerScroll {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
+    }
+
+    .ticker-chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      border-right: 1px solid var(--border-subtle);
-      padding-right: 16px;
+      padding: 3px 10px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      background: rgba(241, 245, 249, 0.9);
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      transition: transform 0.18s ease, background 0.18s ease;
     }
 
-    .ticker-item:last-child {
-      border-right: none;
+    body.dark-mode .ticker-chip, [data-theme="dark"] .ticker-chip {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(71, 85, 105, 0.4);
+      color: #f8fafc;
+    }
+
+    .ticker-chip:hover {
+      transform: translateY(-1px) scale(1.03);
+    }
+
+    .ticker-chip-divider {
+      color: var(--border-color);
+      opacity: 0.7;
+      font-size: 8px;
+      margin: 0 4px;
+      display: inline-flex;
+      align-items: center;
     }
 
     /* ═══════ 3. MARKET CRASH ALERT BANNER ═══════ */
@@ -1138,9 +1210,14 @@
 
   <!-- 3. Real-Time Market Ticker -->
   <div class="ticker-wrap">
-    <div class="ticker-title">⚡ MARKET TICKER</div>
-    <div class="ticker-content" id="stockTickerContent">
-      <!-- Live stock price trends rendered here -->
+    <div class="ticker-title">
+      <span class="ticker-radar-dot"></span>
+      <span>⚡ LIVE TICKER</span>
+    </div>
+    <div class="ticker-viewport-wrap">
+      <div class="ticker-content" id="stockTickerContent">
+        <!-- Live stock price trends rendered here -->
+      </div>
     </div>
   </div>
 
@@ -1797,11 +1874,7 @@
       const container = document.getElementById('stockTickerContent');
       if (!container) return;
 
-      let rising = 0;
-      let discounted = 0;
-      let stable = 0;
-
-      container.innerHTML = products.map(p => {
+      const generateChipHtml = (p) => {
         const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
         const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
         const diff = activePrice - baseP;
@@ -1809,26 +1882,37 @@
 
         let color = 'var(--text-muted)';
         let sign = '— ';
+        let badgeBg = 'rgba(148, 163, 184, 0.12)';
+        let badgeColor = 'var(--text-muted)';
         if (diff > 0.05) {
           color = 'var(--success)';
           sign = '▲ +';
-          rising++;
+          badgeBg = 'rgba(16, 185, 129, 0.15)';
+          badgeColor = '#10b981';
         } else if (diff < -0.05) {
           color = 'var(--danger)';
           sign = '▼ ';
-          discounted++;
-        } else {
-          stable++;
+          badgeBg = 'rgba(239, 68, 68, 0.15)';
+          badgeColor = '#ef4444';
         }
 
         const icon = getFruitIcon(p);
         return `
-          <div class="ticker-item">
-            <span>${icon} ${p.flavour || p.name}:</span>
-            <span style="color: ${color}; font-weight: 700;">₹${activePrice.toFixed(2)} ${sign}${Math.abs(pct)}%</span>
+          <div class="ticker-chip" onclick="showProductDetailsModal(${p.id || 0})">
+            <span>${icon}</span>
+            <span style="font-weight: 700;">${p.flavour || p.name}:</span>
+            <span style="color: ${color}; font-weight: 800;">₹${activePrice.toFixed(2)}</span>
+            <span style="background: ${badgeBg}; color: ${badgeColor}; font-size: 10px; font-weight: 800; padding: 1px 4px; border-radius: 4px;">${sign}${Math.abs(pct)}%</span>
           </div>
         `;
-      }).join('');
+      };
+
+      const loopHtml = products.map(generateChipHtml).join('<span class="ticker-chip-divider">◆</span>');
+      container.innerHTML = `
+        <div class="ticker-stream-loop">${loopHtml}</div>
+        <span class="ticker-chip-divider">◆</span>
+        <div class="ticker-stream-loop" aria-hidden="true">${loopHtml}</div>
+      `;
 
       const totalEl = document.getElementById('summaryTotalProds');
       if (totalEl) totalEl.textContent = `${products.length} Products`;
