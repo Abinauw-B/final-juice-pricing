@@ -238,6 +238,41 @@
       box-shadow: 0 0 10px var(--accent-cyan);
     }
 
+    /* Real-Time Revenue Chart Live Streaming Styles */
+    .rev-mode-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted, #64748B);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.18s ease;
+    }
+    .rev-mode-btn:hover {
+      color: var(--text-main, #0F172A);
+    }
+    .rev-mode-btn.is-active {
+      background: var(--bg-surface, #FFFFFF) !important;
+      color: var(--text-main, #0F172A) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+    }
+    .live-radar-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10B981;
+      display: inline-block;
+      animation: radarPulseRev 1.8s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes radarPulseRev {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
     .nav-link span {
       pointer-events: none;
     }
@@ -915,9 +950,36 @@
 
           <!-- Professional Visual Charts Section -->
           <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px;">
-            <div class="section-card" style="margin-bottom: 0;">
-              <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 16px;">📈 Real-Time Revenue
-                &amp; Hourly Order Velocity</h2>
+            <div class="section-card" style="margin-bottom: 0; position: relative;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main, #0f172a); margin: 0;">📈 Real-Time Revenue &amp; Hourly Order Velocity</h2>
+                    <span id="revenueLiveStreamingBadge" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.12); color: #059669; border: 1.5px solid rgba(16, 185, 129, 0.35); font-size: 11px; font-weight: 800; padding: 2.5px 9px; border-radius: 999px; letter-spacing: 0.6px;">
+                      <span class="live-radar-dot"></span>
+                      LIVE
+                    </span>
+                  </div>
+                  <div style="font-size: 11.5px; color: var(--text-muted, #64748B); margin-top: 3px;">Dynamic transaction velocity streamed from live POS orders &amp; customer checkouts</div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <!-- View Mode Toggles -->
+                  <div class="rev-mode-switch" style="display: inline-flex; background: var(--bg-secondary, #F1F5F9); padding: 3px; border-radius: 8px; border: 1px solid var(--border-color, #E2E8F0); font-size: 11px; font-weight: 700;">
+                    <button id="btnRevModeCumulative" onclick="setRevenueChartMode('cumulative')" class="rev-mode-btn is-active" title="View cumulative sales curve throughout the day">Cumulative (₹)</button>
+                    <button id="btnRevModeVelocity" onclick="setRevenueChartMode('velocity')" class="rev-mode-btn" title="View discrete orders per hour">Hourly Orders</button>
+                    <button id="btnRevModeBoth" onclick="setRevenueChartMode('both')" class="rev-mode-btn" title="Dual view combining Revenue and Order Velocity">Dual View</button>
+                  </div>
+
+                  <!-- Live Stats Pill -->
+                  <div style="font-family: var(--font-mono, monospace); font-size: 11px; color: var(--text-muted, #64748B); background: var(--bg-surface, #F8FAFC); padding: 5px 11px; border-radius: 7px; border: 1px solid var(--border-color, #E2E8F0); display: flex; align-items: center; gap: 8px;">
+                    <span>Live: <b id="revLiveTotalPill" style="color: #059669; font-size: 12.5px;">₹0</b></span>
+                    <span style="color: var(--border-color, #CBD5E1);">|</span>
+                    <span>Peak: <b id="revPeakVelocityPill" style="color: #0284C7;">0 ord/hr</b></span>
+                  </div>
+                </div>
+              </div>
+
               <div id="revenueChartContainer" style="min-height: 260px;"></div>
             </div>
             <div class="section-card" style="margin-bottom: 0;">
@@ -2974,148 +3036,354 @@
       }
     }
 
-    // Chart Renderer (Section 6)
-    function renderCharts() {
+    // ══════════════════════════════════════════════════════════════════════
+    // REAL-TIME REVENUE & HOURLY VELOCITY CHART ENGINE (Section 6)
+    // ══════════════════════════════════════════════════════════════════════
+    let currentRevenueChartMode = 'cumulative'; // 'cumulative' | 'velocity' | 'both'
+    let cachedRevenueOrders = [];
+
+    function setRevenueChartMode(mode) {
+      currentRevenueChartMode = mode;
+      document.querySelectorAll('.rev-mode-btn').forEach(btn => {
+        btn.classList.remove('is-active');
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text-muted, #64748B)';
+        btn.style.boxShadow = 'none';
+      });
+      const targetId = mode === 'cumulative' ? 'btnRevModeCumulative' : (mode === 'velocity' ? 'btnRevModeVelocity' : 'btnRevModeBoth');
+      const activeBtn = document.getElementById(targetId);
+      if (activeBtn) {
+        activeBtn.classList.add('is-active');
+        activeBtn.style.background = 'var(--bg-surface, #FFFFFF)';
+        activeBtn.style.color = 'var(--text-main, #0F172A)';
+        activeBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
+      }
+      updateRealTimeRevenueChart(true);
+    }
+
+    async function updateRealTimeRevenueChart(forceRedraw = false) {
       const revContainer = document.querySelector("#revenueChartContainer");
-      const donutContainer = document.querySelector("#volumeDonutChartContainer");
+      if (!revContainer || typeof ApexCharts === 'undefined') return;
 
-      if (typeof ApexCharts !== 'undefined') {
-        try {
-          if (!revenueChartInstance && revContainer) {
-            const revenueData = [0, 480, 1100, 2050, 2950, 3800, Math.max(Math.round(totalRevenueSum), 4200)];
-            const options = {
-              chart: {
-                type: 'area', height: 268, toolbar: { show: false }, background: 'transparent',
-                fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
-                animations: { enabled: true, speed: 800 },
-                dropShadow: { enabled: true, top: 8, blur: 12, color: 'rgba(5,150,105,0.22)', opacity: 0.8 }
-              },
-              series: [{ name: 'Revenue', data: revenueData }],
-              xaxis: {
-                categories: ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00', 'Now'],
-                axisBorder: { show: false }, axisTicks: { show: false },
-                labels: { style: { colors: '#94A3B8', fontSize: '11px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 } }
-              },
-              yaxis: {
-                labels: {
-                  formatter: (val) => '\u20b9' + Math.round(val),
-                  style: { colors: '#94A3B8', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
-                }
-              },
-              colors: ['#10B981'],
-              stroke: { curve: 'smooth', width: 3 },
-              fill: {
-                type: 'gradient',
-                gradient: {
-                  shadeIntensity: 1, opacityFrom: 0.42, opacityTo: 0.0, stops: [0, 90, 100],
-                  colorStops: [
-                    { offset: 0, color: '#10B981', opacity: 0.42 },
-                    { offset: 60, color: '#059669', opacity: 0.10 },
-                    { offset: 100, color: '#10B981', opacity: 0.0 }
-                  ]
-                }
-              },
-              markers: { size: 4, colors: ['#10B981'], strokeColors: '#FFFFFF', strokeWidth: 2, hover: { size: 7 } },
-              grid: {
-                borderColor: 'rgba(226,232,240,0.5)', strokeDashArray: 4,
-                xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } },
-                padding: { top: 6, right: 8, bottom: 0, left: 4 }
-              },
-              tooltip: {
-                theme: 'dark',
-                style: { fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" },
-                y: { formatter: (val) => '\u20b9' + val.toLocaleString('en-IN') }
-              },
-              dataLabels: { enabled: false }
-            };
-            revenueChartInstance = new ApexCharts(revContainer, options);
-            revenueChartInstance.render();
+      try {
+        const res = await apiFetch('/pos/orders');
+        if (res.ok) {
+          const fresh = await res.json();
+          if (Array.isArray(fresh)) {
+            cachedRevenueOrders = fresh;
           }
+        }
+      } catch (e) {
+        // Use cached data
+      }
 
-          if (!donutChartInstance && donutContainer) {
-            const flavourLabels = Object.values(flavoursMap).slice(0, 8);
-            const series = batchesData.slice(0, 8).map(b => parseFloat(((b.remainingVolumeMl || 20000) / 1000.0).toFixed(1)));
-            const activeLabels = flavourLabels.length > 0 ? flavourLabels : ['Mango', 'Lemon', 'Mint', 'Strawberry', 'Grape', 'Lychee', 'Thunder', 'Orange'];
-            const donutColors = activeLabels.map(fl => {
-              const u = String(fl).toUpperCase();
-              if (u.includes('MANGO')) return '#EAB308';      // Yellow
-              if (u.includes('LEMON')) return '#84CC16';      // Light Green
-              if (u.includes('MINT')) return '#047857';       // Dark Green
-              if (u.includes('STRAWBERRY')) return '#EC4899'; // Pink
-              if (u.includes('GRAPE')) return '#9333EA';      // Purple
-              if (u.includes('LYCHEE')) return '#FB923C';     // Peach
-              if (u.includes('THUNDER') || u.includes('ENERGY')) return '#92400E'; // Brown
-              if (u.includes('ORANGE')) return '#F97316';      // Orange
-              return '#38BDF8';
-            });
-            const options = {
-              chart: {
-                type: 'donut', height: 268, background: 'transparent',
-                fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
-                animations: { enabled: true, speed: 700 },
-                dropShadow: { enabled: true, top: 4, blur: 10, color: '#000', opacity: 0.15 }
-              },
-              series: series.length > 0 ? series : [17.5, 16.0, 19.0, 18.5, 15.7, 17.5, 16.0, 14.2],
-              labels: activeLabels,
-              colors: donutColors,
-              stroke: { width: 2, colors: ['transparent'] },
-              plotOptions: {
-                pie: {
-                  donut: {
-                    size: '68%',
-                    labels: {
-                      show: true,
-                      total: {
-                        show: true, label: 'Total Volume',
-                        fontSize: '10px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, color: '#64748B',
-                        formatter: (w) => {
-                          const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                          return total.toFixed(1) + 'L';
-                        }
-                      },
-                      value: { fontSize: '18px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: '#0F172A', formatter: (val) => parseFloat(val).toFixed(1) + 'L' }
-                    }
-                  }
+      const now = new Date();
+      const currentHour = now.getHours();
+
+      // Establish timeline window starting from earliest order or 9 AM
+      let startHour = 9;
+      if (cachedRevenueOrders && cachedRevenueOrders.length > 0) {
+        const earliestHour = cachedRevenueOrders.reduce((min, o) => {
+          if (!o.createdAt) return min;
+          const h = new Date(o.createdAt).getHours();
+          return (!isNaN(h) && h >= 0) ? Math.min(min, h) : min;
+        }, 9);
+        startHour = Math.min(earliestHour, 9);
+      }
+      startHour = Math.min(startHour, Math.max(0, currentHour - 6));
+
+      const hourlyRevenueMap = {};
+      const hourlyOrdersMap = {};
+
+      if (cachedRevenueOrders && cachedRevenueOrders.length > 0) {
+        cachedRevenueOrders.forEach(o => {
+          if (!o.createdAt) return;
+          const d = new Date(o.createdAt);
+          const h = d.getHours();
+          if (!isNaN(h)) {
+            const amt = Number(o.totalAmount || 0);
+            hourlyRevenueMap[h] = (hourlyRevenueMap[h] || 0) + amt;
+            hourlyOrdersMap[h] = (hourlyOrdersMap[h] || 0) + 1;
+          }
+        });
+      }
+
+      const categories = [];
+      const cumulativeRevData = [];
+      const velocityData = [];
+      let runningTotal = 0;
+      let peakVelocity = 0;
+
+      for (let h = startHour; h <= currentHour; h++) {
+        const hStr = (h < 10 ? '0' : '') + h + ':00';
+        categories.push(hStr);
+        const rev = hourlyRevenueMap[h] || 0;
+        const count = hourlyOrdersMap[h] || 0;
+        runningTotal += rev;
+        cumulativeRevData.push(Math.round(runningTotal));
+        velocityData.push(count);
+        if (count > peakVelocity) peakVelocity = count;
+      }
+
+      // Add dynamic 'Now' bucket with current clock time
+      const mins = now.getMinutes();
+      const minStr = mins < 10 ? '0' + mins : mins;
+      const nowLabel = `Now (${(currentHour < 10 ? '0' : '') + currentHour}:${minStr})`;
+      categories.push(nowLabel);
+
+      const totalRevNow = Math.round(Math.max(runningTotal, totalRevenueSum));
+      cumulativeRevData.push(totalRevNow);
+      const currentOrders = hourlyOrdersMap[currentHour] || 0;
+      velocityData.push(currentOrders);
+      if (currentOrders > peakVelocity) peakVelocity = currentOrders;
+
+      // Update live stat pills in header
+      const liveRevPill = document.getElementById('revLiveTotalPill');
+      if (liveRevPill) liveRevPill.textContent = `₹${totalRevNow.toLocaleString('en-IN')}`;
+
+      const peakVelPill = document.getElementById('revPeakVelocityPill');
+      if (peakVelPill) peakVelPill.textContent = `${peakVelocity} ord/hr`;
+
+      // Series & Y-axis according to active mode
+      let series = [];
+      let yaxisConfig = [];
+      let colors = [];
+
+      if (currentRevenueChartMode === 'cumulative') {
+        colors = ['#10B981'];
+        series = [{ name: 'Cumulative Revenue', type: 'area', data: cumulativeRevData }];
+        yaxisConfig = [{
+          labels: {
+            formatter: (val) => '₹' + Math.round(val),
+            style: { colors: '#94A3B8', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
+          }
+        }];
+      } else if (currentRevenueChartMode === 'velocity') {
+        colors = ['#06B6D4'];
+        series = [{ name: 'Hourly Order Velocity', type: 'area', data: velocityData }];
+        yaxisConfig = [{
+          labels: {
+            formatter: (val) => Math.round(val) + ' ord',
+            style: { colors: '#94A3B8', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
+          }
+        }];
+      } else { // 'both'
+        colors = ['#10B981', '#06B6D4'];
+        series = [
+          { name: 'Cumulative Revenue (₹)', type: 'area', data: cumulativeRevData },
+          { name: 'Hourly Velocity (Orders)', type: 'line', data: velocityData }
+        ];
+        yaxisConfig = [
+          {
+            title: { text: 'Revenue (₹)', style: { color: '#10B981', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" } },
+            labels: {
+              formatter: (val) => '₹' + Math.round(val),
+              style: { colors: '#10B981', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
+            }
+          },
+          {
+            opposite: true,
+            title: { text: 'Orders/hr', style: { color: '#06B6D4', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" } },
+            labels: {
+              formatter: (val) => Math.round(val) + ' ord',
+              style: { colors: '#06B6D4', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
+            }
+          }
+        ];
+      }
+
+      if (!revenueChartInstance) {
+        const options = {
+          chart: {
+            type: 'area',
+            height: 268,
+            toolbar: { show: false },
+            background: 'transparent',
+            fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
+            animations: {
+              enabled: true,
+              speed: 600,
+              dynamicAnimation: { enabled: true, speed: 450 }
+            },
+            dropShadow: { enabled: true, top: 6, blur: 12, color: 'rgba(5,150,105,0.22)', opacity: 0.8 }
+          },
+          series: series,
+          xaxis: {
+            categories: categories,
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            labels: {
+              style: { colors: '#94A3B8', fontSize: '11px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }
+            }
+          },
+          yaxis: yaxisConfig,
+          colors: colors,
+          stroke: { curve: 'smooth', width: currentRevenueChartMode === 'both' ? [3, 2.5] : 3 },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shadeIntensity: 1,
+              opacityFrom: 0.42,
+              opacityTo: 0.0,
+              stops: [0, 90, 100],
+              colorStops: [
+                { offset: 0, color: colors[0], opacity: 0.42 },
+                { offset: 60, color: colors[0], opacity: 0.10 },
+                { offset: 100, color: colors[0], opacity: 0.0 }
+              ]
+            }
+          },
+          markers: {
+            size: 4,
+            colors: colors,
+            strokeColors: '#FFFFFF',
+            strokeWidth: 2,
+            hover: { size: 7 }
+          },
+          grid: {
+            borderColor: 'rgba(226,232,240,0.5)',
+            strokeDashArray: 4,
+            xaxis: { lines: { show: false } },
+            yaxis: { lines: { show: true } },
+            padding: { top: 6, right: 8, bottom: 0, left: 4 }
+          },
+          tooltip: {
+            theme: 'dark',
+            shared: true,
+            intersect: false,
+            style: { fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" },
+            y: {
+              formatter: (val, opts) => {
+                if (currentRevenueChartMode === 'velocity') {
+                  return val + ' orders';
                 }
-              },
-              dataLabels: {
-                enabled: true,
-                formatter: (val) => val.toFixed(0) + '%',
-                dropShadow: { enabled: true, blur: 3, opacity: 0.2 },
-                style: { fontSize: '10px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }
-              },
-              legend: {
-                position: 'bottom', fontSize: '11px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600,
-                markers: { width: 9, height: 9, radius: 3 }, itemMargin: { horizontal: 6, vertical: 3 }
-              },
-              tooltip: {
-                theme: 'dark',
-                style: { fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" },
-                y: { formatter: (val) => val.toFixed(1) + ' Litres' }
+                if (currentRevenueChartMode === 'both' && opts && opts.seriesIndex === 1) {
+                  return val + ' orders';
+                }
+                return '₹' + Number(val).toLocaleString('en-IN');
               }
-            };
-            donutChartInstance = new ApexCharts(donutContainer, options);
-            donutChartInstance.render();
-          }
-          return;
-        } catch (e) { }
+            }
+          },
+          dataLabels: { enabled: false }
+        };
+        revenueChartInstance = new ApexCharts(revContainer, options);
+        revenueChartInstance.render();
+      } else {
+        if (forceRedraw) {
+          revenueChartInstance.updateOptions({
+            xaxis: { categories: categories },
+            yaxis: yaxisConfig,
+            colors: colors,
+            stroke: { curve: 'smooth', width: currentRevenueChartMode === 'both' ? [3, 2.5] : 3 },
+            fill: {
+              type: 'gradient',
+              gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.42,
+                opacityTo: 0.0,
+                stops: [0, 90, 100],
+                colorStops: [
+                  { offset: 0, color: colors[0], opacity: 0.42 },
+                  { offset: 60, color: colors[0], opacity: 0.10 },
+                  { offset: 100, color: colors[0], opacity: 0.0 }
+                ]
+              }
+            },
+            markers: { colors: colors }
+          }, false, false);
+          revenueChartInstance.updateSeries(series, true);
+        } else {
+          revenueChartInstance.updateOptions({
+            xaxis: { categories: categories }
+          }, false, false);
+          revenueChartInstance.updateSeries(series, true);
+        }
       }
+    }
 
-      if (revContainer) {
-        revContainer.innerHTML = `
-          <svg viewBox="0 0 500 200" style="width:100%; height:240px;">
-            <defs>
-              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#059669" stop-opacity="0.4"/>
-                <stop offset="100%" stop-color="#059669" stop-opacity="0.0"/>
-              </linearGradient>
-            </defs>
-            <path d="M 10,170 Q 80,140 150,110 T 290,60 T 430,30 L 490,20 L 490,190 L 10,190 Z" fill="url(#chartGrad)"/>
-            <path d="M 10,170 Q 80,140 150,110 T 290,60 T 430,30 L 490,20" fill="none" stroke="#059669" stroke-width="4"/>
-            <circle cx="490" cy="20" r="6" fill="#059669"/>
-          </svg>
-        `;
+    function updateVolumeDonutChart() {
+      const donutContainer = document.querySelector("#volumeDonutChartContainer");
+      if (!donutContainer || typeof ApexCharts === 'undefined') return;
+
+      const flavourLabels = Object.values(flavoursMap).slice(0, 8);
+      const series = batchesData.slice(0, 8).map(b => parseFloat(((b.remainingVolumeMl || 20000) / 1000.0).toFixed(1)));
+      const activeLabels = flavourLabels.length > 0 ? flavourLabels : ['Mango', 'Lemon', 'Mint', 'Strawberry', 'Grape', 'Lychee', 'Thunder', 'Orange'];
+      const donutColors = activeLabels.map(fl => {
+        const u = String(fl).toUpperCase();
+        if (u.includes('MANGO')) return '#EAB308';      // Yellow
+        if (u.includes('LEMON')) return '#84CC16';      // Light Green
+        if (u.includes('MINT')) return '#047857';       // Dark Green
+        if (u.includes('STRAWBERRY')) return '#EC4899'; // Pink
+        if (u.includes('GRAPE')) return '#9333EA';      // Purple
+        if (u.includes('LYCHEE')) return '#FB923C';     // Peach
+        if (u.includes('THUNDER') || u.includes('ENERGY')) return '#92400E'; // Brown
+        if (u.includes('ORANGE')) return '#F97316';      // Orange
+        return '#38BDF8';
+      });
+
+      const actualSeries = series.length > 0 ? series : [17.5, 16.0, 19.0, 18.5, 15.7, 17.5, 16.0, 14.2];
+
+      if (!donutChartInstance) {
+        const options = {
+          chart: {
+            type: 'donut', height: 268, background: 'transparent',
+            fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
+            animations: { enabled: true, speed: 700 },
+            dropShadow: { enabled: true, top: 4, blur: 10, color: '#000', opacity: 0.15 }
+          },
+          series: actualSeries,
+          labels: activeLabels,
+          colors: donutColors,
+          stroke: { width: 2, colors: ['transparent'] },
+          plotOptions: {
+            pie: {
+              donut: {
+                size: '68%',
+                labels: {
+                  show: true,
+                  total: {
+                    show: true, label: 'Total Volume',
+                    fontSize: '10px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, color: '#64748B',
+                    formatter: (w) => {
+                      const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                      return total.toFixed(1) + 'L';
+                    }
+                  },
+                  value: { fontSize: '18px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: '#0F172A', formatter: (val) => parseFloat(val).toFixed(1) + 'L' }
+                }
+              }
+            }
+          },
+          dataLabels: {
+            enabled: true,
+            formatter: (val) => val.toFixed(0) + '%',
+            dropShadow: { enabled: true, blur: 3, opacity: 0.2 },
+            style: { fontSize: '10px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }
+          },
+          legend: {
+            position: 'bottom', fontSize: '11px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600,
+            markers: { width: 9, height: 9, radius: 3 }, itemMargin: { horizontal: 6, vertical: 3 }
+          },
+          tooltip: {
+            theme: 'dark',
+            style: { fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" },
+            y: { formatter: (val) => val.toFixed(1) + ' Litres' }
+          }
+        };
+        donutChartInstance = new ApexCharts(donutContainer, options);
+        donutChartInstance.render();
+      } else {
+        donutChartInstance.updateOptions({
+          labels: activeLabels,
+          colors: donutColors
+        }, false, false);
+        donutChartInstance.updateSeries(actualSeries, true);
       }
+    }
+
+    function renderCharts() {
+      updateRealTimeRevenueChart();
+      updateVolumeDonutChart();
     }
 
     const defaultUsersList = [
@@ -5382,6 +5650,10 @@
               } catch (e) { }
             }
           });
+          stompClient.subscribe('/topic/orders', function (message) {
+            updateRealTimeRevenueChart();
+            refreshDashboard();
+          });
           stompClient.subscribe('/topic/market-status', function (message) {
             if (message.body) {
               try {
@@ -5395,6 +5667,15 @@
           setTimeout(connectAdminWebSocket, 5000);
         });
       } catch (err) { }
+    }
+
+    if (pubExchangeChannel) {
+      pubExchangeChannel.onmessage = (event) => {
+        if (event.data && (event.data.type === 'NEW_ORDER_PLACED' || event.data.type === 'CART_CHECKOUT_COMPLETED' || event.data.type === 'REFRESH_ORDERS')) {
+          updateRealTimeRevenueChart();
+          refreshDashboard();
+        }
+      };
     }
 
     // System Initialization
@@ -5427,6 +5708,7 @@
       renderReports();
       connectAdminWebSocket();
       setTimeout(renderCharts, 500);
+      setInterval(updateRealTimeRevenueChart, 4000);
     }
     initAdminApp();
 

@@ -2622,6 +2622,17 @@
         cart = [];
         renderCart();
 
+        if (pubExchangeChannel) {
+          try {
+            pubExchangeChannel.postMessage({
+              type: 'NEW_ORDER_PLACED',
+              orderNumber: orderNumber,
+              totalAmount: totalAmount,
+              timestamp: new Date().toISOString()
+            });
+          } catch (e) { }
+        }
+
         const modalItemsHtml = completedCart.map(i => {
           const liveProduct = products.find(p => p.id === i.product.id) || i.product;
           const itemPrice = isMarketCrashActive ? (liveProduct.minCupPrice || 18.0) : (liveProduct.currentCupPrice || 25.0);
