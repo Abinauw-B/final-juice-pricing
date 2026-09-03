@@ -258,6 +258,27 @@
       color: var(--text-main, #0F172A) !important;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
     }
+
+    /* Real-Time Pie / Donut Chart Controls */
+    .pie-mode-btn, .pie-shape-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted, #64748B);
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.18s ease;
+    }
+    .pie-mode-btn:hover, .pie-shape-btn:hover {
+      color: var(--text-main, #0F172A);
+    }
+    .pie-mode-btn.is-active, .pie-shape-btn.is-active {
+      background: var(--bg-surface, #FFFFFF) !important;
+      color: var(--text-main, #0F172A) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+    }
     .live-radar-dot {
       width: 7px;
       height: 7px;
@@ -982,9 +1003,35 @@
 
               <div id="revenueChartContainer" style="min-height: 260px;"></div>
             </div>
-            <div class="section-card" style="margin-bottom: 0;">
-              <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 16px;">🛢️ 20L Stock Volume
-                Breakdown</h2>
+            <div class="section-card" style="margin-bottom: 0; position: relative;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main, #0f172a); margin: 0;" id="pieCardTitle">🛢️ 20L Stock Volume Breakdown</h2>
+                    <span id="pieLiveBadge" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); color: #059669; border: 1.5px solid rgba(16, 185, 129, 0.35); font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.5px;">
+                      <span class="live-radar-dot"></span>
+                      LIVE
+                    </span>
+                  </div>
+                  <div id="pieCardSubtitle" style="font-size: 11.5px; color: var(--text-muted, #64748B); margin-top: 3px;">Active liquid volume across 20L container batches</div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <!-- Mode Switch: Volume / Cups / Revenue -->
+                  <div class="pie-mode-switch" style="display: inline-flex; background: var(--bg-secondary, #F1F5F9); padding: 3px; border-radius: 8px; border: 1px solid var(--border-color, #E2E8F0); font-size: 11px; font-weight: 700;">
+                    <button id="btnPieModeVolume" onclick="setPieChartMode('volume')" class="pie-mode-btn is-active" title="Remaining stock volume per juice">Volume (L)</button>
+                    <button id="btnPieModeCups" onclick="setPieChartMode('cups')" class="pie-mode-btn" title="Total cups sold today per juice">Cups Sold</button>
+                    <button id="btnPieModeRevenue" onclick="setPieChartMode('revenue')" class="pie-mode-btn" title="Revenue earned today per juice">Revenue (₹)</button>
+                  </div>
+
+                  <!-- Shape Switch: Donut / Pie -->
+                  <div class="pie-shape-switch" style="display: inline-flex; background: var(--bg-secondary, #F1F5F9); padding: 3px; border-radius: 8px; border: 1px solid var(--border-color, #E2E8F0); font-size: 11px; font-weight: 700;">
+                    <button id="btnPieShapeDonut" onclick="setPieChartShape('donut')" class="pie-shape-btn is-active" title="Donut representation">🍩 Donut</button>
+                    <button id="btnPieShapePie" onclick="setPieChartShape('pie')" class="pie-shape-btn" title="Solid pie representation">🥧 Pie</button>
+                  </div>
+                </div>
+              </div>
+
               <div id="volumeDonutChartContainer" style="min-height: 260px;"></div>
             </div>
           </div>
@@ -3301,34 +3348,184 @@
       }
     }
 
-    function updateVolumeDonutChart() {
+    // ══════════════════════════════════════════════════════════════════════
+    // REAL-TIME BEVERAGE BREAKDOWN PIE / DONUT CHART ENGINE
+    // ══════════════════════════════════════════════════════════════════════
+    let currentPieMode = 'volume'; // 'volume' | 'cups' | 'revenue'
+    let currentPieShape = 'donut'; // 'donut' | 'pie'
+
+    function setPieChartMode(mode) {
+      currentPieMode = mode;
+      document.querySelectorAll('.pie-mode-btn').forEach(btn => {
+        btn.classList.remove('is-active');
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text-muted, #64748B)';
+        btn.style.boxShadow = 'none';
+      });
+      const targetId = mode === 'volume' ? 'btnPieModeVolume' : (mode === 'cups' ? 'btnPieModeCups' : 'btnPieModeRevenue');
+      const activeBtn = document.getElementById(targetId);
+      if (activeBtn) {
+        activeBtn.classList.add('is-active');
+        activeBtn.style.background = 'var(--bg-surface, #FFFFFF)';
+        activeBtn.style.color = 'var(--text-main, #0F172A)';
+        activeBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
+      }
+
+      const titleEl = document.getElementById('pieCardTitle');
+      const subEl = document.getElementById('pieCardSubtitle');
+      if (mode === 'volume') {
+        if (titleEl) titleEl.textContent = '🛢️ 20L Stock Volume Breakdown';
+        if (subEl) subEl.textContent = 'Active liquid volume across 20L container batches';
+      } else if (mode === 'cups') {
+        if (titleEl) titleEl.textContent = '🥤 Cups Sold Today by Juice';
+        if (subEl) subEl.textContent = 'Real-time sales breakdown of cups dispensed per juice variety';
+      } else {
+        if (titleEl) titleEl.textContent = '💰 Revenue Share by Beverage';
+        if (subEl) subEl.textContent = 'Real-time earnings generated per beverage variety today';
+      }
+
+      updateVolumeDonutChart(true);
+    }
+
+    function setPieChartShape(shape) {
+      currentPieShape = shape;
+      document.querySelectorAll('.pie-shape-btn').forEach(btn => {
+        btn.classList.remove('is-active');
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text-muted, #64748B)';
+        btn.style.boxShadow = 'none';
+      });
+      const targetId = shape === 'donut' ? 'btnPieShapeDonut' : 'btnPieShapePie';
+      const activeBtn = document.getElementById(targetId);
+      if (activeBtn) {
+        activeBtn.classList.add('is-active');
+        activeBtn.style.background = 'var(--bg-surface, #FFFFFF)';
+        activeBtn.style.color = 'var(--text-main, #0F172A)';
+        activeBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
+      }
+      updateVolumeDonutChart(true);
+    }
+
+    function getJuicePieColor(name) {
+      const u = String(name || '').toUpperCase();
+      if (u.includes('MANGO')) return '#EAB308';       // Warm Yellow/Gold
+      if (u.includes('LEMON')) return '#84CC16';       // Lime Green
+      if (u.includes('MINT')) return '#10B981';        // Fresh Mint Emerald
+      if (u.includes('STRAWBERRY')) return '#EC4899';  // Berry Pink
+      if (u.includes('GRAPE')) return '#9333EA';       // Royal Purple
+      if (u.includes('LYCHEE')) return '#FB923C';      // Peach Coral
+      if (u.includes('THUNDER') || u.includes('ENERGY')) return '#06B6D4'; // Electric Cyan
+      if (u.includes('ORANGE')) return '#F97316';      // Citrus Orange
+      return '#38BDF8';
+    }
+
+    function updateVolumeDonutChart(forceRedraw = false) {
       const donutContainer = document.querySelector("#volumeDonutChartContainer");
       if (!donutContainer || typeof ApexCharts === 'undefined') return;
 
-      const flavourLabels = Object.values(flavoursMap).slice(0, 8);
-      const series = batchesData.slice(0, 8).map(b => parseFloat(((b.remainingVolumeMl || 20000) / 1000.0).toFixed(1)));
-      const activeLabels = flavourLabels.length > 0 ? flavourLabels : ['Mango', 'Lemon', 'Mint', 'Strawberry', 'Grape', 'Lychee', 'Thunder', 'Orange'];
-      const donutColors = activeLabels.map(fl => {
-        const u = String(fl).toUpperCase();
-        if (u.includes('MANGO')) return '#EAB308';      // Yellow
-        if (u.includes('LEMON')) return '#84CC16';      // Light Green
-        if (u.includes('MINT')) return '#047857';       // Dark Green
-        if (u.includes('STRAWBERRY')) return '#EC4899'; // Pink
-        if (u.includes('GRAPE')) return '#9333EA';      // Purple
-        if (u.includes('LYCHEE')) return '#FB923C';     // Peach
-        if (u.includes('THUNDER') || u.includes('ENERGY')) return '#92400E'; // Brown
-        if (u.includes('ORANGE')) return '#F97316';      // Orange
-        return '#38BDF8';
-      });
+      let activeLabels = [];
+      let actualSeries = [];
+      let totalLabel = 'Total Volume';
+      let totalFormatter = (w) => {
+        const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+        return total.toFixed(1) + 'L';
+      };
+      let tooltipFormatter = (val) => val.toFixed(1) + ' Litres';
 
-      const actualSeries = series.length > 0 ? series : [17.5, 16.0, 19.0, 18.5, 15.7, 17.5, 16.0, 14.2];
+      if (currentPieMode === 'volume') {
+        // Aggregate active batches volume by juice
+        const volByProduct = {};
+        (batchesData || []).filter(b => b.status === 'ACTIVE').forEach(b => {
+          const pName = (flavoursMap[b.productId] || b.flavour || 'Juice #' + b.productId).replace(/_/g, ' ');
+          volByProduct[pName] = (volByProduct[pName] || 0) + (Number(b.remainingVolumeMl || 0) / 1000.0);
+        });
 
-      if (!donutChartInstance) {
+        if (Object.keys(volByProduct).length > 0) {
+          activeLabels = Object.keys(volByProduct);
+          actualSeries = Object.values(volByProduct).map(v => parseFloat(v.toFixed(1)));
+        } else {
+          activeLabels = ['Fresh Mango Juice', 'Zesty Lemon Juice', 'Cool Mint Cooler', 'Valencia Orange Juice', 'Strawberry Delight', 'Royal Grape Juice', 'Lychee Mist', 'Thunder'];
+          actualSeries = [17.5, 16.0, 19.0, 18.5, 15.7, 17.5, 16.0, 14.2];
+        }
+
+        totalLabel = 'Total Volume';
+        totalFormatter = (w) => {
+          const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+          return total > 1000 ? Math.round(total).toLocaleString('en-IN') + 'L' : total.toFixed(1) + 'L';
+        };
+        tooltipFormatter = (val) => Number(val).toLocaleString('en-IN') + ' Litres';
+
+      } else if (currentPieMode === 'cups') {
+        // Aggregate cups sold by juice from real orders
+        const cupsByProduct = {};
+        (cachedRevenueOrders || []).forEach(o => {
+          (o.items || []).forEach(item => {
+            const pName = (item.productName || 'Juice').replace(/_/g, ' ');
+            cupsByProduct[pName] = (cupsByProduct[pName] || 0) + (item.quantity || 1);
+          });
+        });
+
+        if (Object.keys(cupsByProduct).length > 0) {
+          activeLabels = Object.keys(cupsByProduct);
+          actualSeries = Object.values(cupsByProduct);
+        } else {
+          activeLabels = ['Fresh Mango Juice', 'Thunder', 'Zesty Lemon Juice', 'Cool Mint Cooler', 'Lychee Mist'];
+          actualSeries = [96, 13, 2, 2, 1];
+        }
+
+        totalLabel = 'Total Cups';
+        totalFormatter = (w) => {
+          const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+          return Math.round(total) + ' Cups';
+        };
+        tooltipFormatter = (val) => val + ' Cups Sold';
+
+      } else { // 'revenue'
+        // Aggregate revenue by juice from real orders
+        const revByProduct = {};
+        (cachedRevenueOrders || []).forEach(o => {
+          (o.items || []).forEach(item => {
+            const pName = (item.productName || 'Juice').replace(/_/g, ' ');
+            revByProduct[pName] = (revByProduct[pName] || 0) + (Number(item.totalPrice) || 0);
+          });
+        });
+
+        if (Object.keys(revByProduct).length > 0) {
+          activeLabels = Object.keys(revByProduct);
+          actualSeries = Object.values(revByProduct).map(r => Math.round(r));
+        } else {
+          activeLabels = ['Fresh Mango Juice', 'Thunder', 'Zesty Lemon Juice', 'Cool Mint Cooler', 'Lychee Mist'];
+          actualSeries = [2284, 323, 46, 46, 23];
+        }
+
+        totalLabel = 'Total Revenue';
+        totalFormatter = (w) => {
+          const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+          return '₹' + Math.round(total).toLocaleString('en-IN');
+        };
+        tooltipFormatter = (val) => '₹' + Number(val).toLocaleString('en-IN');
+      }
+
+      const donutColors = activeLabels.map(getJuicePieColor);
+      const isDonut = currentPieShape === 'donut';
+
+      if (!donutChartInstance || forceRedraw) {
+        if (donutChartInstance) {
+          try { donutChartInstance.destroy(); } catch (e) { }
+          donutChartInstance = null;
+        }
+
         const options = {
           chart: {
-            type: 'donut', height: 268, background: 'transparent',
+            type: isDonut ? 'donut' : 'pie',
+            height: 268,
+            background: 'transparent',
             fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
-            animations: { enabled: true, speed: 700 },
+            animations: {
+              enabled: true,
+              speed: 600,
+              dynamicAnimation: { enabled: true, speed: 400 }
+            },
             dropShadow: { enabled: true, top: 4, blur: 10, color: '#000', opacity: 0.15 }
           },
           series: actualSeries,
@@ -3338,18 +3535,29 @@
           plotOptions: {
             pie: {
               donut: {
-                size: '68%',
+                size: isDonut ? '68%' : '0%',
                 labels: {
-                  show: true,
+                  show: isDonut,
                   total: {
-                    show: true, label: 'Total Volume',
-                    fontSize: '10px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, color: '#64748B',
-                    formatter: (w) => {
-                      const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                      return total.toFixed(1) + 'L';
-                    }
+                    show: isDonut,
+                    label: totalLabel,
+                    fontSize: '10px',
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontWeight: 700,
+                    color: '#64748B',
+                    formatter: totalFormatter
                   },
-                  value: { fontSize: '18px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: '#0F172A', formatter: (val) => parseFloat(val).toFixed(1) + 'L' }
+                  value: {
+                    fontSize: '17px',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontWeight: 800,
+                    color: '#0F172A',
+                    formatter: (val) => {
+                      if (currentPieMode === 'revenue') return '₹' + Math.round(val).toLocaleString('en-IN');
+                      if (currentPieMode === 'cups') return Math.round(val) + 'c';
+                      return parseFloat(val).toFixed(1) + 'L';
+                    }
+                  }
                 }
               }
             }
@@ -3361,13 +3569,17 @@
             style: { fontSize: '10px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }
           },
           legend: {
-            position: 'bottom', fontSize: '11px', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600,
-            markers: { width: 9, height: 9, radius: 3 }, itemMargin: { horizontal: 6, vertical: 3 }
+            position: 'bottom',
+            fontSize: '11px',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontWeight: 600,
+            markers: { width: 9, height: 9, radius: 3 },
+            itemMargin: { horizontal: 6, vertical: 3 }
           },
           tooltip: {
             theme: 'dark',
             style: { fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" },
-            y: { formatter: (val) => val.toFixed(1) + ' Litres' }
+            y: { formatter: tooltipFormatter }
           }
         };
         donutChartInstance = new ApexCharts(donutContainer, options);
@@ -5652,6 +5864,7 @@
           });
           stompClient.subscribe('/topic/orders', function (message) {
             updateRealTimeRevenueChart();
+            updateVolumeDonutChart();
             refreshDashboard();
           });
           stompClient.subscribe('/topic/market-status', function (message) {
@@ -5673,6 +5886,7 @@
       pubExchangeChannel.onmessage = (event) => {
         if (event.data && (event.data.type === 'NEW_ORDER_PLACED' || event.data.type === 'CART_CHECKOUT_COMPLETED' || event.data.type === 'REFRESH_ORDERS')) {
           updateRealTimeRevenueChart();
+          updateVolumeDonutChart();
           refreshDashboard();
         }
       };
@@ -5709,6 +5923,7 @@
       connectAdminWebSocket();
       setTimeout(renderCharts, 500);
       setInterval(updateRealTimeRevenueChart, 4000);
+      setInterval(updateVolumeDonutChart, 4000);
     }
     initAdminApp();
 
