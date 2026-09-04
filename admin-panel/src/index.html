@@ -1154,37 +1154,114 @@
 
         <!-- 2. Batches Tab -->
         <div id="view-batches" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
             <div>
-              <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">20L Juice
-                Container Batches</h1>
-              <p style="color: var(--text-muted);">Manage 20,000 ml container batches, status, and volume tracking.</p>
+              <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">🛢️ 20L Juice Container Batches</h1>
+              <p style="color: var(--text-muted);">Manage 20,000 ml container batches, liquid stock volume tracking, and tank replenishment.</p>
             </div>
-            <div style="display: flex; gap: 12px;">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
               <button class="btn-primary" style="background: linear-gradient(135deg, #059669, #047857);"
                 onclick="showNewFlavourModal()">🍹 + Add New Juice Variety</button>
               <button class="btn-primary" onclick="showNewBatchModal()">🛢️ + Register New 20L Batch</button>
             </div>
           </div>
 
+          <!-- Top Telemetry Metrics for Batches Tab -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="metric-card" style="padding: 16px 20px;">
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Active Batches</div>
+              <div id="batchTabActiveCount" style="font-size: 24px; font-weight: 800; color: #059669; font-family: var(--font-mono, monospace); margin-top: 4px;">0 active</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Connected to POS dispensers</div>
+            </div>
+            <div class="metric-card" style="padding: 16px 20px;">
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Stock Volume</div>
+              <div id="batchTabTotalVol" style="font-size: 24px; font-weight: 800; color: #0284C7; font-family: var(--font-mono, monospace); margin-top: 4px;">0.0 Litres</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Live inventory across tanks</div>
+            </div>
+            <div class="metric-card" style="padding: 16px 20px;">
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Est. Cups In Stock</div>
+              <div id="batchTabTotalCups" style="font-size: 24px; font-weight: 800; color: #7C3AED; font-family: var(--font-mono, monospace); margin-top: 4px;">0 cups</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Standard 250ml cup size</div>
+            </div>
+            <div class="metric-card" style="padding: 16px 20px;">
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Low Stock Containers (&lt;20%)</div>
+              <div id="batchTabLowStock" style="font-size: 24px; font-weight: 800; color: #D97706; font-family: var(--font-mono, monospace); margin-top: 4px;">0 warning</div>
+              <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px;">Requires immediate refill</div>
+            </div>
+          </div>
+
+          <!-- Batches Controls & Filters Card -->
+          <div class="section-card" style="padding: 16px 20px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1;">
+                <!-- Search Input -->
+                <div style="position: relative; min-width: 220px; flex: 1; max-width: 360px;">
+                  <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text-muted);">🔍</span>
+                  <input type="text" id="batchSearchInput" oninput="onBatchFilterChange()" placeholder="Search by batch code or juice name..."
+                    style="width: 100%; padding: 9px 12px 9px 36px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 13px;">
+                </div>
+
+                <!-- Status Filter -->
+                <select id="batchStatusFilter" onchange="onBatchFilterChange()"
+                  style="padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 13px; font-weight: 600;">
+                  <option value="ALL">All Statuses (Active &amp; Depleted)</option>
+                  <option value="ACTIVE" selected>Active Only</option>
+                  <option value="DEPLETED">Depleted Only</option>
+                  <option value="PAUSED">Paused Only</option>
+                </select>
+
+                <!-- Flavour / Beverage Filter -->
+                <select id="batchFlavourFilter" onchange="onBatchFilterChange()"
+                  style="padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 13px; font-weight: 600;">
+                  <option value="ALL">All Juice Varieties</option>
+                </select>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Show:</span>
+                <select id="batchRowsPerPage" onchange="onBatchPageSizeChange()"
+                  style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 12px; font-weight: 700;">
+                  <option value="10">10 / page</option>
+                  <option value="25" selected>25 / page</option>
+                  <option value="50">50 / page</option>
+                  <option value="100">100 / page</option>
+                </select>
+                <button class="btn-primary" onclick="loadBatches()" style="padding: 7px 12px; font-size: 12px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); cursor: pointer;" title="Reload batches from server">🔄 Refresh</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Table Card -->
           <div class="section-card">
-            <table class="table-custom">
-              <thead>
-                <tr>
-                  <th>Batch Code</th>
-                  <th>Product ID</th>
-                  <th>Initial Vol</th>
-                  <th>Remaining Vol</th>
-                  <th>Cup Size</th>
-                  <th>Est. Remaining Cups</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="batchesTableBody">
-                <!-- Rendered dynamically -->
-              </tbody>
-            </table>
+            <div style="overflow-x: auto;">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Batch Code</th>
+                    <th>Beverage / Juice Variety</th>
+                    <th>Capacity</th>
+                    <th>Remaining Level</th>
+                    <th>Cup Size</th>
+                    <th>Est. Remaining</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="batchesTableBody">
+                  <!-- Rendered dynamically with pagination -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Controls Footer -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;">
+              <div id="batchPaginationInfo" style="font-size: 12.5px; color: var(--text-muted); font-weight: 600;">
+                Showing 0 - 0 of 0 batches
+              </div>
+              <div id="batchPaginationNav" style="display: flex; align-items: center; gap: 6px;">
+                <!-- Page buttons rendered dynamically -->
+              </div>
+            </div>
           </div>
         </div>
 
@@ -3010,76 +3087,292 @@
       renderBatchesTable();
     }
 
-    // Render Dashboard Batch Summary
+    // ══════════════════════════════════════════════════════════════════════
+    // BATCH MANAGEMENT & PAGINATION ENGINE
+    // ══════════════════════════════════════════════════════════════════════
+    let batchCurrentPage = 1;
+    let batchPageSize = 25;
+    let batchSearchQuery = '';
+    let batchStatusFilter = 'ACTIVE';
+    let batchFlavourFilter = 'ALL';
+
+    function onBatchFilterChange() {
+      const searchEl = document.getElementById('batchSearchInput');
+      const statusEl = document.getElementById('batchStatusFilter');
+      const flavEl = document.getElementById('batchFlavourFilter');
+
+      batchSearchQuery = searchEl ? searchEl.value.trim().toLowerCase() : '';
+      batchStatusFilter = statusEl ? statusEl.value : 'ALL';
+      batchFlavourFilter = flavEl ? flavEl.value : 'ALL';
+      batchCurrentPage = 1;
+      renderBatchesTable();
+    }
+
+    function onBatchPageSizeChange() {
+      const pageEl = document.getElementById('batchRowsPerPage');
+      batchPageSize = pageEl ? parseInt(pageEl.value) : 25;
+      batchCurrentPage = 1;
+      renderBatchesTable();
+    }
+
+    function goToBatchPage(page) {
+      batchCurrentPage = page;
+      renderBatchesTable();
+    }
+
+    // Render Dashboard Batch Summary (Top 8 Active Batches)
     function renderDashboardBatches() {
       if (!batchesData || batchesData.length === 0) batchesData = defaultBatches;
-      const activeCount = batchesData.filter(b => b.status === 'ACTIVE').length;
+      const activeBatches = batchesData.filter(b => b.status === 'ACTIVE');
+      const activeCount = activeBatches.length;
       const totalVolLiters = (batchesData.reduce((acc, b) => acc + (b.remainingVolumeMl || 0), 0) / 1000).toFixed(1);
 
       const activeEl = document.getElementById('dashBatches');
       if (activeEl) activeEl.textContent = `${activeCount} active`;
       const volEl = document.getElementById('dashVolume');
-      if (volEl) volEl.textContent = `${totalVolLiters} Litres`;
+      if (volEl) volEl.textContent = `${Number(totalVolLiters).toLocaleString('en-IN')} Litres`;
 
       const body = document.getElementById('dashBatchesBody');
       if (body) {
-        body.innerHTML = batchesData.map(b => {
+        const previewBatches = (activeBatches.length > 0 ? activeBatches : batchesData).slice(0, 8);
+        body.innerHTML = previewBatches.map(b => {
           const pName = flavoursMap[b.productId] || b.flavourName || `Product #${b.productId}`;
-          const cap = b.containerCapacityMl || 20000;
+          const icon = getFruitIconAdmin({ id: b.productId, name: pName });
+          const cap = b.containerCapacityMl || b.initialVolumeMl || 20000;
           const rem = b.remainingVolumeMl !== undefined ? b.remainingVolumeMl : 20000;
+          const capLitres = (cap / 1000).toFixed(0);
+          const remLitres = (rem / 1000).toFixed(1);
           const cupSize = b.cupSizeMl || 250;
           const cups = Math.floor(rem / cupSize);
+          const percent = Math.min(100, Math.max(0, Math.round((rem / cap) * 100)));
           const st = b.status || 'ACTIVE';
-          const bCode = b.batchCode || 'BATCH-001';
+          const bCode = b.batchCode || `BATCH-${b.id}`;
+
+          let meterColor = '#10B981';
+          if (percent <= 20) meterColor = '#EF4444';
+          else if (percent <= 50) meterColor = '#F59E0B';
+
           return `
             <tr>
-              <td style="font-weight: 700; font-family: monospace; color: #1e293b;">${bCode}</td>
-              <td style="font-weight: 600;">${pName}</td>
-              <td>${cap} ml (20L)</td>
-              <td style="font-weight: 700; color: #2563eb;">${rem} ml</td>
-              <td style="font-weight: 800; color: #059669;">${cups} cups</td>
+              <td>
+                <span style="font-family: var(--font-mono, monospace); font-weight: 700; font-size: 12px; background: var(--bg-secondary, #f1f5f9); padding: 3px 7px; border-radius: 6px; border: 1px solid var(--border-color, #e2e8f0); color: var(--text-main, #0f172a);">${bCode}</span>
+              </td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span>${icon}</span>
+                  <span style="font-weight: 700; color: var(--text-main); font-size: 13px;">${pName}</span>
+                </div>
+              </td>
+              <td>
+                <span style="font-weight: 700;">${capLitres}L</span>
+                <span style="font-size: 11px; color: var(--text-muted);">(${cap.toLocaleString('en-IN')} ml)</span>
+              </td>
+              <td>
+                <div style="min-width: 120px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 3px;">
+                    <span style="color: ${meterColor}; font-family: var(--font-mono);">${remLitres}L</span>
+                    <span style="color: var(--text-muted);">${percent}%</span>
+                  </div>
+                  <div style="width: 100%; height: 5px; background: var(--bg-secondary, #e2e8f0); border-radius: 999px; overflow: hidden;">
+                    <div style="width: ${percent}%; height: 100%; background: ${meterColor}; border-radius: 999px;"></div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span style="font-weight: 800; font-family: var(--font-mono); color: #059669;">${cups} cups</span>
+              </td>
               <td><span class="status-tag ${st === 'ACTIVE' ? 'tag-active' : 'tag-depleted'}">${st}</span></td>
               <td style="display: flex; gap: 6px;">
                 <button class="btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="editJuiceBatch('${bCode}', ${b.productId || 1})">✏️ Edit</button>
                 <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669;" onclick="restockJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🔄 Restock</button>
-                <button style="padding: 4px 8px; font-size: 11px; background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="deleteJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🗑️ Delete</button>
               </td>
             </tr>
           `;
-        }).join('');
+        }).join('') + `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 14px; background: var(--bg-secondary, #f8fafc);">
+              <button onclick="switchTab('batches')" class="btn-secondary" style="font-size: 12.5px; font-weight: 700; padding: 6px 16px; cursor: pointer;">
+                🔍 View &amp; Manage All ${batchesData.length} Batches in Container Management →
+              </button>
+            </td>
+          </tr>
+        `;
       }
     }
 
-    // Render Full Batches View Table
+    // Render Full Batches View Table with Search, Filter & Pagination
     function renderBatchesTable() {
       if (!batchesData || batchesData.length === 0) batchesData = defaultBatches;
+
+      // Update KPI cards on Batches Tab
+      const totalActive = batchesData.filter(b => b.status === 'ACTIVE').length;
+      const totalVolLiters = (batchesData.reduce((acc, b) => acc + (b.remainingVolumeMl || 0), 0) / 1000).toFixed(1);
+      const totalEstCups = batchesData.reduce((acc, b) => acc + Math.floor((b.remainingVolumeMl || 0) / (b.cupSizeMl || 250)), 0);
+      const lowStockCount = batchesData.filter(b => {
+        const cap = b.containerCapacityMl || b.initialVolumeMl || 20000;
+        const rem = b.remainingVolumeMl !== undefined ? b.remainingVolumeMl : 0;
+        return b.status === 'ACTIVE' && (rem / cap) < 0.20;
+      }).length;
+
+      const tabActiveEl = document.getElementById('batchTabActiveCount');
+      if (tabActiveEl) tabActiveEl.textContent = `${totalActive} active`;
+      const tabVolEl = document.getElementById('batchTabTotalVol');
+      if (tabVolEl) tabVolEl.textContent = `${Number(totalVolLiters).toLocaleString('en-IN')} Litres`;
+      const tabCupsEl = document.getElementById('batchTabTotalCups');
+      if (tabCupsEl) tabCupsEl.textContent = `${totalEstCups.toLocaleString('en-IN')} cups`;
+      const tabLowEl = document.getElementById('batchTabLowStock');
+      if (tabLowEl) {
+        tabLowEl.textContent = `${lowStockCount} warning`;
+        tabLowEl.style.color = lowStockCount > 0 ? '#EF4444' : '#059669';
+      }
+
+      // Populate Flavour Filter Options dynamically if needed
+      const flavSelect = document.getElementById('batchFlavourFilter');
+      if (flavSelect && flavSelect.options.length <= 1) {
+        const knownProducts = {};
+        batchesData.forEach(b => {
+          if (b.productId) knownProducts[b.productId] = flavoursMap[b.productId] || b.flavourName || `Product #${b.productId}`;
+        });
+        Object.keys(knownProducts).forEach(pid => {
+          const opt = document.createElement('option');
+          opt.value = pid;
+          opt.textContent = `${knownProducts[pid]} (ID: ${pid})`;
+          flavSelect.appendChild(opt);
+        });
+      }
+
+      // Filter batches based on controls
+      const filtered = batchesData.filter(b => {
+        if (batchStatusFilter !== 'ALL' && b.status !== batchStatusFilter) return false;
+        if (batchFlavourFilter !== 'ALL' && String(b.productId) !== String(batchFlavourFilter)) return false;
+        if (batchSearchQuery) {
+          const pName = (flavoursMap[b.productId] || b.flavourName || `Product #${b.productId}`).toLowerCase();
+          const bCode = (b.batchCode || '').toLowerCase();
+          if (!pName.includes(batchSearchQuery) && !bCode.includes(batchSearchQuery)) return false;
+        }
+        return true;
+      });
+
+      // Pagination math
+      const totalItems = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / batchPageSize));
+      if (batchCurrentPage > totalPages) batchCurrentPage = totalPages;
+      if (batchCurrentPage < 1) batchCurrentPage = 1;
+
+      const startIndex = (batchCurrentPage - 1) * batchPageSize;
+      const pageItems = filtered.slice(startIndex, startIndex + batchPageSize);
+
       const body = document.getElementById('batchesTableBody');
       if (body) {
-        body.innerHTML = batchesData.map(b => {
-          const pName = flavoursMap[b.productId] || b.flavourName || `Product #${b.productId}`;
-          const initVol = b.initialVolumeMl || b.containerCapacityMl || 20000;
-          const rem = b.remainingVolumeMl !== undefined ? b.remainingVolumeMl : 20000;
-          const cupSize = b.cupSizeMl || 250;
-          const cups = Math.floor(rem / cupSize);
-          const st = b.status || 'ACTIVE';
-          const bCode = b.batchCode || 'BATCH-001';
-          return `
+        if (pageItems.length === 0) {
+          body.innerHTML = `
             <tr>
-              <td style="font-weight: 700; font-family: monospace; color: #1e293b;">${bCode}</td>
-              <td style="font-weight: 600;">${pName}</td>
-              <td>${initVol} ml (20L)</td>
-              <td style="font-weight: 700; color: #2563eb;">${rem} ml</td>
-              <td>${cupSize} ml</td>
-              <td style="font-weight: 800; color: #059669;">${cups} cups</td>
-              <td><span class="status-tag ${st === 'ACTIVE' ? 'tag-active' : 'tag-depleted'}">${st}</span></td>
-              <td style="display: flex; gap: 6px;">
-                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="editJuiceBatch('${bCode}', ${b.productId || 1})">✏️ Edit</button>
-                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669;" onclick="restockJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🔄 Restock</button>
-                <button style="padding: 4px 8px; font-size: 11px; background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="deleteJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🗑️ Delete</button>
+              <td colspan="8" style="text-align: center; padding: 32px; color: var(--text-muted); font-size: 14px;">
+                <div style="font-size: 28px; margin-bottom: 8px;">🔍</div>
+                No matching batches found. Try adjusting your search query or status filter.
               </td>
             </tr>
           `;
-        }).join('');
+        } else {
+          body.innerHTML = pageItems.map(b => {
+            const pName = flavoursMap[b.productId] || b.flavourName || `Product #${b.productId}`;
+            const icon = getFruitIconAdmin({ id: b.productId, name: pName });
+            const cap = b.containerCapacityMl || b.initialVolumeMl || 20000;
+            const rem = b.remainingVolumeMl !== undefined ? b.remainingVolumeMl : 20000;
+            const capLitres = (cap / 1000).toFixed(0);
+            const remLitres = (rem / 1000).toFixed(1);
+            const cupSize = b.cupSizeMl || 250;
+            const cups = Math.floor(rem / cupSize);
+            const percent = Math.min(100, Math.max(0, Math.round((rem / cap) * 100)));
+            const st = b.status || 'ACTIVE';
+            const bCode = b.batchCode || `BATCH-${b.id}`;
+
+            let meterColor = '#10B981';
+            if (percent <= 20) meterColor = '#EF4444';
+            else if (percent <= 50) meterColor = '#F59E0B';
+
+            return `
+              <tr>
+                <td>
+                  <span style="font-family: var(--font-mono, monospace); font-weight: 700; font-size: 12.5px; background: var(--bg-secondary, #f1f5f9); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color, #e2e8f0); color: var(--text-main, #0f172a);">${bCode}</span>
+                </td>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">${icon}</span>
+                    <div>
+                      <span style="font-weight: 700; color: var(--text-main); font-size: 13.5px;">${pName}</span>
+                      <div style="font-size: 11px; color: var(--text-muted);">Product ID: #${b.productId || 1}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span style="font-weight: 700; color: var(--text-main);">${capLitres}L</span>
+                  <span style="font-size: 11px; color: var(--text-muted); margin-left: 2px;">(${cap.toLocaleString('en-IN')} ml)</span>
+                </td>
+                <td>
+                  <div style="min-width: 140px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; margin-bottom: 4px;">
+                      <span style="color: ${meterColor}; font-family: var(--font-mono);">${remLitres}L</span>
+                      <span style="color: var(--text-muted);">${percent}%</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: var(--bg-secondary, #e2e8f0); border-radius: 999px; overflow: hidden;">
+                      <div style="width: ${percent}%; height: 100%; background: ${meterColor}; border-radius: 999px; transition: width 0.3s ease;"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span style="font-size: 12.5px; color: var(--text-muted);">${cupSize} ml</span>
+                </td>
+                <td>
+                  <span style="font-weight: 800; font-family: var(--font-mono); color: #059669;">${cups} cups</span>
+                </td>
+                <td>
+                  <span class="status-tag ${st === 'ACTIVE' ? 'tag-active' : (st === 'PAUSED' ? 'tag-paused' : 'tag-depleted')}">${st}</span>
+                </td>
+                <td style="text-align: right;">
+                  <div style="display: inline-flex; gap: 6px;">
+                    <button class="btn-primary" style="padding: 5px 10px; font-size: 11px;" onclick="editJuiceBatch('${bCode}', ${b.productId || 1})">✏️ Edit</button>
+                    <button class="btn-primary" style="padding: 5px 10px; font-size: 11px; background: #059669;" onclick="restockJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🔄 Restock</button>
+                    <button style="padding: 5px 10px; font-size: 11px; background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; border-radius: 6px; font-weight: 700; cursor: pointer;" onclick="deleteJuiceBatch('${bCode}', ${b.id || b.productId || 1})">🗑️ Delete</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // Update Pagination Bar
+      const infoEl = document.getElementById('batchPaginationInfo');
+      if (infoEl) {
+        const startDisplay = totalItems === 0 ? 0 : startIndex + 1;
+        const endDisplay = Math.min(startIndex + batchPageSize, totalItems);
+        infoEl.textContent = `Showing ${startDisplay} - ${endDisplay} of ${totalItems} batches${filtered.length !== batchesData.length ? ` (filtered from ${batchesData.length})` : ''}`;
+      }
+
+      const navEl = document.getElementById('batchPaginationNav');
+      if (navEl) {
+        let navHtml = `
+          <button class="btn-secondary" onclick="goToBatchPage(${batchCurrentPage - 1})" ${batchCurrentPage <= 1 ? 'disabled' : ''} style="padding: 5px 10px; font-size: 12px; cursor: ${batchCurrentPage <= 1 ? 'not-allowed' : 'pointer'};">◀ Prev</button>
+        `;
+
+        const maxPageButtons = 5;
+        let startP = Math.max(1, batchCurrentPage - 2);
+        let endP = Math.min(totalPages, startP + maxPageButtons - 1);
+        if (endP - startP < maxPageButtons - 1) {
+          startP = Math.max(1, endP - maxPageButtons + 1);
+        }
+
+        for (let p = startP; p <= endP; p++) {
+          navHtml += `
+            <button onclick="goToBatchPage(${p})" style="padding: 5px 10px; font-size: 12px; font-weight: 700; border-radius: 6px; border: 1px solid var(--border-color); background: ${p === batchCurrentPage ? 'var(--accent-cyan, #0284c7)' : 'var(--bg-surface)'}; color: ${p === batchCurrentPage ? '#ffffff' : 'var(--text-main)'}; cursor: pointer;">${p}</button>
+          `;
+        }
+
+        navHtml += `
+          <button class="btn-secondary" onclick="goToBatchPage(${batchCurrentPage + 1})" ${batchCurrentPage >= totalPages ? 'disabled' : ''} style="padding: 5px 10px; font-size: 12px; cursor: ${batchCurrentPage >= totalPages ? 'not-allowed' : 'pointer'};">Next ▶</button>
+        `;
+        navEl.innerHTML = navHtml;
       }
     }
 
@@ -4709,24 +5002,30 @@
 
     // Batch & Flavour Modals Logic (Section 7)
     async function editJuiceBatch(batchCode, productId) {
-      const batch = batchesData.find(b => b.batchCode === batchCode) || {
-        batchCode, productId, remainingVolumeMl: 17500, status: 'ACTIVE'
-      };
+      let batch = (batchesData || []).find(b => b.batchCode === batchCode || b.id === batchCode);
+      batch = batch || { batchCode, productId, remainingVolumeMl: 20000, status: 'ACTIVE' };
 
-      const prod = liveProductsCache.find(p => p.id === productId) || {
+      let prod = (liveProductsCache || []).find(p => p.id === productId);
+      if (!prod && productId) {
+        try {
+          const pRes = await apiFetch(`/pos/products/${productId}`);
+          if (pRes.ok) prod = await pRes.json();
+        } catch (e) { }
+      }
+      prod = prod || {
         id: productId, name: flavoursMap[productId] || `Product #${productId}`, description: 'Fresh handcrafted juice cooler',
-        currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 20, maxCupPrice: 30
+        currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 18, maxCupPrice: 35
       };
 
-      document.getElementById('editBatchCode').value = batchCode;
-      document.getElementById('editProductId').value = productId;
+      document.getElementById('editBatchCode').value = batch.batchCode || batchCode;
+      document.getElementById('editProductId').value = productId || batch.productId || 1;
       document.getElementById('editJuiceName').value = prod.name || flavoursMap[productId] || `Product #${productId}`;
       document.getElementById('editJuiceDesc').value = prod.description || 'Fresh handcrafted juice cooler';
       document.getElementById('editLivePrice').value = prod.currentCupPrice || prod.defaultCupPrice || 25;
       document.getElementById('editBasePrice').value = prod.defaultCupPrice || 25;
-      document.getElementById('editMinPrice').value = prod.minCupPrice || 20;
-      document.getElementById('editMaxPrice').value = prod.maxCupPrice || 30;
-      document.getElementById('editRemainingVol').value = batch.remainingVolumeMl || 20000;
+      document.getElementById('editMinPrice').value = prod.minCupPrice || 18;
+      document.getElementById('editMaxPrice').value = prod.maxCupPrice || 35;
+      document.getElementById('editRemainingVol').value = batch.remainingVolumeMl !== undefined ? batch.remainingVolumeMl : 20000;
       document.getElementById('editStatus').value = batch.status || 'ACTIVE';
 
       document.getElementById('editJuiceModal').style.display = 'flex';
@@ -4738,11 +5037,14 @@
       const select = document.getElementById('newBatchProductId');
       if (select) {
         try {
-          const res = await fetch('http://localhost:8088/api/pos/products');
+          const res = await apiFetch('/pos/products');
           if (res.ok) {
             const products = await res.json();
             if (Array.isArray(products) && products.length > 0) {
-              select.innerHTML = products.map(p => `<option value="${p.id}">${p.name} (ID: ${p.id})</option>`).join('');
+              select.innerHTML = products.map(p => {
+                const icon = getFruitIconAdmin(p);
+                return `<option value="${p.id}">${icon} ${p.name} (Product #${p.id}) - Base: ₹${p.defaultCupPrice || 25}</option>`;
+              }).join('');
               document.getElementById('newBatchModal').style.display = 'flex';
               return;
             }
@@ -4750,7 +5052,7 @@
         } catch (e) { }
 
         select.innerHTML = Object.keys(flavoursMap).map(id => `
-          <option value="${id}">${flavoursMap[id]} (Product #${id})</option>
+          <option value="${id}">🍹 ${flavoursMap[id]} (Product #${id})</option>
         `).join('');
       }
       document.getElementById('newBatchModal').style.display = 'flex';
