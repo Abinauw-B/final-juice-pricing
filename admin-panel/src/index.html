@@ -2648,7 +2648,7 @@
       5: 'Strawberry Delight', 
       6: 'Royal Grape Juice', 
       7: 'Lychee Mist', 
-      23: 'Thunder' 
+      23: 'Thunder Power' 
     };
     let flavoursMap = { ...defaultFlavoursMap };
 
@@ -5048,7 +5048,7 @@
           saveFlavoursMap();
         }
 
-        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, name, currentPrice, basePrice, minPrice, maxPrice });
+        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, name, flavour: payload.flavour, currentPrice, basePrice, minPrice, maxPrice });
         showToast(`✅ Updated "${name}": Live ₹${currentPrice.toFixed(2)}, Base ₹${basePrice.toFixed(2)}, Floor ₹${minPrice.toFixed(2)}, Ceiling ₹${maxPrice.toFixed(2)}`, 'success');
       } catch (err) {
         showToast(`Error updating pricing: ${err.message}`, 'danger');

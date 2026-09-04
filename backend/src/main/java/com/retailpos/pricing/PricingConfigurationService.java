@@ -380,6 +380,13 @@ public class PricingConfigurationService {
 
         Double oldTarget = product.getTargetSalesPer1Minute();
 
+        if (update.getProductName() != null && !update.getProductName().isBlank()) {
+            product.setName(update.getProductName().trim());
+            product.setFlavour(update.getProductName().trim().toUpperCase().replace(" ", "_"));
+        }
+        if (update.getFlavour() != null && !update.getFlavour().isBlank()) {
+            product.setFlavour(update.getFlavour().trim().toUpperCase().replace(" ", "_"));
+        }
         if (update.getTargetSales() != null) {
             product.setTargetSalesPer1Minute(update.getTargetSales());
             product.setTargetSalesPer2Minute(update.getTargetSales() * 2.0);

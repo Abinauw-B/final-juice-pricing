@@ -1536,6 +1536,7 @@
     function getShortFlavourLabel(p) {
       if (!p) return 'Juice';
       const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('THUNDER_POWER') || (p.name && p.name.toLowerCase().includes('thunder power'))) return 'Thunder Power';
       if (f.includes('MANGO')) return 'Mango';
       if (f.includes('LEMON')) return 'Lemon';
       if (f.includes('MINT')) return 'Cool Mint';
@@ -1543,7 +1544,7 @@
       if (f.includes('STRAWBERRY')) return 'Strawberry';
       if (f.includes('GRAPE')) return 'Grape';
       if (f.includes('LYCHEE')) return 'Lychee';
-      if (f.includes('THUNDER') || f.includes('ENERGY')) return 'Thunder';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return 'Thunder Power';
       return p.name || p.flavour || 'Juice';
     }
 
@@ -1755,7 +1756,7 @@
       { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.30, trend: '+0.0%', trendDirection: 'FLAT' },
       { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' },
       { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.20, trend: '+0.0%', trendDirection: 'FLAT' },
-      { id: 23, name: 'Thunder', flavour: 'THUNDER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.50, trend: '+0.0%', trendDirection: 'FLAT' }
+      { id: 23, name: 'Thunder Power', flavour: 'THUNDER_POWER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' }
     ];
 
     let products = [...defaultSeedProducts];
@@ -1795,10 +1796,11 @@
     });
 
     window.addEventListener('storage', (e) => {
-      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event' || e.key === 'pubexchange_sim_params') && e.newValue) {
+      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event' || e.key === 'pubexchange_sim_params' || e.key === 'pubexchange_flavours_map') && e.newValue) {
         try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) { }
+        fetchProducts();
       }
-      if (e.key === 'pubexchange_custom_products') {
+      if (e.key === 'pubexchange_custom_products' || e.key === 'pubexchange_flavours_map') {
         fetchProducts();
       }
     });
@@ -1816,6 +1818,8 @@
           const matchIdx = products.findIndex(p => (prodId && p.id === prodId) || (flavourName && p.name && p.name.toLowerCase() === flavourName.toLowerCase()) || (p.flavour && flavourName && p.flavour.toLowerCase() === flavourName.toLowerCase()));
 
           if (matchIdx !== -1) {
+            if (payload.name) products[matchIdx].name = payload.name;
+            if (payload.flavour) products[matchIdx].flavour = payload.flavour;
             const targetPrice = payload.currentPrice !== undefined ? Number(payload.currentPrice) : (payload.startPrice !== undefined ? Number(payload.startPrice) : (payload.price !== undefined ? Number(payload.price) : 25.0));
             if (!isNaN(targetPrice) && targetPrice > 0) {
               products[matchIdx].currentCupPrice = targetPrice;
@@ -1961,7 +1965,11 @@
         ? Number(p.targetSalesPer1Minute)
         : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : 0.40);
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
-      const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
+      let name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
+      try {
+        const fMap = JSON.parse(localStorage.getItem('pubexchange_flavours_map') || '{}');
+        if (fMap && fMap[id]) name = fMap[id];
+      } catch (e) {}
       const flavour = p.flavour || p.name || 'JUICE';
       const description = p.description || 'Fresh handcrafted fruit juice cooler';
 
@@ -2143,7 +2151,7 @@
         const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0).toFixed(2);
         const diff = Number(activePrice) - Number(baseP);
         const pct = baseP > 0 ? (((Number(activePrice) - Number(baseP)) / Number(baseP)) * 100).toFixed(1) : '0.0';
-        const cleanName = (p.flavour || p.name || `PRODUCT #${p.id}`).replace(/_/g, ' ').toUpperCase();
+        const cleanName = (p.name || p.flavour || `PRODUCT #${p.id}`).replace(/_/g, ' ').toUpperCase();
         const icon = getFruitIcon(p);
 
         let badgeClass = 'is-flat';
@@ -2249,13 +2257,13 @@
               <div>
                 <!-- 1. Product Visual Area -->
                 <div class="card-img-banner">
-                  <img src="${imgUrl}" alt="${p.name}" class="beverage-photo" loading="lazy" />
-                  <span class="fruit-pill">${icon} ${shortName}</span>
+                  <img src="${imgUrl}" alt="${p.name}" class="beverage-photo" loading="lazy" id="beverageImg-${p.id}" />
+                  <span class="fruit-pill" id="fruitPill-${p.id}">${icon} ${shortName}</span>
                 </div>
 
                 <!-- 2. Product Identity -->
                 <div class="card-header-info">
-                  <div class="card-name" title="${p.name}">${p.name}</div>
+                  <div class="card-name" id="cardName-${p.id}" title="${p.name}">${p.name}</div>
                   <div class="card-size">${p.defaultCupSizeMl || 250}ml standard cup</div>
                 </div>
 
@@ -2298,6 +2306,23 @@
           const minP = Number(p.minCupPrice !== undefined ? p.minCupPrice : 18.0);
           const maxP = Number(p.maxCupPrice !== undefined ? p.maxCupPrice : 35.0);
           const diff = activePrice - baseP;
+
+          // In-place name & identity update
+          const nameEl = document.getElementById(`cardName-${p.id}`);
+          if (nameEl && p.name && nameEl.textContent !== p.name) {
+            nameEl.textContent = p.name;
+            nameEl.setAttribute('title', p.name);
+          }
+          const pillEl = document.getElementById(`fruitPill-${p.id}`);
+          if (pillEl) {
+            const icon = getFruitIcon(p);
+            const shortName = getShortFlavourLabel(p);
+            pillEl.innerHTML = `${icon} ${shortName}`;
+          }
+          const imgEl = document.getElementById(`beverageImg-${p.id}`);
+          if (imgEl && p.name) {
+            imgEl.setAttribute('alt', p.name);
+          }
 
           const badgeInfo = getMarketBadgeInfo(p, isMarketCrashActive);
           const badgeEl = document.getElementById(`marketBadge-${p.id}`);

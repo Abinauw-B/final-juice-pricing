@@ -1939,6 +1939,7 @@
     function getCleanFlavourName(p) {
       if (!p) return 'Juice';
       const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('THUNDER_POWER') || (p.name && p.name.toLowerCase().includes('thunder power'))) return 'Thunder Power';
       if (f.includes('MANGO')) return 'Mango';
       if (f.includes('LEMON')) return 'Lemon';
       if (f.includes('MINT')) return 'Mint Cooler';
@@ -1946,8 +1947,8 @@
       if (f.includes('STRAWBERRY')) return 'Strawberry';
       if (f.includes('GRAPE')) return 'Grape';
       if (f.includes('LYCHEE')) return 'Lychee';
-      if (f.includes('THUNDER') || f.includes('ENERGY')) return 'Thunder';
-      return (p.flavour || p.name || 'Juice').replace(/_/g, ' ');
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return 'Thunder Power';
+      return (p.name || p.flavour || 'Juice').replace(/_/g, ' ');
     }
 
     function getJuiceThemeTokens(p) {
@@ -2338,7 +2339,11 @@
       const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 30);
       const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25);
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
-      const name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
+      let name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
+      try {
+        const fMap = JSON.parse(localStorage.getItem('pubexchange_flavours_map') || '{}');
+        if (fMap && fMap[id]) name = fMap[id];
+      } catch (e) {}
       const flavour = p.flavour || p.name || 'JUICE';
       const targetSalesPer1Minute = p.targetSalesPer1Minute !== undefined ? p.targetSalesPer1Minute : (p.targetSalesPer2Minute ? (p.targetSalesPer2Minute / 2).toFixed(2) : 0.5);
       const pricingMode = p.pricingMode || 'DYNAMIC';
@@ -2381,7 +2386,7 @@
           { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.30, pricingMode: 'DYNAMIC' },
           { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.45, pricingMode: 'DYNAMIC' },
           { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.20, pricingMode: 'DYNAMIC' },
-          { id: 23, name: 'Thunder Energy', flavour: 'THUNDER', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.50, pricingMode: 'DYNAMIC' }
+          { id: 23, name: 'Thunder Power', flavour: 'THUNDER_POWER', defaultCupSizeMl: 250, currentCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, basePrice: 25, targetSalesPer1Minute: 0.45, pricingMode: 'DYNAMIC' }
         ];
       }
 
@@ -2511,14 +2516,14 @@
                 <div class="product-img-wrapper">
                   <img src="${imgUrl}" alt="${name}" class="product-img" loading="lazy" />
                   <div class="product-img-overlay">
-                    <span class="fruit-badge">${icon} ${cleanFlavour}</span>
+                    <span class="fruit-badge" id="card_badge_fruit_${p.id}">${icon} ${cleanFlavour}</span>
                     <span class="live-indicator-badge">● LIVE</span>
                   </div>
                 </div>
 
                 <!-- Title & Size -->
                 <div class="product-title-row">
-                  <div class="product-name">${name}</div>
+                  <div class="product-name" id="card_name_${p.id}">${name}</div>
                 </div>
                 <div class="product-size">${cupSize} ml standard cup</div>
 
@@ -2594,6 +2599,18 @@
       } else {
         // Smooth in-place DOM updates without layout shifts or jitter
         products.forEach(p => {
+          const prodName = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : `Product #${p.id}`);
+          const nameEl = document.getElementById(`card_name_${p.id}`);
+          if (nameEl && prodName && nameEl.textContent !== prodName) {
+            nameEl.textContent = prodName;
+          }
+          const fruitBadgeEl = document.getElementById(`card_badge_fruit_${p.id}`);
+          if (fruitBadgeEl) {
+            const icon = getFruitIcon(p);
+            const cleanFlavour = getCleanFlavourName(p);
+            fruitBadgeEl.innerHTML = `${icon} ${cleanFlavour}`;
+          }
+
           const baseP = Number(p.basePrice !== undefined ? p.basePrice : (p.defaultCupPrice !== undefined ? p.defaultCupPrice : 25)).toFixed(2);
           const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
           const lastChange = (p.deltaPrice !== undefined ? Number(p.deltaPrice) : (p.priceDelta !== undefined ? Number(p.priceDelta) : (p.priceChange !== undefined ? Number(p.priceChange) : 0)));
@@ -3076,7 +3093,7 @@
 
       const buildTapeItemHtml = (p) => {
         const icon = getFruitIcon(p);
-        const cleanName = getCleanFlavourName(p).toUpperCase();
+        const cleanName = (p.name || getCleanFlavourName(p)).toUpperCase();
         const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
         const baseP = Number(p.basePrice || 25).toFixed(2);
         const diff = Number(activePrice) - Number(baseP);
@@ -3537,6 +3554,8 @@
         // Update product state
         const idx = products.findIndex(p => p.id === pId || (p.name && item.name && p.name.toLowerCase() === item.name.toLowerCase()));
         if (idx !== -1) {
+          if (item.name) products[idx].name = item.name;
+          if (item.flavour) products[idx].flavour = item.flavour;
           products[idx].currentCupPrice = newPrice;
           products[idx].deltaPrice = priceChange;
           products[idx].priceDelta = priceChange;
@@ -3659,6 +3678,8 @@
           const matchIdx = products.findIndex(p => (prodId && p.id === prodId) || (flavourName && p.name && p.name.toLowerCase() === flavourName.toLowerCase()) || (p.flavour && flavourName && p.flavour.toLowerCase() === flavourName.toLowerCase()));
 
           if (matchIdx !== -1) {
+            if (payload.name) products[matchIdx].name = payload.name;
+            if (payload.flavour) products[matchIdx].flavour = payload.flavour;
             const targetPrice = payload.finalPrice !== undefined ? Number(payload.finalPrice) : (payload.currentPrice !== undefined ? Number(payload.currentPrice) : Number(payload.startPrice));
             if (!isNaN(targetPrice) && targetPrice > 0) {
               products[matchIdx].currentCupPrice = targetPrice;
@@ -3700,8 +3721,12 @@
     });
 
     window.addEventListener('storage', (e) => {
-      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event' || e.key === 'pubexchange_sim_params') && e.newValue) {
+      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event' || e.key === 'pubexchange_sim_params' || e.key === 'pubexchange_flavours_map') && e.newValue) {
         try { handleCrossPanelLedEvent(JSON.parse(e.newValue)); } catch (err) {}
+        fetchProducts();
+      }
+      if (e.key === 'pubexchange_custom_products' || e.key === 'pubexchange_flavours_map') {
+        fetchProducts();
       }
     });
 
