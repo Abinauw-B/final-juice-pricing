@@ -1296,7 +1296,7 @@
               <button class="btn-primary" id="btnResumeMarket"
                 style="background: #22c55e; color: #fff; font-weight: 800; display: none;"
                 onclick="resumeMarketExchange()">▶️ Resume Exchange</button>
-              <button class="btn-primary" id="btnRunPriceEngine" onclick="triggerPriceEngine()">⚡ Run Settlement
+              <button class="btn-primary" id="btnRunPriceEngine" data-default-text="⚡ Run Settlement Cycle" data-original-text="⚡ Run Settlement Cycle" onclick="triggerPriceEngine()">⚡ Run Settlement
                 Cycle</button>
             </div>
           </div>
@@ -1317,7 +1317,7 @@
               </div>
               <div style="display: flex; align-items: center; gap: 10px;">
                 <label style="font-size: 12px; font-weight: 800; color: var(--text-muted);">INSPECT BEVERAGE:</label>
-                <select id="dwmaInspectProductSelect" onchange="renderDwmaCascadeVisualizer()"
+                <select id="dwmaInspectProductSelect" onchange="renderDwmaCascadeVisualizer(true)"
                   style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-weight: 800; font-size: 13px; cursor: pointer;">
                   <option value="1">🥭 Fresh Mango Juice</option>
                   <option value="2">🍋 Zesty Lemon Juice</option>
@@ -1326,9 +1326,9 @@
                   <option value="5">🍓 Strawberry Delight</option>
                   <option value="6">🍇 Royal Grape Juice</option>
                   <option value="7">🍹 Lychee Mist</option>
-                  <option value="23">⚡ Thunder Energy</option>
+                  <option value="23">⚡ Thunder Power</option>
                 </select>
-                <button class="btn-primary" onclick="triggerPriceEngine()" style="padding: 6px 14px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb);">
+                <button class="btn-primary" id="btnDwmaRecalculate" data-default-text="⚡ Re-Calculate" data-original-text="⚡ Re-Calculate" onclick="handleDwmaRecalculate()" style="padding: 6px 14px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb); cursor: pointer;">
                   ⚡ Re-Calculate
                 </button>
               </div>
@@ -2539,7 +2539,7 @@
       if (!el) return;
       if (isLoading) {
         if (!el.dataset.originalText || el.dataset.originalText.startsWith('⏳')) {
-          el.dataset.originalText = originalHtml || el.innerHTML;
+          el.dataset.originalText = el.dataset.defaultText || originalHtml || el.innerHTML;
         }
         el.disabled = true;
         el.style.opacity = '0.75';
@@ -2551,11 +2551,10 @@
         el.style.cursor = 'pointer';
         if (el.dataset.originalText && !el.dataset.originalText.startsWith('⏳')) {
           el.innerHTML = el.dataset.originalText;
-          delete el.dataset.originalText;
+        } else if (el.dataset.defaultText) {
+          el.innerHTML = el.dataset.defaultText;
         } else if (originalHtml) {
           el.innerHTML = originalHtml;
-        } else {
-          el.innerHTML = 'Submit';
         }
       }
     }
@@ -3066,6 +3065,9 @@
     function switchTab(tabName) {
       try {
         localStorage.setItem('pubexchange_active_tab', tabName);
+        if (tabName && location.hash !== '#' + tabName) {
+          try { history.replaceState(null, '', '#' + tabName); } catch (e) { }
+        }
         document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
         const activeNav = document.getElementById(`tab-${tabName}`);
         if (activeNav) activeNav.classList.add('active');
@@ -6369,6 +6371,10 @@
           updateRealTimeRevenueChart();
           updateVolumeDonutChart();
           refreshDashboard();
+          dwmaTelemetryCache = {};
+          if (typeof renderDwmaCascadeVisualizer === 'function') {
+            renderDwmaCascadeVisualizer(true);
+          }
         }
       };
     }
@@ -6397,12 +6403,9 @@
       loadPricingAuditLogs();
       loadMarketCrashEventHistory();
 
-      const savedActiveTab = localStorage.getItem('pubexchange_active_tab');
-      if (savedActiveTab) {
-        switchTab(savedActiveTab);
-      } else {
-        runSimulation();
-      }
+      const hashTab = location.hash ? location.hash.replace('#', '') : null;
+      const savedActiveTab = hashTab || localStorage.getItem('pubexchange_active_tab') || 'dashboard';
+      switchTab(savedActiveTab);
 
       renderReports();
       fetchLiveBotStatus();
@@ -6470,58 +6473,136 @@
     }
 
     // ═══════ LIVE DWMA CASCADE VISUALIZER LOGIC ═══════
-    function renderDwmaCascadeVisualizer() {
-      const grid = document.getElementById('dwmaCascadeGrid');
+    let dwmaTelemetryCache = {};
+
+    function populateDwmaProductSelect() {
       const select = document.getElementById('dwmaInspectProductSelect');
-      if (!grid || !select) return;
+      if (!select || !Array.isArray(liveProductsCache) || liveProductsCache.length === 0) return;
+      const currentVal = select.value;
+      const desiredId = currentVal || (liveProductsCache[0].id || liveProductsCache[0].productId);
 
-      const selectedId = parseInt(select.value) || 1;
-      const prod = liveProductsCache.find(p => (p.id === selectedId || p.productId === selectedId)) || liveProductsCache[0];
-      if (!prod) return;
+      const optionsHtml = liveProductsCache.map(p => {
+        const pid = p.id || p.productId;
+        const icon = getFruitIconAdmin(p);
+        const name = p.name || p.productName || 'Fresh Juice';
+        return `<option value="${pid}">${icon} ${name}</option>`;
+      }).join('');
 
-      const pid = prod.productId || prod.id || selectedId;
-      const name = prod.name || prod.productName || 'Fresh Juice';
+      if (select.innerHTML !== optionsHtml) {
+        select.innerHTML = optionsHtml;
+      }
+
+      if (liveProductsCache.some(p => String(p.id || p.productId) === String(desiredId))) {
+        select.value = desiredId;
+      } else {
+        select.value = liveProductsCache[0].id || liveProductsCache[0].productId;
+      }
+    }
+
+    async function fetchDwmaTelemetry(productId, forceFresh = false) {
+      if (!productId) return null;
+      const key = String(productId);
+      if (!forceFresh && dwmaTelemetryCache[key] && (Date.now() - dwmaTelemetryCache[key]._cachedAt < 2500)) {
+        return dwmaTelemetryCache[key];
+      }
+      try {
+        const res = await apiFetch(`/pricing/debug/${productId}`);
+        if (res.ok) {
+          const data = await res.json();
+          data._cachedAt = Date.now();
+          dwmaTelemetryCache[key] = data;
+          return data;
+        }
+      } catch (err) {
+        console.warn('[DWMA Visualizer] Error fetching live telemetry for product', productId, err);
+      }
+      return null;
+    }
+
+    async function handleDwmaRecalculate() {
+      const btn = document.getElementById('btnDwmaRecalculate');
+      if (btn) setButtonLoading(btn, true, 'Calculating...', '⚡ Re-Calculate');
+      try {
+        await triggerPriceEngine({ silent: false });
+        dwmaTelemetryCache = {};
+        const select = document.getElementById('dwmaInspectProductSelect');
+        const pid = select ? parseInt(select.value) : null;
+        if (pid) {
+          await fetchDwmaTelemetry(pid, true);
+        }
+        await renderDwmaCascadeVisualizer(true);
+        showToast('⚡ Dynamic DWMA settlement recalculated! Visualizer refreshed.', 'success');
+      } catch (err) {
+        showToast('Recalculation failed: ' + (err.message || err), 'danger');
+      } finally {
+        if (btn) setButtonLoading(btn, false, '', '⚡ Re-Calculate');
+      }
+    }
+
+    function applyDwmaTelemetryToUI(prod, telemetry) {
+      const grid = document.getElementById('dwmaCascadeGrid');
+      if (!grid) return;
+
+      const pid = prod.productId || prod.id;
+      const name = prod.name || prod.productName || 'Fresh Beverage';
       const icon = getFruitIconAdmin(prod);
       const currentPrice = Number(prod.currentCupPrice || prod.currentPrice || 25);
-      const basePrice = Number(prod.defaultCupPrice || prod.basePrice || 25);
       const minPrice = Number(prod.minCupPrice || 20);
       const maxPrice = Number(prod.maxCupPrice || 30);
-      const targetSales = Number(prod.targetSalesPer1Minute || prod.targetSales || 0.40);
+      const targetPerMin = Number(prod.targetSalesPer1Minute || prod.targetSales || 0.55);
+      const intervalSec = (activePricingTiming && activePricingTiming.intervalSeconds) ? activePricingTiming.intervalSeconds : 60;
+      const targetForInterval = (targetPerMin * (intervalSec / 60.0)).toFixed(2);
 
-      // Simulation / telemetry readings for windows W0, W1, W2
-      const w0Raw = prod.rawW0 !== undefined ? Number(prod.rawW0) : (Math.floor(Math.random() * 3));
-      const w1Raw = prod.rawW1 !== undefined ? Number(prod.rawW1) : 1;
-      const w2Raw = prod.rawW2 !== undefined ? Number(prod.rawW2) : 0;
+      let w0Raw = 0;
+      let w1Raw = 0;
+      let w2Raw = 0;
+      let sw = '0.00';
+      let effectiveTarget = targetForInterval;
+      let rd = '0.00';
+      let movement = 0;
+      let nextPrice = currentPrice;
+      let category = 'NORMAL';
+
+      if (telemetry) {
+        w0Raw = telemetry.windowW0 !== undefined ? Number(telemetry.windowW0) : (telemetry.w0 !== undefined ? Number(telemetry.w0) : 0);
+        w1Raw = telemetry.windowW1 !== undefined ? Number(telemetry.windowW1) : (telemetry.w1 !== undefined ? Number(telemetry.w1) : 0);
+        w2Raw = telemetry.windowW2 !== undefined ? Number(telemetry.windowW2) : (telemetry.w2 !== undefined ? Number(telemetry.w2) : 0);
+        sw = Number(telemetry.weightedSales !== undefined ? telemetry.weightedSales : (w0Raw * 1.0 + w1Raw * 0.5 + w2Raw * 0.25)).toFixed(2);
+        effectiveTarget = Number(telemetry.targetSales !== undefined ? telemetry.targetSales : targetForInterval).toFixed(2);
+        rd = Number(telemetry.demandRatio !== undefined ? telemetry.demandRatio : (Number(effectiveTarget) > 0 ? (Number(sw) / Number(effectiveTarget)) : 0)).toFixed(2);
+        movement = telemetry.priceMovement !== undefined ? Number(telemetry.priceMovement) : (telemetry.movement !== undefined ? Number(telemetry.movement) : 0);
+        nextPrice = Number(telemetry.projectedNewPrice !== undefined ? telemetry.projectedNewPrice : (telemetry.projectedPrice !== undefined ? telemetry.projectedPrice : currentPrice));
+        category = telemetry.demandLevelCategory || telemetry.demandLevel || 'NORMAL';
+      } else {
+        effectiveTarget = targetForInterval;
+        nextPrice = currentPrice;
+      }
 
       const w0Weighted = (w0Raw * 1.00).toFixed(2);
       const w1Weighted = (w1Raw * 0.50).toFixed(2);
       const w2Weighted = (w2Raw * 0.25).toFixed(2);
-      const sw = (Number(w0Weighted) + Number(w1Weighted) + Number(w2Weighted)).toFixed(2);
-      
-      const intervalSec = activePricingTiming.intervalSeconds || 60;
-      const effectiveTarget = Number((targetSales * (intervalSec / 60.0)).toFixed(2)) || 0.40;
-      const rd = effectiveTarget > 0 ? Number((sw / effectiveTarget).toFixed(2)) : 1.00;
 
       let movementText = '⇄ STABLE (₹0.00)';
       let movementColor = '#0284c7';
       let movementBg = 'rgba(2, 132, 199, 0.15)';
-      let nextPrice = currentPrice;
 
-      if (rd >= 1.10) {
-        movementText = '▲ SURGE (+₹1.00)';
+      if (movement > 0) {
+        if (category === 'BARGAIN_BOUNCE') {
+          movementText = '▲ REBOUND (+₹1.00)';
+        } else {
+          movementText = '▲ SURGE (+₹1.00)';
+        }
         movementColor = '#10b981';
         movementBg = 'rgba(16, 185, 129, 0.2)';
-        nextPrice = Math.min(maxPrice, currentPrice + 1.0);
-      } else if (rd <= 0.70) {
+      } else if (movement < 0) {
         movementText = '▼ DECAY (-₹1.00)';
         movementColor = '#f43f5e';
         movementBg = 'rgba(244, 63, 94, 0.2)';
-        nextPrice = Math.max(minPrice, currentPrice - 1.0);
       }
 
       grid.innerHTML = `
         <!-- Window 0 Card -->
-        <div style="background: var(--bg-surface); border: 1.5px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 14px; box-shadow: var(--shadow-sm);">
+        <div style="background: var(--bg-surface); border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 10px; padding: 14px; box-shadow: var(--shadow-sm);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan); text-transform: uppercase;">WINDOW W₀ (ACTIVE)</span>
             <span style="font-size: 10px; font-weight: 800; background: rgba(56,189,248,0.15); color: var(--accent-cyan); padding: 1px 6px; border-radius: 4px;">WEIGHT 1.00</span>
@@ -6585,7 +6666,7 @@
 
       if (salesEl) salesEl.innerHTML = `${icon} ${name}: [<strong>${w0Raw}</strong>×1.0 + <strong>${w1Raw}</strong>×0.5 + <strong>${w2Raw}</strong>×0.25]`;
       if (swEl) swEl.innerHTML = `Weighted S_w: <strong>${sw}</strong>`;
-      if (targetEl) targetEl.innerHTML = `Target: <strong>${effectiveTarget}</strong> (${targetSales}/min)`;
+      if (targetEl) targetEl.innerHTML = `Target: <strong>${effectiveTarget}</strong> (${targetPerMin}/min)`;
       if (rdEl) {
         rdEl.innerHTML = `Ratio R_d: <strong>${rd}x</strong>`;
         rdEl.style.color = movementColor;
@@ -6594,6 +6675,37 @@
         actionEl.innerHTML = movementText;
         actionEl.style.color = movementColor;
         actionEl.style.background = movementBg;
+      }
+    }
+
+    async function renderDwmaCascadeVisualizer(forceFresh = false) {
+      const grid = document.getElementById('dwmaCascadeGrid');
+      const select = document.getElementById('dwmaInspectProductSelect');
+      if (!grid || !select) return;
+
+      populateDwmaProductSelect();
+
+      const selectedId = parseInt(select.value) || 1;
+      const prod = (Array.isArray(liveProductsCache) ? liveProductsCache.find(p => (p.id === selectedId || p.productId === selectedId)) : null)
+                   || (liveProductsCache && liveProductsCache[0])
+                   || { id: selectedId, name: 'Beverage', currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, targetSalesPer1Minute: 0.55 };
+
+      const pid = prod.productId || prod.id || selectedId;
+      const cachedTelemetry = dwmaTelemetryCache[String(pid)];
+
+      // Immediately render with cached telemetry or baseline
+      applyDwmaTelemetryToUI(prod, cachedTelemetry);
+
+      // If missing or forced fresh, fetch telemetry asynchronously
+      if (!cachedTelemetry || forceFresh) {
+        fetchDwmaTelemetry(pid, forceFresh).then(fresh => {
+          if (fresh) {
+            const curSelect = document.getElementById('dwmaInspectProductSelect');
+            if (curSelect && parseInt(curSelect.value) === pid) {
+              applyDwmaTelemetryToUI(prod, fresh);
+            }
+          }
+        });
       }
     }
 

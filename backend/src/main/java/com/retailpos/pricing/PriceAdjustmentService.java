@@ -950,14 +950,24 @@ public class PriceAdjustmentService {
         BigDecimal lowThresh = pricingConfigurationService != null ? pricingConfigurationService.getLowDemandThreshold() : new BigDecimal("0.5000");
         BigDecimal incStep = pricingConfigurationService != null ? pricingConfigurationService.getIncreaseStep() : new BigDecimal("1.00");
 
-        double targetSales = pricingConfigurationService != null
+        int intervalSec = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
+
+        double baseTargetPer1Min = pricingConfigurationService != null
                 ? pricingConfigurationService.getTargetSalesForProduct(p)
                 : (p.getTargetSalesPer1Minute() != null && p.getTargetSalesPer1Minute() > 0 ? p.getTargetSalesPer1Minute() : 0.55);
+        double normalizedTarget = baseTargetPer1Min * ((double) intervalSec / 60.0);
 
-        // 1-minute DWMA windows
-        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(1), now);
-        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(2), now.minusMinutes(1));
-        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, now.minusMinutes(3), now.minusMinutes(2));
+        // DWMA time windows based on configured intervalSec
+        LocalDateTime w0Start = now.minusSeconds(intervalSec);
+        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
+
+        LocalDateTime w1Start = now.minusSeconds(2L * intervalSec);
+        LocalDateTime w1End = now.minusSeconds(intervalSec);
+        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
+
+        LocalDateTime w2Start = now.minusSeconds(3L * intervalSec);
+        LocalDateTime w2End = now.minusSeconds(2L * intervalSec);
+        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
 
         BigDecimal sw = BigDecimal.valueOf(w0).multiply(weightW0)
                 .add(BigDecimal.valueOf(w1).multiply(weightW1))
@@ -965,7 +975,7 @@ public class PriceAdjustmentService {
                 .setScale(2, RoundingMode.HALF_UP);
         double weightedSales = sw.doubleValue();
 
-        BigDecimal targetSalesBd = BigDecimal.valueOf(targetSales).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal targetSalesBd = BigDecimal.valueOf(normalizedTarget).setScale(4, RoundingMode.HALF_UP);
         BigDecimal rd = (targetSalesBd.compareTo(BigDecimal.ZERO) > 0)
                 ? sw.divide(targetSalesBd, 4, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
@@ -985,23 +995,35 @@ public class PriceAdjustmentService {
             movement = 0;
             category = "NORMAL";
         } else if (rd.compareTo(lowThresh) >= 0) {
-            movement = -1;
-            category = "LOW";
+            if (currentPrice.compareTo(floor) <= 0) {
+                movement = 1;
+                category = "BARGAIN_BOUNCE";
+            } else {
+                movement = -1;
+                category = "LOW";
+            }
         } else {
-            movement = -1;
-            category = "VERY_LOW";
+            if (currentPrice.compareTo(floor) <= 0) {
+                movement = 1;
+                category = "BARGAIN_BOUNCE";
+            } else {
+                movement = -1;
+                category = "VERY_LOW";
+            }
         }
 
         BigDecimal uncappedPrice = currentPrice.add(BigDecimal.valueOf(movement));
         BigDecimal projectedPrice = uncappedPrice.max(floor).min(ceiling).setScale(2, RoundingMode.HALF_UP);
 
         String breakdown = String.format(
-                "Current Window W0 [0–1m]: %d, W1 [1–2m]: %d, W2 [2–3m]: %d | Weighted Sales: %.2f*%d + %.2f*%d + %.2f*%d = %.2f | Target: %.2f cups/min | Demand Ratio: %.2f / %.2f = %.4f (%s) | Movement: %+d => Projected: ₹%s",
-                w0, w1, w2, weightW0.doubleValue(), w0, weightW1.doubleValue(), w1, weightW2.doubleValue(), w2, weightedSales, targetSales, weightedSales, targetSales, demandRatio, category, movement, projectedPrice
+                "Current Window W0 [0–%ds]: %d, W1 [%ds–%ds]: %d, W2 [%ds–%ds]: %d | Weighted Sales: %.2f*%d + %.2f*%d + %.2f*%d = %.2f | Target: %.2f cups (%ds) | Demand Ratio: %.2f / %.2f = %.4f (%s) | Movement: %+d => Projected: ₹%s",
+                intervalSec, w0, intervalSec, 2 * intervalSec, w1, 2 * intervalSec, 3 * intervalSec, w2,
+                weightW0.doubleValue(), w0, weightW1.doubleValue(), w1, weightW2.doubleValue(), w2,
+                weightedSales, normalizedTarget, intervalSec, weightedSales, normalizedTarget, demandRatio, category, movement, projectedPrice
         );
 
         return new PriceDebugDTO(
-                p.getId(), p.getName(), p.getFlavour(), currentPrice, targetSales,
+                p.getId(), p.getName(), p.getFlavour(), currentPrice, normalizedTarget,
                 w0, w1, w2, weightedSales, demandRatio, category, movement, projectedPrice, floor, ceiling, breakdown,
                 p.getPriceVersion() != null ? p.getPriceVersion() : 1
         );
