@@ -26,6 +26,7 @@ import { FormsModule } from '@angular/forms';
             <tr>
               <th>Batch Code</th>
               <th>Product ID</th>
+              <th>Live Price</th>
               <th>Initial Vol (ML)</th>
               <th>Remaining Vol (ML)</th>
               <th>Cup Size</th>
@@ -38,6 +39,9 @@ import { FormsModule } from '@angular/forms';
             <tr *ngFor="let b of batches">
               <td style="font-weight: 600; font-family: monospace;">{{ b.batchCode }}</td>
               <td>Product #{{ b.productId }}</td>
+              <td>
+                <span style="font-weight: 700; color: #059669; font-family: monospace;">₹{{ b.currentPrice || 25 | number:'1.2-2' }}</span>
+              </td>
               <td>{{ b.initialVolumeMl }} ml (20L)</td>
               <td style="font-weight: 700; color: #3b82f6;">{{ b.remainingVolumeMl }} ml</td>
               <td>{{ b.cupSizeMl }} ml</td>
