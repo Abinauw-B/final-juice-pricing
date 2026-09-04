@@ -2631,23 +2631,28 @@
       try { localStorage.setItem('pubexchange_last_event', JSON.stringify(msg)); } catch (e) { }
     }
 
-    // Flavours Mapping & Synchronization
-    const defaultFlavoursMap = { 1: 'Fresh Mango Juice', 2: 'Zesty Lemon Juice', 3: 'Valencia Orange Juice', 4: 'Cool Mint Cooler', 5: 'Royal Grape Juice', 6: 'Strawberry Delight', 7: 'Thunder', 8: 'Lychee Mist' };
+    // Flavours Mapping & Synchronization (8 Canonical Juices)
+    const defaultFlavoursMap = { 
+      1: 'Fresh Mango Juice', 
+      2: 'Zesty Lemon Juice', 
+      3: 'Cool Mint Cooler', 
+      4: 'Valencia Orange Juice', 
+      5: 'Strawberry Delight', 
+      6: 'Royal Grape Juice', 
+      7: 'Lychee Mist', 
+      23: 'Thunder' 
+    };
     let flavoursMap = { ...defaultFlavoursMap };
 
     function syncFlavoursMap() {
-      Object.assign(flavoursMap, defaultFlavoursMap);
       if (liveProductsCache && liveProductsCache.length > 0) {
+        flavoursMap = {};
         liveProductsCache.forEach(p => {
           if (p.id && p.name) flavoursMap[p.id] = p.name;
         });
+      } else {
+        flavoursMap = { ...defaultFlavoursMap };
       }
-      const customProds = JSON.parse(localStorage.getItem('pubexchange_custom_products') || '[]');
-      customProds.forEach(p => {
-        if (p.id && p.name) flavoursMap[p.id] = p.name;
-      });
-      const savedMap = JSON.parse(localStorage.getItem('pubexchange_flavours_map') || '{}');
-      Object.assign(flavoursMap, savedMap);
     }
 
     function saveFlavoursMap() {
@@ -2663,7 +2668,8 @@
       { id: 4, productId: 4, batchCode: 'BATCH-ORG-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 14250, cupSizeMl: 250, status: 'ACTIVE' },
       { id: 5, productId: 5, batchCode: 'BATCH-STR-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 18500, cupSizeMl: 250, status: 'ACTIVE' },
       { id: 6, productId: 6, batchCode: 'BATCH-GRP-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 15750, cupSizeMl: 250, status: 'ACTIVE' },
-      { id: 7, productId: 7, batchCode: 'BATCH-LYC-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 17500, cupSizeMl: 250, status: 'ACTIVE' }
+      { id: 7, productId: 7, batchCode: 'BATCH-LYC-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 17500, cupSizeMl: 250, status: 'ACTIVE' },
+      { id: 8, productId: 23, batchCode: 'BATCH-THU-001', containerCapacityMl: 20000, initialVolumeMl: 20000, remainingVolumeMl: 18000, cupSizeMl: 250, status: 'ACTIVE' }
     ];
     let batchesData = defaultBatches;
 
@@ -2678,7 +2684,8 @@
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            batchesData = parsed;
+            batchesData = parsed.filter(b => !b.productId || flavoursMap[b.productId]);
+            if (batchesData.length === 0) batchesData = defaultBatches;
             return;
           }
         } catch (e) { }
@@ -6268,6 +6275,10 @@
 
     // System Initialization
     async function initAdminApp() {
+      try {
+        localStorage.removeItem('pubexchange_custom_products');
+        localStorage.removeItem('pubexchange_flavours_map');
+      } catch (e) { }
       await ensureAdminAuthenticated();
       checkAdminBackendHealth();
       setInterval(checkAdminBackendHealth, 5000);
