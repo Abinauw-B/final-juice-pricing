@@ -1437,7 +1437,7 @@
                   <tr>
                     <th>ID</th>
                     <th>Beverage Variety</th>
-                    <th>Live Market Price</th>
+                    <th>Live Market Price (Current Value)</th>
                     <th>Pricing Mode</th>
                     <th>Base (₹)</th>
                     <th>Floor (₹)</th>
@@ -2080,27 +2080,27 @@
         <label
           style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Juice
           Variety / Name</label>
-        <input type="text" id="editJuiceName" style="width: 100%; padding: 10px;">
+        <input type="text" id="editJuiceName" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitEditJuice(); }" style="width: 100%; padding: 10px;">
       </div>
 
       <div style="margin-bottom: 12px;">
         <label
           style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Description</label>
-        <input type="text" id="editJuiceDesc" style="width: 100%; padding: 10px;">
+        <input type="text" id="editJuiceDesc" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitEditJuice(); }" style="width: 100%; padding: 10px;">
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
         <div>
           <label style="display: block; font-size: 11px; font-weight: 700; color: #2563eb; margin-bottom: 4px;">Live
             Price (₹)</label>
-          <input type="number" id="editLivePrice" step="0.5"
+          <input type="number" id="editLivePrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitEditJuice(); }"
             style="width: 100%; padding: 8px; font-weight: 800; border-color: #93c5fd;">
         </div>
         <div>
           <label
             style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Base
             Price (₹)</label>
-          <input type="number" id="editBasePrice" step="0.5" style="width: 100%; padding: 8px; font-weight: 800;">
+          <input type="number" id="editBasePrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitEditJuice(); }" style="width: 100%; padding: 8px; font-weight: 800;">
         </div>
       </div>
 
@@ -2108,12 +2108,12 @@
         <div>
           <label style="display: block; font-size: 11px; font-weight: 700; color: #dc2626; margin-bottom: 4px;">Floor
             Min (₹)</label>
-          <input type="number" id="editMinPrice" step="0.5" style="width: 100%; padding: 8px;">
+          <input type="number" id="editMinPrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitEditJuice(); }" style="width: 100%; padding: 8px;">
         </div>
         <div>
           <label style="display: block; font-size: 11px; font-weight: 700; color: #059669; margin-bottom: 4px;">Ceiling
             Max (₹)</label>
-          <input type="number" id="editMaxPrice" step="0.5" style="width: 100%; padding: 8px;">
+          <input type="number" id="editMaxPrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitEditJuice(); }" style="width: 100%; padding: 8px;">
         </div>
       </div>
 
@@ -2122,7 +2122,7 @@
           <label
             style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Remaining
             Vol (ML)</label>
-          <input type="number" id="editRemainingVol" style="width: 100%; padding: 10px;">
+          <input type="number" id="editRemainingVol" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitEditJuice(); }" style="width: 100%; padding: 10px;">
         </div>
         <div>
           <label
@@ -2160,27 +2160,27 @@
         <label
           style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Juice
           Variety / Name</label>
-        <input type="text" id="editPricingJuiceName" style="width: 100%; padding: 10px; font-weight: 700;">
+        <input type="text" id="editPricingJuiceName" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }" style="width: 100%; padding: 10px; font-weight: 700;">
       </div>
 
       <div style="margin-bottom: 14px;">
         <label
           style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Description</label>
-        <input type="text" id="editPricingJuiceDesc" style="width: 100%; padding: 10px;">
+        <input type="text" id="editPricingJuiceDesc" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }" style="width: 100%; padding: 10px;">
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
         <div>
           <label style="display: block; font-size: 12px; font-weight: 700; color: #2563eb; margin-bottom: 4px;">⚡
             Current Live Price (₹)</label>
-          <input type="number" id="editPricingCurrentPrice" step="0.5"
+          <input type="number" id="editPricingCurrentPrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
             style="width: 100%; padding: 10px; font-size: 16px; font-weight: 800; border-color: #93c5fd;">
         </div>
         <div>
           <label
             style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">🎯
             Baseline Base Price (₹)</label>
-          <input type="number" id="editPricingBasePrice" step="0.5"
+          <input type="number" id="editPricingBasePrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
             style="width: 100%; padding: 10px; font-size: 16px; font-weight: 800;">
         </div>
       </div>
@@ -2189,13 +2189,13 @@
         <div>
           <label style="display: block; font-size: 12px; font-weight: 700; color: #dc2626; margin-bottom: 4px;">🛡️
             Circuit Breaker Floor (₹)</label>
-          <input type="number" id="editPricingMinPrice" step="0.5"
+          <input type="number" id="editPricingMinPrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
             style="width: 100%; padding: 10px; font-weight: 700;">
         </div>
         <div>
           <label style="display: block; font-size: 12px; font-weight: 700; color: #059669; margin-bottom: 4px;">🚀
             Circuit Breaker Ceiling (₹)</label>
-          <input type="number" id="editPricingMaxPrice" step="0.5"
+          <input type="number" id="editPricingMaxPrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
             style="width: 100%; padding: 10px; font-weight: 700;">
         </div>
       </div>
@@ -2205,14 +2205,14 @@
           <label
             style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Target
             Sales (1-min window, cups/min)</label>
-          <input type="number" id="editPricingTargetSales" step="0.05"
+          <input type="number" id="editPricingTargetSales" step="0.05" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
             style="width: 100%; padding: 10px; font-weight: 700;">
         </div>
         <div>
           <label
             style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Volatility
             Factor</label>
-          <input type="number" id="editPricingVolatility" step="0.01"
+          <input type="number" id="editPricingVolatility" step="0.01" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
             style="width: 100%; padding: 10px; font-weight: 700;">
         </div>
       </div>
@@ -4846,6 +4846,17 @@
       const tbody = document.getElementById('livePricingTableBody');
       if (!tbody) return;
 
+      const activeEl = document.activeElement;
+      const activeId = activeEl ? activeEl.id : null;
+      let selectionStart = null;
+      let selectionEnd = null;
+      if (activeEl && (activeEl.tagName === 'INPUT')) {
+        try {
+          selectionStart = activeEl.selectionStart;
+          selectionEnd = activeEl.selectionEnd;
+        } catch (e) {}
+      }
+
       tbody.innerHTML = liveProductsCache.map(p => {
         const icon = getFruitIconAdmin(p);
         const imgUrl = getBeverageImageAdmin(p);
@@ -4867,9 +4878,9 @@
               <input type="checkbox" id="lockCheckbox_${pid}" ${isOverride ? 'checked' : ''} onchange="toggleManualPriceLock(${pid}, this.checked)" style="cursor: pointer; accent-color: #d97706; width: 14px; height: 14px;">
               <span>${isOverride ? '🔒 Locked' : '🔓 Lock'}</span>
             </label>
-            <input id="quickPriceInput_${pid}" type="number" step="0.5" value="${Math.round(Number(livePrice))}" style="width: 54px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid ${isOverride ? '#d97706' : '#cbd5e1'}; border-radius: 6px; font-size: 13px;">
-            <button class="btn-primary" style="padding: 5px 9px; font-size: 11px; font-weight: 800; background: #d97706; white-space: nowrap;" onclick="applyManualPriceOverride(${pid})" title="${isOverride ? 'Update locked price' : 'Lock price with manual override'}">${isOverride ? '🔒 Update' : '🔒 Lock'}</button>
-            <button class="btn-primary" style="padding: 5px 9px; font-size: 11px; font-weight: 800; background: #2563eb; white-space: nowrap;" onclick="releaseManualPriceOverride(${pid})" title="Release manual override and resume dynamic DWMA settlement">🔓 Release</button>
+            <input id="quickPriceInput_${pid}" type="number" step="0.5" value="${Number(livePrice)}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); applyManualPriceOverride(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid ${isOverride ? '#d97706' : '#cbd5e1'}; border-radius: 6px; font-size: 13px;" title="Type new price and press Enter or click Enter button">
+            <button class="btn-primary" id="btnEnterPrice_${pid}" style="padding: 5px 10px; font-size: 11px; font-weight: 800; background: #d97706; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;" onclick="applyManualPriceOverride(${pid})" title="Apply price overwrite (or press Enter key)">↵ Enter</button>
+            <button class="btn-primary" style="padding: 5px 9px; font-size: 11px; font-weight: 800; background: #2563eb; white-space: nowrap; cursor: pointer;" onclick="releaseManualPriceOverride(${pid})" title="Release manual override and resume dynamic DWMA settlement">🔓 Release</button>
           </div>`;
 
         return `
@@ -4884,28 +4895,40 @@
                 </div>
               </div>
             </td>
-            <td><span style="font-weight: 900; color: ${isOverride ? '#d97706' : '#059669'}; font-size: 15px; background: ${isOverride ? 'rgba(217,119,6,0.12)' : 'rgba(5,150,105,0.1)'}; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">${isOverride ? '<span title="Price is manually locked" style="font-size: 13px;">🔒</span>' : ''}₹${livePrice}</span></td>
+            <td><span id="livePriceDisplay_${pid}" style="font-weight: 900; color: ${isOverride ? '#d97706' : '#059669'}; font-size: 15px; background: ${isOverride ? 'rgba(217,119,6,0.12)' : 'rgba(5,150,105,0.1)'}; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">${isOverride ? '<span title="Price is manually locked" style="font-size: 13px;">🔒</span>' : ''}₹${livePrice}</span></td>
             <td>${modeBadge}</td>
             <td style="font-weight: 700;">₹${basePrice}</td>
             <td style="color: #dc2626; font-weight: 700;">₹${minPrice}</td>
             <td style="color: #2563eb; font-weight: 700;">₹${maxPrice}</td>
             <td>
               <div style="display: flex; align-items: center; gap: 4px;">
-                <input id="targetInput_${pid}" type="number" step="0.05" min="0.05" value="${target}" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #3b82f6; border-radius: 6px; font-size: 13px;">
-                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669;" onclick="saveProductTargetSales(${pid})" title="Save Target Sales to PostgreSQL">💾</button>
+                <input id="targetInput_${pid}" type="number" step="0.05" min="0.05" value="${target}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveProductTargetSales(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #3b82f6; border-radius: 6px; font-size: 13px;" title="Target sales per minute. Press Enter or click Save.">
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669; cursor: pointer;" onclick="saveProductTargetSales(${pid})" title="Save Target Sales to PostgreSQL">💾</button>
               </div>
             </td>
             <td>${overrideControls}</td>
             <td>
               <div style="display: flex; gap: 6px;">
-                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb);" onclick="openProductTradingDrawer(${pid})" title="Open granular trading instrument view">🔍 Inspect</button>
-                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main);" onclick="editProductPricing(${pid})" title="Edit basic details">✏️</button>
+                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb); cursor: pointer;" onclick="openProductTradingDrawer(${pid})" title="Open granular trading instrument view">🔍 Inspect</button>
+                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;" onclick="editProductPricing(${pid})" title="Edit basic details">✏️</button>
               </div>
             </td>
           </tr>
         `;
       }).join('');
       if (typeof renderBatchesTable === 'function') renderBatchesTable();
+
+      if (activeId) {
+        const restoredEl = document.getElementById(activeId);
+        if (restoredEl) {
+          restoredEl.focus();
+          try {
+            if (selectionStart !== null && selectionEnd !== null) {
+              restoredEl.setSelectionRange(selectionStart, selectionEnd);
+            }
+          } catch (e) {}
+        }
+      }
     }
 
     function editProductPricing(productId) {
@@ -4987,6 +5010,7 @@
     }
 
     async function applyManualPriceOverride(productId, explicitPrice = null) {
+      const pidStr = String(productId);
       let newPrice = explicitPrice;
       if (newPrice == null) {
         const input = document.getElementById('quickPriceInput_' + productId);
@@ -4997,7 +5021,7 @@
         return;
       }
 
-      const prod = liveProductsCache.find(p => (p.id === productId || p.productId === productId));
+      const prod = liveProductsCache.find(p => String(p.id || p.productId) === pidStr);
       if (prod) {
         const floor = Number(prod.minCupPrice || 20);
         const ceil = Number(prod.maxCupPrice || 30);
@@ -5007,11 +5031,26 @@
         }
       }
 
-      // Optimistically update local cache and table
+      // Optimistically update local cache and table immediately
       if (prod) {
         prod.currentCupPrice = newPrice;
+        prod.currentPrice = newPrice;
         prod.pricingMode = 'MANUAL_OVERRIDE';
         renderLivePricingTable();
+
+        const refocused = document.getElementById('quickPriceInput_' + productId);
+        if (refocused) {
+          refocused.focus();
+          refocused.select();
+        }
+
+        const priceDisplay = document.getElementById('livePriceDisplay_' + productId);
+        if (priceDisplay) {
+          priceDisplay.animate([
+            { transform: 'scale(1.22)', boxShadow: '0 0 16px rgba(217,119,6,0.85)' },
+            { transform: 'scale(1)', boxShadow: 'none' }
+          ], { duration: 500, easing: 'ease-out' });
+        }
       }
 
       try {
@@ -5024,18 +5063,26 @@
           throw new Error(errData.message || `Server returned HTTP ${res.status}`);
         }
 
+        const data = await res.json().catch(() => null);
+        if (data && data.newPrice != null && prod) {
+          prod.currentCupPrice = data.newPrice;
+          prod.currentPrice = data.newPrice;
+        }
+
         broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, currentPrice: newPrice, pricingMode: 'MANUAL_OVERRIDE' });
-        showToast(`🔒 Manual price override locked: Product #${productId} set to ₹${newPrice.toFixed(2)}`, 'success');
+        showToast(`🔒 Manual price override locked: Product #${productId} set to ₹${Number(newPrice).toFixed(2)}`, 'success');
       } catch (err) {
         showToast(`🔴 Failed to set manual price: ${err.message}`, 'danger');
       } finally {
         await loadLivePricingProducts();
+        await loadBatches();
         await refreshDashboard({ manual: false });
       }
     }
 
     async function releaseManualPriceOverride(productId) {
-      const prod = liveProductsCache.find(p => (p.id === productId || p.productId === productId));
+      const pidStr = String(productId);
+      const prod = liveProductsCache.find(p => String(p.id || p.productId) === pidStr);
       // Optimistically update local cache and table
       if (prod) {
         prod.pricingMode = 'DYNAMIC';
@@ -5058,6 +5105,7 @@
         showToast(`🔴 Failed to release override: ${err.message}`, 'danger');
       } finally {
         await loadLivePricingProducts();
+        await loadBatches();
         await refreshDashboard({ manual: false });
       }
     }
@@ -6528,7 +6576,7 @@
       document.getElementById('drawerInputTarget').value = target;
       document.getElementById('drawerInputFloor').value = minPrice;
       document.getElementById('drawerInputCeil').value = maxPrice;
-      document.getElementById('drawerInputOverride').value = Math.round(Number(livePrice));
+      document.getElementById('drawerInputOverride').value = Number(livePrice);
 
       const drawerLockCheckbox = document.getElementById('drawerLockCheckbox');
       const drawerLockBadge = document.getElementById('drawerLockBadge');
@@ -6764,9 +6812,9 @@
               <input type="checkbox" id="drawerLockCheckbox" onchange="toggleDrawerLock(this.checked)" style="cursor: pointer; accent-color: #d97706; width: 15px; height: 15px;">
               <span id="drawerLockCheckboxLabel">🔒 Lock</span>
             </label>
-            <input id="drawerInputOverride" type="number" step="0.5" placeholder="Set price ₹" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-weight: 800; font-family: var(--font-mono);">
-            <button class="btn-primary" style="background: #d97706; padding: 8px 16px; font-size: 12px; font-weight: 800;" onclick="applyDrawerOverride()">🔒 Lock Price</button>
-            <button class="btn-primary" style="background: #2563eb; padding: 8px 14px; font-size: 12px; font-weight: 800;" onclick="releaseDrawerOverride()">🔓 Release</button>
+            <input id="drawerInputOverride" type="number" step="0.5" placeholder="Set price ₹" onkeydown="if(event.key==='Enter'){ event.preventDefault(); applyDrawerOverride(); }" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-weight: 800; font-family: var(--font-mono);" title="Type price and click Enter or press Enter key">
+            <button class="btn-primary" style="background: #d97706; padding: 8px 16px; font-size: 12px; font-weight: 800; cursor: pointer;" onclick="applyDrawerOverride()" title="Apply manual override (or press Enter)">↵ Enter</button>
+            <button class="btn-primary" style="background: #2563eb; padding: 8px 14px; font-size: 12px; font-weight: 800; cursor: pointer;" onclick="releaseDrawerOverride()">🔓 Release</button>
           </div>
         </div>
       </div>
