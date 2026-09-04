@@ -823,6 +823,14 @@
               00:00</div>
           </div>
 
+          <!-- Live Trading Simulation Bot Toggle Button -->
+          <button id="btnLiveBotToggle" onclick="toggleLiveTradingBot()" class="btn-primary"
+            style="background: #10b981; border: 1px solid #059669; color: white; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25); transition: all 0.2s ease;"
+            title="Click to Pause or Resume Autonomous Pub Exchange Trading Bot">
+            <span id="liveBotIndicator">🟢</span>
+            <span id="liveBotLabel">Trading Bot: LIVE</span>
+          </button>
+
           <button id="themeToggleBtnAdmin" onclick="toggleThemeMode()" class="btn-primary"
             style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm);">☀️
             Theme: Light</button>
@@ -4796,6 +4804,51 @@
       }
     }
 
+    // Live Autonomous Trading Bot Handler
+    async function fetchLiveBotStatus() {
+      try {
+        const res = await apiFetch('/pricing/simulator/live-bot');
+        if (res.ok) {
+          const data = await res.json();
+          updateLiveBotUI(data.enabled, data.simulatedOrdersCount);
+        }
+      } catch (e) {}
+    }
+
+    function updateLiveBotUI(enabled, count) {
+      const btn = document.getElementById('btnLiveBotToggle');
+      const ind = document.getElementById('liveBotIndicator');
+      const lbl = document.getElementById('liveBotLabel');
+      if (!btn || !ind || !lbl) return;
+
+      if (enabled) {
+        btn.style.background = '#10b981';
+        btn.style.borderColor = '#059669';
+        btn.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.25)';
+        ind.textContent = '🟢';
+        lbl.textContent = 'Trading Bot: LIVE' + (count ? ` (${count})` : '');
+      } else {
+        btn.style.background = '#64748b';
+        btn.style.borderColor = '#475569';
+        btn.style.boxShadow = 'none';
+        ind.textContent = '⏸️';
+        lbl.textContent = 'Trading Bot: PAUSED';
+      }
+    }
+
+    async function toggleLiveTradingBot() {
+      try {
+        const res = await apiFetch('/pricing/simulator/live-bot/toggle', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          updateLiveBotUI(data.enabled, data.simulatedOrdersCount);
+          showToast(data.enabled ? '🤖 Live Market Trading Bot activated! Generating realistic customer transactions.' : '⏸️ Live Market Trading Bot paused.', data.enabled ? 'success' : 'info');
+        }
+      } catch (e) {
+        showToast('Failed to toggle trading bot', 'danger');
+      }
+    }
+
     // Load Live Pricing Products for Pricing Maintenance Tab
     async function loadLivePricingProducts() {
       try {
@@ -4804,7 +4857,6 @@
           const config = await res.json();
           currentPricingConfig = config;
           applyPricingConfigToUI(config);
-          return;
         }
       } catch (e) { }
 
@@ -6353,6 +6405,9 @@
       }
 
       renderReports();
+      fetchLiveBotStatus();
+      setInterval(fetchLiveBotStatus, 4000);
+      setInterval(loadLivePricingProducts, 5000);
       connectAdminWebSocket();
       setTimeout(renderCharts, 500);
       setInterval(updateRealTimeRevenueChart, 4000);

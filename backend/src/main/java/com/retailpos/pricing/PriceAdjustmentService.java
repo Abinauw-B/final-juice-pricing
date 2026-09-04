@@ -369,15 +369,29 @@ public class PriceAdjustmentService {
             reason = "STABLE_DEMAND";
             demandLevelCategory = "NORMAL";
         } else if (rd.compareTo(lowThresh) >= 0) {
-            deltaP = new BigDecimal("-1.00");
-            movement = -1;
-            reason = "BELOW_NORMAL_DEMAND_DECAY";
-            demandLevelCategory = "LOW";
+            if (oldPrice.compareTo(floor) <= 0) {
+                deltaP = new BigDecimal("1.00");
+                movement = 1;
+                reason = "BARGAIN_FLOOR_REBOUND";
+                demandLevelCategory = "BARGAIN_BOUNCE";
+            } else {
+                deltaP = new BigDecimal("-1.00");
+                movement = -1;
+                reason = "BELOW_NORMAL_DEMAND_DECAY";
+                demandLevelCategory = "LOW";
+            }
         } else {
-            deltaP = new BigDecimal("-1.00");
-            movement = -1;
-            reason = "ZERO_DEMAND_DECAY";
-            demandLevelCategory = "VERY_LOW";
+            if (oldPrice.compareTo(floor) <= 0) {
+                deltaP = new BigDecimal("1.00");
+                movement = 1;
+                reason = "BARGAIN_FLOOR_REBOUND";
+                demandLevelCategory = "BARGAIN_BOUNCE";
+            } else {
+                deltaP = new BigDecimal("-1.00");
+                movement = -1;
+                reason = "ZERO_DEMAND_DECAY";
+                demandLevelCategory = "VERY_LOW";
+            }
         }
 
         // Validate strictly allowed price movement (+1.00, 0.00, -1.00)

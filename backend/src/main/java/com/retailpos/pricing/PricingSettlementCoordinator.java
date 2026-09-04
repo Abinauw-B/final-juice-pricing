@@ -85,7 +85,7 @@ public class PricingSettlementCoordinator {
     public LocalDateTime getNextSettlementTime() {
         int interval = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
         if (interval <= 0) interval = 60;
-        if (nextSettlementTime == null || LocalDateTime.now().isAfter(nextSettlementTime)) {
+        if (nextSettlementTime == null) {
             nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
         }
         return nextSettlementTime;

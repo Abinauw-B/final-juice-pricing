@@ -43,6 +43,8 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
                         Instant targetInstant = nextTarget.atZone(java.time.ZoneId.systemDefault()).toInstant();
                         if (targetInstant.isAfter(Instant.now())) {
                             return targetInstant;
+                        } else {
+                            return Instant.now();
                         }
                     }
                     Instant lastActual = triggerContext.lastActualExecution();
@@ -51,7 +53,7 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
                     }
                     Instant nextFromLast = lastActual.plusSeconds(intervalSeconds);
                     if (nextFromLast.isBefore(Instant.now())) {
-                        return Instant.now().plusSeconds(intervalSeconds);
+                        return Instant.now();
                     }
                     return nextFromLast;
                 }

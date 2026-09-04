@@ -30,6 +30,7 @@ public class PricingController {
     private final SimpMessagingTemplate messagingTemplate;
     private final PricingConfigurationService pricingConfigurationService;
     private final PricingConfigAuditLogRepository auditLogRepository;
+    private final com.retailpos.pricing.service.LiveMarketSimulatorService liveMarketSimulatorService;
 
     public PricingController(PriceAdjustmentService priceAdjustmentService,
             PricingSimulationService pricingSimulationService,
@@ -42,7 +43,8 @@ public class PricingController {
             com.retailpos.pricing.service.MarketCorrelationService marketCorrelationService,
             SimpMessagingTemplate messagingTemplate,
             PricingConfigurationService pricingConfigurationService,
-            PricingConfigAuditLogRepository auditLogRepository) {
+            PricingConfigAuditLogRepository auditLogRepository,
+            com.retailpos.pricing.service.LiveMarketSimulatorService liveMarketSimulatorService) {
         this.priceAdjustmentService = priceAdjustmentService;
         this.pricingSimulationService = pricingSimulationService;
         this.priceHistoryRepository = priceHistoryRepository;
@@ -55,6 +57,7 @@ public class PricingController {
         this.messagingTemplate = messagingTemplate;
         this.pricingConfigurationService = pricingConfigurationService;
         this.auditLogRepository = auditLogRepository;
+        this.liveMarketSimulatorService = liveMarketSimulatorService;
     }
 
     @GetMapping({ "/market", "/status", "/admin/status" })
@@ -553,5 +556,15 @@ public class PricingController {
         }
 
         return ResponseEntity.ok(res);
+    }
+
+    @GetMapping({ "/simulator/live-bot", "/admin/simulator/live-bot" })
+    public ResponseEntity<Map<String, Object>> getLiveBotStatus() {
+        return ResponseEntity.ok(liveMarketSimulatorService.getStatus());
+    }
+
+    @PostMapping({ "/simulator/live-bot/toggle", "/admin/simulator/live-bot/toggle" })
+    public ResponseEntity<Map<String, Object>> toggleLiveBot(@RequestParam(required = false) Boolean enabled) {
+        return ResponseEntity.ok(liveMarketSimulatorService.toggle(enabled));
     }
 }
