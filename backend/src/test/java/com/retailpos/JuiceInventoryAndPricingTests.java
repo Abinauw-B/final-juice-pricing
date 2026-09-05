@@ -248,10 +248,10 @@ public class JuiceInventoryAndPricingTests {
         assertEquals(new BigDecimal("26.00"), res1.getNewPrice());
 
         // In the future (say 10 minutes later with 0 sales in W0, W1, W2):
-        // W0=0, W1=0, W2=0 => Sw=0, Rd=0 < 0.90 => -1 => 26.00 -> 25.00
+        // W0=0, W1=0, W2=0 => Sw=0, Rd=0 < 0.50 => -2 => 26.00 -> 24.00
         LocalDateTime futureTime = LocalDateTime.now().plusMinutes(10);
         PriceAdjustmentService.PriceEvaluationResult res2 = priceAdjustmentService.evaluateAndAdjustPrice(mangoProduct.getId(), futureTime);
-        assertEquals(new BigDecimal("25.00"), res2.getNewPrice());
+        assertEquals(new BigDecimal("24.00"), res2.getNewPrice());
     }
 
     @Test

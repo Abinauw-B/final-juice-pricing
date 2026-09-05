@@ -141,6 +141,8 @@ export class PosComponent implements OnInit {
   paymentMethod: string = 'CASH';
   completedOrder: any = null;
 
+  apiBaseUrl: string = (typeof window !== 'undefined' && (window as any).API_BASE_URL) || 'http://localhost:8088/api';
+
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
@@ -148,7 +150,7 @@ export class PosComponent implements OnInit {
   }
 
   fetchProducts() {
-    this.http.get<Product[]>('http://localhost:8088/api/pos/products').subscribe({
+    this.http.get<Product[]>(`${this.apiBaseUrl}/pos/products`).subscribe({
       next: (data) => {
         if (data && data.length > 0) {
           this.products = data;
@@ -208,7 +210,7 @@ export class PosComponent implements OnInit {
       paymentMethod: this.paymentMethod
     };
 
-    this.http.post('http://localhost:8088/api/pos/checkout', payload).subscribe({
+    this.http.post(`${this.apiBaseUrl}/pos/checkout`, payload).subscribe({
       next: (res: any) => {
         this.completedOrder = res;
         this.cart = [];

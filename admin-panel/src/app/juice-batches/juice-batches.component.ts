@@ -202,6 +202,8 @@ export class JuiceBatchesComponent implements OnInit {
   newFlavourMaxPrice: number = 30;
   newFlavourVolume: number = 20000;
 
+  apiBaseUrl: string = (typeof window !== 'undefined' && (window as any).API_BASE_URL) || 'http://localhost:8088/api';
+
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
@@ -209,7 +211,7 @@ export class JuiceBatchesComponent implements OnInit {
   }
 
   fetchBatches() {
-    this.http.get<any[]>('http://localhost:8088/api/batches').subscribe({
+    this.http.get<any[]>(`${this.apiBaseUrl}/batches`).subscribe({
       next: (data) => {
         this.batches = data;
       },
@@ -229,7 +231,7 @@ export class JuiceBatchesComponent implements OnInit {
       containerCapacityMl: this.newBatchCapacityMl
     };
 
-    this.http.post('http://localhost:8088/api/batches', payload).subscribe({
+    this.http.post(`${this.apiBaseUrl}/batches`, payload).subscribe({
       next: () => {
         this.showNewBatchModal = false;
         this.fetchBatches();

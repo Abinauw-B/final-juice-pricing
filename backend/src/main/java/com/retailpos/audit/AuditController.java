@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping({"/api/audit-logs", "/api/audit/logs"})
-@CrossOrigin(origins = "*")
 public class AuditController {
 
     private final AuditLogRepository auditLogRepository;

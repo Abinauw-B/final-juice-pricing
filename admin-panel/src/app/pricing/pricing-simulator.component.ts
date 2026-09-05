@@ -134,13 +134,14 @@ export class PricingSimulatorComponent {
   };
 
   simulationResult: any = null;
+  apiBaseUrl: string = (typeof window !== 'undefined' && (window as any).API_BASE_URL) || 'http://localhost:8088/api';
 
   constructor(private http: HttpClient) {
     this.runSimulation();
   }
 
   runSimulation() {
-    this.http.post('http://localhost:8088/api/pricing/simulate', this.req).subscribe({
+    this.http.post(`${this.apiBaseUrl}/pricing/simulate`, this.req).subscribe({
       next: (res: any) => {
         this.simulationResult = res;
       },

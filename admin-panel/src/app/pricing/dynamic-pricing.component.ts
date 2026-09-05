@@ -100,6 +100,8 @@ export class DynamicPricingComponent implements OnInit {
     }
   ];
 
+  apiBaseUrl: string = (typeof window !== 'undefined' && (window as any).API_BASE_URL) || 'http://localhost:8088/api';
+
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
@@ -107,7 +109,7 @@ export class DynamicPricingComponent implements OnInit {
   }
 
   fetchHistory() {
-    this.http.get<any[]>('http://localhost:8088/api/pricing/history').subscribe({
+    this.http.get<any[]>(`${this.apiBaseUrl}/pricing/history`).subscribe({
       next: (data) => {
         if (data && data.length > 0) {
           this.priceHistory = data;
@@ -118,7 +120,7 @@ export class DynamicPricingComponent implements OnInit {
   }
 
   triggerEvaluation() {
-    this.http.get('http://localhost:8088/api/pricing/evaluate').subscribe({
+    this.http.get(`${this.apiBaseUrl}/pricing/evaluate`).subscribe({
       next: () => this.fetchHistory(),
       error: () => alert('Price engine evaluation complete')
     });

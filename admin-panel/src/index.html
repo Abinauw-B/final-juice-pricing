@@ -33,6 +33,7 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <script src="config.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
@@ -836,11 +837,11 @@
             Theme: Light</button>
 
           <!-- Interlinking Portal Links -->
-          <a href="http://localhost:8000/" target="_blank"
+          <a id="adminNavPosLink" href="https://final-juice-pricing.vercel.app" target="_blank"
             style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;">
-            🛒 Customer POS (8000)
+            🛒 Customer POS
           </a>
-          <a href="http://localhost:8000/led-display.html" target="_blank"
+          <a id="adminNavLedLink" href="https://final-juice-pricing.vercel.app/led-display.html" target="_blank"
             style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;">
             📺 LED Ticker
           </a>
@@ -2441,14 +2442,19 @@
     </div>
   </div>
 
-  <iframe id="posBridgeFrame" src="http://localhost:8000/bridge.html" style="display:none;"></iframe>
+  <iframe id="posBridgeFrame" style="display:none;"></iframe>
 
   <script>
-    const CONFIG = {
-      API_BASE_URL: 'http://localhost:8088/api',
-      WS_URL: 'http://localhost:8088/ws'
-    };
+    const CONFIG = window.CONFIG;
     const API_BASE_URL = CONFIG.API_BASE_URL;
+
+    // Dynamically bind posBridgeFrame to configured POS URL
+    (function initBridgeFrame() {
+      const frame = document.getElementById('posBridgeFrame');
+      if (frame && CONFIG && CONFIG.POS_URL) {
+        frame.src = `${CONFIG.POS_URL}/bridge.html`;
+      }
+    })();
 
     async function ensureAdminAuthenticated() {
       let token = localStorage.getItem('pubexchange_jwt_token');
@@ -4060,17 +4066,15 @@
 
       try {
         if (editingUserId) {
-          const res = await fetch(`http://localhost:8088/api/users/${editingUserId}`, {
+          const res = await apiFetch(`/users/${editingUserId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userPayload)
           });
           if (!res.ok) throw new Error('User update failed');
           showToast(`Updated user credentials for "${username}"`, 'success');
         } else {
-          const res = await fetch('http://localhost:8088/api/users', {
+          const res = await apiFetch('/users', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userPayload)
           });
           if (!res.ok) throw new Error('User registration failed');
@@ -4088,7 +4092,7 @@
     async function deleteUser(id, username) {
       if (!confirm(`CONFIRM: Are you sure you want to deactivate staff user "${username}"?`)) return;
       try {
-        const res = await fetch(`http://localhost:8088/api/users/${id}`, { method: 'DELETE' });
+        const res = await apiFetch(`/users/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('User deletion failed');
         showToast(`Deactivated staff user "${username}"`, 'warning');
         await loadUsers();
@@ -4100,7 +4104,7 @@
     // Load Pricing History (Section 8)
     async function loadHistory() {
       try {
-        const res = await fetch('http://localhost:8088/api/pricing/history');
+        const res = await apiFetch('/pricing/history');
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -4141,7 +4145,7 @@
 
       if (reportType === 'sales') {
         try {
-          const res = await fetch('http://localhost:8088/api/pos/orders');
+          const res = await apiFetch('/pos/orders');
           if (res.ok) {
             const orders = await res.json();
             if (Array.isArray(orders) && orders.length > 0) {
@@ -4228,9 +4232,8 @@
       }
 
       try {
-        const res = await fetch('http://localhost:8088/api/auth/change-password?username=superadmin', {
+        const res = await apiFetch('/auth/change-password?username=superadmin', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ oldPassword: '', newPassword: pass })
         });
         if (res.ok) {
@@ -4251,7 +4254,7 @@
     // System Audit Logs (Section 12)
     async function loadAuditLogs() {
       try {
-        const res = await fetch('http://localhost:8088/api/audit-logs');
+        const res = await apiFetch('/audit-logs');
         if (res.ok) {
           const logs = await res.json();
           if (Array.isArray(logs) && logs.length > 0) {
@@ -5259,7 +5262,7 @@
     // Notifications (Section 2)
     async function loadNotifications() {
       try {
-        const res = await fetch('http://localhost:8088/api/notifications');
+        const res = await apiFetch('/notifications');
         if (res.ok) {
           const list = await res.json();
           if (Array.isArray(list) && list.length > 0) {
@@ -5274,7 +5277,7 @@
           }
         }
 
-        const unreadRes = await fetch('http://localhost:8088/api/notifications/unread-count');
+        const unreadRes = await apiFetch('/notifications/unread-count');
         if (unreadRes.ok) {
           const countData = await unreadRes.json();
           const badge = document.getElementById('unreadNotifBadge');
@@ -6265,27 +6268,70 @@
       }
     }
 
+    let adminStompSubscriptions = [];
+    let adminWsReconnectTimer = null;
+    let isAdminConnectingWS = false;
+    let isAdminWsConnected = false;
+    let adminWsReconnectAttempts = 0;
+
+    function cleanupAdminStompSubscriptions() {
+      if (Array.isArray(adminStompSubscriptions)) {
+        adminStompSubscriptions.forEach(sub => {
+          try { if (sub && typeof sub.unsubscribe === 'function') sub.unsubscribe(); } catch (e) { }
+        });
+      }
+      adminStompSubscriptions = [];
+    }
+
     function connectAdminWebSocket() {
       if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
+      if (isAdminConnectingWS || isAdminWsConnected) return;
+
+      if (adminWsReconnectTimer) {
+        clearTimeout(adminWsReconnectTimer);
+        adminWsReconnectTimer = null;
+      }
+
+      isAdminConnectingWS = true;
       try {
         const socket = new SockJS(CONFIG.WS_URL);
         const stompClient = Stomp.over(socket);
         stompClient.debug = null;
+
         stompClient.connect({}, function () {
-          stompClient.subscribe('/topic/products', function (message) {
+          isAdminConnectingWS = false;
+          isAdminWsConnected = true;
+          adminWsReconnectAttempts = 0;
+
+          const headerPill = document.getElementById('adminHeaderPill');
+          const headerText = document.getElementById('adminBackendHealthText');
+          if (headerPill && headerText) {
+            headerPill.style.background = 'rgba(16, 185, 129, 0.15)';
+            headerPill.style.color = '#10b981';
+            headerPill.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            headerText.textContent = '🟢 BACKEND ONLINE';
+          }
+
+          cleanupAdminStompSubscriptions();
+
+          const subProds = stompClient.subscribe('/topic/products', function (message) {
             if (message.body) {
               loadBatches();
               loadLivePricingProducts();
               refreshDashboard();
             }
           });
-          stompClient.subscribe('/topic/batches', function (message) {
+          adminStompSubscriptions.push(subProds);
+
+          const subBatches = stompClient.subscribe('/topic/batches', function (message) {
             if (message.body) {
               loadBatches();
               refreshDashboard();
             }
           });
-          stompClient.subscribe('/topic/prices', function (message) {
+          adminStompSubscriptions.push(subBatches);
+
+          const subPrices = stompClient.subscribe('/topic/prices', function (message) {
             if (message.body) {
               refreshDashboard();
               loadBatches();
@@ -6293,14 +6339,18 @@
               loadLivePricingProducts();
             }
           });
-          stompClient.subscribe('/topic/market-crash', function (message) {
+          adminStompSubscriptions.push(subPrices);
+
+          const subCrash = stompClient.subscribe('/topic/market-crash', function (message) {
             if (message.body) {
               loadTelemetry();
               loadBatches();
               checkMarketCrashStatus();
             }
           });
-          stompClient.subscribe('/topic/pricing-config', function (message) {
+          adminStompSubscriptions.push(subCrash);
+
+          const subConfig = stompClient.subscribe('/topic/pricing-config', function (message) {
             if (message.body) {
               try {
                 const cfg = JSON.parse(message.body);
@@ -6320,7 +6370,9 @@
               } catch (e) { }
             }
           });
-          stompClient.subscribe('/topic/settlement', function (message) {
+          adminStompSubscriptions.push(subConfig);
+
+          const subSettle = stompClient.subscribe('/topic/settlement', function (message) {
             if (message.body) {
               try {
                 const data = JSON.parse(message.body);
@@ -6345,12 +6397,16 @@
               } catch (e) { }
             }
           });
-          stompClient.subscribe('/topic/orders', function (message) {
+          adminStompSubscriptions.push(subSettle);
+
+          const subOrders = stompClient.subscribe('/topic/orders', function (message) {
             updateRealTimeRevenueChart();
             updateVolumeDonutChart();
             refreshDashboard();
           });
-          stompClient.subscribe('/topic/market-status', function (message) {
+          adminStompSubscriptions.push(subOrders);
+
+          const subMarket = stompClient.subscribe('/topic/market-status', function (message) {
             if (message.body) {
               try {
                 const data = JSON.parse(message.body);
@@ -6359,10 +6415,34 @@
               } catch (e) { }
             }
           });
+          adminStompSubscriptions.push(subMarket);
+
         }, function () {
-          setTimeout(connectAdminWebSocket, 5000);
+          isAdminConnectingWS = false;
+          isAdminWsConnected = false;
+          cleanupAdminStompSubscriptions();
+          adminWsReconnectAttempts++;
+
+          const headerPill = document.getElementById('adminHeaderPill');
+          const headerText = document.getElementById('adminBackendHealthText');
+          if (headerPill && headerText) {
+            headerPill.style.background = 'rgba(245, 158, 11, 0.15)';
+            headerPill.style.color = '#f59e0b';
+            headerPill.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+            headerText.textContent = '🟡 BACKEND CONNECTING...';
+          }
+
+          const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(adminWsReconnectAttempts, 6)) + Math.random() * 800));
+          adminWsReconnectTimer = setTimeout(connectAdminWebSocket, backoffDelay);
         });
-      } catch (err) { }
+      } catch (err) {
+        isAdminConnectingWS = false;
+        isAdminWsConnected = false;
+        cleanupAdminStompSubscriptions();
+        adminWsReconnectAttempts++;
+        const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(adminWsReconnectAttempts, 6)) + Math.random() * 800));
+        adminWsReconnectTimer = setTimeout(connectAdminWebSocket, backoffDelay);
+      }
     }
 
     if (pubExchangeChannel) {
@@ -6379,12 +6459,27 @@
       };
     }
 
+    // Polling concurrency guards
+    let isBotStatusFetching = false;
+    let isLiveProductsFetching = false;
+    let isRevenueChartFetching = false;
+    let isVolumeDonutFetching = false;
+
     // System Initialization
     async function initAdminApp() {
       try {
         localStorage.removeItem('pubexchange_custom_products');
         localStorage.removeItem('pubexchange_flavours_map');
       } catch (e) { }
+
+      // Dynamic Header Interlink Binding
+      if (CONFIG && CONFIG.POS_URL) {
+        const posLink = document.getElementById('adminNavPosLink');
+        if (posLink) posLink.href = CONFIG.POS_URL;
+        const ledLink = document.getElementById('adminNavLedLink');
+        if (ledLink) ledLink.href = `${CONFIG.POS_URL}/led-display.html`;
+      }
+
       await ensureAdminAuthenticated();
       checkAdminBackendHealth();
       setInterval(checkAdminBackendHealth, 5000);
@@ -6409,12 +6504,32 @@
 
       renderReports();
       fetchLiveBotStatus();
-      setInterval(fetchLiveBotStatus, 4000);
-      setInterval(loadLivePricingProducts, 5000);
+      setInterval(async () => {
+        if (isBotStatusFetching) return;
+        isBotStatusFetching = true;
+        try { await fetchLiveBotStatus(); } finally { isBotStatusFetching = false; }
+      }, 5000);
+
+      setInterval(async () => {
+        if (isLiveProductsFetching) return;
+        isLiveProductsFetching = true;
+        try { await loadLivePricingProducts(); } finally { isLiveProductsFetching = false; }
+      }, 5000);
+
       connectAdminWebSocket();
       setTimeout(renderCharts, 500);
-      setInterval(updateRealTimeRevenueChart, 4000);
-      setInterval(updateVolumeDonutChart, 4000);
+
+      setInterval(async () => {
+        if (isRevenueChartFetching) return;
+        isRevenueChartFetching = true;
+        try { await updateRealTimeRevenueChart(); } finally { isRevenueChartFetching = false; }
+      }, 5000);
+
+      setInterval(async () => {
+        if (isVolumeDonutFetching) return;
+        isVolumeDonutFetching = true;
+        try { await updateVolumeDonutChart(); } finally { isVolumeDonutFetching = false; }
+      }, 5000);
     }
     initAdminApp();
 

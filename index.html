@@ -376,9 +376,9 @@
       <button id="rootReloadBtn" onclick="reloadAllFrames()" class="action-btn" style="background: rgba(255,255,255,0.06); color: var(--text-main);">
         🔄 Refresh All
       </button>
-      <a href="http://localhost:8001/index.html" target="_blank" class="action-btn btn-admin">⚙️ Admin (8001) ↗</a>
-      <a href="http://localhost:8000/index.html" target="_blank" class="action-btn btn-customer">🍹 POS (8000) ↗</a>
-      <a href="http://localhost:8000/led-display.html" target="_blank" class="action-btn btn-led">📺 LED Wall ↗</a>
+      <a id="btnOpenAdmin" href="https://final-juice-pricing-admin.vercel.app" target="_blank" class="action-btn btn-admin">⚙️ Admin ↗</a>
+      <a id="btnOpenCustomer" href="https://final-juice-pricing.vercel.app" target="_blank" class="action-btn btn-customer">🍹 POS ↗</a>
+      <a id="btnOpenLed" href="https://final-juice-pricing.vercel.app/led-display.html" target="_blank" class="action-btn btn-led">📺 LED Wall ↗</a>
     </div>
   </header>
 
@@ -390,14 +390,14 @@
       <div class="frame-header">
         <div class="frame-header-title">
           <span>⚙️ ADMIN COMMAND CENTER &amp; DYNAMIC PRICING ENGINE</span>
-          <span style="font-size: 11px; font-family: var(--font-mono); color: #38bdf8; background: rgba(56,189,248,0.12); padding: 2px 8px; border-radius: 4px;">PORT 8001</span>
+          <span style="font-size: 11px; font-family: var(--font-mono); color: #38bdf8; background: rgba(56,189,248,0.12); padding: 2px 8px; border-radius: 4px;">CONTROL</span>
         </div>
         <div class="frame-header-actions">
           <button class="frame-tool-btn" onclick="reloadFrame('adminFrame')">🔄 Reload</button>
-          <a href="http://localhost:8001/index.html" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
+          <a id="popAdminLink" href="https://final-juice-pricing-admin.vercel.app" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
         </div>
       </div>
-      <iframe id="adminFrame" src="http://localhost:8001/index.html"></iframe>
+      <iframe id="adminFrame" src="https://final-juice-pricing-admin.vercel.app"></iframe>
     </div>
 
     <!-- Customer POS Frame Card -->
@@ -405,14 +405,14 @@
       <div class="frame-header">
         <div class="frame-header-title">
           <span>🍹 LIVE CUSTOMER POS MENU &amp; REAL-TIME MARKET PRICING</span>
-          <span style="font-size: 11px; font-family: var(--font-mono); color: #ff6b00; background: rgba(255,107,0,0.12); padding: 2px 8px; border-radius: 4px;">PORT 8000</span>
+          <span style="font-size: 11px; font-family: var(--font-mono); color: #ff6b00; background: rgba(255,107,0,0.12); padding: 2px 8px; border-radius: 4px;">CUSTOMER POS</span>
         </div>
         <div class="frame-header-actions">
           <button class="frame-tool-btn" onclick="reloadFrame('customerFrame')">🔄 Reload</button>
-          <a href="http://localhost:8000/index.html" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
+          <a id="popCustomerLink" href="https://final-juice-pricing.vercel.app" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
         </div>
       </div>
-      <iframe id="customerFrame" src="http://localhost:8000/index.html"></iframe>
+      <iframe id="customerFrame" src="https://final-juice-pricing.vercel.app"></iframe>
     </div>
 
     <!-- Wall LED TV Board Frame Card (Visible in Triple or Single LED mode) -->
@@ -424,10 +424,10 @@
         </div>
         <div class="frame-header-actions">
           <button class="frame-tool-btn" onclick="reloadFrame('ledFrame')">🔄 Reload</button>
-          <a href="http://localhost:8000/led-display.html" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
+          <a id="popLedLink" href="https://final-juice-pricing.vercel.app/led-display.html" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
         </div>
       </div>
-      <iframe id="ledFrame" src="http://localhost:8000/led-display.html"></iframe>
+      <iframe id="ledFrame" src="https://final-juice-pricing.vercel.app/led-display.html"></iframe>
     </div>
 
   </main>
@@ -475,6 +475,43 @@
       }
     }
 
+    // Auto-detect production vs local environment for iframes and navigation
+    const isLocal = Boolean(
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '[::1]' ||
+      window.location.hostname === '' ||
+      window.location.protocol === 'file:'
+    );
+
+    const POS_BASE = isLocal ? 'http://localhost:8000' : 'https://final-juice-pricing.vercel.app';
+    const ADMIN_BASE = isLocal ? 'http://localhost:8001' : 'https://final-juice-pricing-admin.vercel.app';
+
+    function initPortalTargets() {
+      const adminFrame = document.getElementById('adminFrame');
+      if (adminFrame) adminFrame.src = `${ADMIN_BASE}/index.html`;
+
+      const customerFrame = document.getElementById('customerFrame');
+      if (customerFrame) customerFrame.src = `${POS_BASE}/index.html`;
+
+      const ledFrame = document.getElementById('ledFrame');
+      if (ledFrame) ledFrame.src = `${POS_BASE}/led-display.html`;
+
+      const btnAdmin = document.getElementById('btnOpenAdmin');
+      if (btnAdmin) btnAdmin.href = `${ADMIN_BASE}/index.html`;
+
+      const btnCustomer = document.getElementById('btnOpenCustomer');
+      if (btnCustomer) btnCustomer.href = `${POS_BASE}/index.html`;
+
+      const btnLed = document.getElementById('btnOpenLed');
+      if (btnLed) btnLed.href = `${POS_BASE}/led-display.html`;
+
+      const popAdmin = document.getElementById('popAdminLink');
+      if (popAdmin) popAdmin.href = `${ADMIN_BASE}/index.html`;
+
+      const popCustomer = document.getElementById('popCustomerLink');
+      if (popCustomer) popCustomer.href = `${POS_BASE}/index.html`;
+
     function reloadFrame(frameId) {
       const frame = document.getElementById(frameId);
       if (frame) {
@@ -485,6 +522,8 @@
     function reloadAllFrames() {
       ['adminFrame', 'customerFrame', 'ledFrame'].forEach(id => reloadFrame(id));
     }
+
+    initPortalTargets();
   </script>
 </body>
 </html>

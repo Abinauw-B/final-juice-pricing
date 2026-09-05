@@ -12,7 +12,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping({"/api/reports", "/api"})
-@CrossOrigin(origins = "*")
 public class ReportController {
 
     private final JuiceBatchRepository juiceBatchRepository;

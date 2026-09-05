@@ -1,28 +1,46 @@
 # Juice Bar Stock Exchange — POS, Inventory & Dynamic Pricing System
 
-A production-ready retail management system for fresh juice bars featuring a **20L liquid volume batch model**, **PostgreSQL 18.3 persistence**, **Flyway schema migrations**, **Pessimistic Row Locking**, and a **1-Minute Automated Enterprise Dynamic Pricing Engine with ₹4 Downward Price Decay**.
+A production-ready retail management system for fresh juice bars featuring a **20L liquid volume batch model**, **PostgreSQL persistence (SSoT)**, **Redis caching layer**, **Flyway schema migrations**, **Pessimistic Row Locking**, and a **1-Minute Automated Enterprise DWMA Dynamic Pricing Engine**.
 
 ---
 
-## 🏗️ System Architecture
+## 🌐 Production Deployments
 
-```
-                                  +-----------------------------+
-                                  |    Customer / POS Web       |
-                                  |    (Port 8000 / HTML5 SPA)  |
-                                  +--------------+--------------+
-                                                 |
-                                                 v [REST & STOMP / WebSocket]
-+-----------------------------+                  |                  +-----------------------------+
-|        Admin Panel          |------------------+----------------->|     Spring Boot Backend     |
-|    (Port 8001 / HTML5 SPA)  |<----------------------------------->|    (Java 24.0.2 / Port 8088) |
-+-----------------------------+                                     +--------------+--------------+
-                                                                                   |
-                                                                                   v [Flyway Managed]
-                                                                    +-----------------------------+
-                                                                    |     PostgreSQL 18.3 DB      |
-                                                                    |        (retailposdb)        |
-                                                                    +-----------------------------+
+The application is deployed across high-availability cloud platforms:
+
+- **Customer POS:** [https://final-juice-pricing.vercel.app](https://final-juice-pricing.vercel.app)
+- **Admin Panel:** [https://final-juice-pricing-admin.vercel.app](https://final-juice-pricing-admin.vercel.app)
+- **Backend Architecture:** Spring Boot REST + WSS STOMP broker connected to cloud PostgreSQL & Redis.
+
+Detailed deployment instructions and cloud setup are documented in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+---
+
+## 🏗️ Production Architecture
+
+```text
+CUSTOMER POS                               ADMIN PANEL
+https://final-juice-pricing.vercel.app     https://final-juice-pricing-admin.vercel.app
+             │                                          │
+             │ HTTPS REST API                           │ HTTPS REST API
+             │ Secure WebSocket/STOMP (WSS)             │ Secure WebSocket/STOMP (WSS)
+             ▼                                          ▼
+     ┌──────────────────────────────────────────────────────────┐
+     │                PUBLIC SPRING BOOT BACKEND               │
+     │                https://YOUR-BACKEND-DOMAIN               │
+     │   • DWMA Pricing Engine (BigDecimal Precision)          │
+     │   • STOMP Broker (/topic/prices, /topic/market-crash)    │
+     │   • Configurable Dynamic CORS (APP_CORS_ALLOWED_ORIGINS)│
+     └──────────────────────────┬───────────────────────────────┘
+                                │
+                 ┌──────────────┴──────────────┐
+                 ▼                             ▼
+     ┌───────────────────────┐     ┌───────────────────────┐
+     │  PostgreSQL 16 (SSoT) │     │     Redis 7 Cache     │
+     │  Authoritative Source │     │  Fast Distributed     │
+     │  (Products, Orders,   │     │  Counters & Fallback  │
+     │   Inventory Batches)  │     │  Memory Cache         │
+     └───────────────────────┘     └───────────────────────┘
 ```
 
 ---
@@ -36,6 +54,7 @@ A production-ready retail management system for fresh juice bars featuring a **2
 
 2. **Concurrency Safety & Pessimistic Row Locking**:
    - Uses `@Lock(LockModeType.PESSIMISTIC_WRITE)` during checkout to guarantee atomic volume deductions under concurrent POS cashier requests.
+   - Idempotent checkout guard prevents accidental double order submissions.
 
 3. **1-Minute Enterprise DWMA Dynamic Pricing Engine**:
    - **Settlement Interval**: Authoritative 60-second cycle executed by Spring Boot scheduler.
@@ -52,77 +71,80 @@ A production-ready retail management system for fresh juice bars featuring a **2
      - **Low Demand / Zero Demand ($R_d < 0.90$)**: $-₹1.00$
    - **Step Movement Invariant**: Every normal settlement changes price by strictly $+₹1.00, ₹0.00, \text{ or } -₹1.00$.
    - **Bounded Clamping & Floor Protection**: $P_{\text{new}} = \max(\text{minCupPrice}, \min(\text{maxCupPrice}, P_{\text{current}} + \Delta P))$.
-     *(Example: ₹18.00 with decay clamped at floor ₹18.00 yields ₹18.00)*.
 
-4. **Market Crash Routine**:
-   - Panic floor pricing ($₹18.00$) for all juice varieties.
+4. **Manual Price Lock Override**:
+   - Allows administrators to manually lock a price in PostgreSQL.
+   - Dynamic pricing scheduler respects manual locks until released.
+   - Persists across hard browser refreshes.
+
+5. **Market Crash Routine & Pre-Crash Recovery**:
+   - Instant floor pricing ($₹18.00$) for all juice varieties.
    - Real-time alert broadcast via STOMP WebSocket on `/topic/market-crash`.
+   - On crash conclusion, restores exact pre-crash price snapshot to database and clients.
 
-5. **Real-Time WebSocket STOMP Engine**:
-   - Live price updates broadcast on `/topic/prices`, `/topic/pricing-config`, and `/topic/led-display`.
-   - POS, Admin Panel, LED Display, and Sandbox Simulator receive instant reactive updates.
+6. **Secure WebSockets & Real-Time Synchronization**:
+   - Auto-negotiates `ws://` locally and `wss://` on HTTPS production to eliminate mixed-content errors.
+   - Exponential backoff reconnect and duplicate subscription cleanup guards.
 
 ---
 
-## 🚀 Getting Started
+## 💻 Local Development Setup
 
-### System Requirements
-- **Java 24 / 21+** & **Maven 3.9+**
+### 1. Prerequisites
+- **Java 21+** & **Maven 3.9+**
 - **Node.js 18+**
-- **PostgreSQL 18.3** service (`postgresql-x64-18`) on `localhost:5432`
+- **PostgreSQL 16+** on `localhost:5432`
 
----
-
-## 💻 Startup Commands (PowerShell)
-
-### 1. Verify PostgreSQL Database Service
+### 2. Start All Services Concurrently
+From the root repository directory:
 ```powershell
-Get-Service -Name postgresql-x64-18
-```
-
-### 2. Start Spring Boot Backend Server (Port 8088)
-```powershell
-cd "D:\Juice Dynamic Price Project\backend"
-.\mvnw.cmd spring-boot:run
-```
-- **Backend URL:** `http://localhost:8088`
-- **Health Check:** `http://localhost:8088/api/health`
-
-### 3. Start Both Frontend Applications Simultaneously
-From the root directory:
-```powershell
-cd "D:\Juice Dynamic Price Project"
 npm run dev
 ```
-- **Customer POS Web:** `http://localhost:8000`
+This starts:
+- **Backend API & WebSocket:** `http://localhost:8088`
+- **Customer POS:** `http://localhost:8000`
 - **Admin Control Center:** `http://localhost:8001`
+
+### 3. Individual Startup Commands
+```powershell
+# Spring Boot Backend
+cd backend
+.\mvnw.cmd spring-boot:run
+
+# Customer POS
+cd customer-web
+npm start
+
+# Admin Panel
+cd admin-panel
+npm start
+```
 
 ---
 
 ## 🧪 Running Automated Tests
 
-Run the full Maven JUnit test suite:
+Run the full JUnit test suite (100% passing):
 ```powershell
-cd "D:\Juice Dynamic Price Project\backend"
+cd backend
 .\mvnw.cmd clean test
 ```
 
 Build production JAR package:
 ```powershell
-cd "D:\Juice Dynamic Price Project\backend"
-.\mvnw.cmd clean package
+cd backend
+.\mvnw.cmd clean package -DskipTests
 ```
 
 ---
 
 ## 📑 Project Structure
 
-```
-├── backend/            # Spring Boot 3.3 Java 24 REST API server & Flyway migrations
-├── customer-web/       # Customer POS application (Port 8000)
-├── admin-panel/        # Admin Control Center & Pricing Simulator (Port 8001)
-├── docs/               # API_DOCUMENTATION, DYNAMIC_PRICING, JUICE_INVENTORY
-├── DEMO_CHECKLIST.md   # Pre-demo verification checklist
-├── TROUBLESHOOTING.md  # Port cleanup & error resolution guide
-└── README.md
+```text
+├── admin-panel/        # Admin Control Center & Pricing Simulator (Port 8001 / Vercel)
+├── backend/            # Spring Boot REST API, STOMP broker & Flyway migrations (Port 8088)
+├── customer-web/       # Customer POS application & LED Display (Port 8000 / Vercel)
+├── docs/               # Architecture, API docs, and DEPLOYMENT.md
+├── index.html          # Unified multi-panel dev portal
+└── package.json        # Concurrent workspace scripts
 ```

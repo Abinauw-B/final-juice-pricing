@@ -36,7 +36,8 @@ class BroadcastService {
 
       const bridgeIframe = document.getElementById('posBridgeFrame');
       if (bridgeIframe && bridgeIframe.contentWindow) {
-        bridgeIframe.contentWindow.postMessage(msg, 'http://localhost:8000');
+        const targetOrigin = (typeof window !== 'undefined' && window.CONFIG && window.CONFIG.POS_URL) ? window.CONFIG.POS_URL : '*';
+        bridgeIframe.contentWindow.postMessage(msg, targetOrigin);
       }
     } catch (e) {}
   }

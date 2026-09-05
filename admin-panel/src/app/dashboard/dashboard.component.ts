@@ -88,10 +88,12 @@ export class DashboardComponent implements OnInit {
     7: 'Lychee Mist'
   };
 
+  apiBaseUrl: string = (typeof window !== 'undefined' && (window as any).API_BASE_URL) || 'http://localhost:8088/api';
+
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.http.get<any[]>('http://localhost:8088/api/batches/active').subscribe({
+    this.http.get<any[]>(`${this.apiBaseUrl}/batches/active`).subscribe({
       next: (data) => {
         if (data && data.length > 0) {
           this.batches = data;

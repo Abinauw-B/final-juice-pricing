@@ -1,6 +1,6 @@
 // Application Constants & Configuration Tokens
 
-export const API_BASE_URL = 'http://localhost:8088/api';
+export const API_BASE_URL = (typeof window !== 'undefined' && (window.API_BASE_URL || (window.CONFIG && window.CONFIG.API_BASE_URL))) || 'http://localhost:8088/api';
 
 export const USER_ROLES = {
   SUPER_ADMIN: 'SUPER_ADMIN',

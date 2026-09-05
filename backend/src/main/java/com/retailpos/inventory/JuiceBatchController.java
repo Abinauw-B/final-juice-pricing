@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/batches")
-@CrossOrigin(origins = "*")
 @SuppressWarnings("null")
 public class JuiceBatchController {
 

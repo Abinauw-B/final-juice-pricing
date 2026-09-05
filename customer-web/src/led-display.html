@@ -28,6 +28,7 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <script src="config.js"></script>
 
   <style>
     /* ==========================================================================
@@ -1635,10 +1636,10 @@
       <button class="btn-action" onclick="toggleFullScreen()" title="Fullscreen Mode">
         ⛶ Fullscreen
       </button>
-      <a href="http://localhost:8000/" target="_blank" class="btn-action btn-action-primary">
+      <a id="navLedPosBtn" href="index.html" target="_blank" class="btn-action btn-action-primary">
         🛒 Open POS
       </a>
-      <a href="http://localhost:8001/" target="_blank" class="btn-action">
+      <a id="navLedAdminBtn" href="https://final-juice-pricing-admin.vercel.app" target="_blank" class="btn-action">
         ⚙️ Admin Panel
       </a>
     </div>
@@ -1809,10 +1810,10 @@
         <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">ORDER FROM TABLE</div>
         <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Scan with mobile to open POS</div>
         <div class="qr-img-box">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://localhost:8000" alt="Scan to Order POS" />
+          <img id="qrPosImg" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Ffinal-juice-pricing.vercel.app" alt="Scan to Order POS" />
         </div>
-        <div style="font-size: 11.5px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan);">
-          http://localhost:8000
+        <div id="qrPosUrlText" style="font-size: 11.5px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan);">
+          https://final-juice-pricing.vercel.app
         </div>
       </div>
 
@@ -1869,10 +1870,7 @@
     /* ==========================================================================
        CONFIGURATION & STATE MANAGEMENT
        ========================================================================== */
-    const CONFIG = {
-      API_BASE_URL: 'http://localhost:8088/api',
-      WS_URL: 'http://localhost:8088/ws'
-    };
+    const CONFIG = window.CONFIG;
 
     let currentTheme = localStorage.getItem('pubexchange_theme') || 'light';
     let products = [];
@@ -2589,7 +2587,7 @@
                 <button class="btn-card-action" onclick="openProductModal(${p.id})">
                   🔍 Details
                 </button>
-                <a href="http://localhost:8000/" target="_blank" class="btn-card-action btn-card-action-pos">
+                <a href="${CONFIG.POS_URL || 'index.html'}" target="_blank" class="btn-card-action btn-card-action-pos">
                   🛒 Buy POS
                 </a>
               </div>
@@ -3641,16 +3639,25 @@
     }
 
     // Health check periodically
+    let backendHealthChecking = false;
     async function checkBackendHealth() {
+      if (backendHealthChecking) return;
+      backendHealthChecking = true;
       const badge = document.getElementById('backendStatusBadge');
       const text = document.getElementById('backendStatusText');
-      if (!badge || !text) return;
+      if (!badge || !text) {
+        backendHealthChecking = false;
+        return;
+      }
 
       try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/health`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/health`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.ok) {
           badge.className = 'status-badge status-badge-online';
-          text.textContent = 'BACKEND ONLINE (8088)';
+          text.textContent = 'BACKEND ONLINE';
         } else {
           badge.className = 'status-badge status-badge-offline';
           text.textContent = 'BACKEND OFFLINE';
@@ -3658,6 +3665,8 @@
       } catch (e) {
         badge.className = 'status-badge status-badge-offline';
         text.textContent = 'BACKEND OFFLINE';
+      } finally {
+        backendHealthChecking = false;
       }
     }
 
@@ -3758,10 +3767,153 @@
       if (activeModalProductId) renderModalChart(activeModalProductId);
     });
 
+    // ═══════ SECURE WEBSOCKET & STOMP CLIENT ═══════
+    let wsReconnectTimer = null;
+    let isWsConnected = false;
+    let isConnectingWS = false;
+    let wsReconnectAttempts = 0;
+    let stompSubscriptions = [];
+
+    function cleanupStompSubscriptions() {
+      if (Array.isArray(stompSubscriptions)) {
+        stompSubscriptions.forEach(sub => {
+          try { if (sub && typeof sub.unsubscribe === 'function') sub.unsubscribe(); } catch (e) { }
+        });
+      }
+      stompSubscriptions = [];
+    }
+
+    function connectWebSocket() {
+      if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
+      if (isConnectingWS || isWsConnected) return;
+
+      if (wsReconnectTimer) {
+        clearTimeout(wsReconnectTimer);
+        wsReconnectTimer = null;
+      }
+
+      isConnectingWS = true;
+      try {
+        const socket = new SockJS(CONFIG.WS_URL);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+
+        stompClient.connect({}, function () {
+          isConnectingWS = false;
+          isWsConnected = true;
+          wsReconnectAttempts = 0;
+
+          const badge = document.getElementById('backendStatusBadge');
+          const text = document.getElementById('backendStatusText');
+          if (badge && text) {
+            badge.className = 'status-badge status-badge-online';
+            text.textContent = 'BACKEND ONLINE';
+          }
+
+          cleanupStompSubscriptions();
+          fetchProducts();
+          fetchPricingTiming();
+          fetchPricingConfiguration();
+          checkMarketCrashStatus();
+          checkMarketState();
+
+          const subProds = stompClient.subscribe('/topic/products', function () {
+            fetchProducts();
+          });
+          stompSubscriptions.push(subProds);
+
+          const subPrices = stompClient.subscribe('/topic/prices', function () {
+            fetchProducts();
+          });
+          stompSubscriptions.push(subPrices);
+
+          const subLed = stompClient.subscribe('/topic/led-display', function () {
+            fetchProducts();
+          });
+          stompSubscriptions.push(subLed);
+
+          const subSettle = stompClient.subscribe('/topic/settlement', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (res.type === 'PRICING_TIMING_CHANGED' || res.intervalSeconds) {
+                  updatePricingTimingState(res);
+                }
+              } catch (e) { }
+            }
+            fetchProducts();
+            fetchPricingConfiguration();
+          });
+          stompSubscriptions.push(subSettle);
+
+          const subCrash = stompClient.subscribe('/topic/market-crash', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (res && res.active) {
+                  triggerMarketCrash(res.remainingSeconds || 180);
+                } else if (res && res.active === false) {
+                  stopMarketCrash();
+                } else {
+                  checkMarketCrashStatus();
+                }
+              } catch (e) {
+                checkMarketCrashStatus();
+              }
+            }
+          });
+          stompSubscriptions.push(subCrash);
+
+        }, function () {
+          isConnectingWS = false;
+          isWsConnected = false;
+          cleanupStompSubscriptions();
+          wsReconnectAttempts++;
+
+          const badge = document.getElementById('backendStatusBadge');
+          const text = document.getElementById('backendStatusText');
+          if (badge && text) {
+            badge.className = 'status-badge status-badge-offline';
+            text.textContent = 'BACKEND CONNECTING...';
+          }
+
+          const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
+          wsReconnectTimer = setTimeout(() => {
+            connectWebSocket();
+          }, backoffDelay);
+        });
+      } catch (err) {
+        isConnectingWS = false;
+        isWsConnected = false;
+        cleanupStompSubscriptions();
+        wsReconnectAttempts++;
+        const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
+        wsReconnectTimer = setTimeout(() => {
+          connectWebSocket();
+        }, backoffDelay);
+      }
+    }
+
+    // Dynamic Navigation & QR Code Setup
+    function setupDynamicLinksAndQr() {
+      const qrPos = CONFIG.POS_URL || window.location.origin;
+      const qrImg = document.getElementById('qrPosImg');
+      if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrPos)}`;
+      const qrText = document.getElementById('qrPosUrlText');
+      if (qrText) qrText.textContent = qrPos;
+
+      const posBtn = document.getElementById('navLedPosBtn');
+      if (posBtn) posBtn.href = CONFIG.POS_URL || 'index.html';
+      const adminBtn = document.getElementById('navLedAdminBtn');
+      if (adminBtn) adminBtn.href = CONFIG.ADMIN_URL || '#';
+    }
+
     setInterval(checkBackendHealth, 5000);
     setInterval(checkMarketState, 5000);
 
     // Initial Execution
+    setupDynamicLinksAndQr();
+    checkBackendHealth();
     checkMarketState();
     fetchPricingTiming();
     fetchPricingConfiguration();

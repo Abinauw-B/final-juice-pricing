@@ -137,15 +137,16 @@ public class PricingConfigurationService {
     public static final java.util.Set<BigDecimal> ALLOWED_DELTAS = java.util.Set.of(
             new BigDecimal("1.00"),
             BigDecimal.ZERO,
-            new BigDecimal("-1.00")
+            new BigDecimal("-1.00"),
+            new BigDecimal("-2.00")
     );
 
     public static void validatePriceMovement(BigDecimal delta) {
         if (delta == null) return;
         boolean isAllowed = ALLOWED_DELTAS.stream().anyMatch(allowed -> allowed.compareTo(delta) == 0);
         if (!isAllowed) {
-            log.error("[PRICE_MOVEMENT_VALIDATION] Dynamic price movement {} is not in allowed set {+1.00, 0.00, -1.00}!", delta);
-            throw new IllegalStateException("Dynamic price movement must strictly be +1.00, 0.00, or -1.00. Got: " + delta);
+            log.error("[PRICE_MOVEMENT_VALIDATION] Dynamic price movement {} is not in allowed set {+1.00, 0.00, -1.00, -2.00}!", delta);
+            throw new IllegalStateException("Dynamic price movement must strictly be +1.00, 0.00, -1.00, or -2.00. Got: " + delta);
         }
     }
 

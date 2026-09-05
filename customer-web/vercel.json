@@ -1,0 +1,11 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/src/index.html" },
+    { "source": "/led-display", "destination": "/src/led-display.html" },
+    { "source": "/led-display.html", "destination": "/src/led-display.html" },
+    { "source": "/bridge.html", "destination": "/src/bridge.html" },
+    { "source": "/config.js", "destination": "/src/config.js" },
+    { "source": "/(.*)", "destination": "/src/$1" }
+  ]
+}

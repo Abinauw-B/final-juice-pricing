@@ -1,7 +1,7 @@
 package com.retailpos.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,8 +12,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
 public class HealthController {
+
+    @Value("${server.port:8088}")
+    private int serverPort;
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -36,11 +38,11 @@ public class HealthController {
         health.put("status", dbOk ? "UP" : "DOWN");
         health.put("database", dbOk ? "CONNECTED" : "DISCONNECTED");
         health.put("service", "dynamic-pricing-backend");
-        health.put("port", 8088);
+        health.put("port", serverPort);
         health.put("timestamp", java.time.LocalDateTime.now().toString());
 
         Map<String, Object> services = new LinkedHashMap<>();
-        services.put("springApi", Map.of("name", "Spring REST API", "status", "UP", "detail", "Port 8088"));
+        services.put("springApi", Map.of("name", "Spring REST API", "status", "UP", "detail", "Port " + serverPort));
         services.put("postgresDb", Map.of("name", "PostgreSQL 16 DB", "status", dbOk ? "UP" : "DOWN", "detail", dbOk ? "Connected (Port 5432)" : "Disconnected"));
         services.put("websocket", Map.of("name", "STOMP WebSocket", "status", "UP", "detail", "Active Broadcast /topic/prices"));
 

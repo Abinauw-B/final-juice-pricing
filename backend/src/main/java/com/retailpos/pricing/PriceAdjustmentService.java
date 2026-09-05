@@ -280,10 +280,10 @@ public class PriceAdjustmentService {
                     .build();
         }
 
-        // Check Explicit Admin Manual Override Mode
-        if ("MANUAL_OVERRIDE".equalsIgnoreCase(product.getPricingMode())) {
-            log.info("[DWMA SETTLEMENT] ProductId={} ({}) is in MANUAL_OVERRIDE mode. Price held constant at ₹{}.",
-                    productId, product.getName(), oldPrice);
+        // Check Explicit Admin Manual Override / Price Lock Mode
+        if ("MANUAL_OVERRIDE".equalsIgnoreCase(product.getPricingMode()) || "MANUAL_LOCK".equalsIgnoreCase(product.getPricingMode()) || "LOCKED".equalsIgnoreCase(product.getPricingMode())) {
+            log.info("[DWMA SETTLEMENT] ProductId={} ({}) is in {} mode. Price held constant at ₹{}.",
+                    productId, product.getName(), product.getPricingMode(), oldPrice);
             return PriceEvaluationResult.builder()
                     .productId(productId)
                     .flavour(product.getFlavour())
@@ -295,9 +295,9 @@ public class PriceAdjustmentService {
                     .weightedSales(1.0)
                     .targetSales(1.0)
                     .rawW0(orderCount)
-                    .demandLevelCategory("MANUAL_OVERRIDE")
-                    .explanation("Product is in MANUAL_OVERRIDE mode. Price held constant at ₹" + oldPrice + " by Admin.")
-                    .statusReason("MANUAL_OVERRIDE_HOLD")
+                    .demandLevelCategory("MANUAL_LOCK")
+                    .explanation("Product is in " + product.getPricingMode() + " mode. Price held constant at ₹" + oldPrice + " by Admin.")
+                    .statusReason("MANUAL_LOCK_HOLD")
                     .build();
         }
 
@@ -369,32 +369,18 @@ public class PriceAdjustmentService {
             reason = "STABLE_DEMAND";
             demandLevelCategory = "NORMAL";
         } else if (rd.compareTo(lowThresh) >= 0) {
-            if (oldPrice.compareTo(floor) <= 0) {
-                deltaP = new BigDecimal("1.00");
-                movement = 1;
-                reason = "BARGAIN_FLOOR_REBOUND";
-                demandLevelCategory = "BARGAIN_BOUNCE";
-            } else {
-                deltaP = new BigDecimal("-1.00");
-                movement = -1;
-                reason = "BELOW_NORMAL_DEMAND_DECAY";
-                demandLevelCategory = "LOW";
-            }
+            deltaP = new BigDecimal("-1.00");
+            movement = -1;
+            reason = "BELOW_NORMAL_DEMAND_DECAY";
+            demandLevelCategory = "LOW";
         } else {
-            if (oldPrice.compareTo(floor) <= 0) {
-                deltaP = new BigDecimal("1.00");
-                movement = 1;
-                reason = "BARGAIN_FLOOR_REBOUND";
-                demandLevelCategory = "BARGAIN_BOUNCE";
-            } else {
-                deltaP = new BigDecimal("-1.00");
-                movement = -1;
-                reason = "ZERO_DEMAND_DECAY";
-                demandLevelCategory = "VERY_LOW";
-            }
+            deltaP = new BigDecimal("-2.00");
+            movement = -2;
+            reason = "ZERO_DEMAND_DECAY";
+            demandLevelCategory = "VERY_LOW";
         }
 
-        // Validate strictly allowed price movement (+1.00, 0.00, -1.00)
+        // Validate strictly allowed price movement (+1.00, 0.00, -1.00, -2.00)
         PricingConfigurationService.validatePriceMovement(deltaP);
 
         // 6. Bounded price: MAX(minCupPrice, MIN(maxCupPrice, oldPrice + deltaP))
@@ -522,7 +508,7 @@ public class PriceAdjustmentService {
         boolean changed = oldPrice.compareTo(newPrice) != 0;
 
         product.setCurrentCupPrice(newPrice);
-        product.setPricingMode("MANUAL_OVERRIDE");
+        product.setPricingMode("MANUAL_LOCK");
         if (changed) {
             product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
         }
@@ -544,8 +530,8 @@ public class PriceAdjustmentService {
                     .targetSales(1.0)
                     .calculationWindowStart(now)
                     .calculationWindowEnd(now)
-                    .reason("MANUAL_PRICE_OVERRIDE")
-                    .explanation(reason != null && !reason.isBlank() ? reason : "Manual price override set by Admin to ₹" + newPrice)
+                    .reason(reason != null && !reason.isBlank() ? reason : "MANUAL_PRICE_LOCK")
+                    .explanation(reason != null && !reason.isBlank() ? reason : "Manual price lock set by Admin to ₹" + newPrice)
                     .createdAt(now)
                     .build();
             priceHistoryRepository.save(history);
@@ -561,9 +547,9 @@ public class PriceAdjustmentService {
                 .demandRatio(1.0)
                 .weightedSales(1.0)
                 .targetSales(1.0)
-                .demandLevelCategory("MANUAL_OVERRIDE")
-                .explanation("Price manually set to ₹" + newPrice + " (MANUAL_OVERRIDE lock active)")
-                .statusReason("MANUAL_PRICE_OVERRIDE")
+                .demandLevelCategory("MANUAL_LOCK")
+                .explanation("Price manually locked at ₹" + newPrice + " (MANUAL_LOCK active)")
+                .statusReason("MANUAL_PRICE_LOCK")
                 .build();
     }
 

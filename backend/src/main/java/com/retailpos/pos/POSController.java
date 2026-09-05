@@ -19,7 +19,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping({"/api/pos", "/api"})
-@CrossOrigin(origins = "*")
 @SuppressWarnings("null")
 public class POSController {
 
