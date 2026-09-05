@@ -13,7 +13,7 @@ import java.util.Arrays;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    @Value("${cors.allowed-origins:https://final-juice-pricing.vercel.app,https://final-juice-pricing-admin.vercel.app,http://localhost:8000,http://localhost:8001,http://localhost:8002}")
+    @Value("${cors.allowed-origins:https://final-juice-pricing-admin.vercel.app,https://final-juice-pricing.vercel.app,http://localhost:8000,http://localhost:8001,http://localhost:8002}")
     private String allowedOrigins;
 
     @Override
@@ -26,14 +26,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(@org.springframework.lang.NonNull StompEndpointRegistry registry) {
         String[] origins = Arrays.stream(allowedOrigins.split(","))
             .map(String::trim)
-            .filter(s -> !s.isEmpty())
+            .filter(s -> !s.isEmpty() && !s.equals("*"))
             .toArray(String[]::new);
 
         if (origins.length == 0) {
-            origins = new String[]{"*"};
+            origins = new String[]{
+                "https://final-juice-pricing-admin.vercel.app",
+                "https://final-juice-pricing.vercel.app"
+            };
         }
 
-        registry.addEndpoint("/ws").setAllowedOriginPatterns(origins).withSockJS();
-        registry.addEndpoint("/ws").setAllowedOriginPatterns(origins);
+        // Register endpoints with SockJS fallback and pure WSS support
+        registry.addEndpoint("/ws", "/ws/prices", "/ws/pos")
+            .setAllowedOriginPatterns(origins)
+            .withSockJS();
+
+        registry.addEndpoint("/ws", "/ws/prices", "/ws/pos")
+            .setAllowedOriginPatterns(origins);
     }
 }

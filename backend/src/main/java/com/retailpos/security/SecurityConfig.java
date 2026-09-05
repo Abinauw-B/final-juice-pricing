@@ -46,12 +46,16 @@ public class SecurityConfig {
 
     private List<String> parseAllowedOrigins() {
         if (allowedOrigins == null || allowedOrigins.trim().isEmpty()) {
-            return List.of("*");
+            return List.of("https://final-juice-pricing-admin.vercel.app", "https://final-juice-pricing.vercel.app");
         }
-        return Arrays.stream(allowedOrigins.split(","))
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
             .map(String::trim)
-            .filter(s -> !s.isEmpty())
+            .filter(s -> !s.isEmpty() && !s.equals("*"))
             .collect(Collectors.toList());
+        if (origins.isEmpty()) {
+            return List.of("https://final-juice-pricing-admin.vercel.app", "https://final-juice-pricing.vercel.app");
+        }
+        return origins;
     }
 
     @Bean

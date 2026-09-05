@@ -9,5 +9,10 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
+
+ENV PORT=8088
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
 EXPOSE 8088
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Cloud container entrypoint honoring dynamic provider PORT and JVM arguments
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT} -jar app.jar"]
