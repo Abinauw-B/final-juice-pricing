@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
+@SuppressWarnings("null")
 public class SecurityConfig {
 
     @Value("${cors.allowed-origins:https://final-juice-pricing.vercel.app,https://final-juice-pricing-admin.vercel.app,http://localhost:8000,http://localhost:8001,http://localhost:8002}")
@@ -77,7 +78,7 @@ public class SecurityConfig {
     public WebMvcConfigurer webMvcConfigurer() {
         return new WebMvcConfigurer() {
             @Override
-            public void addCorsMappings(CorsRegistry registry) {
+            public void addCorsMappings(@org.springframework.lang.NonNull CorsRegistry registry) {
                 List<String> origins = parseAllowedOrigins();
                 registry.addMapping("/**")
                     .allowedOriginPatterns(origins.toArray(new String[0]))

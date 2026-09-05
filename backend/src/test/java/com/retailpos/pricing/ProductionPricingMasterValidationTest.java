@@ -12,7 +12,6 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -240,6 +239,7 @@ public class ProductionPricingMasterValidationTest {
     void test_09_ManualRelease() {
         priceAdjustmentService.updateManualPrice(testProduct.getId(), new BigDecimal("27.00"), "MANUAL_PRICE_LOCK");
         PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.releaseManualOverride(testProduct.getId());
+        assertNotNull(res);
 
         Product persisted = productRepository.findById(testProduct.getId()).orElseThrow();
         assertEquals("DYNAMIC", persisted.getPricingMode());
