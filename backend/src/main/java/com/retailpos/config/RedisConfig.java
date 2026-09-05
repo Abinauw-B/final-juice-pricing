@@ -1,3 +1,4 @@
+
 package com.retailpos.config;
 
 import org.slf4j.Logger;
@@ -46,18 +47,21 @@ public class RedisConfig {
                 if (uri.getUserInfo() != null && !uri.getUserInfo().isEmpty()) {
                     String[] userParts = uri.getUserInfo().split(":", 2);
                     if (userParts.length == 2) {
-                        if (!userParts[0].isEmpty()) config.setUsername(userParts[0]);
+                        if (!userParts[0].isEmpty())
+                            config.setUsername(userParts[0]);
                         config.setPassword(RedisPassword.of(userParts[1]));
                     } else if (userParts.length == 1) {
                         config.setPassword(RedisPassword.of(userParts[0]));
                     }
                 }
 
-                LettuceClientConfiguration.LettuceClientConfigurationBuilder clientConfig = LettuceClientConfiguration.builder();
+                LettuceClientConfiguration.LettuceClientConfigurationBuilder clientConfig = LettuceClientConfiguration
+                        .builder();
                 if ("rediss".equalsIgnoreCase(uri.getScheme())) {
                     clientConfig.useSsl();
                 }
-                log.info("Redis configured via REDIS_URL -> host: {}, port: {}, ssl: {}", host, port, "rediss".equalsIgnoreCase(uri.getScheme()));
+                log.info("Redis configured via REDIS_URL -> host: {}, port: {}, ssl: {}", host, port,
+                        "rediss".equalsIgnoreCase(uri.getScheme()));
                 return new LettuceConnectionFactory(config, clientConfig.build());
             }
 
