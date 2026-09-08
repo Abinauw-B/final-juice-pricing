@@ -12,16 +12,27 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
-  <!-- ApexCharts for Professional Visual Analytics -->
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script>
-    // Suppress Chromium legacy unload permission violation warnings from SockJS
+    // Suppress Chromium legacy unload violation warnings & mark touch listeners passive to prevent scroll-blocking violations
     (function () {
-      const origAdd = window.addEventListener;
-      window.addEventListener = function (type, listener, options) {
-        if (type === 'unload') return;
-        return origAdd.call(this, type, listener, options);
-      };
+      if (typeof EventTarget !== 'undefined' && EventTarget.prototype && EventTarget.prototype.addEventListener) {
+        const origAdd = EventTarget.prototype.addEventListener;
+        EventTarget.prototype.addEventListener = function (type, listener, options) {
+          if (type === 'unload') return;
+          if (type === 'touchstart' || type === 'touchmove') {
+            if (typeof options === 'boolean') {
+              options = { capture: options, passive: true };
+            } else if (typeof options === 'object' && options !== null) {
+              if (options.passive === undefined) {
+                options.passive = true;
+              }
+            } else if (options === undefined) {
+              options = { passive: true };
+            }
+          }
+          return origAdd.call(this, type, listener, options);
+        };
+      }
       if (window.attachEvent) {
         const origAttach = window.attachEvent;
         window.attachEvent = function (event, listener) {
@@ -31,6 +42,8 @@
       }
     })();
   </script>
+  <!-- ApexCharts for Professional Visual Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
   <script src="config.js"></script>
@@ -2314,6 +2327,7 @@
         </div>
       </div>
       <form id="profilePasswordForm" onsubmit="event.preventDefault(); updateProfilePassword(event);" autocomplete="off">
+        <input type="text" name="username" value="superadmin" autocomplete="username" style="display: none;" aria-hidden="true" readonly tabindex="-1">
         <div style="margin-bottom: 14px;">
           <label
             for="profileNewPass"
@@ -3074,14 +3088,15 @@
     }
 
     // Tab Visibility & Chart Optimization Engine
+    let activeAdminTab = (location.hash ? location.hash.replace('#', '') : null) || localStorage.getItem('pubexchange_active_tab') || 'dashboard';
     let dashChartsNeedUpdate = false;
     function isDashboardTabActive() {
-      const dashView = document.getElementById('view-dashboard');
-      return Boolean(dashView && dashView.style.display !== 'none');
+      return activeAdminTab === 'dashboard';
     }
 
     // Tab Navigation Switcher (Section 3)
     function switchTab(tabName) {
+      activeAdminTab = tabName;
       try {
         localStorage.setItem('pubexchange_active_tab', tabName);
         if (tabName && location.hash !== '#' + tabName) {
@@ -3494,6 +3509,7 @@
     // ══════════════════════════════════════════════════════════════════════
     let currentRevenueChartMode = 'cumulative'; // 'cumulative' | 'velocity' | 'both'
     let cachedRevenueOrders = [];
+    let lastRevenueCategoriesStr = '';
 
     function setRevenueChartMode(mode) {
       currentRevenueChartMode = mode;
@@ -3726,8 +3742,10 @@
         };
         revenueChartInstance = new ApexCharts(revContainer, options);
         revenueChartInstance.render();
+        lastRevenueCategoriesStr = categories.join('|');
       } else {
         if (forceRedraw) {
+          lastRevenueCategoriesStr = categories.join('|');
           revenueChartInstance.updateOptions({
             xaxis: { categories: categories },
             yaxis: yaxisConfig,
@@ -3751,9 +3769,13 @@
           }, false, false);
           revenueChartInstance.updateSeries(series, true);
         } else {
-          revenueChartInstance.updateOptions({
-            xaxis: { categories: categories }
-          }, false, false);
+          const catKey = categories.join('|');
+          if (catKey !== lastRevenueCategoriesStr) {
+            lastRevenueCategoriesStr = catKey;
+            revenueChartInstance.updateOptions({
+              xaxis: { categories: categories }
+            }, false, false);
+          }
           revenueChartInstance.updateSeries(series, true);
         }
       }
@@ -6617,6 +6639,11 @@
       }
 
       await ensureAdminAuthenticated();
+
+      const hashTab = location.hash ? location.hash.replace('#', '') : null;
+      const savedActiveTab = hashTab || localStorage.getItem('pubexchange_active_tab') || 'dashboard';
+      switchTab(savedActiveTab);
+
       checkAdminBackendHealth();
       setInterval(checkAdminBackendHealth, 5000);
       checkMarketCrashStatus();
@@ -6633,10 +6660,6 @@
       loadLivePricingProducts();
       loadPricingAuditLogs();
       loadMarketCrashEventHistory();
-
-      const hashTab = location.hash ? location.hash.replace('#', '') : null;
-      const savedActiveTab = hashTab || localStorage.getItem('pubexchange_active_tab') || 'dashboard';
-      switchTab(savedActiveTab);
 
       renderReports();
       fetchLiveBotStatus();
