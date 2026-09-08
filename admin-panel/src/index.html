@@ -1468,6 +1468,7 @@
                     <th>Floor (₹)</th>
                     <th>Ceiling (₹)</th>
                     <th>Target / 1-Min</th>
+                    <th>Weighted Sales</th>
                     <th>Manual Price Control</th>
                     <th>Action</th>
                   </tr>
@@ -2225,7 +2226,7 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
         <div>
           <label
             style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Target
@@ -2235,11 +2236,19 @@
         </div>
         <div>
           <label
-            style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Volatility
-            Factor</label>
-          <input type="number" id="editPricingVolatility" step="0.01" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
-            style="width: 100%; padding: 10px; font-weight: 700;">
+            style="display: block; font-size: 12px; font-weight: 700; color: #059669; margin-bottom: 4px;">📊
+            Weighted Sales (S_w, cups/min)</label>
+          <input type="number" id="editPricingWeightedSales" step="0.05" min="0" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+            style="width: 100%; padding: 10px; font-weight: 700; border-color: #6ee7b7;">
         </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label
+          style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Volatility
+          Factor</label>
+        <input type="number" id="editPricingVolatility" step="0.01" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+          style="width: 100%; padding: 10px; font-weight: 700;">
       </div>
 
       <div style="display: flex; gap: 12px; justify-content: flex-end;">
@@ -4869,6 +4878,31 @@
       }
     }
 
+    async function saveProductWeightedSales(productId) {
+      const input = document.getElementById('weightedSalesInput_' + productId);
+      if (!input) return;
+      const newWeighted = parseFloat(input.value);
+      if (isNaN(newWeighted) || newWeighted < 0) {
+        showToast('Weighted sales must be 0 or greater', 'warning');
+        return;
+      }
+
+      try {
+        const res = await apiFetch(`/admin/pricing/products/${productId}/config`, {
+          method: 'PUT',
+          body: JSON.stringify({ weightedSales: newWeighted })
+        });
+        if (!res.ok) throw new Error('Failed to update product weighted sales');
+        const updated = await res.json();
+        showToast(`✅ Saved Weighted Sales for "${updated.productName || 'Product'}": ${newWeighted} cups/min`, 'success');
+        await loadPricingConfiguration();
+        await loadPricingAuditLogs();
+        await loadLivePricingProducts();
+      } catch (err) {
+        showToast(`🔴 Failed to save weighted sales: ${err.message}`, 'danger');
+      }
+    }
+
     // Live Autonomous Trading Bot Handler
     async function fetchLiveBotStatus() {
       try {
@@ -5019,6 +5053,12 @@
           if (tInput && activeId !== `targetInput_${pid}`) {
             tInput.value = target;
           }
+
+          const weightedSales = Number(p.weightedSales !== undefined && p.weightedSales !== null ? p.weightedSales : target).toFixed(2);
+          const wInput = document.getElementById(`weightedSalesInput_${pid}`);
+          if (wInput && activeId !== `weightedSalesInput_${pid}`) {
+            wInput.value = weightedSales;
+          }
         });
         return;
       }
@@ -5041,6 +5081,7 @@
         const minPrice = Number(p.minCupPrice || 20).toFixed(2);
         const maxPrice = Number(p.maxCupPrice || 30).toFixed(2);
         const target = p.targetSalesPer1Minute || p.targetSales || (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55);
+        const weightedSales = Number(p.weightedSales !== undefined && p.weightedSales !== null ? p.weightedSales : target).toFixed(2);
         const isOverride = (p.pricingMode === 'MANUAL_OVERRIDE' || p.pricingMode === 'MANUAL_LOCK' || p.pricingMode === 'LOCKED');
 
         const modeBadge = isOverride
@@ -5081,6 +5122,12 @@
                 <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669; cursor: pointer;" onclick="saveProductTargetSales(${pid})" title="Save Target Sales to PostgreSQL">💾</button>
               </div>
             </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <input id="weightedSalesInput_${pid}" type="number" step="0.05" min="0" value="${weightedSales}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveProductWeightedSales(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #10b981; border-radius: 6px; font-size: 13px;" title="Weighted sales (S_w). Press Enter or click Save.">
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669; cursor: pointer;" onclick="saveProductWeightedSales(${pid})" title="Save Weighted Sales to PostgreSQL">💾</button>
+              </div>
+            </td>
             <td>${overrideControls}</td>
             <td>
               <div style="display: flex; gap: 6px;">
@@ -5118,6 +5165,7 @@
       document.getElementById('editPricingMinPrice').value = p.minCupPrice || 20;
       document.getElementById('editPricingMaxPrice').value = p.maxCupPrice || 30;
       document.getElementById('editPricingTargetSales').value = p.targetSalesPer1Minute || (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55);
+      document.getElementById('editPricingWeightedSales').value = p.weightedSales !== undefined && p.weightedSales !== null ? p.weightedSales : (p.targetSalesPer1Minute || 0.55);
       document.getElementById('editPricingVolatility').value = p.volatility || 0.08;
 
       document.getElementById('editProductPricingModal').style.display = 'flex';
@@ -5139,6 +5187,7 @@
       const minPrice = parseFloat(document.getElementById('editPricingMinPrice').value) || 20;
       const maxPrice = parseFloat(document.getElementById('editPricingMaxPrice').value) || 30;
       const targetSales = parseFloat(document.getElementById('editPricingTargetSales').value) || 0.55;
+      const weightedSales = parseFloat(document.getElementById('editPricingWeightedSales').value) || targetSales;
       const volatility = parseFloat(document.getElementById('editPricingVolatility').value) || 0.08;
 
       const payload = {
@@ -5151,6 +5200,7 @@
         maxCupPrice: maxPrice,
         targetSales: targetSales,
         targetSalesPer1Minute: targetSales,
+        weightedSales: weightedSales,
         volatility: volatility
       };
 
@@ -5158,6 +5208,11 @@
         const res = await apiFetch(`/pos/products/${productId}`, {
           method: 'PUT',
           body: JSON.stringify(payload)
+        });
+
+        await apiFetch(`/admin/pricing/products/${productId}/config`, {
+          method: 'PUT',
+          body: JSON.stringify({ targetSales, weightedSales })
         });
 
         await apiFetch(`/pricing/products/${productId}/price?newPrice=${currentPrice}&reason=MANUAL_ADMIN_OVERRIDE`, {

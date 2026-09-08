@@ -230,7 +230,8 @@ public class PricingConfigurationService {
                     p.getCurrentCupPrice() != null ? p.getCurrentCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("25.00"),
                     p.getMinCupPrice() != null ? p.getMinCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("20.00"),
                     p.getMaxCupPrice() != null ? p.getMaxCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("30.00"),
-                    p.getPricingMode()
+                    p.getPricingMode(),
+                    p.getWeightedSales()
             ));
         }
 
@@ -384,6 +385,7 @@ public class PricingConfigurationService {
         long newVersion = oldVersion + 1;
 
         Double oldTarget = product.getTargetSalesPer1Minute();
+        Double oldWeighted = product.getWeightedSales();
 
         if (update.getProductName() != null && !update.getProductName().isBlank()) {
             product.setName(update.getProductName().trim());
@@ -398,6 +400,9 @@ public class PricingConfigurationService {
         } else if (update.getTargetSalesPer1Minute() != null) {
             product.setTargetSalesPer1Minute(update.getTargetSalesPer1Minute());
             product.setTargetSalesPer2Minute(update.getTargetSalesPer1Minute() * 2.0);
+        }
+        if (update.getWeightedSales() != null) {
+            product.setWeightedSales(update.getWeightedSales());
         }
         if (update.getPricingMode() != null && !update.getPricingMode().isBlank()) {
             product.setPricingMode(update.getPricingMode());
@@ -415,6 +420,11 @@ public class PricingConfigurationService {
         if (update.getTargetSales() != null && !Objects.equals(oldTarget, update.getTargetSales())) {
             auditLogRepository.save(new PricingConfigAuditLog(
                     user, "PRODUCT_TARGET_SALES", productId, String.valueOf(oldTarget), String.valueOf(update.getTargetSales()), oldVersion, newVersion, reason
+            ));
+        }
+        if (update.getWeightedSales() != null && !Objects.equals(oldWeighted, update.getWeightedSales())) {
+            auditLogRepository.save(new PricingConfigAuditLog(
+                    user, "PRODUCT_WEIGHTED_SALES", productId, String.valueOf(oldWeighted), String.valueOf(update.getWeightedSales()), oldVersion, newVersion, reason
             ));
         }
 
@@ -452,7 +462,8 @@ public class PricingConfigurationService {
                 product.getCurrentCupPrice(),
                 product.getMinCupPrice(),
                 product.getMaxCupPrice(),
-                product.getPricingMode()
+                product.getPricingMode(),
+                product.getWeightedSales()
         );
     }
 

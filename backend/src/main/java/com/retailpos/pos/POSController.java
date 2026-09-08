@@ -166,6 +166,7 @@ public class POSController {
                 existing.setTargetSalesPer1Minute(details.getTargetSalesPer2Minute() / 2.0);
             }
             if (details.getTargetOrders() != null) existing.setTargetOrders(details.getTargetOrders());
+            if (details.getWeightedSales() != null) existing.setWeightedSales(details.getWeightedSales());
             if (details.getVolatility() != null) existing.setVolatility(details.getVolatility());
             existing.setLastPriceChangeTimestamp(LocalDateTime.now());
             existing.setPriceVersion(existing.getPriceVersion() != null ? existing.getPriceVersion() + 1 : 1);

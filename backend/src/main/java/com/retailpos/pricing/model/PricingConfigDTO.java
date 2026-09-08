@@ -165,15 +165,22 @@ public class PricingConfigDTO {
         @JsonAlias({"maxPrice", "ceilPrice", "ceilingPrice", "maxCupPrice"})
         private BigDecimal maxCupPrice;
 
+        @JsonAlias({"weightedSales", "salesWeight"})
+        private Double weightedSales;
+
         private String pricingMode;
 
         public ProductConfig() {}
 
         public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice) {
-            this(productId, productName, flavour, targetSales, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, "DYNAMIC");
+            this(productId, productName, flavour, targetSales, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, "DYNAMIC", null);
         }
 
         public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, String pricingMode) {
+            this(productId, productName, flavour, targetSales, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, pricingMode, null);
+        }
+
+        public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, String pricingMode, Double weightedSales) {
             this.productId = productId;
             this.productName = productName;
             this.flavour = flavour;
@@ -184,6 +191,7 @@ public class PricingConfigDTO {
             this.minCupPrice = minCupPrice;
             this.maxCupPrice = maxCupPrice;
             this.pricingMode = pricingMode != null ? pricingMode : "DYNAMIC";
+            this.weightedSales = weightedSales;
         }
 
         public Long getProductId() { return productId; }
@@ -227,5 +235,9 @@ public class PricingConfigDTO {
 
         public String getPricingMode() { return pricingMode != null ? pricingMode : "DYNAMIC"; }
         public void setPricingMode(String pricingMode) { this.pricingMode = pricingMode != null ? pricingMode : "DYNAMIC"; }
+
+        public Double getWeightedSales() { return weightedSales != null ? weightedSales : targetSales; }
+        @JsonAlias({"weightedSales", "salesWeight"})
+        public void setWeightedSales(Double weightedSales) { this.weightedSales = weightedSales; }
     }
 }

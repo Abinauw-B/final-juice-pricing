@@ -29,7 +29,8 @@ public class MarketCorrelationService {
 
     @Transactional(readOnly = true)
     public List<ProductCorrelation> getCorrelationsForSourceProduct(Long sourceProductId) {
-        return correlationRepository.findBySourceProductIdAndEnabledTrue(sourceProductId);
+        // Enforce 100% product decoupling: no product is linked with any other
+        return Collections.emptyList();
     }
 
     @Transactional(readOnly = true)
@@ -69,9 +70,7 @@ public class MarketCorrelationService {
     }
 
     public BigDecimal calculateSecondaryImpact(BigDecimal directImpact, BigDecimal correlationCoefficient) {
-        if (directImpact == null || correlationCoefficient == null || correlationCoefficient.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-        return directImpact.multiply(correlationCoefficient).setScale(2, RoundingMode.HALF_UP);
+        // Enforce 100% product decoupling: zero cross-product impact
+        return BigDecimal.ZERO;
     }
 }

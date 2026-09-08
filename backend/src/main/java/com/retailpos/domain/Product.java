@@ -41,6 +41,9 @@ public class Product {
     @Column(name = "target_sales_per_2_minute")
     private Double targetSalesPer2Minute = 1.10;
 
+    @Column(name = "weighted_sales")
+    private Double weightedSales = 0.55;
+
     @Column(name = "order_count", nullable = false)
     private Integer orderCount = 0;
 
@@ -134,6 +137,13 @@ public class Product {
         }
     }
 
+    public Double getWeightedSales() {
+        return weightedSales != null ? weightedSales : (targetSalesPer1Minute != null ? targetSalesPer1Minute : 0.55);
+    }
+    public void setWeightedSales(Double weightedSales) {
+        this.weightedSales = weightedSales;
+    }
+
     public Integer getOrderCount() { return orderCount != null ? orderCount : 0; }
     public void setOrderCount(Integer orderCount) { this.orderCount = orderCount; }
     public Integer getTargetOrders() { return targetOrders != null ? targetOrders : 5; }
@@ -167,6 +177,7 @@ public class Product {
         private BigDecimal maxCupPrice = new BigDecimal("30.00");
         private Double targetSalesPer1Minute = 0.55;
         private Double targetSalesPer2Minute = 1.10;
+        private Double weightedSales = 0.55;
         private Integer orderCount = 0;
         private Integer targetOrders = 5;
         private BigDecimal volatility = new BigDecimal("0.0800");
@@ -194,6 +205,7 @@ public class Product {
             if (targetSalesPer2Minute != null) this.targetSalesPer1Minute = targetSalesPer2Minute / 2.0;
             return this;
         }
+        public ProductBuilder weightedSales(Double weightedSales) { this.weightedSales = weightedSales; return this; }
         public ProductBuilder orderCount(Integer orderCount) { this.orderCount = orderCount; return this; }
         public ProductBuilder targetOrders(Integer targetOrders) { this.targetOrders = targetOrders; return this; }
         public ProductBuilder volatility(BigDecimal volatility) { this.volatility = volatility; return this; }
@@ -206,6 +218,7 @@ public class Product {
             Product p = new Product(id, name, flavour, description, defaultCupSizeMl, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, targetSalesPer1Minute, orderCount, targetOrders, volatility, lastPriceChangeTimestamp, priceVersion, createdAt, updatedAt);
             if (targetSalesPer2Minute != null) p.setTargetSalesPer2Minute(targetSalesPer2Minute);
             if (targetSalesPer1Minute != null) p.setTargetSalesPer1Minute(targetSalesPer1Minute);
+            if (weightedSales != null) p.setWeightedSales(weightedSales);
             return p;
         }
     }

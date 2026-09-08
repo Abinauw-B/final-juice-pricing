@@ -153,82 +153,8 @@ public class MarketEventService {
                 .maxCupPrice(mainProduct.getMaxCupPrice())
                 .build());
 
-        // Secondary correlation recalculation for related products
-        List<ProductCorrelation> correlations = correlationService.getCorrelationsForSourceProduct(purchasedId);
-        for (ProductCorrelation corr : correlations) {
-            if (!corr.getEnabled()) continue;
-
-            Product targetProduct = corr.getTargetProduct();
-            if (targetProduct == null || !targetProduct.getIsActive()) continue;
-
-            BigDecimal coeff = corr.getCorrelationCoefficient();
-            BigDecimal secondaryDelta = correlationService.calculateSecondaryImpact(directDelta, coeff);
-
-            if (secondaryDelta.compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal targetOldPrice = targetProduct.getCurrentCupPrice() != null ? targetProduct.getCurrentCupPrice() : targetProduct.getDefaultCupPrice();
-                BigDecimal targetMin = targetProduct.getMinCupPrice() != null ? targetProduct.getMinCupPrice() : new BigDecimal("20.00");
-                BigDecimal targetMax = targetProduct.getMaxCupPrice() != null ? targetProduct.getMaxCupPrice() : new BigDecimal("30.00");
-
-                BigDecimal targetNewPrice = targetOldPrice.add(secondaryDelta).max(targetMin).min(targetMax).setScale(2, RoundingMode.HALF_UP);
-
-                if (targetNewPrice.compareTo(targetOldPrice) != 0) {
-                    targetProduct.setCurrentCupPrice(targetNewPrice);
-                    targetProduct.setPriceVersion((targetProduct.getPriceVersion() != null ? targetProduct.getPriceVersion() : 1) + 1);
-                    targetProduct.setLastPriceChangeTimestamp(now);
-                    productRepository.saveAndFlush(targetProduct);
-
-                    redisRepository.setProductPrice(targetProduct.getId(), targetNewPrice);
-
-                    PriceHistory targetHist = PriceHistory.builder()
-                            .productId(targetProduct.getId())
-                            .oldPrice(targetOldPrice)
-                            .newPrice(targetNewPrice)
-                            .priceChange(targetNewPrice.subtract(targetOldPrice))
-                            .reason("CORRELATED_MARKET_IMPACT")
-                            .explanation(String.format("Correlated surge from %s (coeff %s)", mainProduct.getName(), coeff))
-                            .calculationWindowStart(now.minusSeconds(120))
-                            .calculationWindowEnd(now)
-                            .priceVersion(targetProduct.getPriceVersion())
-                            .createdAt(now)
-                            .build();
-                    priceHistoryRepository.save(targetHist);
-
-                    MarketEvent corrEvent = MarketEvent.builder()
-                            .eventType("CORRELATED_MOVEMENT")
-                            .productId(targetProduct.getId())
-                            .quantity(1)
-                            .priceBefore(targetOldPrice)
-                            .priceAfter(targetNewPrice)
-                            .marketVersion(newMarketVersion)
-                            .details(String.format("Correlated surge from %s (coeff %s): ₹%s -> ₹%s", mainProduct.getName(), coeff, targetOldPrice, targetNewPrice))
-                            .build();
-                    marketEventRepository.save(corrEvent);
-
-                    BigDecimal tBase = targetProduct.getDefaultCupPrice() != null ? targetProduct.getDefaultCupPrice() : new BigDecimal("25.00");
-                    double targetPct = ((targetNewPrice.subtract(tBase)).doubleValue() / tBase.doubleValue()) * 100.0;
-
-                    changedDTOs.add(ProductPriceDTO.builder()
-                            .beverageId(targetProduct.getId())
-                            .name(targetProduct.getName())
-                            .flavour(targetProduct.getFlavour())
-                            .currentPrice(targetNewPrice)
-                            .effectivePrice(targetNewPrice)
-                            .previousPrice(targetOldPrice)
-                            .priceDelta(targetNewPrice.subtract(targetOldPrice))
-                            .priceVersion(targetProduct.getPriceVersion())
-                            .priceChangePct(BigDecimal.valueOf(targetPct).setScale(1, RoundingMode.HALF_UP).doubleValue())
-                            .trendDirection("UP")
-                            .demandRatio(coeff.doubleValue())
-                            .demandLevelCategory("CORRELATED_SURGE")
-                            .minCupPrice(targetProduct.getMinCupPrice())
-                            .maxCupPrice(targetProduct.getMaxCupPrice())
-                            .build());
-
-                    log.info("🔗 [CORRELATED SURGE] Target ProductId={} ({}) reacted to purchase of {}: ₹{} -> ₹{} (coeff={})",
-                            targetProduct.getId(), targetProduct.getName(), mainProduct.getName(), targetOldPrice, targetNewPrice, coeff);
-                }
-            }
-        }
+        // All products are strictly decoupled: no purchase of one product ever adjusts or links to another
+        // Secondary correlation recalculation intentionally disabled per specification.
 
         // Broadcast updated price changes via WebSocket
         broadcastService.broadcastPriceUpdate(newMarketVersion, changedDTOs);

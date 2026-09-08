@@ -320,11 +320,17 @@ public class PriceAdjustmentService {
         LocalDateTime w2End = now.minusSeconds(2L * intervalSec);
         int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
 
-        // 2. Weighted sales: S_w = (weightW0 * W0) + (weightW1 * W1) + (weightW2 * W2)
-        BigDecimal sw = BigDecimal.valueOf(w0).multiply(weightW0)
+        // 2. Weighted sales calculation:
+        // Admin-configured weighted sales acts as the authoritative sales demand for this product, plus any DWMA window sales:
+        double adminBaseWeightedSales = (product.getWeightedSales() != null && product.getWeightedSales() >= 0) ? product.getWeightedSales() : 0.0;
+
+        BigDecimal dwmaLiveSales = BigDecimal.valueOf(w0).multiply(weightW0)
                 .add(BigDecimal.valueOf(w1).multiply(weightW1))
-                .add(BigDecimal.valueOf(w2).multiply(weightW2))
-                .setScale(2, RoundingMode.HALF_UP);
+                .add(BigDecimal.valueOf(w2).multiply(weightW2));
+
+        BigDecimal sw = (w0 > 0 || w1 > 0 || w2 > 0)
+                ? BigDecimal.valueOf(adminBaseWeightedSales).add(dwmaLiveSales).setScale(2, RoundingMode.HALF_UP)
+                : BigDecimal.valueOf(adminBaseWeightedSales).setScale(2, RoundingMode.HALF_UP);
         double weightedSales = sw.doubleValue();
 
         // 3. Target sales normalized to intervalSec:
@@ -348,7 +354,7 @@ public class PriceAdjustmentService {
         String demandLevelCategory;
 
         if (rd.compareTo(highThresh) >= 0) {
-            if (w0 > 0) {
+            if (sw.compareTo(BigDecimal.ZERO) > 0) {
                 deltaP = new BigDecimal("1.00");
                 movement = 1;
                 reason = "HIGH_DEMAND_SURGE";
