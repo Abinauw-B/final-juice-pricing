@@ -2313,17 +2313,20 @@
           <div style="font-size: 12px; color: var(--text-muted);">superadmin@pubexchange.com</div>
         </div>
       </div>
-      <div style="margin-bottom: 14px;">
-        <label
-          style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">New
-          Password</label>
-        <input type="password" id="profileNewPass" placeholder="Enter new password" style="width: 100%; padding: 10px;">
-      </div>
-      <div style="display: flex; gap: 12px; justify-content: flex-end;">
-        <button onclick="closeProfileModal()"
-          style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700;">Cancel</button>
-        <button id="btnUpdatePassword" onclick="updateProfilePassword()" class="btn-primary">Update Password</button>
-      </div>
+      <form id="profilePasswordForm" onsubmit="event.preventDefault(); updateProfilePassword(event);" autocomplete="off">
+        <div style="margin-bottom: 14px;">
+          <label
+            for="profileNewPass"
+            style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">New
+            Password</label>
+          <input type="password" id="profileNewPass" name="newPassword" autocomplete="new-password" placeholder="Enter new password" style="width: 100%; padding: 10px;">
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button type="button" onclick="closeProfileModal()"
+            style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700;">Cancel</button>
+          <button type="submit" id="btnUpdatePassword" class="btn-primary">Update Password</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -3070,6 +3073,13 @@
       }
     }
 
+    // Tab Visibility & Chart Optimization Engine
+    let dashChartsNeedUpdate = false;
+    function isDashboardTabActive() {
+      const dashView = document.getElementById('view-dashboard');
+      return Boolean(dashView && dashView.style.display !== 'none');
+    }
+
     // Tab Navigation Switcher (Section 3)
     function switchTab(tabName) {
       try {
@@ -3086,7 +3096,13 @@
           if (view) view.style.display = (t === tabName) ? 'block' : 'none';
         });
 
-        if (tabName === 'dashboard') { refreshDashboard(); loadLivePricingProducts(); }
+        if (tabName === 'dashboard') {
+          refreshDashboard();
+          loadLivePricingProducts();
+          if (dashChartsNeedUpdate || !revenueChartInstance || !donutChartInstance) {
+            requestAnimationFrame(() => renderCharts(true));
+          }
+        }
         if (tabName === 'crash') { loadMarketCrashEventHistory(); checkMarketCrashStatus(); }
         if (tabName === 'batches') { loadBatches(); loadLivePricingProducts(); }
         if (tabName === 'pricing') { loadLivePricingProducts(); loadHistory(); }
@@ -3514,6 +3530,11 @@
         // Use cached data
       }
 
+      if (!isDashboardTabActive()) {
+        dashChartsNeedUpdate = true;
+        return;
+      }
+
       const now = new Date();
       const currentHour = now.getHours();
 
@@ -3813,6 +3834,11 @@
       const donutContainer = document.querySelector("#volumeDonutChartContainer");
       if (!donutContainer || typeof ApexCharts === 'undefined') return;
 
+      if (!isDashboardTabActive()) {
+        dashChartsNeedUpdate = true;
+        return;
+      }
+
       let activeLabels = [];
       let actualSeries = [];
       let totalLabel = 'Total Volume';
@@ -3983,9 +4009,14 @@
       }
     }
 
-    function renderCharts() {
-      updateRealTimeRevenueChart();
-      updateVolumeDonutChart();
+    function renderCharts(forceRedraw = false) {
+      if (!isDashboardTabActive()) {
+        dashChartsNeedUpdate = true;
+        return;
+      }
+      dashChartsNeedUpdate = false;
+      updateRealTimeRevenueChart(forceRedraw);
+      updateVolumeDonutChart(forceRedraw);
     }
 
     const defaultUsersList = [
@@ -4224,7 +4255,10 @@
     }
 
     // Profile Password Update (Section 2)
-    async function updateProfilePassword() {
+    async function updateProfilePassword(e) {
+      if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+      }
       const btn = document.getElementById('btnUpdatePassword');
       setButtonLoading(btn, true, 'Updating...');
       const pass = document.getElementById('profileNewPass').value;
@@ -4908,6 +4942,64 @@
 
       const activeEl = document.activeElement;
       const activeId = activeEl ? activeEl.id : null;
+
+      // In-place update check: if all rows already exist in DOM, update cells without full rebuild
+      const canUpdateInPlace = liveProductsCache && liveProductsCache.length > 0 &&
+        liveProductsCache.every(p => {
+          const pid = p.productId || p.id;
+          return Boolean(document.getElementById(`livePricingRow_${pid}`));
+        });
+
+      if (canUpdateInPlace) {
+        liveProductsCache.forEach(p => {
+          const pid = p.productId || p.id;
+          const livePrice = Number(p.currentCupPrice || p.currentPrice || 25).toFixed(2);
+          const basePrice = Number(p.defaultCupPrice || p.basePrice || 25).toFixed(2);
+          const minPrice = Number(p.minCupPrice || 20).toFixed(2);
+          const maxPrice = Number(p.maxCupPrice || 30).toFixed(2);
+          const target = p.targetSalesPer1Minute || p.targetSales || (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55);
+          const isOverride = (p.pricingMode === 'MANUAL_OVERRIDE' || p.pricingMode === 'MANUAL_LOCK' || p.pricingMode === 'LOCKED');
+
+          const priceSpan = document.getElementById(`livePriceDisplay_${pid}`);
+          if (priceSpan) {
+            priceSpan.style.color = isOverride ? '#d97706' : '#059669';
+            priceSpan.style.background = isOverride ? 'rgba(217,119,6,0.12)' : 'rgba(5,150,105,0.1)';
+            priceSpan.innerHTML = `${isOverride ? '<span title="Price is manually locked" style="font-size: 13px;">🔒</span>' : ''}₹${livePrice}`;
+          }
+
+          const modeBadgeEl = document.getElementById(`modeBadgeCol_${pid}`);
+          if (modeBadgeEl) {
+            modeBadgeEl.innerHTML = isOverride
+              ? `<span style="background: rgba(217, 119, 6, 0.15); color: #d97706; font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(217,119,6,0.3); display: inline-flex; align-items: center; gap: 4px;">🔒 MANUAL</span>`
+              : `<span style="background: rgba(37, 99, 235, 0.1); color: #2563eb; font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(37,99,235,0.2); display: inline-flex; align-items: center; gap: 4px;">⚡ DYNAMIC</span>`;
+          }
+
+          const baseCol = document.getElementById(`basePriceCol_${pid}`);
+          if (baseCol) baseCol.textContent = `₹${basePrice}`;
+
+          const minCol = document.getElementById(`minPriceCol_${pid}`);
+          if (minCol) minCol.textContent = `₹${minPrice}`;
+
+          const maxCol = document.getElementById(`maxPriceCol_${pid}`);
+          if (maxCol) maxCol.textContent = `₹${maxPrice}`;
+
+          const qInput = document.getElementById(`quickPriceInput_${pid}`);
+          if (qInput && activeId !== `quickPriceInput_${pid}`) {
+            qInput.value = Number(livePrice);
+            qInput.style.borderColor = isOverride ? '#d97706' : '#cbd5e1';
+          }
+
+          const lockCb = document.getElementById(`lockCheckbox_${pid}`);
+          if (lockCb) lockCb.checked = isOverride;
+
+          const tInput = document.getElementById(`targetInput_${pid}`);
+          if (tInput && activeId !== `targetInput_${pid}`) {
+            tInput.value = target;
+          }
+        });
+        return;
+      }
+
       let selectionStart = null;
       let selectionEnd = null;
       if (activeEl && (activeEl.tagName === 'INPUT')) {
@@ -4944,7 +5036,7 @@
           </div>`;
 
         return `
-          <tr>
+          <tr id="livePricingRow_${pid}">
             <td style="font-weight: 700; color: var(--text-muted); font-family: monospace;">#${pid}</td>
             <td style="font-weight: 700; color: var(--text-main);">
               <div style="display: flex; align-items: center; gap: 10px;">
@@ -4956,10 +5048,10 @@
               </div>
             </td>
             <td><span id="livePriceDisplay_${pid}" style="font-weight: 900; color: ${isOverride ? '#d97706' : '#059669'}; font-size: 15px; background: ${isOverride ? 'rgba(217,119,6,0.12)' : 'rgba(5,150,105,0.1)'}; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">${isOverride ? '<span title="Price is manually locked" style="font-size: 13px;">🔒</span>' : ''}₹${livePrice}</span></td>
-            <td>${modeBadge}</td>
-            <td style="font-weight: 700;">₹${basePrice}</td>
-            <td style="color: #dc2626; font-weight: 700;">₹${minPrice}</td>
-            <td style="color: #2563eb; font-weight: 700;">₹${maxPrice}</td>
+            <td id="modeBadgeCol_${pid}">${modeBadge}</td>
+            <td id="basePriceCol_${pid}" style="font-weight: 700;">₹${basePrice}</td>
+            <td id="minPriceCol_${pid}" style="color: #dc2626; font-weight: 700;">₹${minPrice}</td>
+            <td id="maxPriceCol_${pid}" style="color: #2563eb; font-weight: 700;">₹${maxPrice}</td>
             <td>
               <div style="display: flex; align-items: center; gap: 4px;">
                 <input id="targetInput_${pid}" type="number" step="0.05" min="0.05" value="${target}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveProductTargetSales(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #3b82f6; border-radius: 6px; font-size: 13px;" title="Target sales per minute. Press Enter or click Save.">
@@ -4976,7 +5068,6 @@
           </tr>
         `;
       }).join('');
-      if (typeof renderBatchesTable === 'function') renderBatchesTable();
 
       if (activeId) {
         const restoredEl = document.getElementById(activeId);
@@ -5515,6 +5606,7 @@
     function populateSimulatorFlavours() {
       const sel = document.getElementById('simFlavour');
       if (!sel || !liveProductsCache || liveProductsCache.length === 0) return;
+      if (sel.options.length === liveProductsCache.length) return; // already populated with current products
       const currentVal = sel.value;
       sel.innerHTML = liveProductsCache.map(p => `
         <option value="${p.id}">${getFruitIcon(p)} ${p.name || p.productName || p.flavour}</option>
@@ -6287,6 +6379,59 @@
       adminStompSubscriptions = [];
     }
 
+    // Coalesced WebSocket UI Refresh Scheduler
+    // Batches rapid incoming WebSocket messages across topics into a single coalesced update frame
+    let pendingWsBatch = {
+      products: false,
+      prices: false,
+      batches: false,
+      history: false,
+      dashboard: false,
+      auditLogs: false
+    };
+    let wsBatchTimer = null;
+
+    function scheduleBatchWsRefresh(flags) {
+      if (!flags) return;
+      if (flags.products) pendingWsBatch.products = true;
+      if (flags.prices) pendingWsBatch.prices = true;
+      if (flags.batches) pendingWsBatch.batches = true;
+      if (flags.history) pendingWsBatch.history = true;
+      if (flags.dashboard) pendingWsBatch.dashboard = true;
+      if (flags.auditLogs) pendingWsBatch.auditLogs = true;
+
+      if (wsBatchTimer) return;
+
+      wsBatchTimer = setTimeout(() => {
+        wsBatchTimer = null;
+        const toRun = Object.assign({}, pendingWsBatch);
+        pendingWsBatch.products = false;
+        pendingWsBatch.prices = false;
+        pendingWsBatch.batches = false;
+        pendingWsBatch.history = false;
+        pendingWsBatch.dashboard = false;
+        pendingWsBatch.auditLogs = false;
+
+        requestAnimationFrame(async () => {
+          if (toRun.products || toRun.prices) {
+            await loadLivePricingProducts();
+          }
+          if (toRun.batches) {
+            await loadBatches();
+          }
+          if (toRun.history) {
+            loadHistory();
+          }
+          if (toRun.dashboard) {
+            await refreshDashboard({ manual: false });
+          }
+          if (toRun.auditLogs) {
+            loadPricingAuditLogs();
+          }
+        });
+      }, 40);
+    }
+
     function connectAdminWebSocket() {
       if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
       if (isAdminConnectingWS || isAdminWsConnected) return;
@@ -6320,27 +6465,21 @@
 
           const subProds = stompClient.subscribe('/topic/products', function (message) {
             if (message.body) {
-              loadBatches();
-              loadLivePricingProducts();
-              refreshDashboard();
+              scheduleBatchWsRefresh({ products: true, batches: true, dashboard: true });
             }
           });
           adminStompSubscriptions.push(subProds);
 
           const subBatches = stompClient.subscribe('/topic/batches', function (message) {
             if (message.body) {
-              loadBatches();
-              refreshDashboard();
+              scheduleBatchWsRefresh({ batches: true, dashboard: true });
             }
           });
           adminStompSubscriptions.push(subBatches);
 
           const subPrices = stompClient.subscribe('/topic/prices', function (message) {
             if (message.body) {
-              refreshDashboard();
-              loadBatches();
-              loadHistory();
-              loadLivePricingProducts();
+              scheduleBatchWsRefresh({ prices: true, batches: true, history: true, dashboard: true });
             }
           });
           adminStompSubscriptions.push(subPrices);
@@ -6394,19 +6533,14 @@
                 if (data.nextSettlementAt) {
                   activePricingTiming.nextSettlementAt = data.nextSettlementAt;
                 }
-                refreshDashboard();
-                loadBatches();
-                loadLivePricingProducts();
-                loadPricingAuditLogs();
+                scheduleBatchWsRefresh({ prices: true, batches: true, dashboard: true, auditLogs: true });
               } catch (e) { }
             }
           });
           adminStompSubscriptions.push(subSettle);
 
           const subOrders = stompClient.subscribe('/topic/orders', function (message) {
-            updateRealTimeRevenueChart();
-            updateVolumeDonutChart();
-            refreshDashboard();
+            scheduleBatchWsRefresh({ dashboard: true });
           });
           adminStompSubscriptions.push(subOrders);
 
@@ -6452,9 +6586,7 @@
     if (pubExchangeChannel) {
       pubExchangeChannel.onmessage = (event) => {
         if (event.data && (event.data.type === 'NEW_ORDER_PLACED' || event.data.type === 'CART_CHECKOUT_COMPLETED' || event.data.type === 'REFRESH_ORDERS')) {
-          updateRealTimeRevenueChart();
-          updateVolumeDonutChart();
-          refreshDashboard();
+          scheduleBatchWsRefresh({ dashboard: true, prices: true });
           dwmaTelemetryCache = {};
           if (typeof renderDwmaCascadeVisualizer === 'function') {
             renderDwmaCascadeVisualizer(true);
@@ -6521,7 +6653,11 @@
       }, 5000);
 
       connectAdminWebSocket();
-      setTimeout(renderCharts, 500);
+      if (isDashboardTabActive()) {
+        requestAnimationFrame(() => renderCharts());
+      } else {
+        dashChartsNeedUpdate = true;
+      }
 
       setInterval(async () => {
         if (isRevenueChartFetching) return;
