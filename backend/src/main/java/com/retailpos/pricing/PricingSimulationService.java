@@ -293,8 +293,7 @@ public class PricingSimulationService {
                 // R_d >= 1.10 AND W0 > 0 -> +₹1
                 // R_d >= 1.10 AND W0 == 0 -> ₹0
                 // 0.90 <= R_d < 1.10 -> ₹0
-                // 0.50 <= R_d < 0.90 -> -₹1
-                // R_d < 0.50 -> -₹2
+                // R_d < 0.90 -> -₹1
                 BigDecimal deltaP;
                 if (rd.compareTo(new BigDecimal("1.10")) >= 0) {
                     if (w0 > 0) {
@@ -307,12 +306,9 @@ public class PricingSimulationService {
                 } else if (rd.compareTo(new BigDecimal("0.90")) >= 0) {
                     deltaP = BigDecimal.ZERO;
                     movement = "₹0";
-                } else if (rd.compareTo(new BigDecimal("0.50")) >= 0) {
+                } else {
                     deltaP = new BigDecimal("-1.00");
                     movement = "-₹1";
-                } else {
-                    deltaP = new BigDecimal("-2.00");
-                    movement = "-₹2";
                 }
 
                 BigDecimal uncapped = currentPrice.add(deltaP);

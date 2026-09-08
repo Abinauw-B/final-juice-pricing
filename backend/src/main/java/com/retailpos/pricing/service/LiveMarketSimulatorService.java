@@ -65,7 +65,10 @@ public class LiveMarketSimulatorService {
 
             // Target dynamic juices
             List<Product> dynamicProducts = allProducts.stream()
-                    .filter(p -> p.getPricingMode() == null || !"FIXED".equalsIgnoreCase(p.getPricingMode()))
+                    .filter(p -> p.getPricingMode() == null || (!"FIXED".equalsIgnoreCase(p.getPricingMode())
+                            && !"MANUAL_OVERRIDE".equalsIgnoreCase(p.getPricingMode())
+                            && !"MANUAL_LOCK".equalsIgnoreCase(p.getPricingMode())
+                            && !"LOCKED".equalsIgnoreCase(p.getPricingMode())))
                     .toList();
 
             List<Product> candidatePool = dynamicProducts.isEmpty() ? allProducts : dynamicProducts;

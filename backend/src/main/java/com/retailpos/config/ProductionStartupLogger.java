@@ -58,7 +58,7 @@ public class ProductionStartupLogger {
         log.info("Application started on port: {}", port);
         log.info("Database connected: {} (PostgreSQL Authoritative SSoT)", dbOk ? "ONLINE" : "OFFLINE / UNREACHABLE");
         log.info("Redis connected: {} (Cache & Synchronization Infrastructure)", redisOk ? "ONLINE" : "STANDBY / NON-FATAL BYPASS");
-        log.info("Pricing engine initialized: Base=₹25.00, Floor=₹20.00, Ceiling=₹30.00, Allowed Deltas={+1.00, 0.00, -1.00, -2.00}");
+        log.info("Pricing engine initialized: Product-Specific Authoritative Bounds Active, Allowed Deltas={+1.00, 0.00, -1.00}");
         log.info("Scheduler initialized: Settlement Cycle={}s, Distributed Locking: Active", intervalSeconds);
         log.info("WebSocket initialized: STOMP active on /ws/prices, /ws/pos, /ws");
         log.info("Broadcast Topics: /topic/prices, /topic/settlement, /topic/market-crash, /topic/led-display, /topic/products");

@@ -2,6 +2,8 @@ package com.retailpos.pricing.model;
 
 import java.math.BigDecimal;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 public class PricingConfigDTO {
 
@@ -35,23 +37,54 @@ public class PricingConfigDTO {
     public List<ProductConfig> getProducts() { return products; }
     public void setProducts(List<ProductConfig> products) { this.products = products; }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class GlobalConfig {
+        @JsonAlias({"settlementIntervalSeconds", "intervalSeconds", "interval"})
         private Integer settlementIntervalSeconds;
+
+        @JsonAlias({"weightW0", "w0"})
         private BigDecimal weightW0;
+
+        @JsonAlias({"weightW1", "w1"})
         private BigDecimal weightW1;
+
+        @JsonAlias({"weightW2", "w2"})
         private BigDecimal weightW2;
+
+        @JsonAlias({"highDemandThreshold", "highDemand"})
         private BigDecimal highDemandThreshold;
+
+        @JsonAlias({"stableDemandLowerThreshold", "stableDemandLower", "stableDemandThreshold"})
         private BigDecimal stableDemandLowerThreshold;
+
+        @JsonAlias({"stableDemandUpperThreshold", "stableDemandUpper"})
         private BigDecimal stableDemandUpperThreshold;
+
+        @JsonAlias({"lowDemandThreshold", "lowDemand"})
         private BigDecimal lowDemandThreshold;
+
+        @JsonAlias({"increaseStep", "incStep"})
         private BigDecimal increaseStep;
+
+        @JsonAlias({"decreaseStep1", "decStep1"})
         private BigDecimal decreaseStep1;
+
+        @JsonAlias({"decreaseStep2", "decStep2"})
         private BigDecimal decreaseStep2;
+
+        @JsonAlias({"priceDecreaseStep", "decStep"})
         private BigDecimal priceDecreaseStep;
+
         private Integer marketCrashDurationSeconds;
         private BigDecimal marketCrashPrice;
+
+        @JsonAlias({"defaultPrice", "basePrice", "defaultCupPrice"})
         private BigDecimal defaultCupPrice;
+
+        @JsonAlias({"minPrice", "floorPrice", "minCupPrice"})
         private BigDecimal minCupPrice;
+
+        @JsonAlias({"maxPrice", "ceilPrice", "maxCupPrice"})
         private BigDecimal maxCupPrice;
 
         public GlobalConfig() {}
@@ -89,7 +122,7 @@ public class PricingConfigDTO {
         public BigDecimal getDecreaseStep2() { return decreaseStep2; }
         public void setDecreaseStep2(BigDecimal decreaseStep2) { this.decreaseStep2 = decreaseStep2; }
 
-        public BigDecimal getPriceDecreaseStep() { return priceDecreaseStep != null ? priceDecreaseStep : (decreaseStep1 != null ? decreaseStep1 : new BigDecimal("4.00")); }
+        public BigDecimal getPriceDecreaseStep() { return priceDecreaseStep != null ? priceDecreaseStep : (decreaseStep1 != null ? decreaseStep1 : new BigDecimal("1.00")); }
         public void setPriceDecreaseStep(BigDecimal priceDecreaseStep) { this.priceDecreaseStep = priceDecreaseStep; }
 
         public Integer getMarketCrashDurationSeconds() { return marketCrashDurationSeconds; }
@@ -108,16 +141,30 @@ public class PricingConfigDTO {
         public void setMaxCupPrice(BigDecimal maxCupPrice) { this.maxCupPrice = maxCupPrice; }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ProductConfig {
         private Long productId;
         private String productName;
         private String flavour;
+
+        @JsonAlias({"targetSales", "targetSalesPer1Minute", "target"})
         private Double targetSales;
+
+        @JsonAlias({"targetSalesPer1Minute", "targetSales", "target"})
         private Double targetSalesPer1Minute;
+
+        @JsonAlias({"defaultPrice", "basePrice", "defaultCupPrice"})
         private BigDecimal defaultCupPrice;
+
+        @JsonAlias({"startPrice", "currentPrice", "currentCupPrice"})
         private BigDecimal currentCupPrice;
+
+        @JsonAlias({"minPrice", "floorPrice", "minCupPrice"})
         private BigDecimal minCupPrice;
+
+        @JsonAlias({"maxPrice", "ceilPrice", "ceilingPrice", "maxCupPrice"})
         private BigDecimal maxCupPrice;
+
         private String pricingMode;
 
         public ProductConfig() {}
@@ -149,27 +196,33 @@ public class PricingConfigDTO {
         public void setFlavour(String flavour) { this.flavour = flavour; }
 
         public Double getTargetSales() { return targetSales != null ? targetSales : targetSalesPer1Minute; }
+        @JsonAlias({"targetSales", "targetSalesPer1Minute", "target"})
         public void setTargetSales(Double targetSales) {
             this.targetSales = targetSales;
             this.targetSalesPer1Minute = targetSales;
         }
 
         public Double getTargetSalesPer1Minute() { return targetSalesPer1Minute != null ? targetSalesPer1Minute : targetSales; }
+        @JsonAlias({"targetSalesPer1Minute", "targetSales", "target"})
         public void setTargetSalesPer1Minute(Double targetSalesPer1Minute) {
             this.targetSalesPer1Minute = targetSalesPer1Minute;
             this.targetSales = targetSalesPer1Minute;
         }
 
         public BigDecimal getDefaultCupPrice() { return defaultCupPrice; }
+        @JsonAlias({"defaultPrice", "basePrice", "defaultCupPrice"})
         public void setDefaultCupPrice(BigDecimal defaultCupPrice) { this.defaultCupPrice = defaultCupPrice; }
 
         public BigDecimal getCurrentCupPrice() { return currentCupPrice; }
+        @JsonAlias({"startPrice", "currentPrice", "currentCupPrice"})
         public void setCurrentCupPrice(BigDecimal currentCupPrice) { this.currentCupPrice = currentCupPrice; }
 
         public BigDecimal getMinCupPrice() { return minCupPrice; }
+        @JsonAlias({"minPrice", "floorPrice", "minCupPrice"})
         public void setMinCupPrice(BigDecimal minCupPrice) { this.minCupPrice = minCupPrice; }
 
         public BigDecimal getMaxCupPrice() { return maxCupPrice; }
+        @JsonAlias({"maxPrice", "ceilPrice", "ceilingPrice", "maxCupPrice"})
         public void setMaxCupPrice(BigDecimal maxCupPrice) { this.maxCupPrice = maxCupPrice; }
 
         public String getPricingMode() { return pricingMode != null ? pricingMode : "DYNAMIC"; }

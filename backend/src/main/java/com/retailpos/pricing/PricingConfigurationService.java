@@ -137,16 +137,15 @@ public class PricingConfigurationService {
     public static final java.util.Set<BigDecimal> ALLOWED_DELTAS = java.util.Set.of(
             new BigDecimal("1.00"),
             BigDecimal.ZERO,
-            new BigDecimal("-1.00"),
-            new BigDecimal("-2.00")
+            new BigDecimal("-1.00")
     );
 
     public static void validatePriceMovement(BigDecimal delta) {
         if (delta == null) return;
         boolean isAllowed = ALLOWED_DELTAS.stream().anyMatch(allowed -> allowed.compareTo(delta) == 0);
         if (!isAllowed) {
-            log.error("[PRICE_MOVEMENT_VALIDATION] Dynamic price movement {} is not in allowed set {+1.00, 0.00, -1.00, -2.00}!", delta);
-            throw new IllegalStateException("Dynamic price movement must strictly be +1.00, 0.00, -1.00, or -2.00. Got: " + delta);
+            log.error("[PRICE_MOVEMENT_VALIDATION] Dynamic price movement {} is not in allowed set {+1.00, 0.00, -1.00}!", delta);
+            throw new IllegalStateException("Dynamic price movement must strictly be +1.00, 0.00, or -1.00. Got: " + delta);
         }
     }
 
@@ -303,15 +302,6 @@ public class PricingConfigurationService {
 
         // 3. Update in-memory snapshot
         globalConfigCache.putAll(newSettings);
-        if (update.getMinCupPrice() != null || update.getMaxCupPrice() != null || update.getDefaultCupPrice() != null) {
-            List<Product> products = productRepository.findAll();
-            for (Product p : products) {
-                if (update.getMinCupPrice() != null) p.setMinCupPrice(update.getMinCupPrice());
-                if (update.getMaxCupPrice() != null) p.setMaxCupPrice(update.getMaxCupPrice());
-                if (update.getDefaultCupPrice() != null) p.setDefaultCupPrice(update.getDefaultCupPrice());
-            }
-            productRepository.saveAllAndFlush(products);
-        }
 
         currentConfigVersion.set(newVersion);
         lastConfigUpdate = LocalDateTime.now();
@@ -359,20 +349,34 @@ public class PricingConfigurationService {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
 
         // Validation
+        BigDecimal effectiveMin = update.getMinCupPrice() != null ? update.getMinCupPrice() : product.getMinCupPrice();
+        BigDecimal effectiveMax = update.getMaxCupPrice() != null ? update.getMaxCupPrice() : product.getMaxCupPrice();
+        BigDecimal effectiveBase = update.getDefaultCupPrice() != null ? update.getDefaultCupPrice() : product.getDefaultCupPrice();
+        BigDecimal effectiveCurrent = update.getCurrentCupPrice() != null ? update.getCurrentCupPrice() : product.getCurrentCupPrice();
+
         if (update.getTargetSales() != null && update.getTargetSales() <= 0) {
             throw new IllegalArgumentException("Target sales must be greater than 0");
         }
-        if (update.getMinCupPrice() != null && update.getMinCupPrice().compareTo(BigDecimal.ZERO) < 0) {
+        if (update.getTargetSalesPer1Minute() != null && update.getTargetSalesPer1Minute() <= 0) {
+            throw new IllegalArgumentException("Target sales per 1 minute must be greater than 0");
+        }
+        if (effectiveMin != null && effectiveMin.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Minimum cup price cannot be negative");
         }
-        if (update.getMaxCupPrice() != null && update.getMinCupPrice() != null && update.getMaxCupPrice().compareTo(update.getMinCupPrice()) <= 0) {
+        if (effectiveMin != null && effectiveMax != null && effectiveMin.compareTo(effectiveMax) >= 0) {
             throw new IllegalArgumentException("Maximum price must be strictly greater than minimum price");
         }
-        if (update.getDefaultCupPrice() != null && update.getMinCupPrice() != null && update.getDefaultCupPrice().compareTo(update.getMinCupPrice()) < 0) {
+        if (effectiveBase != null && effectiveMin != null && effectiveBase.compareTo(effectiveMin) < 0) {
             throw new IllegalArgumentException("Default price cannot be below minimum floor price");
         }
-        if (update.getDefaultCupPrice() != null && update.getMaxCupPrice() != null && update.getDefaultCupPrice().compareTo(update.getMaxCupPrice()) > 0) {
+        if (effectiveBase != null && effectiveMax != null && effectiveBase.compareTo(effectiveMax) > 0) {
             throw new IllegalArgumentException("Default price cannot exceed maximum ceiling price");
+        }
+        if (effectiveCurrent != null && effectiveMin != null && effectiveCurrent.compareTo(effectiveMin) < 0) {
+            throw new IllegalArgumentException("Current price cannot be below minimum floor price");
+        }
+        if (effectiveCurrent != null && effectiveMax != null && effectiveCurrent.compareTo(effectiveMax) > 0) {
+            throw new IllegalArgumentException("Current price cannot exceed maximum ceiling price");
         }
 
         String user = (adminUser != null && !adminUser.isBlank()) ? adminUser : "ADMIN";
@@ -391,6 +395,9 @@ public class PricingConfigurationService {
         if (update.getTargetSales() != null) {
             product.setTargetSalesPer1Minute(update.getTargetSales());
             product.setTargetSalesPer2Minute(update.getTargetSales() * 2.0);
+        } else if (update.getTargetSalesPer1Minute() != null) {
+            product.setTargetSalesPer1Minute(update.getTargetSalesPer1Minute());
+            product.setTargetSalesPer2Minute(update.getTargetSalesPer1Minute() * 2.0);
         }
         if (update.getPricingMode() != null && !update.getPricingMode().isBlank()) {
             product.setPricingMode(update.getPricingMode());
@@ -399,10 +406,7 @@ public class PricingConfigurationService {
         if (update.getMinCupPrice() != null) product.setMinCupPrice(update.getMinCupPrice());
         if (update.getMaxCupPrice() != null) product.setMaxCupPrice(update.getMaxCupPrice());
         if (update.getCurrentCupPrice() != null) {
-            BigDecimal clamped = update.getCurrentCupPrice()
-                    .max(product.getMinCupPrice() != null ? product.getMinCupPrice() : BigDecimal.ZERO)
-                    .min(product.getMaxCupPrice() != null ? product.getMaxCupPrice() : new BigDecimal("999.00"));
-            product.setCurrentCupPrice(clamped);
+            product.setCurrentCupPrice(update.getCurrentCupPrice());
         }
 
         productRepository.saveAndFlush(product);
@@ -421,6 +425,15 @@ public class PricingConfigurationService {
         try {
             if (redisTemplate != null) {
                 redisTemplate.opsForValue().set("pricing:product:" + productId + ":target", String.valueOf(product.getTargetSalesPer1Minute()));
+                if (product.getCurrentCupPrice() != null) {
+                    redisTemplate.opsForValue().set("pricing:product:" + productId + ":price", product.getCurrentCupPrice().toString());
+                }
+                if (product.getMinCupPrice() != null) {
+                    redisTemplate.opsForValue().set("pricing:product:" + productId + ":min", product.getMinCupPrice().toString());
+                }
+                if (product.getMaxCupPrice() != null) {
+                    redisTemplate.opsForValue().set("pricing:product:" + productId + ":max", product.getMaxCupPrice().toString());
+                }
             }
             if (messagingTemplate != null) {
                 messagingTemplate.convertAndSend("/topic/pricing-config", getFullConfiguration());

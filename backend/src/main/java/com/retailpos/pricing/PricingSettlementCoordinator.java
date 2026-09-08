@@ -27,8 +27,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Enforces:
  * 1. Single market mutation lock (PostgreSQL advisory lock + JVM reentrant lock).
  * 2. Strict DWMA demand evaluation with non-overlapping windows.
- * 3. Exact delta movement rules (+1.00, 0.00, -1.00, -2.00) with explicit validation.
- * 4. Floor (₹20.00) and Ceiling (₹30.00) boundary clamping.
+ * 3. Exact delta movement rules (+1.00, 0.00, -1.00) with explicit validation.
+ * 4. Product-specific Floor and Ceiling boundary clamping.
  * 5. Market crash & pause arbitration (settlement skipped when crash is active).
  * 6. Transactional persistence: PostgreSQL commit -> Redis cache sync -> Market version bump -> STOMP broadcast.
  * 7. Unique settlementExecutionId for complete traceability.
@@ -222,6 +222,7 @@ public class PricingSettlementCoordinator {
                             .priceDelta(priceDelta)
                             .priceChange(priceDelta)
                             .priceVersion(reloaded.getPriceVersion() != null ? reloaded.getPriceVersion() : 1)
+                            .pricingMode(reloaded.getPricingMode() != null ? reloaded.getPricingMode() : "DYNAMIC")
                             .priceChangePct(BigDecimal.valueOf(changePct).setScale(1, RoundingMode.HALF_UP).doubleValue())
                             .trendDirection(trendDirection)
                             .demandRatio(evalResult.getDemandRatio())
@@ -231,6 +232,7 @@ public class PricingSettlementCoordinator {
                             .rawW1(evalResult.getRawW1())
                             .rawW2(evalResult.getRawW2())
                             .unconsumedW0(evalResult.getUnconsumedW0())
+                            .orderCount(evalResult.getRawW0())
                             .demandLevelCategory(evalResult.getDemandLevelCategory())
                             .isCrashed(marketCrashService != null && marketCrashService.isProductCrashed(reloaded.getId()))
                             .minCupPrice(reloaded.getMinCupPrice())
@@ -238,6 +240,7 @@ public class PricingSettlementCoordinator {
                             .build();
 
                     dtos.add(dto);
+                    productRepository.resetOrderCount(reloaded.getId());
                 }
 
                 // Save Settlement History Record

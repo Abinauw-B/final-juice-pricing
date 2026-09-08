@@ -1435,6 +1435,9 @@
                 <button class="btn-primary"
                   style="background: linear-gradient(135deg, #059669, #047857); padding: 8px 14px; font-size: 13px;"
                   onclick="loadLivePricingProducts()">🔄 Refresh Prices</button>
+                <button class="btn-primary"
+                  style="background: linear-gradient(135deg, #d97706, #b45309); padding: 8px 14px; font-size: 13px;"
+                  onclick="resetLiveMarketPrices()">↺ Reset All to Base (₹25)</button>
                 <button class="btn-primary" style="background: #2563eb; padding: 8px 14px; font-size: 13px;"
                   onclick="showNewFlavourModal()">+ Add New Juice</button>
               </div>
@@ -3197,7 +3200,7 @@
 
           const prod = (liveProductsCache || []).find(p => (p.id === b.productId || p.productId === b.productId));
           const livePrice = prod ? Number(prod.currentCupPrice || prod.currentPrice || 25) : 25.0;
-          const isOverride = prod ? (prod.pricingMode === 'MANUAL_OVERRIDE') : false;
+          const isOverride = prod ? (prod.pricingMode === 'MANUAL_OVERRIDE' || prod.pricingMode === 'MANUAL_LOCK' || prod.pricingMode === 'LOCKED') : false;
 
           let meterColor = '#10B981';
           if (percent <= 20) meterColor = '#EF4444';
@@ -3362,7 +3365,7 @@
 
             const prod = (liveProductsCache || []).find(p => (p.id === b.productId || p.productId === b.productId));
             const livePrice = prod ? Number(prod.currentCupPrice || prod.currentPrice || 25) : 25.0;
-            const isOverride = prod ? (prod.pricingMode === 'MANUAL_OVERRIDE') : false;
+            const isOverride = prod ? (prod.pricingMode === 'MANUAL_OVERRIDE' || prod.pricingMode === 'MANUAL_LOCK' || prod.pricingMode === 'LOCKED') : false;
             const batchVal = Math.round(cups * livePrice);
 
             let meterColor = '#10B981';
@@ -4681,9 +4684,9 @@
 
       const incStep = parseFloat(document.getElementById('cfgIncreaseStep').value) || 1.00;
       const decStep1 = parseFloat(document.getElementById('cfgDecreaseStep1').value) || 1.00;
-      const decStep2 = parseFloat(document.getElementById('cfgDecreaseStep2').value) || 2.00;
-      const minPrice = parseFloat(document.getElementById('cfgMinPrice').value) || 18.00;
-      const maxPrice = parseFloat(document.getElementById('cfgMaxPrice').value) || 35.00;
+      const decStep2 = parseFloat(document.getElementById('cfgDecreaseStep2').value) || 1.00;
+      const minPrice = parseFloat(document.getElementById('cfgMinPrice').value) || 20.00;
+      const maxPrice = parseFloat(document.getElementById('cfgMaxPrice').value) || 30.00;
 
       // Validation
       if (settlementInterval <= 0) {
@@ -4923,7 +4926,7 @@
         const minPrice = Number(p.minCupPrice || 20).toFixed(2);
         const maxPrice = Number(p.maxCupPrice || 30).toFixed(2);
         const target = p.targetSalesPer1Minute || p.targetSales || (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55);
-        const isOverride = (p.pricingMode === 'MANUAL_OVERRIDE');
+        const isOverride = (p.pricingMode === 'MANUAL_OVERRIDE' || p.pricingMode === 'MANUAL_LOCK' || p.pricingMode === 'LOCKED');
 
         const modeBadge = isOverride
           ? `<span style="background: rgba(217, 119, 6, 0.15); color: #d97706; font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(217,119,6,0.3); display: inline-flex; align-items: center; gap: 4px;">🔒 MANUAL</span>`
@@ -5019,8 +5022,8 @@
       const desc = document.getElementById('editPricingJuiceDesc').value.trim();
       const currentPrice = parseFloat(document.getElementById('editPricingCurrentPrice').value) || 25;
       const basePrice = parseFloat(document.getElementById('editPricingBasePrice').value) || 25;
-      const minPrice = parseFloat(document.getElementById('editPricingMinPrice').value) || 18;
-      const maxPrice = parseFloat(document.getElementById('editPricingMaxPrice').value) || 35;
+      const minPrice = parseFloat(document.getElementById('editPricingMinPrice').value) || 20;
+      const maxPrice = parseFloat(document.getElementById('editPricingMaxPrice').value) || 30;
       const targetSales = parseFloat(document.getElementById('editPricingTargetSales').value) || 0.55;
       const volatility = parseFloat(document.getElementById('editPricingVolatility').value) || 0.08;
 
@@ -5092,7 +5095,7 @@
       if (prod) {
         prod.currentCupPrice = newPrice;
         prod.currentPrice = newPrice;
-        prod.pricingMode = 'MANUAL_OVERRIDE';
+        prod.pricingMode = 'MANUAL_LOCK';
         renderLivePricingTable();
 
         const refocused = document.getElementById('quickPriceInput_' + productId);
@@ -5124,9 +5127,10 @@
         if (data && data.newPrice != null && prod) {
           prod.currentCupPrice = data.newPrice;
           prod.currentPrice = data.newPrice;
+          prod.pricingMode = data.pricingMode || 'MANUAL_LOCK';
         }
 
-        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, currentPrice: newPrice, pricingMode: 'MANUAL_OVERRIDE' });
+        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, currentPrice: newPrice, pricingMode: 'MANUAL_LOCK' });
         showToast(`🔒 Manual price override locked: Product #${productId} set to ₹${Number(newPrice).toFixed(2)}`, 'success');
       } catch (err) {
         showToast(`🔴 Failed to set manual price: ${err.message}`, 'danger');
@@ -5207,8 +5211,8 @@
       document.getElementById('editJuiceDesc').value = prod.description || 'Fresh handcrafted juice cooler';
       document.getElementById('editLivePrice').value = prod.currentCupPrice || prod.defaultCupPrice || 25;
       document.getElementById('editBasePrice').value = prod.defaultCupPrice || 25;
-      document.getElementById('editMinPrice').value = prod.minCupPrice || 18;
-      document.getElementById('editMaxPrice').value = prod.maxCupPrice || 35;
+      document.getElementById('editMinPrice').value = prod.minCupPrice != null ? prod.minCupPrice : 20;
+      document.getElementById('editMaxPrice').value = prod.maxCupPrice != null ? prod.maxCupPrice : 30;
       document.getElementById('editRemainingVol').value = batch.remainingVolumeMl !== undefined ? batch.remainingVolumeMl : 20000;
       document.getElementById('editStatus').value = batch.status || 'ACTIVE';
 
@@ -5321,8 +5325,8 @@
       const desc = document.getElementById('editJuiceDesc').value.trim();
       const livePrice = parseFloat(document.getElementById('editLivePrice').value) || 25;
       const basePrice = parseFloat(document.getElementById('editBasePrice').value) || 25;
-      const minPrice = parseFloat(document.getElementById('editMinPrice').value) || 18;
-      const maxPrice = parseFloat(document.getElementById('editMaxPrice').value) || 35;
+      const minPrice = parseFloat(document.getElementById('editMinPrice').value) || 20;
+      const maxPrice = parseFloat(document.getElementById('editMaxPrice').value) || 30;
       const remainingVol = parseInt(document.getElementById('editRemainingVol').value) || 20000;
       const status = document.getElementById('editStatus').value;
 
@@ -5391,8 +5395,8 @@
       const name = document.getElementById('newFlavourName').value.trim();
       const desc = document.getElementById('newFlavourDesc').value.trim() || 'Fresh handcrafted fruit juice';
       const basePrice = parseFloat(document.getElementById('newFlavourBasePrice').value) || 25;
-      const minPrice = parseFloat(document.getElementById('newFlavourMinPrice').value) || 18;
-      const maxPrice = parseFloat(document.getElementById('newFlavourMaxPrice').value) || 35;
+      const minPrice = parseFloat(document.getElementById('newFlavourMinPrice').value) || 20;
+      const maxPrice = parseFloat(document.getElementById('newFlavourMaxPrice').value) || 30;
 
       if (!name) {
         showToast('Please enter a juice name!', 'warning');
@@ -5585,8 +5589,8 @@
         flavourName: selectedText,
         initialVolumeMl: parseInt(document.getElementById('simVolume')?.value || '20000', 10) || 20000,
         initialPrice: parseFloat(document.getElementById('simStartPrice')?.value || '25') || 25,
-        minPrice: parseFloat(document.getElementById('simMinPrice')?.value || '18') || 18,
-        maxPrice: parseFloat(document.getElementById('simMaxPrice')?.value || '35') || 35,
+        minPrice: parseFloat(document.getElementById('simMinPrice')?.value || '20') || 20,
+        maxPrice: parseFloat(document.getElementById('simMaxPrice')?.value || '30') || 30,
         cupsPerInterval: parseInt(document.getElementById('simCupsPerStep')?.value || '4', 10) || 4,
         intervalMinutes: 2,
         targetSales: 1.00,
@@ -5727,8 +5731,8 @@
         initialPrice: startP,
         finalPrice: endP,
         currentPrice: endP,
-        minPrice: parseFloat(document.getElementById('simMinPrice')?.value) || 18,
-        maxPrice: parseFloat(document.getElementById('simMaxPrice')?.value) || 35,
+        minPrice: parseFloat(document.getElementById('simMinPrice')?.value) || 20,
+        maxPrice: parseFloat(document.getElementById('simMaxPrice')?.value) || 30,
         cupsPerStep: parseInt(document.getElementById('simCupsPerStep')?.value) || 4,
         volume: parseInt(document.getElementById('simVolume')?.value) || 20000,
         timestamp: Date.now()
@@ -5746,8 +5750,8 @@
       const grid = document.getElementById('simMetricsGrid');
       let currPrice = req.initialPrice || 25.00;
       const startPrice = currPrice;
-      const minPrice = req.minPrice || 18.00;
-      const maxPrice = req.maxPrice || 35.00;
+      const minPrice = req.minPrice || 20.00;
+      const maxPrice = req.maxPrice || 30.00;
       const cupsPerStep = req.cupsPerInterval || 4;
       const targetSales = req.targetSales || 0.55;
 
@@ -5902,8 +5906,8 @@
       const selectedText = sel ? sel.options[sel.selectedIndex]?.text?.replace(/^[^\w\s]+/, '')?.trim() : 'Fresh Mango Juice';
 
       const startPrice = parseFloat(document.getElementById('simStartPrice').value) || 25;
-      const minPrice = parseFloat(document.getElementById('simMinPrice').value) || 18;
-      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 35;
+      const minPrice = parseFloat(document.getElementById('simMinPrice').value) || 20;
+      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 30;
       const cupsPerStep = parseInt(document.getElementById('simCupsPerStep').value) || 4;
       const targetPrice = window.lastSimulatedFinalPrice !== undefined ? parseFloat(window.lastSimulatedFinalPrice) : startPrice;
 
@@ -5990,8 +5994,8 @@
       if (btn) setButtonLoading(btn, true, 'Deploying ALL Products...');
 
       const startPrice = parseFloat(document.getElementById('simStartPrice').value) || 25;
-      const minPrice = parseFloat(document.getElementById('simMinPrice').value) || 18;
-      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 35;
+      const minPrice = parseFloat(document.getElementById('simMinPrice').value) || 20;
+      const maxPrice = parseFloat(document.getElementById('simMaxPrice').value) || 30;
       const cupsPerStep = parseInt(document.getElementById('simCupsPerStep').value) || 4;
 
       try {
@@ -6835,12 +6839,12 @@
       const pid = prod.productId || prod.id;
       const icon = getFruitIconAdmin(prod);
       const name = prod.name || prod.productName || 'Beverage Instrument';
-      const livePrice = Number(prod.currentCupPrice || prod.currentPrice || 25).toFixed(2);
-      const basePrice = Number(prod.defaultCupPrice || prod.basePrice || 25).toFixed(2);
-      const minPrice = Number(prod.minCupPrice || 20).toFixed(2);
-      const maxPrice = Number(prod.maxCupPrice || 30).toFixed(2);
-      const target = Number(prod.targetSalesPer1Minute || prod.targetSales || 0.40).toFixed(2);
-      const isOverride = (prod.pricingMode === 'MANUAL_OVERRIDE');
+      const livePrice = Number(prod.currentCupPrice != null ? prod.currentCupPrice : (prod.currentPrice != null ? prod.currentPrice : 25)).toFixed(2);
+      const basePrice = Number(prod.defaultCupPrice != null ? prod.defaultCupPrice : (prod.basePrice != null ? prod.basePrice : 25)).toFixed(2);
+      const minPrice = Number(prod.minCupPrice != null ? prod.minCupPrice : 20).toFixed(2);
+      const maxPrice = Number(prod.maxCupPrice != null ? prod.maxCupPrice : 30).toFixed(2);
+      const target = Number(prod.targetSalesPer1Minute != null ? prod.targetSalesPer1Minute : (prod.targetSales != null ? prod.targetSales : 0.55)).toFixed(2);
+      const isOverride = (prod.pricingMode === 'MANUAL_OVERRIDE' || prod.pricingMode === 'MANUAL_LOCK' || prod.pricingMode === 'LOCKED');
 
       document.getElementById('drawerProductIcon').textContent = icon;
       document.getElementById('drawerProductName').textContent = name;
@@ -6901,19 +6905,34 @@
         return;
       }
       if (minPrice >= maxPrice) {
-        showToast('Ceiling price must be greater than floor price', 'warning');
+        showToast('Ceiling price must be strictly greater than floor price', 'warning');
         return;
       }
+      if (basePrice < minPrice || basePrice > maxPrice) {
+        showToast('Base rate must be between floor and ceiling limits', 'warning');
+        return;
+      }
+      if (target <= 0) {
+        showToast('Target sales must be greater than 0', 'warning');
+        return;
+      }
+
+      const prod = (liveProductsData || []).find(p => p.id === currentDrawerProductId);
+      const currentPrice = (prod && prod.currentCupPrice != null) ? parseFloat(prod.currentCupPrice) : basePrice;
 
       try {
         const payload = {
           productId: currentDrawerProductId,
-          defaultPrice: basePrice,
-          startPrice: basePrice,
-          minPrice: minPrice,
-          maxPrice: maxPrice,
+          defaultCupPrice: basePrice,
+          currentCupPrice: currentPrice,
+          minCupPrice: minPrice,
+          maxCupPrice: maxPrice,
           targetSales: target,
-          targetSalesPer1Minute: target
+          targetSalesPer1Minute: target,
+          defaultPrice: basePrice,
+          startPrice: currentPrice,
+          minPrice: minPrice,
+          maxPrice: maxPrice
         };
 
         const res = await apiFetch(`/admin/pricing/products/${currentDrawerProductId}/config`, {

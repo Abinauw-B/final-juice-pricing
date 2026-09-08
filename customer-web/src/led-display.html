@@ -2464,7 +2464,7 @@
           const cupSize = p.defaultCupSizeMl || 250;
 
           const baseP = Number(p.basePrice !== undefined ? p.basePrice : (p.defaultCupPrice !== undefined ? p.defaultCupPrice : 25)).toFixed(2);
-          const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
+          const activePrice = Number(isMarketCrashActive ? (p.minCupPrice != null ? p.minCupPrice : 20) : (p.currentCupPrice != null ? p.currentCupPrice : 25)).toFixed(2);
           const lastChange = (p.deltaPrice !== undefined ? Number(p.deltaPrice) : (p.priceDelta !== undefined ? Number(p.priceDelta) : (p.priceChange !== undefined ? Number(p.priceChange) : 0)));
           const movementReason = p.movementReason || p.movement || p.demandLevelCategory || (lastChange > 0 ? 'HIGH_DEMAND' : (lastChange < 0 ? 'LOW_DEMAND' : 'NORMAL_DEMAND'));
 
@@ -2569,11 +2569,11 @@
                   </div>
                   <div class="spec-item">
                     <span class="spec-label">Floor</span>
-                    <span class="spec-val" id="card_floor_${p.id}">₹${Number(p.minCupPrice || 18).toFixed(2)}</span>
+                    <span class="spec-val" id="card_floor_${p.id}">₹${Number(p.minCupPrice != null ? p.minCupPrice : 20).toFixed(2)}</span>
                   </div>
                   <div class="spec-item">
                     <span class="spec-label">Ceiling</span>
-                    <span class="spec-val" id="card_ceiling_${p.id}">₹${Number(p.maxCupPrice || 35).toFixed(2)}</span>
+                    <span class="spec-val" id="card_ceiling_${p.id}">₹${Number(p.maxCupPrice != null ? p.maxCupPrice : 30).toFixed(2)}</span>
                   </div>
                   <div class="spec-item">
                     <span class="spec-label">Target</span>
@@ -2610,7 +2610,7 @@
           }
 
           const baseP = Number(p.basePrice !== undefined ? p.basePrice : (p.defaultCupPrice !== undefined ? p.defaultCupPrice : 25)).toFixed(2);
-          const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
+          const activePrice = Number(isMarketCrashActive ? (p.minCupPrice != null ? p.minCupPrice : 20) : (p.currentCupPrice != null ? p.currentCupPrice : 25)).toFixed(2);
           const lastChange = (p.deltaPrice !== undefined ? Number(p.deltaPrice) : (p.priceDelta !== undefined ? Number(p.priceDelta) : (p.priceChange !== undefined ? Number(p.priceChange) : 0)));
           const movementReason = p.movementReason || p.movement || p.demandLevelCategory || (lastChange > 0 ? 'HIGH_DEMAND' : (lastChange < 0 ? 'LOW_DEMAND' : 'NORMAL_DEMAND'));
 
@@ -2634,9 +2634,9 @@
           const baseEl = document.getElementById(`card_base_${p.id}`);
           if (baseEl) baseEl.textContent = `₹${baseP}`;
           const floorEl = document.getElementById(`card_floor_${p.id}`);
-          if (floorEl) floorEl.textContent = `₹${Number(p.minCupPrice || 18).toFixed(2)}`;
+          if (floorEl) floorEl.textContent = `₹${Number(p.minCupPrice != null ? p.minCupPrice : 20).toFixed(2)}`;
           const ceilEl = document.getElementById(`card_ceiling_${p.id}`);
-          if (ceilEl) ceilEl.textContent = `₹${Number(p.maxCupPrice || 35).toFixed(2)}`;
+          if (ceilEl) ceilEl.textContent = `₹${Number(p.maxCupPrice != null ? p.maxCupPrice : 30).toFixed(2)}`;
           const targetEl = document.getElementById(`card_target_${p.id}`);
           if (targetEl) targetEl.textContent = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
 
@@ -2682,8 +2682,8 @@
 
       const history = priceHistoryMap[productId] || [];
       const prod = products.find(p => p.id === productId);
-      const basePrice = prod ? Number(prod.basePrice || 25) : 25;
-      const currentPrice = prod ? Number(prod.currentCupPrice || 25) : 25;
+      const basePrice = prod ? Number(prod.defaultCupPrice !== undefined ? prod.defaultCupPrice : (prod.basePrice !== undefined ? prod.basePrice : prod.currentCupPrice)) : 0;
+      const currentPrice = prod ? Number(prod.currentCupPrice !== undefined ? prod.currentCupPrice : prod.defaultCupPrice) : 0;
 
       // Make sure canvas display buffer accurately matches container dimensions
       const parent = canvas.parentElement;
@@ -2747,8 +2747,8 @@
 
       // Determine Min and Max for Y-Axis
       let prices = dataPoints.map(d => d.price);
-      let minP = Math.min(Number(prod ? prod.minCupPrice || 18 : 18), ...prices);
-      let maxP = Math.max(Number(prod ? prod.maxCupPrice || 35 : 35), ...prices);
+      let minP = Math.min(Number(prod && prod.minCupPrice != null ? prod.minCupPrice : 20), ...prices);
+      let maxP = Math.max(Number(prod && prod.maxCupPrice != null ? prod.maxCupPrice : 30), ...prices);
       const rawSpan = maxP - minP;
       minP = Math.max(10, minP - Math.max(1.5, rawSpan * 0.12));
       maxP = maxP + Math.max(1.5, rawSpan * 0.12);
@@ -2793,8 +2793,8 @@
       ctx.fillRect(padLeft, padTop, plotWidth, plotHeight);
 
       // Floor & Ceiling zone guides
-      const floorPrice = prod ? Number(prod.minCupPrice || 18) : 18;
-      const ceilingPrice = prod ? Number(prod.maxCupPrice || 35) : 35;
+      const floorPrice = prod && prod.minCupPrice != null ? Number(prod.minCupPrice) : 20;
+      const ceilingPrice = prod && prod.maxCupPrice != null ? Number(prod.maxCupPrice) : 30;
       const yFloor = getY(floorPrice);
       const yBase = getY(basePrice);
       const yCeil = getY(ceilingPrice);
@@ -3031,8 +3031,8 @@
       let stableCount = 0;
 
       products.forEach(p => {
-        const curr = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25));
-        const base = Number(p.basePrice || 25);
+        const curr = Number(isMarketCrashActive ? (p.minCupPrice != null ? p.minCupPrice : p.currentCupPrice) : (p.currentCupPrice != null ? p.currentCupPrice : p.defaultCupPrice));
+        const base = Number(p.defaultCupPrice != null ? p.defaultCupPrice : (p.basePrice != null ? p.basePrice : curr));
         if (curr > base) risingCount++;
         else if (curr < base) fallingCount++;
         else stableCount++;
@@ -3092,8 +3092,8 @@
       const buildTapeItemHtml = (p) => {
         const icon = getFruitIcon(p);
         const cleanName = (p.name || getCleanFlavourName(p)).toUpperCase();
-        const activePrice = Number(isMarketCrashActive ? (p.minCupPrice || 18) : (p.currentCupPrice || 25)).toFixed(2);
-        const baseP = Number(p.basePrice || 25).toFixed(2);
+        const activePrice = Number(isMarketCrashActive ? (p.minCupPrice != null ? p.minCupPrice : p.currentCupPrice) : (p.currentCupPrice != null ? p.currentCupPrice : p.defaultCupPrice)).toFixed(2);
+        const baseP = Number(p.defaultCupPrice != null ? p.defaultCupPrice : (p.basePrice != null ? p.basePrice : activePrice)).toFixed(2);
         const diff = Number(activePrice) - Number(baseP);
         const pct = baseP > 0 ? (((Number(activePrice) - Number(baseP)) / Number(baseP)) * 100).toFixed(1) : '0.0';
         const isUp = diff > 0.001;
@@ -3151,7 +3151,7 @@
       const icon = getFruitIcon(prod);
       const name = prod.name || prod.flavour || 'Juice';
       const cleanFlavour = getCleanFlavourName(prod);
-      const activePrice = Number(isMarketCrashActive ? (prod.minCupPrice || 18) : (prod.currentCupPrice || 25)).toFixed(2);
+      const activePrice = Number(isMarketCrashActive ? (prod.minCupPrice != null ? prod.minCupPrice : 20) : (prod.currentCupPrice != null ? prod.currentCupPrice : 25)).toFixed(2);
 
       document.getElementById('modalFruitIcon').textContent = icon;
       document.getElementById('modalProductName').textContent = name;
@@ -3179,9 +3179,9 @@
 
       const history = priceHistoryMap[productId] || [];
       const prod = products.find(p => p.id === productId);
-      const basePrice = prod ? Number(prod.basePrice || 25) : 25;
-      const floorPrice = prod ? Number(prod.minCupPrice || 18) : 18;
-      const ceilingPrice = prod ? Number(prod.maxCupPrice || 35) : 35;
+      const basePrice = prod ? Number(prod.defaultCupPrice != null ? prod.defaultCupPrice : (prod.basePrice != null ? prod.basePrice : prod.currentCupPrice)) : 0;
+      const floorPrice = prod && prod.minCupPrice != null ? Number(prod.minCupPrice) : (prod && prod.defaultCupPrice != null ? Number(prod.defaultCupPrice) : 0);
+      const ceilingPrice = prod && prod.maxCupPrice != null ? Number(prod.maxCupPrice) : (prod && prod.defaultCupPrice != null ? Number(prod.defaultCupPrice) : 0);
 
       const rect = canvas.parentElement.getBoundingClientRect();
       const width = rect.width - 16;
@@ -3205,7 +3205,7 @@
 
       if (dataPoints.length === 0) {
         const pBase = Number(basePrice);
-        const pCurr = Number(prod ? prod.currentCupPrice || 25 : 25);
+        const pCurr = Number(prod ? (prod.currentCupPrice != null ? prod.currentCupPrice : prod.defaultCupPrice) : 0);
         const pMid = Number(((pBase * 0.45) + (pCurr * 0.55)).toFixed(2));
         dataPoints = [
           { time: new Date(Date.now() - 180000), price: pBase, change: 0, reason: 'Initial Baseline' },
@@ -3545,8 +3545,8 @@
 
       incoming.forEach(item => {
         const pId = item.id || item.beverageId || item.productId;
-        const newPrice = Number(item.currentCupPrice !== undefined ? item.currentCupPrice : (item.currentPrice !== undefined ? item.currentPrice : (item.newPrice || 25)));
-        const oldPrice = Number(item.oldPrice !== undefined ? item.oldPrice : (item.basePrice || item.defaultCupPrice || 25));
+        const newPrice = Number(item.currentCupPrice !== undefined ? item.currentCupPrice : (item.currentPrice !== undefined ? item.currentPrice : (item.newPrice !== undefined ? item.newPrice : (item.defaultCupPrice !== undefined ? item.defaultCupPrice : 0))));
+        const oldPrice = Number(item.oldPrice !== undefined ? item.oldPrice : (item.defaultCupPrice !== undefined ? item.defaultCupPrice : (item.basePrice !== undefined ? item.basePrice : newPrice)));
         const priceChange = Number(item.priceChange !== undefined ? item.priceChange : (newPrice - oldPrice));
 
         // Update product state

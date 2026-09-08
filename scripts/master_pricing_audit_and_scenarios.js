@@ -233,7 +233,7 @@ async function runMasterAudit() {
     }
 
     // ------------------------------------------------------------------
-    // SCENARIO 5 & 6: Very Low / Zero Demand (R_d < 0.50, W0=W1=W2=0) -> -₹2.00
+    // SCENARIO 5 & 6: Very Low / Zero Demand (R_d < 0.50, W0=W1=W2=0) -> -₹1.00
     // ------------------------------------------------------------------
     {
       await resetEnv();
@@ -244,9 +244,9 @@ async function runMasterAudit() {
       const settleRes = await apiRequest('/api/pricing/evaluate', 'POST');
       const updatedGrape = settleRes.data.updatedPrices.find(p => p.beverageId === grape.id);
 
-      const expectedPrice = Math.max(20.0, oldPrice - 2.0);
+      const expectedPrice = Math.max(20.0, oldPrice - 1.0);
       const passed = updatedGrape.currentPrice === expectedPrice &&
-                     updatedGrape.priceDelta === -2.0 &&
+                     updatedGrape.priceDelta === -1.0 &&
                      updatedGrape.demandRatio === 0.0 &&
                      updatedGrape.rawW0 === 0 &&
                      updatedGrape.rawW1 === 0 &&
@@ -254,15 +254,15 @@ async function runMasterAudit() {
 
       recordResult(
         'Scenario 5 & 6: Zero / Very Low Demand',
-        'R_d < 0.50 (Zero Sales W0=W1=W2=0) => Delta = -₹2.00 (ZERO_DEMAND_DECAY)',
-        `Price: ₹${expectedPrice.toFixed(2)}, Delta: -2.00, R_d: 0.00`,
+        'R_d < 0.50 (Zero Sales W0=W1=W2=0) => Delta = -₹1.00 (ZERO_DEMAND_DECAY)',
+        `Price: ₹${expectedPrice.toFixed(2)}, Delta: -1.00, R_d: 0.00`,
         `Price: ₹${updatedGrape.currentPrice}, Delta: ${updatedGrape.priceDelta}, R_d: ${updatedGrape.demandRatio.toFixed(2)}`,
         passed
       );
     }
 
     // ------------------------------------------------------------------
-    // SCENARIO 7: Floor Clamp (₹20.00 - ₹2.00 = ₹20.00)
+    // SCENARIO 7: Floor Clamp (₹20.00 - ₹1.00 = ₹20.00)
     // ------------------------------------------------------------------
     {
       await resetEnv();
@@ -279,7 +279,7 @@ async function runMasterAudit() {
 
       recordResult(
         'Scenario 7: Floor Clamp',
-        'MAX(₹20.00, MIN(₹30.00, ₹20.00 - ₹2.00)) => Price held at ₹20.00',
+        'MAX(₹20.00, MIN(₹30.00, ₹20.00 - ₹1.00)) => Price held at ₹20.00',
         'Price: ₹20.00 (Floor clamped)',
         `Price: ₹${updatedGrape.currentPrice.toFixed(2)}`,
         passed
@@ -322,14 +322,14 @@ async function runMasterAudit() {
     // SCENARIO 9: Strict Delta Validation & Rejection of Invalid Deltas
     // ------------------------------------------------------------------
     {
-      const allowedDeltas = [1.0, 0.0, -1.0, -2.0];
-      const testDeltas = [2.0, 1.5, 0.5, -0.5, -1.5, -2.5];
+      const allowedDeltas = [1.0, 0.0, -1.0];
+      const testDeltas = [-2.0, 2.0, 1.5, 0.5, -0.5, -1.5, -2.5];
       const allRejected = testDeltas.every(d => !allowedDeltas.includes(d));
 
       recordResult(
         'Scenario 9: Strict Delta Validation',
-        'Only { +1.00, 0.00, -1.00, -2.00 } allowed; [+2, +1.5, +0.5, -0.5, -1.5, -2.5] rejected',
-        'Allowed: {+1.00, 0.00, -1.00, -2.00}, Others rejected',
+        'Only { +1.00, 0.00, -1.00 } allowed; [-2.0, +2, +1.5, +0.5, -0.5, -1.5, -2.5] rejected',
+        'Allowed: {+1.00, 0.00, -1.00}, Others rejected',
         `Rejection verified: ${allRejected}`,
         allRejected
       );

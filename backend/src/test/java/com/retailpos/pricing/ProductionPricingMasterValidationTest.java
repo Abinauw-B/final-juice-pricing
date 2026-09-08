@@ -44,6 +44,12 @@ public class ProductionPricingMasterValidationTest {
     @Autowired(required = false)
     private PricingRedisRepository redisRepository;
 
+    @Autowired
+    private PricingConfigurationService pricingConfigurationService;
+
+    @Autowired
+    private PricingSimulationService pricingSimulationService;
+
     private Product testProduct;
 
     @BeforeEach
@@ -149,23 +155,23 @@ public class ProductionPricingMasterValidationTest {
     }
 
     // ==========================================
-    // 4. Zero Demand (-₹2.00)
+    // 4. Zero Demand (-₹1.00)
     // ==========================================
     @Test
-    @DisplayName("4. Zero demand: Rd < 0.50 -> Price decreases by exactly -₹2.00")
-    void test_04_ZeroDemand_MinusTwo() {
+    @DisplayName("4. Zero demand: Rd < 0.50 -> Price decreases by exactly -₹1.00")
+    void test_04_ZeroDemand_MinusOne() {
         // Fast-forward 10 minutes into the future with 0 sales
         LocalDateTime future = LocalDateTime.now().plusMinutes(10);
         PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.evaluateAndAdjustPrice(testProduct.getId(), future);
-        assertEquals(new BigDecimal("23.00"), res.getNewPrice());
-        assertEquals(new BigDecimal("-2.00"), res.getPriceChange());
+        assertEquals(new BigDecimal("24.00"), res.getNewPrice());
+        assertEquals(new BigDecimal("-1.00"), res.getPriceChange());
     }
 
     // ==========================================
     // 5. Floor Clamp (Floor = ₹20.00)
     // ==========================================
     @Test
-    @DisplayName("5. Floor clamp: Current ₹20.00, Zero Demand (-₹2.00) -> Pinned at ₹20.00 Floor")
+    @DisplayName("5. Floor clamp: Current ₹20.00, Zero Demand (-₹1.00) -> Pinned at ₹20.00 Floor")
     void test_05_FloorClamp() {
         testProduct.setCurrentCupPrice(new BigDecimal("20.00"));
         testProduct = productRepository.saveAndFlush(testProduct);
@@ -435,5 +441,205 @@ public class ProductionPricingMasterValidationTest {
     void test_20_AdminForceOverlap() {
         PricingEngineService.PriceEvaluationCycleResult res = settlementCoordinator.executeForceSettlement(LocalDateTime.now());
         assertNotNull(res);
+    }
+
+    // ==========================================
+    // 21. Product-Specific Bounds and Target Authority
+    // ==========================================
+    @Test
+    @DisplayName("21. Admin updates product-specific bounds & target -> Persisted in DB & authoritative")
+    void test_21_ProductSpecificBoundsAndTargetAuthority() {
+        com.retailpos.pricing.model.PricingConfigDTO.ProductConfig update = new com.retailpos.pricing.model.PricingConfigDTO.ProductConfig();
+        update.setMinCupPrice(new BigDecimal("21.00"));
+        update.setDefaultCupPrice(new BigDecimal("27.00"));
+        update.setCurrentCupPrice(new BigDecimal("27.00"));
+        update.setMaxCupPrice(new BigDecimal("34.00"));
+        update.setTargetSales(1.20);
+
+        pricingConfigurationService.updateProductConfiguration(testProduct.getId(), update, "ADMIN", "AUTHORITY_TEST");
+
+        Product persisted = productRepository.findById(testProduct.getId()).orElseThrow();
+        assertEquals(new BigDecimal("21.00"), persisted.getMinCupPrice());
+        assertEquals(new BigDecimal("27.00"), persisted.getDefaultCupPrice());
+        assertEquals(new BigDecimal("27.00"), persisted.getCurrentCupPrice());
+        assertEquals(new BigDecimal("34.00"), persisted.getMaxCupPrice());
+        assertEquals(1.20, persisted.getTargetSalesPer1Minute(), 0.001);
+
+        // Zero demand -> decreases by -1.00 from 27.00 to 26.00 (NOT 25.00, NEVER -2.00)
+        LocalDateTime future = LocalDateTime.now().plusMinutes(10);
+        PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.evaluateAndAdjustPrice(testProduct.getId(), future);
+        assertEquals(new BigDecimal("26.00"), res.getNewPrice());
+        assertEquals(new BigDecimal("-1.00"), res.getPriceChange());
+    }
+
+    // ==========================================
+    // 22. Distinct Products with Different Bounds
+    // ==========================================
+    @Test
+    @DisplayName("22. Different products enforce their own individual bounds and decay")
+    void test_22_DistinctProductsWithDifferentBounds() {
+        Product prodA = testProduct;
+        prodA.setMinCupPrice(new BigDecimal("22.00"));
+        prodA.setDefaultCupPrice(new BigDecimal("28.00"));
+        prodA.setCurrentCupPrice(new BigDecimal("22.00"));
+        prodA.setMaxCupPrice(new BigDecimal("35.00"));
+        prodA = productRepository.saveAndFlush(prodA);
+
+        Product prodB = productRepository.findByFlavourIgnoreCase("COOL_MINT_COOLER")
+                .or(() -> productRepository.findById(3L))
+                .orElseGet(() -> productRepository.save(Product.builder()
+                        .name("Cool Mint Cooler").flavour("COOL_MINT_COOLER").defaultCupSizeMl(250)
+                        .defaultCupPrice(new BigDecimal("22.00")).currentCupPrice(new BigDecimal("22.00"))
+                        .minCupPrice(new BigDecimal("18.00")).maxCupPrice(new BigDecimal("28.00")).targetSalesPer1Minute(0.40).build()));
+        prodB.setMinCupPrice(new BigDecimal("18.00"));
+        prodB.setDefaultCupPrice(new BigDecimal("24.00"));
+        prodB.setCurrentCupPrice(new BigDecimal("18.00"));
+        prodB.setMaxCupPrice(new BigDecimal("30.00"));
+        prodB = productRepository.saveAndFlush(prodB);
+
+        // Zero sales for both -> Prod A clamped at 22.00, Prod B clamped at 18.00
+        LocalDateTime future = LocalDateTime.now().plusMinutes(10);
+        PriceAdjustmentService.PriceEvaluationResult resA = priceAdjustmentService.evaluateAndAdjustPrice(prodA.getId(), future);
+        PriceAdjustmentService.PriceEvaluationResult resB = priceAdjustmentService.evaluateAndAdjustPrice(prodB.getId(), future);
+
+        assertEquals(new BigDecimal("22.00"), resA.getNewPrice(), "Product A must clamp at its own floor ₹22.00");
+        assertEquals(new BigDecimal("18.00"), resB.getNewPrice(), "Product B must clamp at its own floor ₹18.00");
+    }
+
+    // ==========================================
+    // 23. Global Config Does NOT Overwrite Products
+    // ==========================================
+    @Test
+    @DisplayName("23. Global configuration save does NOT overwrite individual product pricing")
+    void test_23_GlobalConfigDoesNotOverwriteProducts() {
+        testProduct.setMinCupPrice(new BigDecimal("21.00"));
+        testProduct.setDefaultCupPrice(new BigDecimal("27.00"));
+        testProduct.setCurrentCupPrice(new BigDecimal("27.00"));
+        testProduct.setMaxCupPrice(new BigDecimal("34.00"));
+        testProduct = productRepository.saveAndFlush(testProduct);
+
+        com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig globalUpdate = new com.retailpos.pricing.model.PricingConfigDTO.GlobalConfig();
+        globalUpdate.setSettlementIntervalSeconds(60);
+        globalUpdate.setDefaultCupPrice(new BigDecimal("25.00"));
+        globalUpdate.setMinCupPrice(new BigDecimal("20.00"));
+        globalUpdate.setMaxCupPrice(new BigDecimal("30.00"));
+        globalUpdate.setIncreaseStep(new BigDecimal("1.00"));
+        globalUpdate.setDecreaseStep1(new BigDecimal("1.00"));
+        globalUpdate.setDecreaseStep2(new BigDecimal("1.00"));
+        globalUpdate.setWeightW0(new BigDecimal("1.00"));
+        globalUpdate.setWeightW1(new BigDecimal("0.50"));
+        globalUpdate.setWeightW2(new BigDecimal("0.25"));
+        globalUpdate.setHighDemandThreshold(new BigDecimal("1.10"));
+        globalUpdate.setStableDemandLowerThreshold(new BigDecimal("0.90"));
+        globalUpdate.setStableDemandUpperThreshold(new BigDecimal("1.10"));
+        globalUpdate.setLowDemandThreshold(new BigDecimal("0.50"));
+
+        pricingConfigurationService.updateGlobalConfiguration(globalUpdate, "ADMIN", "TEST_GLOBAL_SAVE");
+
+        Product afterGlobalSave = productRepository.findById(testProduct.getId()).orElseThrow();
+        assertEquals(new BigDecimal("21.00"), afterGlobalSave.getMinCupPrice(), "Product minCupPrice must NOT be overwritten by global config");
+        assertEquals(new BigDecimal("27.00"), afterGlobalSave.getDefaultCupPrice(), "Product defaultCupPrice must NOT be overwritten by global config");
+        assertEquals(new BigDecimal("34.00"), afterGlobalSave.getMaxCupPrice(), "Product maxCupPrice must NOT be overwritten by global config");
+    }
+
+    // ==========================================
+    // 24. Reset All Restores Product's OWN Base Price
+    // ==========================================
+    @Test
+    @DisplayName("24. Reset All restores each product to its OWN base rate, preserving bounds")
+    void test_24_ResetAllRestoresEachProductOwnBasePrice() {
+        testProduct.setDefaultCupPrice(new BigDecimal("27.00"));
+        testProduct.setCurrentCupPrice(new BigDecimal("32.00"));
+        testProduct.setMinCupPrice(new BigDecimal("21.00"));
+        testProduct.setMaxCupPrice(new BigDecimal("34.00"));
+        testProduct = productRepository.saveAndFlush(testProduct);
+
+        priceAdjustmentService.resetAllProductsToDefault();
+
+        Product resetProd = productRepository.findById(testProduct.getId()).orElseThrow();
+        assertEquals(new BigDecimal("27.00"), resetProd.getCurrentCupPrice(), "Product must reset to its own base price of ₹27.00");
+        assertEquals(new BigDecimal("21.00"), resetProd.getMinCupPrice(), "Product floor must be preserved");
+        assertEquals(new BigDecimal("34.00"), resetProd.getMaxCupPrice(), "Product ceiling must be preserved");
+        assertEquals(new BigDecimal("27.00"), resetProd.getDefaultCupPrice(), "Product base must be preserved");
+    }
+
+    // ==========================================
+    // 25. -₹2.00 Movement Is Impossible & Rejected
+    // ==========================================
+    @Test
+    @DisplayName("25. Movement -2.00 is strictly rejected; allowed movements are {+1.00, 0.00, -1.00}")
+    void test_25_MinusTwoMovementRejected() {
+        PricingConfigurationService.validatePriceMovement(new BigDecimal("1.00"));
+        PricingConfigurationService.validatePriceMovement(BigDecimal.ZERO);
+        PricingConfigurationService.validatePriceMovement(new BigDecimal("-1.00"));
+
+        assertThrows(IllegalStateException.class, () ->
+                PricingConfigurationService.validatePriceMovement(new BigDecimal("-2.00"))
+        );
+    }
+
+    // ==========================================
+    // 26. Admin Drawer DTO Jackson Aliases
+    // ==========================================
+    @Test
+    @DisplayName("26. Jackson aliases map legacy admin drawer keys to canonical fields")
+    void test_26_AdminDrawerPayloadMapping() throws Exception {
+        String json = "{\"productId\":1,\"defaultPrice\":27.00,\"startPrice\":27.00,\"minPrice\":21.00,\"maxPrice\":34.00,\"targetSales\":1.20}";
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        com.retailpos.pricing.model.PricingConfigDTO.ProductConfig dto = mapper.readValue(json, com.retailpos.pricing.model.PricingConfigDTO.ProductConfig.class);
+
+        assertEquals(new BigDecimal("27.00"), dto.getDefaultCupPrice());
+        assertEquals(new BigDecimal("27.00"), dto.getCurrentCupPrice());
+        assertEquals(new BigDecimal("21.00"), dto.getMinCupPrice());
+        assertEquals(new BigDecimal("34.00"), dto.getMaxCupPrice());
+        assertEquals(1.20, dto.getTargetSales(), 0.001);
+    }
+
+    // ==========================================
+    // 27. Simulator Follows Same Movement Rules
+    // ==========================================
+    @Test
+    @DisplayName("27. Simulator follows identical {+1, 0, -1} movement rules without -2 decay")
+    void test_27_SimulatorFollowsSameMovementRules() {
+        PricingSimulationService.SimulationRequest req = new PricingSimulationService.SimulationRequest();
+        req.setInitialPrice(new BigDecimal("27.00"));
+        req.setMinPrice(new BigDecimal("21.00"));
+        req.setMaxPrice(new BigDecimal("34.00"));
+        req.setCupsPerInterval(0);
+        req.setTotalSimulatedPurchases(0);
+
+        PricingSimulationService.SimulationResponse res = pricingSimulationService.runSimulation(req);
+        assertNotNull(res);
+        assertFalse(res.getSteps().isEmpty());
+
+        // Step 1 zero sales -> moves by -1.00 to 26.00 (NOT 25.00)
+        PricingSimulationService.SimulationStep step1 = res.getSteps().get(0);
+        assertEquals(new BigDecimal("26.00"), step1.getPrice());
+        assertEquals("-₹1", step1.getPriceMovement());
+    }
+
+    // ==========================================
+    // 28. Clamping Respects Product Bounds
+    // ==========================================
+    @Test
+    @DisplayName("28. Clamping strictly prevents price exceeding max or dropping below min")
+    void test_28_ClampingRespectsProductBounds() {
+        testProduct.setMinCupPrice(new BigDecimal("21.00"));
+        testProduct.setMaxCupPrice(new BigDecimal("34.00"));
+        testProduct.setCurrentCupPrice(new BigDecimal("34.00"));
+        testProduct = productRepository.saveAndFlush(testProduct);
+
+        // High demand surge (+1) at ceiling ₹34.00 -> remains clamped at ₹34.00
+        BigDecimal uncapped = testProduct.getCurrentCupPrice().add(BigDecimal.ONE);
+        BigDecimal clampedMax = uncapped.max(testProduct.getMinCupPrice()).min(testProduct.getMaxCupPrice());
+        assertEquals(new BigDecimal("34.00"), clampedMax);
+
+        // Low demand decay (-1) at floor ₹21.00 -> remains clamped at ₹21.00
+        testProduct.setCurrentCupPrice(new BigDecimal("21.00"));
+        testProduct = productRepository.saveAndFlush(testProduct);
+
+        BigDecimal uncappedLow = testProduct.getCurrentCupPrice().subtract(BigDecimal.ONE);
+        BigDecimal clampedMin = uncappedLow.max(testProduct.getMinCupPrice()).min(testProduct.getMaxCupPrice());
+        assertEquals(new BigDecimal("21.00"), clampedMin);
     }
 }

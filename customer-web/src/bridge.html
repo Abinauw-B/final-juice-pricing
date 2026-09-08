@@ -61,10 +61,10 @@
           dynamicProds.push({
             id: payload.productId || Date.now(),
             name: payload.flavourName || 'Juice Flavour',
-            currentCupPrice: payload.finalPrice || payload.startPrice || 20,
-            basePrice: payload.startPrice || 20,
-            minCupPrice: payload.minPrice || 18,
-            maxCupPrice: payload.maxPrice || 25
+            currentCupPrice: payload.finalPrice != null ? payload.finalPrice : (payload.startPrice != null ? payload.startPrice : 25),
+            basePrice: payload.startPrice != null ? payload.startPrice : 25,
+            minCupPrice: payload.minPrice != null ? payload.minPrice : 20,
+            maxCupPrice: payload.maxPrice != null ? payload.maxPrice : 30
           });
         }
         localStorage.setItem('pubexchange_dynamic_products', JSON.stringify(dynamicProds));

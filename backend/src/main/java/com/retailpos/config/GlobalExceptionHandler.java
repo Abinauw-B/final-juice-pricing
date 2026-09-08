@@ -16,13 +16,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleNotFound(IllegalArgumentException ex, WebRequest request) {
+        boolean isNotFound = ex.getMessage() != null && ex.getMessage().toLowerCase().contains("not found");
+        HttpStatus status = isNotFound ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now().toString());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "NOT_FOUND");
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
         body.put("message", ex.getMessage());
         body.put("path", request.getDescription(false).replace("uri=", ""));
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(body, status);
     }
 
     @ExceptionHandler(IllegalStateException.class)

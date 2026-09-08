@@ -33,13 +33,11 @@ public class PriceMovementUnitTest {
             }
         } else if (rd.compareTo(new BigDecimal("0.9000")) >= 0) {
             deltaP = BigDecimal.ZERO;
-        } else if (rd.compareTo(new BigDecimal("0.5000")) >= 0) {
-            deltaP = new BigDecimal("-1.00");
         } else {
-            deltaP = new BigDecimal("-2.00");
+            deltaP = new BigDecimal("-1.00");
         }
 
-        // Validate allowed pricing movements {+1.00, 0.00, -1.00, -2.00}
+        // Validate allowed pricing movements {+1.00, 0.00, -1.00}
         PricingConfigurationService.validatePriceMovement(deltaP);
 
         BigDecimal uncapped = currentPrice.add(deltaP);
@@ -81,25 +79,25 @@ public class PriceMovementUnitTest {
     }
 
     @Test
-    @DisplayName("TEST D: Current ₹25.00, Zero Demand (Rd < 0.50) -> Expected: ₹23.00 (-₹2)")
-    void test_D_Current25_ZeroSales_Returns23() {
+    @DisplayName("TEST D: Current ₹25.00, Zero Demand (Rd < 0.50) -> Expected: ₹24.00 (-₹1)")
+    void test_D_Current25_ZeroSales_Returns24() {
         BigDecimal currentPrice = new BigDecimal("25.00");
         BigDecimal floor = new BigDecimal("20.00");
         BigDecimal ceiling = new BigDecimal("30.00");
 
         BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 0, 0, 0.55, floor, ceiling);
-        assertEquals(new BigDecimal("23.00"), newPrice);
+        assertEquals(new BigDecimal("24.00"), newPrice);
     }
 
     @Test
-    @DisplayName("TEST E: Current ₹23.00, Zero Demand -> Expected: ₹21.00 (-₹2)")
-    void test_E_Current23_ZeroSales_Returns21() {
+    @DisplayName("TEST E: Current ₹23.00, Zero Demand -> Expected: ₹22.00 (-₹1)")
+    void test_E_Current23_ZeroSales_Returns22() {
         BigDecimal currentPrice = new BigDecimal("23.00");
         BigDecimal floor = new BigDecimal("20.00");
         BigDecimal ceiling = new BigDecimal("30.00");
 
         BigDecimal newPrice = calculateDWMAPrice(currentPrice, 0, 0, 0, 0.55, floor, ceiling);
-        assertEquals(new BigDecimal("21.00"), newPrice);
+        assertEquals(new BigDecimal("22.00"), newPrice);
     }
 
     @Test
@@ -162,15 +160,15 @@ public class PriceMovementUnitTest {
     }
 
     @Test
-    @DisplayName("TEST K: Verify allowed movements {+1.00, 0.00, -1.00, -2.00} validate; others throw")
+    @DisplayName("TEST K: Verify allowed movements {+1.00, 0.00, -1.00} validate; others (including -2.00) throw")
     void test_K_MaxPriceMovementValidation() {
-        // Valid normal pricing deltas: +1, 0, -1, -2
+        // Valid normal pricing deltas: +1, 0, -1
         PricingConfigurationService.validatePriceMovement(new BigDecimal("1.00"));
         PricingConfigurationService.validatePriceMovement(new BigDecimal("0.00"));
         PricingConfigurationService.validatePriceMovement(new BigDecimal("-1.00"));
-        PricingConfigurationService.validatePriceMovement(new BigDecimal("-2.00"));
 
-        // Invalid normal pricing movements
+        // Invalid normal pricing movements (including obsolete -2.00)
+        assertThrows(IllegalStateException.class, () -> PricingConfigurationService.validatePriceMovement(new BigDecimal("-2.00")));
         assertThrows(IllegalStateException.class, () -> PricingConfigurationService.validatePriceMovement(new BigDecimal("-4.00")));
         assertThrows(IllegalStateException.class, () -> PricingConfigurationService.validatePriceMovement(new BigDecimal("-3.00")));
         assertThrows(IllegalStateException.class, () -> PricingConfigurationService.validatePriceMovement(new BigDecimal("2.00")));
@@ -223,10 +221,16 @@ public class PriceMovementUnitTest {
         double target = 0.55;
 
         BigDecimal p25 = new BigDecimal("25.00");
-        BigDecimal p23 = calculateDWMAPrice(p25, 0, 0, 0, target, floor, ceiling);
+        BigDecimal p24 = calculateDWMAPrice(p25, 0, 0, 0, target, floor, ceiling);
+        assertEquals(new BigDecimal("24.00"), p24);
+
+        BigDecimal p23 = calculateDWMAPrice(p24, 0, 0, 0, target, floor, ceiling);
         assertEquals(new BigDecimal("23.00"), p23);
 
-        BigDecimal p21 = calculateDWMAPrice(p23, 0, 0, 0, target, floor, ceiling);
+        BigDecimal p22 = calculateDWMAPrice(p23, 0, 0, 0, target, floor, ceiling);
+        assertEquals(new BigDecimal("22.00"), p22);
+
+        BigDecimal p21 = calculateDWMAPrice(p22, 0, 0, 0, target, floor, ceiling);
         assertEquals(new BigDecimal("21.00"), p21);
 
         BigDecimal p20 = calculateDWMAPrice(p21, 0, 0, 0, target, floor, ceiling);

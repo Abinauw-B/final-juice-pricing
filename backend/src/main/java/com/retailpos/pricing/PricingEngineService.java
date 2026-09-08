@@ -363,6 +363,8 @@ public class PricingEngineService {
                     .demandRatio(1.0)
                     .weightedSales(1.0)
                     .targetSales(product.getTargetSalesPer1Minute() != null ? product.getTargetSalesPer1Minute() : 0.55)
+                    .orderCount(product.getOrderCount())
+                    .pricingMode(product.getPricingMode() != null ? product.getPricingMode() : "DYNAMIC")
                     .demandLevelCategory("NORMAL")
                     .isCrashed(crashed)
                     .minCupPrice(product.getMinCupPrice())

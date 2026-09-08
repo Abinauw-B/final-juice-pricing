@@ -128,6 +128,27 @@ public class POSController {
     @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product details) {
         return productRepository.findById(id).map(existing -> {
+            BigDecimal effectiveMin = details.getMinCupPrice() != null ? details.getMinCupPrice() : existing.getMinCupPrice();
+            BigDecimal effectiveMax = details.getMaxCupPrice() != null ? details.getMaxCupPrice() : existing.getMaxCupPrice();
+            BigDecimal effectiveBase = details.getDefaultCupPrice() != null ? details.getDefaultCupPrice() : existing.getDefaultCupPrice();
+            BigDecimal effectiveCurrent = details.getCurrentCupPrice() != null ? details.getCurrentCupPrice() : existing.getCurrentCupPrice();
+
+            if (effectiveMin != null && effectiveMax != null && effectiveMin.compareTo(effectiveMax) >= 0) {
+                throw new IllegalArgumentException("Maximum price must be strictly greater than minimum price");
+            }
+            if (effectiveBase != null && effectiveMin != null && effectiveBase.compareTo(effectiveMin) < 0) {
+                throw new IllegalArgumentException("Base price cannot be below minimum floor price");
+            }
+            if (effectiveBase != null && effectiveMax != null && effectiveBase.compareTo(effectiveMax) > 0) {
+                throw new IllegalArgumentException("Base price cannot exceed maximum ceiling price");
+            }
+            if (effectiveCurrent != null && effectiveMin != null && effectiveCurrent.compareTo(effectiveMin) < 0) {
+                throw new IllegalArgumentException("Current price cannot be below minimum floor price");
+            }
+            if (effectiveCurrent != null && effectiveMax != null && effectiveCurrent.compareTo(effectiveMax) > 0) {
+                throw new IllegalArgumentException("Current price cannot exceed maximum ceiling price");
+            }
+
             if (details.getName() != null) existing.setName(details.getName());
             if (details.getFlavour() != null) existing.setFlavour(details.getFlavour());
             if (details.getDescription() != null) existing.setDescription(details.getDescription());

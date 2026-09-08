@@ -203,12 +203,8 @@ public class PriceAdjustmentService {
         int targetOrders = (product.getTargetOrders() != null && product.getTargetOrders() > 0) ? product.getTargetOrders() : 5;
         BigDecimal volatility = (product.getVolatility() != null) ? product.getVolatility() : new BigDecimal("1.00");
         BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
-        BigDecimal floor = (product.getMinCupPrice() != null)
-                ? product.getMinCupPrice()
-                : (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("20.00"));
-        BigDecimal ceiling = (product.getMaxCupPrice() != null)
-                ? product.getMaxCupPrice()
-                : (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("30.00"));
+        BigDecimal floor = product.getMinCupPrice();
+        BigDecimal ceiling = product.getMaxCupPrice();
         int orderCount = product.getOrderCount() != null ? product.getOrderCount() : 0;
 
         // Check Market Paused
@@ -374,13 +370,13 @@ public class PriceAdjustmentService {
             reason = "BELOW_NORMAL_DEMAND_DECAY";
             demandLevelCategory = "LOW";
         } else {
-            deltaP = new BigDecimal("-2.00");
-            movement = -2;
+            deltaP = new BigDecimal("-1.00");
+            movement = -1;
             reason = "ZERO_DEMAND_DECAY";
             demandLevelCategory = "VERY_LOW";
         }
 
-        // Validate strictly allowed price movement (+1.00, 0.00, -1.00, -2.00)
+        // Validate strictly allowed price movement (+1.00, 0.00, -1.00)
         PricingConfigurationService.validatePriceMovement(deltaP);
 
         // 6. Bounded price: MAX(minCupPrice, MIN(maxCupPrice, oldPrice + deltaP))
@@ -638,6 +634,11 @@ public class PriceAdjustmentService {
     }
 
     @Transactional
+    public ResetAllResponse resetAllProductsToDefault() {
+        return resetAllProductsToDefault(null, null);
+    }
+
+    @Transactional
     public ResetAllResponse resetAllProductsToDefault(String reqId, String actor) {
         String requestId = (reqId != null && !reqId.isBlank()) ? reqId : "REQ-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         String userActor = (actor != null && !actor.isBlank()) ? actor : "ADMIN";
@@ -652,39 +653,42 @@ public class PriceAdjustmentService {
         resetMarketStartTime();
 
         int resetCount = 0;
-        BigDecimal basePrice = pricingConfigurationService != null ? pricingConfigurationService.getDefaultCupPrice() : new BigDecimal("25.00");
-        BigDecimal minPrice = pricingConfigurationService != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("20.00");
-        BigDecimal maxPrice = pricingConfigurationService != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("30.00");
 
         for (Product p : products) {
             BigDecimal oldPrice = p.getCurrentCupPrice();
+            BigDecimal productBase = p.getDefaultCupPrice();
+            if (productBase == null) {
+                log.warn("Product {} has null defaultCupPrice during reset, falling back to current/default", p.getId());
+                productBase = oldPrice != null ? oldPrice : new BigDecimal("25.00");
+            }
 
-            p.setCurrentCupPrice(basePrice);
-            p.setDefaultCupPrice(basePrice);
-            p.setMinCupPrice(minPrice);
-            p.setMaxCupPrice(maxPrice);
+            p.setCurrentCupPrice(productBase);
+            // CRITICAL: Preserve individual product min_cup_price, max_cup_price, default_cup_price, and target_sales!
             p.setPricingMode("DYNAMIC");
             p.setPriceVersion((p.getPriceVersion() != null ? p.getPriceVersion() : 1) + 1);
             p.setLastPriceChangeTimestamp(null);
             p.setOrderCount(0);
             productRepository.saveAndFlush(p);
             if (redisRepository != null) {
-                redisRepository.setProductPrice(p.getId(), basePrice);
+                redisRepository.setProductPrice(p.getId(), productBase);
             }
             resetCount++;
 
             PriceHistory history = PriceHistory.builder()
                     .productId(p.getId())
-                    .oldPrice(oldPrice != null ? oldPrice : basePrice)
-                    .newPrice(basePrice)
-                    .priceChange(basePrice.subtract(oldPrice != null ? oldPrice : basePrice))
+                    .oldPrice(oldPrice != null ? oldPrice : productBase)
+                    .newPrice(productBase)
+                    .priceChange(productBase.subtract(oldPrice != null ? oldPrice : productBase))
                     .demandRatio(1.0)
                     .weightedSales(1.0)
-                    .targetSales(1.0)
+                    .targetSales(p.getTargetSalesPer1Minute() != null ? p.getTargetSalesPer1Minute() : 1.0)
                     .calculationWindowStart(now)
                     .calculationWindowEnd(now)
+                    .floorPrice(p.getMinCupPrice())
+                    .ceilingPrice(p.getMaxCupPrice())
+                    .priceVersion(p.getPriceVersion())
                     .reason("ADMIN_RESET_TO_DEFAULT")
-                    .explanation(String.format("ADMIN_RESET_TO_DEFAULT: Reset from ₹%s to base ₹%s. Actor: %s", oldPrice, basePrice, userActor))
+                    .explanation(String.format("ADMIN_RESET_TO_DEFAULT: Reset from ₹%s to product base ₹%s. Actor: %s", oldPrice, productBase, userActor))
                     .createdAt(now)
                     .build();
             priceHistoryRepository.save(history);
@@ -694,7 +698,7 @@ public class PriceAdjustmentService {
 
         return new ResetAllResponse(
                 true,
-                "All market prices reset to base ₹" + basePrice + " successfully",
+                "All market prices reset to each product's authoritative base price successfully",
                 resetCount,
                 requestId,
                 now.toString(),
@@ -779,6 +783,33 @@ public class PriceAdjustmentService {
 
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + request.getProductId()));
+
+        BigDecimal minP = request.getMinCupPrice() != null ? request.getMinCupPrice() : product.getMinCupPrice();
+        BigDecimal maxP = request.getMaxCupPrice() != null ? request.getMaxCupPrice() : product.getMaxCupPrice();
+        BigDecimal baseP = request.getDefaultCupPrice() != null ? request.getDefaultCupPrice() : product.getDefaultCupPrice();
+        BigDecimal currentP = request.getCurrentCupPrice() != null ? request.getCurrentCupPrice() : product.getCurrentCupPrice();
+
+        if (minP != null && maxP != null && minP.compareTo(maxP) >= 0) {
+            throw new IllegalArgumentException("Maximum ceiling price must be strictly greater than minimum floor price");
+        }
+        if (baseP != null && minP != null && baseP.compareTo(minP) < 0) {
+            throw new IllegalArgumentException("Base price cannot be below minimum floor price");
+        }
+        if (baseP != null && maxP != null && baseP.compareTo(maxP) > 0) {
+            throw new IllegalArgumentException("Base price cannot exceed maximum ceiling price");
+        }
+        if (currentP != null && minP != null && currentP.compareTo(minP) < 0) {
+            throw new IllegalArgumentException("Current price cannot be below minimum floor price");
+        }
+        if (currentP != null && maxP != null && currentP.compareTo(maxP) > 0) {
+            throw new IllegalArgumentException("Current price cannot exceed maximum ceiling price");
+        }
+        if (request.getTargetSales() != null && request.getTargetSales() <= 0) {
+            throw new IllegalArgumentException("Target sales must be greater than 0");
+        }
+        if (request.getTargetSalesPer1Minute() != null && request.getTargetSalesPer1Minute() <= 0) {
+            throw new IllegalArgumentException("Target sales per 1 minute must be greater than 0");
+        }
 
         BigDecimal oldPrice = product.getCurrentCupPrice();
         BigDecimal newPrice = request.getCurrentCupPrice() != null ? request.getCurrentCupPrice() : product.getCurrentCupPrice();
@@ -921,12 +952,8 @@ public class PriceAdjustmentService {
         }
 
         BigDecimal currentPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
-        BigDecimal floor = (p.getMinCupPrice() != null)
-                ? p.getMinCupPrice()
-                : (pricingConfigurationService != null && pricingConfigurationService.getMinCupPrice() != null ? pricingConfigurationService.getMinCupPrice() : new BigDecimal("20.00"));
-        BigDecimal ceiling = (p.getMaxCupPrice() != null)
-                ? p.getMaxCupPrice()
-                : (pricingConfigurationService != null && pricingConfigurationService.getMaxCupPrice() != null ? pricingConfigurationService.getMaxCupPrice() : new BigDecimal("30.00"));
+        BigDecimal floor = p.getMinCupPrice();
+        BigDecimal ceiling = p.getMaxCupPrice();
 
         BigDecimal weightW0 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW0() : new BigDecimal("1.0000");
         BigDecimal weightW1 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW1() : new BigDecimal("0.5000");

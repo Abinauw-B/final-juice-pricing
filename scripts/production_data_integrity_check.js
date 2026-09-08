@@ -71,9 +71,10 @@ async function runDataIntegrityCheck() {
     const prodsRes = await fetchJson('/pos/products');
     products = prodsRes.data || [];
     const validBounds = products.every(p => {
-      const minP = Number(p.minCupPrice || 18);
-      const maxP = Number(p.maxCupPrice || 25);
-      const currP = Number(p.currentCupPrice || p.currentPrice || 22);
+      if (p.minCupPrice == null || p.maxCupPrice == null || p.currentCupPrice == null) return false;
+      const minP = Number(p.minCupPrice);
+      const maxP = Number(p.maxCupPrice);
+      const currP = Number(p.currentCupPrice);
       return currP >= minP && currP <= maxP && minP <= maxP;
     });
     reportCheck(

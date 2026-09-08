@@ -112,7 +112,7 @@ async function runLowDemandValidation() {
   });
   console.log('   - STOMP Subscriber Active');
 
-  // Step 4: Test 1 - No sales (Zero demand -> movement = -2)
+  // Step 4: Test 1 - No sales (Zero demand -> movement = -1)
   console.log('\n3️⃣ Step 3: Testing ZERO DEMAND (No sales: W0=0, W1=0, W2=0)...');
   const evalRes1 = await httpRequest(`${API_BASE}/pricing/evaluate`, {
     method: 'POST',
@@ -121,15 +121,15 @@ async function runLowDemandValidation() {
 
   const mangoEval1 = evalRes1.json && evalRes1.json.updatedPrices ? evalRes1.json.updatedPrices.find(p => p.beverageId === 1) : null;
   const dbPrice1 = queryPgSql(`SELECT current_cup_price FROM products WHERE id = 1`);
-  const historyCount1 = queryPgSql(`SELECT COUNT(*) FROM price_history WHERE product_id = 1 AND new_price = 23.00`);
+  const historyCount1 = queryPgSql(`SELECT COUNT(*) FROM price_history WHERE product_id = 1 AND new_price = 24.00`);
 
   console.log(`   - Demand Ratio: ${mangoEval1 ? mangoEval1.demandRatio : 0.0}`);
   console.log(`   - Calculated Price Movement: ${mangoEval1 ? mangoEval1.priceChange : 'N/A'}`);
-  console.log(`   - PostgreSQL DB Price: ₹${dbPrice1} (Expected: ₹23.00)`);
+  console.log(`   - PostgreSQL DB Price: ₹${dbPrice1} (Expected: ₹24.00)`);
   console.log(`   - Price History Record Created: ${historyCount1 > 0}`);
 
-  if (parseFloat(dbPrice1) !== 23.00) {
-    console.error('❌ FAIL: Zero demand did not decrease price to ₹23.00!');
+  if (parseFloat(dbPrice1) !== 24.00) {
+    console.error('❌ FAIL: Zero demand did not decrease price to ₹24.00!');
     ws.close();
     process.exit(1);
   }
