@@ -2883,6 +2883,7 @@
 
     async function executeTriggerAdminMarketCrash(customFloorPrice = 18) {
       closeCrashConfirmationModal();
+      closeSafeActionModal();
       const crashBtn = document.getElementById('adminTriggerCrashBtn');
       const crashTabBtn = document.getElementById('crashTabTriggerBtn');
       if (crashBtn) setButtonLoading(crashBtn, true, 'Triggering...');
@@ -7171,7 +7172,7 @@
         'This will immediately force all live beverage prices to drop to the absolute floor limit (₹18.00) across all connected POS terminals and wall LED displays for 180 seconds. WebSockets will sound live sirens.',
         '🚨',
         'YES, CRASH THE MARKET',
-        triggerAdminMarketCrash
+        executeTriggerAdminMarketCrash
       );
     }
 
