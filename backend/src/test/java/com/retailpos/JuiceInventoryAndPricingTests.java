@@ -71,7 +71,10 @@ public class JuiceInventoryAndPricingTests {
                         .build()));
         mangoProduct.setDefaultCupPrice(new BigDecimal("25.00"));
         mangoProduct.setCurrentCupPrice(new BigDecimal("25.00"));
+        mangoProduct.setMinCupPrice(new BigDecimal("20.00"));
+        mangoProduct.setMaxCupPrice(new BigDecimal("30.00"));
         mangoProduct.setTargetSalesPer2Minute(1.0);
+        mangoProduct.setWeightedSales(null);
         mangoProduct.setLastPriceChangeTimestamp(null);
         mangoProduct = productRepository.save(mangoProduct);
 
@@ -328,19 +331,23 @@ public class JuiceInventoryAndPricingTests {
 
         thunder.setCurrentCupPrice(new BigDecimal("25.00"));
         thunder.setTargetSalesPer1Minute(0.45);
-        productRepository.save(thunder);
+        thunder.setWeightedSales(null);
+        thunder = productRepository.saveAndFlush(thunder);
 
         orange.setCurrentCupPrice(new BigDecimal("30.00"));
         orange.setTargetSalesPer1Minute(0.55);
-        productRepository.save(orange);
+        orange.setWeightedSales(null);
+        orange = productRepository.saveAndFlush(orange);
 
         mint.setCurrentCupPrice(new BigDecimal("22.00"));
         mint.setTargetSalesPer1Minute(0.40);
-        productRepository.save(mint);
+        mint.setWeightedSales(null);
+        mint = productRepository.saveAndFlush(mint);
 
         mango.setCurrentCupPrice(new BigDecimal("28.00"));
         mango.setTargetSalesPer1Minute(0.55);
-        productRepository.save(mango);
+        mango.setWeightedSales(null);
+        mango = productRepository.saveAndFlush(mango);
 
         // Purchase Thunder x 2
         POSService.CartItemRequest item = new POSService.CartItemRequest();

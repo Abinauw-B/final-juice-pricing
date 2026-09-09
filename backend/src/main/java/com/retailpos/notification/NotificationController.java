@@ -14,9 +14,12 @@ import java.util.Map;
 public class NotificationController {
 
     private final SystemNotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
-    public NotificationController(SystemNotificationRepository notificationRepository) {
+    public NotificationController(SystemNotificationRepository notificationRepository,
+                                   NotificationService notificationService) {
         this.notificationRepository = notificationRepository;
+        this.notificationService = notificationService;
     }
 
     @GetMapping
@@ -44,6 +47,22 @@ public class NotificationController {
         list.forEach(n -> n.setIsRead(true));
         notificationRepository.saveAll(list);
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> dismissNotification(@PathVariable Long id) {
+        if (notificationRepository.existsById(id)) {
+            notificationRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<Map<String, Object>> clearAllNotifications() {
+        long count = notificationRepository.count();
+        notificationRepository.deleteAll();
+        return ResponseEntity.ok(Map.of("cleared", count, "message", "All notifications cleared"));
     }
 
     @PostMapping

@@ -80,17 +80,24 @@ public class JuiceBatchService {
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 List<JuiceBatch> activeBatches = batchRepository.findActiveBatchesForProductWithLock(productId);
-                JuiceBatch activeBatch;
-
                 if (activeBatches.isEmpty()) {
-                    activeBatch = registerNewBatch(productId, 20000);
-                } else {
-                    activeBatch = activeBatches.get(0);
-                    if (activeBatch.getRemainingVolumeMl() < mlToDeduct) {
-                        activeBatch.setStatus(JuiceBatch.BatchStatus.DEPLETED);
-                        batchRepository.save(activeBatch);
-                        activeBatch = registerNewBatch(productId, 20000);
+                    throw new IllegalStateException("Insufficient inventory for product ID " + productId + ": No active juice batch available");
+                }
+
+                JuiceBatch activeBatch = null;
+                for (JuiceBatch b : activeBatches) {
+                    if (b.getRemainingVolumeMl() >= mlToDeduct) {
+                        activeBatch = b;
+                        break;
+                    } else if (b.getRemainingVolumeMl() == 0) {
+                        b.setStatus(JuiceBatch.BatchStatus.DEPLETED);
+                        batchRepository.save(b);
                     }
+                }
+
+                if (activeBatch == null) {
+                    throw new IllegalStateException("Insufficient inventory for product ID " + productId + 
+                            ": No active batch has at least " + mlToDeduct + " ml remaining");
                 }
 
                 activeBatch.deductVolume(mlToDeduct);

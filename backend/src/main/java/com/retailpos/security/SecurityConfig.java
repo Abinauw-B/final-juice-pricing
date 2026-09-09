@@ -3,11 +3,14 @@ package com.retailpos.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,6 +29,12 @@ public class SecurityConfig {
     @Value("${cors.allowed-origins:https://final-juice-pricing.vercel.app,https://final-juice-pricing-admin.vercel.app,http://localhost:8000,http://localhost:8001,http://localhost:8002}")
     private String allowedOrigins;
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -36,11 +45,53 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/**", "/api/**", "/h2-console/**").permitAll()
+                // --- Public endpoints (no authentication required) ---
+
+                // Authentication endpoints
+                .requestMatchers("/api/auth/**").permitAll()
+
+                // Customer POS endpoints (cashiers and customers don't need JWT)
+                .requestMatchers(HttpMethod.GET, "/api/pos/products", "/api/products").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pos/products/**", "/api/products/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/pos/checkout", "/api/pos/orders", "/api/checkout", "/api/orders").permitAll()
+
+                // Live pricing read endpoints (needed by POS and LED display)
+                .requestMatchers(HttpMethod.GET, "/api/pricing/market", "/api/pricing/status", "/api/pricing/live", "/api/pricing/products").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pricing/market-crash/status", "/api/pricing/crash/status").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pricing/history/**", "/api/pricing/history").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pricing/timing", "/api/pricing/config").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pricing/products/**").permitAll()
+
+                // Price quote / lock endpoint (used by POS checkout flow)
+                .requestMatchers(HttpMethod.POST, "/api/pricing/quote", "/api/pricing/lock").permitAll()
+
+                // WebSocket endpoints (authentication handled at STOMP layer)
+                .requestMatchers("/ws/**").permitAll()
+
+                // Health check and actuator
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/api/health").permitAll()
+
+                // H2 console (dev only)
+                .requestMatchers("/h2-console/**").permitAll()
+
+                // OpenAPI / Swagger UI (Phase 36)
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs").permitAll()
+
+                // Reports summary endpoint (used by admin dashboard on initial load)
+                .requestMatchers(HttpMethod.GET, "/api/reports/**", "/api/dashboard").permitAll()
+
+                // Notifications read endpoint
+                .requestMatchers(HttpMethod.GET, "/api/notifications/**").permitAll()
+
+                // --- All other endpoints require authentication ---
                 .anyRequest().authenticated()
             )
-            .headers(headers -> headers.frameOptions(frame -> frame.disable()));
+            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+            // Wire the JWT filter before Spring Security's default auth filter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

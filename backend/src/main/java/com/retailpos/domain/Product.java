@@ -42,7 +42,7 @@ public class Product {
     private Double targetSalesPer2Minute = 1.10;
 
     @Column(name = "weighted_sales")
-    private Double weightedSales = 0.55;
+    private Double weightedSales;
 
     @Column(name = "order_count", nullable = false)
     private Integer orderCount = 0;
@@ -138,7 +138,7 @@ public class Product {
     }
 
     public Double getWeightedSales() {
-        return weightedSales != null ? weightedSales : (targetSalesPer1Minute != null ? targetSalesPer1Minute : 0.55);
+        return weightedSales;
     }
     public void setWeightedSales(Double weightedSales) {
         this.weightedSales = weightedSales;
@@ -177,7 +177,7 @@ public class Product {
         private BigDecimal maxCupPrice = new BigDecimal("30.00");
         private Double targetSalesPer1Minute = 0.55;
         private Double targetSalesPer2Minute = 1.10;
-        private Double weightedSales = 0.55;
+        private Double weightedSales;
         private Integer orderCount = 0;
         private Integer targetOrders = 5;
         private BigDecimal volatility = new BigDecimal("0.0800");

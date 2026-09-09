@@ -84,3 +84,13 @@ pricing:
     probability: 0.03
     multiplier: 0.55
   minimum-change-percent: 1
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: alpha
+    tagsSorter: alpha
+    display-request-duration: true
+    show-extensions: true

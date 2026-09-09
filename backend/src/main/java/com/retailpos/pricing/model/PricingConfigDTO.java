@@ -236,7 +236,7 @@ public class PricingConfigDTO {
         public String getPricingMode() { return pricingMode != null ? pricingMode : "DYNAMIC"; }
         public void setPricingMode(String pricingMode) { this.pricingMode = pricingMode != null ? pricingMode : "DYNAMIC"; }
 
-        public Double getWeightedSales() { return weightedSales != null ? weightedSales : targetSales; }
+        public Double getWeightedSales() { return weightedSales; }
         @JsonAlias({"weightedSales", "salesWeight"})
         public void setWeightedSales(Double weightedSales) { this.weightedSales = weightedSales; }
     }

@@ -81,6 +81,7 @@ public class ProductionPricingMasterValidationTest {
         testProduct.setMaxCupPrice(new BigDecimal("30.00"));
         testProduct.setPricingMode("DYNAMIC");
         testProduct.setTargetSalesPer1Minute(0.55);
+        testProduct.setWeightedSales(null);
         testProduct = productRepository.saveAndFlush(testProduct);
 
         // Ensure active batch
@@ -483,6 +484,7 @@ public class ProductionPricingMasterValidationTest {
         prodA.setDefaultCupPrice(new BigDecimal("28.00"));
         prodA.setCurrentCupPrice(new BigDecimal("22.00"));
         prodA.setMaxCupPrice(new BigDecimal("35.00"));
+        prodA.setWeightedSales(null);
         prodA = productRepository.saveAndFlush(prodA);
 
         Product prodB = productRepository.findByFlavourIgnoreCase("COOL_MINT_COOLER")
@@ -495,6 +497,7 @@ public class ProductionPricingMasterValidationTest {
         prodB.setDefaultCupPrice(new BigDecimal("24.00"));
         prodB.setCurrentCupPrice(new BigDecimal("18.00"));
         prodB.setMaxCupPrice(new BigDecimal("30.00"));
+        prodB.setWeightedSales(null);
         prodB = productRepository.saveAndFlush(prodB);
 
         // Zero sales for both -> Prod A clamped at 22.00, Prod B clamped at 18.00

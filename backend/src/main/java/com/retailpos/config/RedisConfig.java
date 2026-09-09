@@ -16,6 +16,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.net.URI;
+import java.time.Duration;
 
 @Configuration
 @SuppressWarnings("null")
@@ -56,7 +57,8 @@ public class RedisConfig {
                 }
 
                 LettuceClientConfiguration.LettuceClientConfigurationBuilder clientConfig = LettuceClientConfiguration
-                        .builder();
+                        .builder()
+                        .commandTimeout(Duration.ofSeconds(3));
                 if ("rediss".equalsIgnoreCase(uri.getScheme())) {
                     clientConfig.useSsl();
                 }
@@ -70,11 +72,21 @@ public class RedisConfig {
             if (redisPassword != null && !redisPassword.trim().isEmpty()) {
                 config.setPassword(RedisPassword.of(redisPassword.trim()));
             }
+
+            LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                    .commandTimeout(Duration.ofSeconds(3))
+                    .build();
+
             log.info("Redis configured via host/port -> host: {}, port: {}", redisHost, redisPort);
-            return new LettuceConnectionFactory(config);
+            return new LettuceConnectionFactory(config, clientConfig);
         } catch (Exception e) {
-            log.warn("Failed to initialize RedisConnectionFactory: {}. Fallback to default localhost.", e.getMessage());
-            return new LettuceConnectionFactory(new RedisStandaloneConfiguration("localhost", 6379));
+            log.warn("⚠️ Failed to initialize RedisConnectionFactory: {}. Fallback to default localhost:6379. " +
+                    "Redis features will degrade gracefully if unavailable.", e.getMessage());
+            LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                    .commandTimeout(Duration.ofSeconds(2))
+                    .build();
+            return new LettuceConnectionFactory(
+                    new RedisStandaloneConfiguration("localhost", 6379), clientConfig);
         }
     }
 

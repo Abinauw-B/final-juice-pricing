@@ -1396,7 +1396,27 @@
       </div>
 
       <div class="flavour-grid" id="productGrid">
-        <!-- Rendered dynamically -->
+        <!-- Skeleton Loading Cards -->
+        <div class="flavour-card" style="opacity: 0.6; pointer-events: none;">
+          <div style="height: 120px; background: rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 12px; animation: pulse 1.5s infinite;"></div>
+          <div style="height: 18px; width: 70%; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 8px;"></div>
+          <div style="height: 24px; width: 40%; background: rgba(255,255,255,0.06); border-radius: 6px;"></div>
+        </div>
+        <div class="flavour-card" style="opacity: 0.6; pointer-events: none;">
+          <div style="height: 120px; background: rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 12px; animation: pulse 1.5s infinite; animation-delay: 0.2s;"></div>
+          <div style="height: 18px; width: 70%; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 8px;"></div>
+          <div style="height: 24px; width: 40%; background: rgba(255,255,255,0.06); border-radius: 6px;"></div>
+        </div>
+        <div class="flavour-card" style="opacity: 0.6; pointer-events: none;">
+          <div style="height: 120px; background: rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 12px; animation: pulse 1.5s infinite; animation-delay: 0.4s;"></div>
+          <div style="height: 18px; width: 70%; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 8px;"></div>
+          <div style="height: 24px; width: 40%; background: rgba(255,255,255,0.06); border-radius: 6px;"></div>
+        </div>
+        <div class="flavour-card" style="opacity: 0.6; pointer-events: none;">
+          <div style="height: 120px; background: rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 12px; animation: pulse 1.5s infinite; animation-delay: 0.6s;"></div>
+          <div style="height: 18px; width: 70%; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 8px;"></div>
+          <div style="height: 24px; width: 40%; background: rgba(255,255,255,0.06); border-radius: 6px;"></div>
+        </div>
       </div>
     </main>
 
@@ -2219,10 +2239,19 @@
     let lastRenderedPosCardIds = '';
 
     function renderProducts() {
-      if (!products || products.length === 0) return;
-      products.sort((a, b) => (a.id || 0) - (b.id || 0));
       const grid = document.getElementById('productGrid');
       if (!grid) return;
+      if (!products || products.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted);">
+            <div style="font-size: 48px; margin-bottom: 12px;">🍹</div>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">No Beverages Available</h3>
+            <p style="font-size: 14px;">Market catalog is currently refreshing or empty. Please check back shortly.</p>
+          </div>
+        `;
+        return;
+      }
+      products.sort((a, b) => (a.id || 0) - (b.id || 0));
 
       const currentIds = products.map(p => p.id).join(',');
       const needsFullRebuild = (currentIds !== lastRenderedPosCardIds) || (grid.children.length !== products.length);

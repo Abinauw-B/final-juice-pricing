@@ -322,7 +322,7 @@ public class PriceAdjustmentService {
 
         // 2. Weighted sales calculation:
         // Admin-configured weighted sales acts as the authoritative sales demand for this product, plus any DWMA window sales:
-        double adminBaseWeightedSales = (product.getWeightedSales() != null && product.getWeightedSales() >= 0) ? product.getWeightedSales() : 0.0;
+        double adminBaseWeightedSales = (product.getWeightedSales() != null && product.getWeightedSales() > 0) ? product.getWeightedSales() : 0.0;
 
         BigDecimal dwmaLiveSales = BigDecimal.valueOf(w0).multiply(weightW0)
                 .add(BigDecimal.valueOf(w1).multiply(weightW1))
