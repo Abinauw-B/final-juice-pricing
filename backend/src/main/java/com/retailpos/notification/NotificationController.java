@@ -14,12 +14,9 @@ import java.util.Map;
 public class NotificationController {
 
     private final SystemNotificationRepository notificationRepository;
-    private final NotificationService notificationService;
 
-    public NotificationController(SystemNotificationRepository notificationRepository,
-                                   NotificationService notificationService) {
+    public NotificationController(SystemNotificationRepository notificationRepository) {
         this.notificationRepository = notificationRepository;
-        this.notificationService = notificationService;
     }
 
     @GetMapping

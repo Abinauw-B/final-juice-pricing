@@ -85,8 +85,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Object> handleTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
-        String message = String.format("Parameter '%s' should be of type '%s'",
-                ex.getName(), ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
+        Class<?> requiredType = ex.getRequiredType();
+        String typeName = requiredType != null ? requiredType.getSimpleName() : "unknown";
+        String message = String.format("Parameter '%s' should be of type '%s'", ex.getName(), typeName);
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "TYPE_MISMATCH", message, request);
     }
 

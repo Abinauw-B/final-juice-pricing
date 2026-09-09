@@ -25,7 +25,6 @@ public class MarketEventService {
     private final ProductRepository productRepository;
     private final PriceHistoryRepository priceHistoryRepository;
     private final MarketEventRepository marketEventRepository;
-    private final MarketCorrelationService correlationService;
     private final PricingRedisRepository redisRepository;
     private final PriceBroadcastService broadcastService;
     private final MarketCrashService marketCrashService;
@@ -36,14 +35,12 @@ public class MarketEventService {
     public MarketEventService(ProductRepository productRepository,
                                PriceHistoryRepository priceHistoryRepository,
                                MarketEventRepository marketEventRepository,
-                               MarketCorrelationService correlationService,
                                PricingRedisRepository redisRepository,
                                PriceBroadcastService broadcastService,
                                MarketCrashService marketCrashService) {
         this.productRepository = productRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.marketEventRepository = marketEventRepository;
-        this.correlationService = correlationService;
         this.redisRepository = redisRepository;
         this.broadcastService = broadcastService;
         this.marketCrashService = marketCrashService;

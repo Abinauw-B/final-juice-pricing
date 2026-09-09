@@ -13,11 +13,9 @@ import java.util.Map;
 public class AuditController {
 
     private final AuditLogRepository auditLogRepository;
-    private final AuditService auditService;
 
-    public AuditController(AuditLogRepository auditLogRepository, AuditService auditService) {
+    public AuditController(AuditLogRepository auditLogRepository) {
         this.auditLogRepository = auditLogRepository;
-        this.auditService = auditService;
     }
 
     @GetMapping

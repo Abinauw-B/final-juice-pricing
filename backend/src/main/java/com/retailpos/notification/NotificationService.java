@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
  * Notification types: INFO, WARNING, ALERT, SUCCESS, ERROR
  */
 @Service
+@SuppressWarnings("null")
 public class NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationService.class);

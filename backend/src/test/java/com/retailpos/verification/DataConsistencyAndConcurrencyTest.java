@@ -7,7 +7,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -596,12 +595,6 @@ public class DataConsistencyAndConcurrencyTest {
     @Test
     @DisplayName("Ph35-02: Concurrent price settlements do not produce duplicate settlement records")
     void ph35_concurrentSettlementsAreIdempotent() throws InterruptedException {
-        long settlementsBefore = 0;
-        try {
-            // Count existing settlements
-            settlementsBefore = settlementCoordinator.getLastSettlementTime() != null ? 1 : 0;
-        } catch (Exception ignored) {}
-
         int threads = 5;
         ExecutorService executor = Executors.newFixedThreadPool(threads);
         CountDownLatch latch = new CountDownLatch(1);

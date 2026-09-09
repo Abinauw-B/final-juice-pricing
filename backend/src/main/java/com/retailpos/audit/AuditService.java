@@ -7,25 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
-/**
- * Centralized Audit Logging Service.
- *
- * Provides a single entry point for recording audit events across the system.
- * All audit log writes are asynchronous to avoid impacting request latency.
- *
- * Standard action types:
- * - AUTH: LOGIN, LOGOUT, LOGIN_FAILED, PASSWORD_CHANGED
- * - ORDER: ORDER_CREATED, ORDER_FAILED
- * - PRICING: PRICE_CHANGED, SETTLEMENT_EXECUTED, PRICING_CONFIG_CHANGED
- * - MARKET: MARKET_CRASH_TRIGGERED, MARKET_CRASH_STOPPED, MARKET_PAUSED, MARKET_RESUMED
- * - PRODUCT: PRODUCT_CREATED, PRODUCT_UPDATED, PRODUCT_DELETED
- * - INVENTORY: BATCH_REGISTERED, BATCH_DEPLETED
- * - ADMIN: PRICES_RESET, MANUAL_PRICE_OVERRIDE, USER_CREATED, USER_UPDATED
- * - SYSTEM: SYSTEM_STARTUP, CONFIG_CHANGED
- */
 @Service
+@SuppressWarnings("null")
 public class AuditService {
 
     private static final Logger log = LoggerFactory.getLogger(AuditService.class);
