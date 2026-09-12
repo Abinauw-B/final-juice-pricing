@@ -18,8 +18,12 @@ admin-panel/node_modules/
 # Logs & Temporary files
 *.log
 .system_generated/
+.autopush.log
+scripts/.autopush.log
+scripts/.autopush.pid
 
 # IDE files
 .idea/
 .vscode/
 *.iml
+
