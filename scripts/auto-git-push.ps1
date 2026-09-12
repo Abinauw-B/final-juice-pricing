@@ -57,7 +57,24 @@ function Write-Log {
     } catch {}
 }
 
+function Clear-StaleLocks {
+    try {
+        $gitDir = Join-Path $RepoRoot ".git"
+        if (Test-Path $gitDir) {
+            $locks = Get-ChildItem -Path $gitDir -Filter "*.lock" -Recurse -Force -ErrorAction SilentlyContinue
+            foreach ($l in $locks) {
+                if ((Get-Date) - $l.LastWriteTime -gt (New-TimeSpan -Seconds 45)) {
+                    Remove-Item -Path $l.FullName -Force -ErrorAction SilentlyContinue
+                    Write-Log "Cleared stale git lock file: $($l.Name)" "WARN"
+                }
+            }
+        }
+    } catch {}
+}
+
 function Invoke-GitSync {
+    Clear-StaleLocks
+
     # 1. Determine active branch
     $currentBranch = (git rev-parse --abbrev-ref HEAD 2>$null).Trim()
     if (-not $currentBranch -or $currentBranch -eq "HEAD") {
@@ -140,6 +157,19 @@ Write-Log "================================================================" "IN
 if ($SingleRun) {
     $success = Invoke-GitSync
     if ($success) { exit 0 } else { exit 1 }
+}
+
+# Ensure only ONE background/loop watcher runs at a time using a named Mutex
+$mutexName = "Local\JuiceDynamicPricingAutoPushMutex"
+$createdNew = $false
+try {
+    $script:AppMutex = New-Object System.Threading.Mutex($true, $mutexName, [ref]$createdNew)
+    if (-not $createdNew) {
+        Write-Log "Another auto-push watcher instance is already running. Exiting." "WARN"
+        exit 0
+    }
+} catch {
+    # Fallback if mutex cannot be created
 }
 
 # Continuous Loop Mode

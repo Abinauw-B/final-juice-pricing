@@ -16,7 +16,7 @@ if (Test-Path $pidFile) {
     Remove-Item $pidFile -Force -ErrorAction SilentlyContinue
 }
 
-$allProcs = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like "*auto-git-push.ps1*" }
+$allProcs = Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like "*auto-git-push.ps1*" }
 foreach ($p in $allProcs) {
     try {
         Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
