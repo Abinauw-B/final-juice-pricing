@@ -82,22 +82,7 @@ function Invoke-GitSync {
     if ($hasUnpushed) { $changeSummary += "$((($unpushed | Where-Object { $_ -match '\S' }).Count)) unpushed commits" }
     Write-Log "Changes detected ($($changeSummary -join ', ')). Starting auto-push sequence..." "SYNC"
 
-    # 4. Safe pull with rebase
-    Write-Log "Checking for remote updates from $Remote/$currentBranch (git pull --rebase)..." "INFO"
-    $pullOutput = git pull --rebase $Remote $currentBranch 2>&1
-    $pullExit = $LASTEXITCODE
-
-    if ($pullExit -ne 0) {
-        # Check if a rebase conflict stopped midway
-        if ((Test-Path "$RepoRoot\.git\rebase-merge") -or (Test-Path "$RepoRoot\.git\rebase-apply")) {
-            git rebase --abort 2>$null
-            Write-Log "Rebase conflict detected! Aborted rebase to safeguard your files. Manual merge may be required." "ERROR"
-            return $false
-        }
-        Write-Log "Pull encountered warning (proceeding): $pullOutput" "WARN"
-    }
-
-    # 5. Stage and commit uncommitted changes
+    # 4. Stage and commit uncommitted changes first so working tree is clean
     if ($hasUncommitted) {
         Write-Log "Staging modified files (git add .)..." "INFO"
         git add .
@@ -115,6 +100,21 @@ function Invoke-GitSync {
                 return $false
             }
         }
+    }
+
+    # 5. Safe pull with rebase
+    Write-Log "Checking for remote updates from $Remote/$currentBranch (git pull --rebase)..." "INFO"
+    $pullOutput = git pull --rebase $Remote $currentBranch 2>&1
+    $pullExit = $LASTEXITCODE
+
+    if ($pullExit -ne 0) {
+        # Check if a rebase conflict stopped midway
+        if ((Test-Path "$RepoRoot\.git\rebase-merge") -or (Test-Path "$RepoRoot\.git\rebase-apply")) {
+            git rebase --abort 2>$null
+            Write-Log "Rebase conflict detected! Aborted rebase to safeguard your files. Manual merge may be required." "ERROR"
+            return $false
+        }
+        Write-Log "Pull encountered notice: $pullOutput" "WARN"
     }
 
     # 6. Push to remote
@@ -139,7 +139,7 @@ Write-Log "================================================================" "IN
 
 if ($SingleRun) {
     $success = Invoke-GitSync
-    exit (if ($success) { 0 } else { 1 })
+    if ($success) { exit 0 } else { exit 1 }
 }
 
 # Continuous Loop Mode
@@ -147,7 +147,7 @@ $intervalSeconds = [Math]::Max(30, $IntervalMinutes * 60)
 
 while ($true) {
     try {
-        Invoke-GitSync
+        $null = Invoke-GitSync
     } catch {
         Write-Log "Unexpected error during sync cycle: $_" "ERROR"
     }
