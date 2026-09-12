@@ -132,7 +132,7 @@ function Invoke-GitSync {
 
 # Main Execution Loop / Single Run
 Write-Log "================================================================" "INFO"
-Write-Log "🚀 JUICE DYNAMIC PRICING - AUTOMATED GIT SYNC ENGINE" "INFO"
+Write-Log ">>> JUICE DYNAMIC PRICING - AUTOMATED GIT SYNC ENGINE" "INFO"
 Write-Log "Repository: $RepoRoot" "INFO"
 Write-Log "Interval: Every $IntervalMinutes minute(s) | Target: $Remote" "INFO"
 Write-Log "================================================================" "INFO"

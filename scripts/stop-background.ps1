@@ -8,7 +8,7 @@ if (Test-Path $pidFile) {
             $p = Get-Process -Id $targetPid -ErrorAction SilentlyContinue
             if ($p) {
                 Stop-Process -Id $targetPid -Force -ErrorAction SilentlyContinue
-                Write-Host "✅ Stopped auto-push background process (PID: $targetPid)" -ForegroundColor Green
+                Write-Host "[SUCCESS] Stopped auto-push background process (PID: $targetPid)" -ForegroundColor Green
                 $stoppedAny = $true
             }
         } catch {}
@@ -20,11 +20,11 @@ $allProcs = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like 
 foreach ($p in $allProcs) {
     try {
         Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
-        Write-Host "✅ Stopped background auto-push process (PID: $($p.ProcessId))" -ForegroundColor Green
+        Write-Host "[SUCCESS] Stopped background auto-push process (PID: $($p.ProcessId))" -ForegroundColor Green
         $stoppedAny = $true
     } catch {}
 }
 
 if (-not $stoppedAny) {
-    Write-Host "ℹ️ No active auto-push background service found." -ForegroundColor Yellow
+    Write-Host "[INFO] No active auto-push background service found." -ForegroundColor Yellow
 }

@@ -13,7 +13,7 @@ if (Test-Path $pidFile) {
         $proc = Get-Process -Id $existingPid -ErrorAction SilentlyContinue
         if ($proc) {
             Write-Host "================================================================" -ForegroundColor Yellow
-            Write-Host "ℹ️ Auto-push is ALREADY running in background (PID: $existingPid)" -ForegroundColor Yellow
+            Write-Host "[INFO] Auto-push is ALREADY running in background (PID: $existingPid)" -ForegroundColor Yellow
             Write-Host "   Interval      : Every $IntervalMinutes minute(s)" -ForegroundColor Yellow
             Write-Host "   Log File      : scripts\.autopush.log" -ForegroundColor Yellow
             Write-Host "   To stop it run: stop-autopush.bat" -ForegroundColor Yellow
@@ -32,7 +32,7 @@ Start-Sleep -Milliseconds 700
 if ($proc -and -not $proc.HasExited) {
     $proc.Id | Out-File -FilePath $pidFile -Encoding ascii -Force
     Write-Host "================================================================" -ForegroundColor Cyan
-    Write-Host "✅ Auto-push background service started successfully!" -ForegroundColor Green
+    Write-Host "[SUCCESS] Auto-push background service started successfully!" -ForegroundColor Green
     Write-Host "   Process ID (PID)  : $($proc.Id)" -ForegroundColor Cyan
     Write-Host "   Sync Interval     : Every $IntervalMinutes minute(s)" -ForegroundColor Cyan
     Write-Host "   Repository        : $RepoRoot" -ForegroundColor Cyan
@@ -40,5 +40,5 @@ if ($proc -and -not $proc.HasExited) {
     Write-Host "   To stop it run    : stop-autopush.bat" -ForegroundColor Yellow
     Write-Host "================================================================" -ForegroundColor Cyan
 } else {
-    Write-Host "❌ Failed to start background auto-push service or process exited immediately." -ForegroundColor Red
+    Write-Host "[ERROR] Failed to start background auto-push service." -ForegroundColor Red
 }
