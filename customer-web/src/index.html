@@ -2013,13 +2013,23 @@
       if (!priceHistoryMap[id]) priceHistoryMap[id] = [];
       const nowIso = new Date().toISOString();
       const lastHist = priceHistoryMap[id][priceHistoryMap[id].length - 1];
-      if (!lastHist || lastHist.price !== currentCupPrice || Math.abs(new Date(nowIso) - new Date(lastHist.timestamp)) > 4000) {
+      if (!lastHist) {
         priceHistoryMap[id].push({
           timestamp: nowIso,
           price: currentCupPrice,
           oldPrice: basePrice,
           priceChange: currentCupPrice - basePrice
         });
+      } else if (Math.abs(lastHist.price - currentCupPrice) > 0.001) {
+        priceHistoryMap[id].push({
+          timestamp: nowIso,
+          price: currentCupPrice,
+          oldPrice: lastHist.price,
+          priceChange: currentCupPrice - lastHist.price
+        });
+        if (priceHistoryMap[id].length > 50) {
+          priceHistoryMap[id].shift();
+        }
       }
 
       return {
@@ -2120,6 +2130,7 @@
     async function fetchAllPriceHistories() {
       try {
         await Promise.allSettled(products.map(p => fetchProductHistory(p.id)));
+        renderAllSparklines();
       } catch (e) { }
     }
 
@@ -2220,6 +2231,18 @@
 
       const sentimentPill = document.getElementById('summarySentimentPill');
       if (sentimentPill) {
+        let rising = 0;
+        let discounted = 0;
+        let stable = 0;
+        products.forEach(p => {
+          const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+          const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+          const diff = activePrice - baseP;
+          if (diff > 0.05) rising++;
+          else if (diff < -0.05) discounted++;
+          else stable++;
+        });
+
         if (rising > discounted) {
           sentimentPill.style.color = 'var(--accent-emerald)';
           sentimentPill.textContent = `BULLISH ▲ (${rising} Surge)`;
@@ -2415,20 +2438,32 @@
       let dataPoints = [];
       if (history && history.length > 0) {
         dataPoints = history.slice(-30).map(h => ({
-          price: Number(h.price || 25)
+          price: Number(h.price || 25),
+          timestamp: h.timestamp
         }));
       }
 
+      const prod = products.find(p => p.id === productId);
+      const floorP = Number(prod && prod.minCupPrice != null ? prod.minCupPrice : 18);
+      const ceilP = Number(prod && prod.maxCupPrice != null ? prod.maxCupPrice : 35);
+      const baseP = Number(basePrice || (prod && prod.basePrice != null ? prod.basePrice : 25) || 25);
+      const currP = Number(currentPrice !== undefined ? currentPrice : (prod && prod.currentCupPrice != null ? prod.currentCupPrice : baseP));
+
       if (dataPoints.length === 0) {
-        const p1 = Number(basePrice || 25);
-        const p2 = Number(currentPrice || 25);
-        const mid = Number(((p1 * 0.45) + (p2 * 0.55)).toFixed(2));
-        dataPoints = [{ price: p1 }, { price: mid }, { price: p2 }];
+        const mid = Number(((baseP * 0.45) + (currP * 0.55)).toFixed(2));
+        dataPoints = [
+          { price: baseP, timestamp: new Date(Date.now() - 180000).toISOString() },
+          { price: mid, timestamp: new Date(Date.now() - 90000).toISOString() },
+          { price: currP, timestamp: new Date().toISOString() }
+        ];
       } else if (dataPoints.length === 1) {
-        const p1 = Number(basePrice || 25);
-        const p2 = dataPoints[0].price;
-        const mid = Number(((p1 * 0.45) + (p2 * 0.55)).toFixed(2));
-        dataPoints = [{ price: p1 }, { price: mid }, { price: p2 }];
+        const pVal = dataPoints[0].price;
+        const mid = Number(((baseP * 0.45) + (pVal * 0.55)).toFixed(2));
+        dataPoints = [
+          { price: baseP, timestamp: new Date(Date.now() - 120000).toISOString() },
+          { price: mid, timestamp: new Date(Date.now() - 60000).toISOString() },
+          { price: pVal, timestamp: dataPoints[0].timestamp || new Date().toISOString() }
+        ];
       }
 
       const ptsBadge = document.getElementById(`sparklinePts-${productId}`);
@@ -2442,22 +2477,30 @@
       const plotHeight = height - padTop - padBottom;
 
       const prices = dataPoints.map(d => d.price);
-      let minP = Math.min(18, ...prices) - 0.5;
-      let maxP = Math.max(35, ...prices) + 0.5;
-      const span = Math.max(4, maxP - minP);
+      let pMin = Math.min(...prices, baseP);
+      let pMax = Math.max(...prices, baseP);
+      let diffRange = pMax - pMin;
 
-      const getY = (val) => padTop + plotHeight - ((val - minP) / span) * plotHeight;
+      let minP = Math.max(floorP - 0.5, pMin - Math.max(1.2, diffRange * 0.2));
+      let maxP = Math.min(ceilP + 0.5, pMax + Math.max(1.2, diffRange * 0.2));
+      if (maxP - minP < 3.0) {
+        const center = (pMax + pMin) / 2;
+        minP = center - 1.5;
+        maxP = center + 1.5;
+      }
+      const span = maxP - minP;
+
+      const getY = (val) => padTop + plotHeight - ((Math.min(maxP, Math.max(minP, val)) - minP) / span) * plotHeight;
       const getX = (idx) => padLeft + (idx / Math.max(1, dataPoints.length - 1)) * plotWidth;
 
       const isLight = document.documentElement.getAttribute('data-theme') === 'light' || !document.body.classList.contains('dark-theme-mode');
 
-      const prod = products.find(p => p.id === productId);
       const flavourColor = getProductChartColors(prod);
       const strokeColor = flavourColor.stroke;
       const strokeColorRgb = flavourColor.rgb;
 
       // Base Price Dashed Reference Baseline
-      const baseY = getY(basePrice);
+      const baseY = getY(baseP);
       ctx.beginPath();
       ctx.strokeStyle = isLight ? 'rgba(100, 116, 139, 0.22)' : 'rgba(148, 163, 184, 0.18)';
       ctx.lineWidth = 1;
@@ -2482,7 +2525,7 @@
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
         const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
-        const x1 = getX(i), y1 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
         const cpx = (x0 + x1) / 2;
         ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
@@ -2491,7 +2534,7 @@
       ctx.closePath();
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
-      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.22)`);
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.25)`);
       areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.0)`);
       ctx.fillStyle = areaGrad;
       ctx.fill();
@@ -2501,12 +2544,12 @@
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
         const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
-        const x1 = getX(i), y1 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
         const cpx = (x0 + x1) / 2;
         ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = 2.0;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
@@ -2524,6 +2567,15 @@
       ctx.arc(lastX, lastY, 2.2, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
+    }
+
+    function showProductDetailsModal(productId) {
+      const card = document.getElementById(`flavourCard-${productId}`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('flash-surge');
+        setTimeout(() => card.classList.remove('flash-surge'), 1400);
+      }
     }
 
     function addToCart(productId) {
@@ -3027,6 +3079,7 @@
             }
             fetchProducts();
             fetchPricingConfiguration();
+            fetchAllPriceHistories();
           });
           stompSubscriptions.push(subSettle);
 
@@ -3103,7 +3156,8 @@
       fetchProducts();
       fetchPricingTiming();
       fetchPricingConfiguration();
-    }, 10000);
+      fetchAllPriceHistories();
+    }, 15000);
 
     function toggleThemeMode() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.body.classList.contains('dark-theme-mode');

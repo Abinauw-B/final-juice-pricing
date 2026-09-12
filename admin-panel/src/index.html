@@ -752,17 +752,208 @@
       display: flex;
       gap: 12px;
     }
+
+    /* ==========================================================================
+       ACCESSIBILITY (A11Y) SYSTEM & HIGH CONTRAST MODE (WCAG 2.1 AA/AAA)
+       ========================================================================== */
+    
+    /* 1. Skip to Content Navigation */
+    .skip-to-content {
+      position: absolute;
+      top: -100px;
+      left: 16px;
+      background: #2563eb;
+      color: #ffffff !important;
+      padding: 12px 22px;
+      font-size: 14px;
+      font-weight: 800;
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      z-index: 100000;
+      text-decoration: none;
+      transition: top 0.2s ease-in-out;
+    }
+    .skip-to-content:focus,
+    .skip-to-content:focus-visible {
+      top: 0;
+      outline: 3px solid #ffffff;
+      outline-offset: 2px;
+    }
+
+    /* 2. Screen Reader Only Utility */
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    /* 3. Global Focus Rings */
+    *:focus-visible {
+      outline: 3px solid #2563eb !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    /* 4. High Contrast Mode (WCAG AAA Compliant) */
+    body.high-contrast-mode {
+      --border-color: #000000 !important;
+      --border-subtle: #000000 !important;
+      --border-strong: #000000 !important;
+      --text-main: #000000 !important;
+      --text-secondary: #000000 !important;
+      --text-muted: #111111 !important;
+      --bg-page: #ffffff !important;
+      --bg-surface: #ffffff !important;
+      --bg-card: #ffffff !important;
+      --bg-secondary: #f0f0f0 !important;
+      --bg-subtle: #e5e5e5 !important;
+      --shadow-sm: none !important;
+      --shadow-md: none !important;
+      --shadow-lg: none !important;
+    }
+
+    body.dark-theme-mode.high-contrast-mode,
+    html[data-theme="dark"] body.high-contrast-mode {
+      --border-color: #ffffff !important;
+      --border-subtle: #ffffff !important;
+      --border-strong: #ffffff !important;
+      --text-main: #ffffff !important;
+      --text-secondary: #ffffff !important;
+      --text-muted: #e2e8f0 !important;
+      --bg-page: #000000 !important;
+      --bg-surface: #000000 !important;
+      --bg-card: #000000 !important;
+      --bg-secondary: #1a1a1a !important;
+      --bg-subtle: #222222 !important;
+    }
+
+    body.high-contrast-mode .sidebar,
+    body.high-contrast-mode .top-header,
+    body.high-contrast-mode .section-card,
+    body.high-contrast-mode .metric-card,
+    body.high-contrast-mode table,
+    body.high-contrast-mode th,
+    body.high-contrast-mode td,
+    body.high-contrast-mode .btn-primary,
+    body.high-contrast-mode input,
+    body.high-contrast-mode select,
+    body.high-contrast-mode .trading-drawer,
+    body.high-contrast-mode .modal-overlay > div {
+      border: 2px solid var(--border-color) !important;
+    }
+
+    body.high-contrast-mode .nav-link.active {
+      background: #000000 !important;
+      color: #ffffff !important;
+      border: 2px solid #000000 !important;
+    }
+
+    body.dark-theme-mode.high-contrast-mode .nav-link.active {
+      background: #ffffff !important;
+      color: #000000 !important;
+      border: 2px solid #ffffff !important;
+    }
+
+    body.high-contrast-mode *:focus-visible {
+      outline: 4px solid #f59e0b !important;
+      outline-offset: 3px !important;
+    }
+
+    /* 5. Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    body.reduce-motion,
+    body.reduce-motion *,
+    body.reduce-motion *::before,
+    body.reduce-motion *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    /* 6. Text Scaling */
+    body.text-scale-lg {
+      font-size: 114% !important;
+    }
+    body.text-scale-lg .nav-link {
+      padding: 14px 18px !important;
+      font-size: 15px !important;
+    }
+    body.text-scale-lg h1 {
+      font-size: 30px !important;
+    }
+    body.text-scale-lg h2 {
+      font-size: 21px !important;
+    }
+    body.text-scale-lg table th,
+    body.text-scale-lg table td {
+      font-size: 14.5px !important;
+      padding: 14px 16px !important;
+    }
+
+    body.text-scale-xl {
+      font-size: 128% !important;
+    }
+    body.text-scale-xl .nav-link {
+      padding: 16px 20px !important;
+      font-size: 16.5px !important;
+    }
+    body.text-scale-xl h1 {
+      font-size: 34px !important;
+    }
+    body.text-scale-xl h2 {
+      font-size: 24px !important;
+    }
+    body.text-scale-xl table th,
+    body.text-scale-xl table td {
+      font-size: 16px !important;
+      padding: 16px 18px !important;
+    }
+
+    /* Keyboard Shortcut Tag styling */
+    .kbd-shortcut {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-bottom: 2px solid var(--border-strong, #94a3b8);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 5px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 
 <body>
 
+  <!-- Accessible Skip-to-Content Navigation -->
+  <a href="#mainContent" class="skip-to-content" tabindex="0">Skip to Main Content (Press Enter)</a>
+
+  <!-- ARIA Live Region for Screen Readers -->
+  <div id="a11yLiveAnnouncer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
   <!-- Toast Notification Container -->
-  <div id="toastContainer"></div>
+  <div id="toastContainer" role="region" aria-label="System Notifications" aria-live="polite"></div>
 
   <div class="admin-layout">
     <!-- Sidebar Navigation -->
-    <nav class="sidebar">
+    <nav class="sidebar" role="navigation" aria-label="Main Navigation">
       <div class="sidebar-brand-box" style="display: flex; align-items: center; gap: 12px; padding: 4px 6px 20px 6px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;">
         <div class="brand-icon-badge" style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(192, 132, 252, 0.2)); border: 1px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);">🍹</div>
         <div>
@@ -771,44 +962,46 @@
         </div>
       </div>
 
-      <div class="nav-link active" id="tab-dashboard" onclick="switchTab('dashboard')">
-        <span>📊 Dashboard &amp; Analytics</span>
-      </div>
+      <div role="tablist" aria-orientation="vertical" style="display: flex; flex-direction: column; gap: 4px;">
+        <div class="nav-link active" id="tab-dashboard" onclick="switchTab('dashboard')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('dashboard');}" role="tab" tabindex="0" aria-selected="true" aria-controls="view-dashboard" aria-label="Dashboard and Analytics (Shortcut: Alt+1)">
+          <span>📊 Dashboard &amp; Analytics</span>
+        </div>
 
-      <div class="nav-link" id="tab-batches" onclick="switchTab('batches')">
-        <span>🛢️ 20L Container Batches</span>
-      </div>
+        <div class="nav-link" id="tab-batches" onclick="switchTab('batches')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('batches');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-batches" aria-label="20L Container Batches (Shortcut: Alt+2)">
+          <span>🛢️ 20L Container Batches</span>
+        </div>
 
-      <div class="nav-link" id="tab-pricing" onclick="switchTab('pricing')">
-        <span>📈 Dynamic Pricing Engine</span>
-      </div>
+        <div class="nav-link" id="tab-pricing" onclick="switchTab('pricing')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('pricing');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-pricing" aria-label="Dynamic Pricing Engine (Shortcut: Alt+3)">
+          <span>📈 Dynamic Pricing Engine</span>
+        </div>
 
-      <div class="nav-link" id="tab-crash" onclick="switchTab('crash')">
-        <span>🚨 Market Crash Control</span>
-      </div>
+        <div class="nav-link" id="tab-crash" onclick="switchTab('crash')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('crash');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-crash" aria-label="Market Crash Control (Shortcut: Alt+4)">
+          <span>🚨 Market Crash Control</span>
+        </div>
 
-      <div class="nav-link" id="tab-simulator" onclick="switchTab('simulator')">
-        <span>🎮 Pricing Sandbox Simulator</span>
-      </div>
+        <div class="nav-link" id="tab-simulator" onclick="switchTab('simulator')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('simulator');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-simulator" aria-label="Pricing Sandbox Simulator (Shortcut: Alt+5)">
+          <span>🎮 Pricing Sandbox Simulator</span>
+        </div>
 
-      <div class="nav-link" id="tab-users" onclick="switchTab('users')">
-        <span>👥 User Roles &amp; Security</span>
-      </div>
+        <div class="nav-link" id="tab-users" onclick="switchTab('users')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('users');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-users" aria-label="User Roles and Security (Shortcut: Alt+6)">
+          <span>👥 User Roles &amp; Security</span>
+        </div>
 
-      <div class="nav-link" id="tab-reports" onclick="switchTab('reports')">
-        <span>📑 Reports &amp; Exports</span>
-      </div>
+        <div class="nav-link" id="tab-reports" onclick="switchTab('reports')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('reports');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-reports" aria-label="Reports and Exports (Shortcut: Alt+7)">
+          <span>📑 Reports &amp; Exports</span>
+        </div>
 
-      <div class="nav-link" id="tab-audit" onclick="switchTab('audit')">
-        <span>📜 System Audit Trail</span>
-      </div>
+        <div class="nav-link" id="tab-audit" onclick="switchTab('audit')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('audit');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-audit" aria-label="System Audit Trail (Shortcut: Alt+8)">
+          <span>📜 System Audit Trail</span>
+        </div>
 
-      <div class="nav-link" id="tab-settings" onclick="switchTab('settings')">
-        <span>⚙️ Platform Settings</span>
-      </div>
+        <div class="nav-link" id="tab-settings" onclick="switchTab('settings')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('settings');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-settings" aria-label="Platform Settings (Shortcut: Alt+9)">
+          <span>⚙️ Platform Settings</span>
+        </div>
 
-      <div class="nav-link" id="tab-panels" onclick="switchTab('panels')">
-        <span>🔗 Panel Hub</span>
+        <div class="nav-link" id="tab-panels" onclick="switchTab('panels')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('panels');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-panels" aria-label="Panel Hub">
+          <span>🔗 Panel Hub</span>
+        </div>
       </div>
 
       <div
@@ -850,33 +1043,43 @@
           </button>
 
           <button id="themeToggleBtnAdmin" onclick="toggleThemeMode()" class="btn-primary"
-            style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm);">☀️
-            Theme: Light</button>
+            style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm);"
+            aria-label="Toggle Color Theme (Shortcut: Alt+T)">☀️ Theme: Light</button>
+
+          <!-- Dedicated Accessibility Controls Button -->
+          <button id="accessibilityMenuBtn" onclick="toggleAccessibilityModal()" class="btn-primary"
+            style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm);"
+            aria-haspopup="dialog" aria-expanded="false" aria-label="Accessibility Settings &amp; Shortcuts (Shortcut: ? or Alt+A)"
+            title="Open Accessibility Controls (High Contrast, Text Scaling, Shortcuts - Press ? or Alt+A)">
+            <span>♿</span> <span>Accessibility</span>
+          </button>
 
           <!-- Interlinking Portal Links -->
           <a id="adminNavPosLink" href="https://final-juice-pricing.vercel.app" target="_blank"
-            style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;">
+            style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;"
+            aria-label="Open Customer POS in new tab">
             🛒 Customer POS
           </a>
           <a id="adminNavLedLink" href="https://final-juice-pricing.vercel.app/led-display.html" target="_blank"
-            style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;">
+            style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;"
+            aria-label="Open LED Wall Display in new tab">
             📺 LED Ticker
           </a>
         </div>
 
         <div style="display: flex; align-items: center; gap: 20px;">
           <!-- Notification Bell -->
-          <div style="position: relative; cursor: pointer;" onclick="showNotificationCenterModal()">
-            <span style="font-size: 20px;">🔔</span>
+          <div role="button" tabindex="0" aria-label="Notification Center: 2 unread alerts" style="position: relative; cursor: pointer;" onclick="showNotificationCenterModal()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showNotificationCenterModal();}">
+            <span style="font-size: 20px;" aria-hidden="true">🔔</span>
             <span id="unreadNotifBadge"
               style="position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 10px;">2</span>
           </div>
 
           <!-- User Role & Profile Avatar -->
-          <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="showProfileModal()">
+          <div role="button" tabindex="0" aria-label="User Profile: Super Admin" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="showProfileModal()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showProfileModal();}">
             <div
               style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #7c3aed); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;"
-              id="userAvatarText">SA</div>
+              id="userAvatarText" aria-hidden="true">SA</div>
             <div>
               <div style="font-size: 13px; font-weight: 700; color: var(--text-main);" id="userFullNameText">Super Admin
               </div>
@@ -886,12 +1089,13 @@
 
           <!-- Logout Button -->
           <button onclick="handleLogout()"
-            style="background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;">Logout</button>
+            style="background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; padding: 6px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;"
+            aria-label="Logout from Admin Terminal">Logout</button>
         </div>
       </header>
 
       <!-- Main Content Area -->
-      <main class="main-content">
+      <main id="mainContent" class="main-content" role="main" tabindex="-1">
 
         <!-- 1. Dashboard Tab -->
         <div id="view-dashboard">
@@ -1499,6 +1703,7 @@
                     <th>ID</th>
                     <th>Beverage Variety</th>
                     <th>Live Market Price (Current Value)</th>
+                    <th>30-PT Price Trend (Live DWMA)</th>
                     <th>Pricing Mode</th>
                     <th>Base (₹)</th>
                     <th>Floor (₹)</th>
@@ -2588,6 +2793,127 @@
     </div>
   </div>
 
+  <!-- 10. Accessibility Settings & Keyboard Shortcuts Modal (WCAG 2.1 AA/AAA) -->
+  <div id="accessibilityModal" style="display: none;" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="a11yModalTitle">
+    <div style="background: var(--bg-card); border: 2px solid var(--accent-cyan); border-radius: 20px; width: 680px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 28px; box-shadow: var(--shadow-lg); color: var(--text-main);">
+      
+      <!-- Modal Header -->
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="font-size: 26px; background: rgba(56, 189, 248, 0.15); border-radius: 10px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: var(--accent-cyan);" aria-hidden="true">♿</div>
+          <div>
+            <h2 id="a11yModalTitle" style="font-size: 20px; font-weight: 900; margin: 0; color: var(--text-main);">Accessibility Controls &amp; Shortcuts</h2>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 3px 0 0 0;">WCAG 2.1 AA/AAA compliance, screen reader support, and operator ergonomics</p>
+          </div>
+        </div>
+        <button onclick="toggleAccessibilityModal()" class="btn-primary" style="background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 8px; font-weight: 800; cursor: pointer;" aria-label="Close accessibility controls (Press Escape)">✕</button>
+      </div>
+
+      <!-- Section 1: Display & Readability Controls -->
+      <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+        <h3 style="font-size: 14px; font-weight: 800; margin-top: 0; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
+          <span aria-hidden="true">🎨</span> <span>Display &amp; Readability Settings</span>
+        </h3>
+
+        <!-- High Contrast Mode Toggle -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); gap: 12px;">
+          <div>
+            <div style="font-weight: 800; font-size: 14px;">High Contrast Mode (WCAG AAA)</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Enhanced contrast ratios, high-visibility borders, and distinct focus markers</div>
+          </div>
+          <button id="btnA11yContrastToggle" onclick="toggleAccessibilityHighContrast()" class="btn-primary" style="padding: 7px 16px; font-size: 12px; font-weight: 800; border-radius: 8px; cursor: pointer; white-space: nowrap;" aria-pressed="false">
+            Enable High Contrast
+          </button>
+        </div>
+
+        <!-- Text Size Scaling -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); gap: 12px;">
+          <div>
+            <div style="font-weight: 800; font-size: 14px;">Typography Size Scaling</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Scale system text size without breaking responsive layouts</div>
+          </div>
+          <div style="display: inline-flex; gap: 6px; background: var(--bg-surface); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color); flex-shrink: 0;">
+            <button id="btnFontScaleNormal" onclick="setTextScale('normal')" class="btn-primary" style="padding: 5px 12px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer;" aria-pressed="true">100%</button>
+            <button id="btnFontScaleLg" onclick="setTextScale('large')" class="btn-primary" style="padding: 5px 12px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer;" aria-pressed="false">115%</button>
+            <button id="btnFontScaleXl" onclick="setTextScale('xlarge')" class="btn-primary" style="padding: 5px 12px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer;" aria-pressed="false">130%</button>
+          </div>
+        </div>
+
+        <!-- Reduced Motion Toggle -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; gap: 12px;">
+          <div>
+            <div style="font-weight: 800; font-size: 14px;">Reduce Motion &amp; Pulsing</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Disables radar beacon pulses, rapid ticker animations, and card transitions</div>
+          </div>
+          <button id="btnA11yMotionToggle" onclick="toggleReduceMotion()" class="btn-primary" style="padding: 7px 16px; font-size: 12px; font-weight: 800; border-radius: 8px; cursor: pointer; white-space: nowrap;" aria-pressed="false">
+            Reduce Motion
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 2: Global Keyboard Shortcuts Reference -->
+      <div style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+        <h3 style="font-size: 14px; font-weight: 800; margin-top: 0; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
+          <span aria-hidden="true">⌨️</span> <span>Keyboard Shortcuts Cheat Sheet</span>
+        </h3>
+        <table style="width: 100%; font-size: 12.5px; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-color); text-align: left; color: var(--text-muted);">
+              <th style="padding: 6px 8px;">Shortcut</th>
+              <th style="padding: 6px 8px;">Action</th>
+              <th style="padding: 6px 8px;">Scope</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 6px 8px;"><span class="kbd-shortcut">?</span> or <span class="kbd-shortcut">Alt</span> + <span class="kbd-shortcut">A</span></td>
+              <td style="padding: 6px 8px; font-weight: 700;">Open / Close Accessibility Controls</td>
+              <td style="padding: 6px 8px; color: var(--text-muted);">Global</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 6px 8px;"><span class="kbd-shortcut">Alt</span> + <span class="kbd-shortcut">1</span> ... <span class="kbd-shortcut">9</span></td>
+              <td style="padding: 6px 8px; font-weight: 700;">Switch Main Tabs (1: Dash, 2: Batches, 3: Pricing, 4: Crash...)</td>
+              <td style="padding: 6px 8px; color: var(--text-muted);">Global</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 6px 8px;"><span class="kbd-shortcut">Alt</span> + <span class="kbd-shortcut">H</span></td>
+              <td style="padding: 6px 8px; font-weight: 700;">Quick Toggle High Contrast Mode</td>
+              <td style="padding: 6px 8px; color: var(--text-muted);">Global</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 6px 8px;"><span class="kbd-shortcut">Alt</span> + <span class="kbd-shortcut">T</span></td>
+              <td style="padding: 6px 8px; font-weight: 700;">Toggle Color Theme (Dark / Light)</td>
+              <td style="padding: 6px 8px; color: var(--text-muted);">Global</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 6px 8px;"><span class="kbd-shortcut">Alt</span> + <span class="kbd-shortcut">R</span></td>
+              <td style="padding: 6px 8px; font-weight: 700;">Refresh Dashboard &amp; Telemetry Data</td>
+              <td style="padding: 6px 8px; color: var(--text-muted);">Global</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 6px 8px;"><span class="kbd-shortcut">Alt</span> + <span class="kbd-shortcut">S</span></td>
+              <td style="padding: 6px 8px; font-weight: 700;">Trigger 1-Min DWMA Price Calculation</td>
+              <td style="padding: 6px 8px; color: var(--text-muted);">Global</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 8px;"><span class="kbd-shortcut">Escape</span></td>
+              <td style="padding: 6px 8px; font-weight: 700;">Close active modal or Trading Drawer</td>
+              <td style="padding: 6px 8px; color: var(--text-muted);">Dialogs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer -->
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button onclick="toggleAccessibilityModal()" class="btn-primary" style="background: var(--accent-cyan); color: white; padding: 10px 22px; font-weight: 800; border-radius: 8px; cursor: pointer;">
+          Done
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <iframe id="posBridgeFrame" style="display:none;"></iframe>
 
   <script>
@@ -2711,20 +3037,317 @@
       }
     }
 
-    // High Contrast Mode Initialization & Toggle
+    // ═════════════════════════════════════════════════════════════════════════
+    // ENTERPRISE ACCESSIBILITY ENGINE (WCAG 2.1 AA/AAA Compliant)
+    // Screen Reader Announcer, High Contrast, Dynamic Text Scaling, Reduced Motion,
+    // Keyboard Navigation & Shortcuts, and Focus Trapping
+    // ═════════════════════════════════════════════════════════════════════════
+
+    let lastActiveElementBeforeA11yModal = null;
+    let lastActiveElementBeforeDrawer = null;
+
+    // 1. ARIA Live Screen Reader Announcer
+    function announceToScreenReader(message) {
+      if (!message) return;
+      const announcer = document.getElementById('a11yLiveAnnouncer');
+      if (announcer) {
+        announcer.textContent = '';
+        setTimeout(() => {
+          announcer.textContent = message;
+        }, 50);
+      }
+    }
+
+    // 2. High Contrast Mode (WCAG AAA)
     function initHighContrast() {
       const saved = localStorage.getItem('pubexchange_high_contrast');
       if (saved === 'true') {
         document.body.classList.add('high-contrast-mode');
+      } else {
+        document.body.classList.remove('high-contrast-mode');
       }
+      updateA11yModalControls();
     }
+
     function toggleAccessibilityHighContrast() {
       document.body.classList.toggle('high-contrast-mode');
       const isHc = document.body.classList.contains('high-contrast-mode');
       localStorage.setItem('pubexchange_high_contrast', isHc ? 'true' : 'false');
-      showToast(isHc ? '👁️ High Contrast Mode Enabled' : '👁️ Normal Display Mode', 'info');
+      updateA11yModalControls();
+      const msg = isHc ? 'High Contrast Mode Enabled (WCAG AAA)' : 'Standard Contrast Display Restored';
+      showToast(isHc ? '👁️ High Contrast Enabled' : '👁️ Normal Display Mode', 'info');
+      announceToScreenReader(msg);
     }
+
+    // 3. Dynamic Font Scaling (100%, 115%, 130%)
+    function initTextScale() {
+      const saved = localStorage.getItem('pubexchange_text_scale') || 'normal';
+      setTextScale(saved, false);
+    }
+
+    function setTextScale(scale, notify = true) {
+      document.body.classList.remove('text-scale-lg', 'text-scale-xl');
+      if (scale === 'large') {
+        document.body.classList.add('text-scale-lg');
+      } else if (scale === 'xlarge') {
+        document.body.classList.add('text-scale-xl');
+      }
+      localStorage.setItem('pubexchange_text_scale', scale);
+      updateA11yModalControls();
+
+      const label = scale === 'large' ? '115% (Large)' : (scale === 'xlarge' ? '130% (Extra Large)' : '100% (Normal)');
+      if (notify) {
+        showToast(`🔤 Text Scale Set to ${label}`, 'info');
+        announceToScreenReader(`Typography scaled to ${label}`);
+      }
+    }
+
+    // 4. Reduced Motion Engine
+    function initReduceMotion() {
+      const saved = localStorage.getItem('pubexchange_reduce_motion');
+      if (saved === 'true') {
+        document.body.classList.add('reduce-motion');
+      } else {
+        document.body.classList.remove('reduce-motion');
+      }
+      updateA11yModalControls();
+    }
+
+    function toggleReduceMotion() {
+      document.body.classList.toggle('reduce-motion');
+      const isRm = document.body.classList.contains('reduce-motion');
+      localStorage.setItem('pubexchange_reduce_motion', isRm ? 'true' : 'false');
+      updateA11yModalControls();
+      const msg = isRm ? 'Reduced Motion Enabled (Animations Silenced)' : 'Reduced Motion Disabled (Standard Animations)';
+      showToast(isRm ? '⚡ Reduced Motion Enabled' : '🎬 Standard Motion Enabled', 'info');
+      announceToScreenReader(msg);
+    }
+
+    // 5. Update Accessibility Modal Controls UI
+    function updateA11yModalControls() {
+      const isHc = document.body.classList.contains('high-contrast-mode');
+      const contrastBtn = document.getElementById('btnA11yContrastToggle');
+      if (contrastBtn) {
+        contrastBtn.setAttribute('aria-pressed', isHc ? 'true' : 'false');
+        if (isHc) {
+          contrastBtn.textContent = 'High Contrast Active (Disable)';
+          contrastBtn.style.background = '#10b981';
+          contrastBtn.style.color = '#ffffff';
+          contrastBtn.style.border = '1px solid #059669';
+        } else {
+          contrastBtn.textContent = 'Enable High Contrast';
+          contrastBtn.style.background = 'var(--bg-card)';
+          contrastBtn.style.color = 'var(--text-main)';
+          contrastBtn.style.border = '1px solid var(--border-color)';
+        }
+      }
+
+      const isLg = document.body.classList.contains('text-scale-lg');
+      const isXl = document.body.classList.contains('text-scale-xl');
+      const currentScale = isXl ? 'xlarge' : (isLg ? 'large' : 'normal');
+
+      const btnNorm = document.getElementById('btnFontScaleNormal');
+      const btnLg = document.getElementById('btnFontScaleLg');
+      const btnXl = document.getElementById('btnFontScaleXl');
+
+      const applyScaleBtnStyle = (btn, active) => {
+        if (!btn) return;
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        if (active) {
+          btn.style.background = '#2563eb';
+          btn.style.color = '#ffffff';
+          btn.style.border = '1px solid #1d4ed8';
+          btn.style.boxShadow = '0 2px 6px rgba(37,99,235,0.4)';
+        } else {
+          btn.style.background = 'transparent';
+          btn.style.color = 'var(--text-muted)';
+          btn.style.border = 'none';
+          btn.style.boxShadow = 'none';
+        }
+      };
+
+      applyScaleBtnStyle(btnNorm, currentScale === 'normal');
+      applyScaleBtnStyle(btnLg, currentScale === 'large');
+      applyScaleBtnStyle(btnXl, currentScale === 'xlarge');
+
+      const isRm = document.body.classList.contains('reduce-motion');
+      const motionBtn = document.getElementById('btnA11yMotionToggle');
+      if (motionBtn) {
+        motionBtn.setAttribute('aria-pressed', isRm ? 'true' : 'false');
+        if (isRm) {
+          motionBtn.textContent = 'Reduced Motion Active (Disable)';
+          motionBtn.style.background = '#10b981';
+          motionBtn.style.color = '#ffffff';
+          motionBtn.style.border = '1px solid #059669';
+        } else {
+          motionBtn.textContent = 'Reduce Motion';
+          motionBtn.style.background = 'var(--bg-card)';
+          motionBtn.style.color = 'var(--text-main)';
+          motionBtn.style.border = '1px solid var(--border-color)';
+        }
+      }
+    }
+
+    // 6. Accessibility Modal Open / Close & Focus Management
+    function toggleAccessibilityModal(forceState) {
+      const modal = document.getElementById('accessibilityModal');
+      const menuBtn = document.getElementById('accessibilityMenuBtn');
+      if (!modal) return;
+
+      const isCurrentlyOpen = modal.style.display === 'flex';
+      const shouldOpen = (typeof forceState === 'boolean') ? forceState : !isCurrentlyOpen;
+
+      if (shouldOpen) {
+        lastActiveElementBeforeA11yModal = document.activeElement;
+        updateA11yModalControls();
+        modal.style.display = 'flex';
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'true');
+        announceToScreenReader('Accessibility settings dialog opened. Use Tab to navigate options or Escape to close.');
+
+        // Set initial focus inside modal
+        setTimeout(() => {
+          const firstFocusable = modal.querySelector('button, [tabindex="0"]');
+          if (firstFocusable) firstFocusable.focus();
+        }, 60);
+      } else {
+        modal.style.display = 'none';
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+        announceToScreenReader('Accessibility settings dialog closed.');
+
+        // Restore focus to previous element or menu button
+        if (lastActiveElementBeforeA11yModal && typeof lastActiveElementBeforeA11yModal.focus === 'function') {
+          lastActiveElementBeforeA11yModal.focus();
+        } else if (menuBtn) {
+          menuBtn.focus();
+        }
+      }
+    }
+
+    // 7. Global Keyboard Shortcuts & Focus Trapping Listener
+    window.addEventListener('keydown', function (e) {
+      // Focus trapping within Accessibility Modal when open
+      const a11yModal = document.getElementById('accessibilityModal');
+      if (a11yModal && a11yModal.style.display === 'flex') {
+        if (e.key === 'Tab') {
+          const focusables = Array.from(a11yModal.querySelectorAll('button:not([disabled]), [tabindex="0"], a[href], input:not([disabled])'));
+          if (focusables.length > 0) {
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+              return;
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+              return;
+            }
+          }
+        }
+      }
+
+      // Escape handler closes active modal or trading drawer
+      if (e.key === 'Escape') {
+        if (a11yModal && a11yModal.style.display === 'flex') {
+          e.preventDefault();
+          toggleAccessibilityModal(false);
+          return;
+        }
+
+        const drawerOverlay = document.getElementById('productTradingDrawerOverlay');
+        if (drawerOverlay && drawerOverlay.classList.contains('active')) {
+          e.preventDefault();
+          closeProductTradingDrawer();
+          return;
+        }
+
+        const openModals = Array.from(document.querySelectorAll('.modal-overlay')).filter(m => m.style.display === 'flex' || m.style.display === 'block');
+        if (openModals.length > 0) {
+          e.preventDefault();
+          const topmost = openModals[openModals.length - 1];
+          topmost.style.display = 'none';
+          announceToScreenReader('Modal closed');
+          return;
+        }
+      }
+
+      // If user is currently typing in an input, textarea, or select, do not trigger single-character hotkeys
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      const isInputActive = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT' || (document.activeElement && document.activeElement.isContentEditable);
+
+      // Single-key hotkey: '?' opens Accessibility Modal (when not in input)
+      if (e.key === '?' && !isInputActive) {
+        e.preventDefault();
+        toggleAccessibilityModal();
+        return;
+      }
+
+      // Alt-key combinations (Accessible across entire app)
+      if (e.altKey && !e.ctrlKey && !e.metaKey) {
+        const key = e.key.toLowerCase();
+
+        // Alt + A: Open / Close Accessibility Modal
+        if (key === 'a') {
+          e.preventDefault();
+          toggleAccessibilityModal();
+          return;
+        }
+
+        // Alt + H: High Contrast Mode Toggle
+        if (key === 'h') {
+          e.preventDefault();
+          toggleAccessibilityHighContrast();
+          return;
+        }
+
+        // Alt + T: Toggle Dark / Light Theme
+        if (key === 't') {
+          e.preventDefault();
+          toggleThemeMode();
+          return;
+        }
+
+        // Alt + R: Refresh Dashboard & Telemetry
+        if (key === 'r') {
+          e.preventDefault();
+          refreshDashboard();
+          showToast('🔄 Telemetry & Dashboard Data Refreshed', 'info');
+          announceToScreenReader('Dashboard telemetry refreshed');
+          return;
+        }
+
+        // Alt + S: Trigger Dynamic DWMA Settlement Cycle
+        if (key === 's') {
+          e.preventDefault();
+          triggerPriceEngine();
+          announceToScreenReader('Dynamic pricing settlement cycle triggered');
+          return;
+        }
+
+        // Alt + 1 to Alt + 9: Instant Tab Switching
+        const tabMap = {
+          '1': 'dashboard',
+          '2': 'batches',
+          '3': 'pricing',
+          '4': 'crash',
+          '5': 'simulator',
+          '6': 'users',
+          '7': 'reports',
+          '8': 'audit',
+          '9': 'settings'
+        };
+        if (tabMap[e.key]) {
+          e.preventDefault();
+          switchTab(tabMap[e.key]);
+          return;
+        }
+      }
+    });
+
+    // Initialize Accessibility Preferences on Page Load
     initHighContrast();
+    initTextScale();
+    initReduceMotion();
 
     // Toast Notification System
     function showToast(message, type = 'info') {
@@ -3229,9 +3852,16 @@
         if (tabName && location.hash !== '#' + tabName) {
           try { history.replaceState(null, '', '#' + tabName); } catch (e) { }
         }
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(el => {
+          el.classList.remove('active');
+          el.setAttribute('aria-selected', 'false');
+        });
         const activeNav = document.getElementById(`tab-${tabName}`);
-        if (activeNav) activeNav.classList.add('active');
+        if (activeNav) {
+          activeNav.classList.add('active');
+          activeNav.setAttribute('aria-selected', 'true');
+        }
+        announceToScreenReader(`Switched to ${tabName.toUpperCase()} view`);
 
         ['dashboard', 'crash', 'batches', 'pricing', 'simulator', 'users', 'reports', 'audit', 'settings', 'panels'].forEach(t => {
           const view = document.getElementById(`view-${t}`);
@@ -4527,6 +5157,287 @@
     const getBeverageImage = getBeverageImageAdmin;
 
     // ==========================================
+    // 30-POINT LIVE DWMA SPARKLINE ENGINE (CROSS-PANEL SYNCHRONIZED)
+    // ==========================================
+    const FLAVOUR_COLORS = {
+      MANGO: { stroke: '#F59E0B', rgb: '245, 158, 11', fade: '#D97706' },
+      LEMON: { stroke: '#EAB308', rgb: '234, 179, 8', fade: '#CA8A04' },
+      MINT: { stroke: '#10B981', rgb: '16, 185, 129', fade: '#059669' },
+      STRAWBERRY: { stroke: '#F43F5E', rgb: '244, 63, 94', fade: '#E11D48' },
+      GRAPE: { stroke: '#8B5CF6', rgb: '139, 92, 246', fade: '#7C3AED' },
+      LYCHEE: { stroke: '#EC4899', rgb: '236, 72, 153', fade: '#DB2777' },
+      THUNDER: { stroke: '#6366F1', rgb: '99, 102, 241', fade: '#4F46E5' },
+      ORANGE: { stroke: '#F97316', rgb: '249, 115, 22', fade: '#EA580C' }
+    };
+
+    function getProductChartColorsAdmin(p) {
+      if (!p) return FLAVOUR_COLORS.MANGO;
+      const f = (p.flavour || p.name || p.productName || '').toUpperCase();
+      if (f.includes('MANGO')) return FLAVOUR_COLORS.MANGO;
+      if (f.includes('LEMON')) return FLAVOUR_COLORS.LEMON;
+      if (f.includes('MINT')) return FLAVOUR_COLORS.MINT;
+      if (f.includes('STRAWBERRY')) return FLAVOUR_COLORS.STRAWBERRY;
+      if (f.includes('GRAPE')) return FLAVOUR_COLORS.GRAPE;
+      if (f.includes('LYCHEE') || f.includes('GUAVA') || f.includes('MELON')) return FLAVOUR_COLORS.LYCHEE;
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return FLAVOUR_COLORS.THUNDER;
+      if (f.includes('ORANGE')) return FLAVOUR_COLORS.ORANGE;
+
+      const idMap = {
+        1: FLAVOUR_COLORS.MANGO,
+        2: FLAVOUR_COLORS.LEMON,
+        3: FLAVOUR_COLORS.MINT,
+        4: FLAVOUR_COLORS.ORANGE,
+        5: FLAVOUR_COLORS.STRAWBERRY,
+        6: FLAVOUR_COLORS.GRAPE,
+        7: FLAVOUR_COLORS.LYCHEE,
+        23: FLAVOUR_COLORS.THUNDER
+      };
+      return idMap[p.id || p.productId] || FLAVOUR_COLORS.MANGO;
+    }
+
+    let adminPriceHistoryMap = {}; // productId -> array of { timestamp, price, oldPrice, priceChange, reason }
+
+    async function fetchAllAdminPriceHistories() {
+      if (!liveProductsCache || liveProductsCache.length === 0) return;
+      for (const p of liveProductsCache) {
+        const pid = p.id || p.productId;
+        try {
+          const res = await apiFetch('/pricing/history/' + pid);
+          if (res && res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              const sorted = data.slice().sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp));
+              adminPriceHistoryMap[pid] = sorted.map(item => ({
+                timestamp: item.createdAt || item.timestamp || new Date().toISOString(),
+                price: Number(item.newPrice !== undefined ? item.newPrice : item.price || 25),
+                oldPrice: Number(item.oldPrice !== undefined ? item.oldPrice : item.price || 25),
+                priceChange: Number(item.priceChange !== undefined ? item.priceChange : 0),
+                reason: item.reason || item.explanation || '1-Min DWMA Settlement'
+              }));
+            }
+          }
+        } catch (e) {}
+        if (!adminPriceHistoryMap[pid]) adminPriceHistoryMap[pid] = [];
+      }
+      renderAllAdminSparklines();
+      if (currentDrawerProductId) {
+        const drawerProd = liveProductsCache.find(p => (p.id === currentDrawerProductId || p.productId === currentDrawerProductId));
+        if (drawerProd) drawAdminDrawerSparkline(currentDrawerProductId, drawerProd);
+      }
+    }
+
+    function recordAdminLivePricePoint(productId, newPrice, oldPrice, reason) {
+      if (!adminPriceHistoryMap[productId]) adminPriceHistoryMap[productId] = [];
+      const lastEntry = adminPriceHistoryMap[productId][adminPriceHistoryMap[productId].length - 1];
+      if (!lastEntry || Math.abs(lastEntry.price - newPrice) > 0.001) {
+        adminPriceHistoryMap[productId].push({
+          timestamp: new Date().toISOString(),
+          price: newPrice,
+          oldPrice: oldPrice || (lastEntry ? lastEntry.price : newPrice),
+          priceChange: newPrice - (oldPrice || (lastEntry ? lastEntry.price : newPrice)),
+          reason: reason || 'Live Settlement'
+        });
+        if (adminPriceHistoryMap[productId].length > 50) {
+          adminPriceHistoryMap[productId].shift();
+        }
+      }
+    }
+
+    function drawAdminSparkline(canvasId, productId, history, currentPrice, basePrice, minPrice, maxPrice, isDrawer = false) {
+      const canvas = typeof canvasId === 'string' ? document.getElementById(canvasId) : canvasId;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const width = (rect.width && rect.width > 10) ? rect.width : (canvas.offsetWidth > 10 ? canvas.offsetWidth : (isDrawer ? 340 : 130));
+      const height = (rect.height && rect.height > 10) ? rect.height : (canvas.offsetHeight > 10 ? canvas.offsetHeight : (isDrawer ? 90 : 36));
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+
+      let dataPoints = [];
+      if (history && history.length > 0) {
+        dataPoints = history.slice(-30).map(h => ({
+          price: Number(h.price != null ? h.price : 25),
+          timestamp: h.timestamp || new Date().toISOString()
+        }));
+      }
+
+      const prod = (liveProductsCache || []).find(p => (p.id === productId || p.productId === productId));
+      const floorP = Number(minPrice != null ? minPrice : (prod && prod.minCupPrice != null ? prod.minCupPrice : 20));
+      const ceilP = Number(maxPrice != null ? maxPrice : (prod && prod.maxCupPrice != null ? prod.maxCupPrice : 30));
+      const baseP = Number(basePrice != null ? basePrice : (prod && prod.defaultCupPrice != null ? prod.defaultCupPrice : 25));
+      const currP = Number(currentPrice != null ? currentPrice : (prod && prod.currentCupPrice != null ? prod.currentCupPrice : baseP));
+
+      if (dataPoints.length === 0) {
+        const mid = Number(((baseP * 0.45) + (currP * 0.55)).toFixed(2));
+        dataPoints = [
+          { price: baseP, timestamp: new Date(Date.now() - 180000).toISOString() },
+          { price: mid, timestamp: new Date(Date.now() - 90000).toISOString() },
+          { price: currP, timestamp: new Date().toISOString() }
+        ];
+      } else if (dataPoints.length === 1) {
+        const pVal = dataPoints[0].price;
+        const mid = Number(((baseP * 0.45) + (pVal * 0.55)).toFixed(2));
+        dataPoints = [
+          { price: baseP, timestamp: new Date(Date.now() - 120000).toISOString() },
+          { price: mid, timestamp: new Date(Date.now() - 60000).toISOString() },
+          { price: pVal, timestamp: dataPoints[0].timestamp || new Date().toISOString() }
+        ];
+      }
+
+      // Update badge labels
+      const ptsBadge = document.getElementById(isDrawer ? 'drawerSparklinePts' : `adminSparklinePts_${productId}`);
+      if (ptsBadge) ptsBadge.innerHTML = `${dataPoints.length} PTS &bull; LIVE`;
+
+      const deltaBadge = document.getElementById(`adminSparklineDelta_${productId}`);
+      if (deltaBadge && !isDrawer) {
+        const diff = currP - baseP;
+        const pct = baseP > 0 ? ((diff / baseP) * 100).toFixed(1) : '0.0';
+        if (diff > 0.05) {
+          deltaBadge.textContent = `+₹${diff.toFixed(2)} (+${pct}%)`;
+          deltaBadge.style.color = '#10b981';
+        } else if (diff < -0.05) {
+          deltaBadge.textContent = `-₹${Math.abs(diff).toFixed(2)} (${pct}%)`;
+          deltaBadge.style.color = '#f43f5e';
+        } else {
+          deltaBadge.textContent = `₹0.00 (0.0%)`;
+          deltaBadge.style.color = 'var(--text-muted)';
+        }
+      }
+
+      const padLeft = isDrawer ? 28 : 18;
+      const padRight = isDrawer ? 12 : 6;
+      const padTop = isDrawer ? 10 : 4;
+      const padBottom = isDrawer ? 10 : 4;
+      const plotWidth = Math.max(10, width - padLeft - padRight);
+      const plotHeight = Math.max(10, height - padTop - padBottom);
+
+      const prices = dataPoints.map(d => d.price);
+      let pMin = Math.min(...prices, baseP);
+      let pMax = Math.max(...prices, baseP);
+      let diffRange = pMax - pMin;
+
+      let minP = Math.max(floorP - 0.5, pMin - Math.max(1.2, diffRange * 0.2));
+      let maxP = Math.min(ceilP + 0.5, pMax + Math.max(1.2, diffRange * 0.2));
+      if (maxP - minP < 3.0) {
+        const center = (pMax + pMin) / 2;
+        minP = center - 1.5;
+        maxP = center + 1.5;
+      }
+      const span = maxP - minP;
+
+      const getY = (val) => padTop + plotHeight - ((Math.min(maxP, Math.max(minP, val)) - minP) / span) * plotHeight;
+      const getX = (idx) => padLeft + (idx / Math.max(1, dataPoints.length - 1)) * plotWidth;
+
+      const isLight = !document.body.classList.contains('dark-theme-mode');
+      const flavourColor = getProductChartColorsAdmin(prod);
+      const strokeColor = flavourColor.stroke;
+      const strokeColorRgb = flavourColor.rgb;
+
+      // Base Price Dashed Reference Line
+      const baseY = getY(baseP);
+      ctx.beginPath();
+      ctx.strokeStyle = isLight ? 'rgba(100, 116, 139, 0.25)' : 'rgba(148, 163, 184, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 3]);
+      ctx.moveTo(padLeft, baseY);
+      ctx.lineTo(width - padRight, baseY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Y-Axis Labels for drawer
+      if (isDrawer) {
+        ctx.save();
+        ctx.font = 'bold 8px JetBrains Mono, monospace';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = isLight ? 'rgba(100, 116, 139, 0.7)' : 'rgba(148, 163, 184, 0.65)';
+        ctx.fillText(`₹${Math.round(maxP)}`, padLeft - 3, padTop + 2);
+        ctx.fillText(`₹${Math.round(minP)}`, padLeft - 3, padTop + plotHeight - 2);
+        ctx.restore();
+      }
+
+      // Bézier Smooth Area Fill
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        const cpx = (x0 + x1) / 2;
+        ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
+      }
+      ctx.lineTo(getX(dataPoints.length - 1), padTop + plotHeight);
+      ctx.lineTo(getX(0), padTop + plotHeight);
+      ctx.closePath();
+
+      const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, ${isDrawer ? 0.4 : 0.3})`);
+      areaGrad.addColorStop(0.6, `rgba(${strokeColorRgb}, 0.08)`);
+      areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.0)`);
+      ctx.fillStyle = areaGrad;
+      ctx.fill();
+
+      // Smooth Stroke Line
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        const cpx = (x0 + x1) / 2;
+        ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
+      }
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = isDrawer ? 2.5 : 1.8;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // Latest Point Beacon Dot
+      const lastX = getX(dataPoints.length - 1);
+      const lastY = getY(dataPoints[dataPoints.length - 1].price);
+
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, isDrawer ? 5.0 : 3.8, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.25)`;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, isDrawer ? 2.5 : 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = strokeColor;
+      ctx.fill();
+    }
+
+    function renderAllAdminSparklines() {
+      if (!liveProductsCache || liveProductsCache.length === 0) return;
+      liveProductsCache.forEach(p => {
+        const pid = p.id || p.productId;
+        const livePrice = Number(p.currentCupPrice || p.currentPrice || 25);
+        const basePrice = Number(p.defaultCupPrice || p.basePrice || 25);
+        const minPrice = Number(p.minCupPrice || 20);
+        const maxPrice = Number(p.maxCupPrice || 30);
+        drawAdminSparkline(`adminSparkline_${pid}`, pid, adminPriceHistoryMap[pid] || [], livePrice, basePrice, minPrice, maxPrice, false);
+      });
+    }
+
+    function drawAdminDrawerSparkline(productId, prod) {
+      if (!prod) prod = (liveProductsCache || []).find(p => (p.id === productId || p.productId === productId));
+      if (!prod) return;
+      const pid = prod.id || prod.productId;
+      const livePrice = Number(prod.currentCupPrice != null ? prod.currentCupPrice : (prod.currentPrice != null ? prod.currentPrice : 25));
+      const basePrice = Number(prod.defaultCupPrice != null ? prod.defaultCupPrice : (prod.basePrice != null ? prod.basePrice : 25));
+      const minPrice = Number(prod.minCupPrice != null ? prod.minCupPrice : 20);
+      const maxPrice = Number(prod.maxCupPrice != null ? prod.maxCupPrice : 30);
+      drawAdminSparkline('drawerProductSparkline', pid, adminPriceHistoryMap[pid] || [], livePrice, basePrice, minPrice, maxPrice, true);
+    }
+
+    // ==========================================
     // PRICING ENGINE SETTLEMENT INTERVAL TIMING
     // ==========================================
     let activePricingTiming = {
@@ -5088,6 +5999,7 @@
             });
             saveFlavoursMap();
             renderLivePricingTable();
+            fetchAllAdminPriceHistories();
             return;
           }
         }
@@ -5106,6 +6018,7 @@
         }));
       }
       renderLivePricingTable();
+      fetchAllAdminPriceHistories();
     }
 
 
@@ -5178,6 +6091,7 @@
             wInput.value = weightedSales;
           }
         });
+        requestAnimationFrame(renderAllAdminSparklines);
         return;
       }
 
@@ -5206,15 +6120,16 @@
           ? `<span style="background: rgba(217, 119, 6, 0.15); color: #d97706; font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(217,119,6,0.3); display: inline-flex; align-items: center; gap: 4px;">🔒 MANUAL</span>`
           : `<span style="background: rgba(37, 99, 235, 0.1); color: #2563eb; font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(37,99,235,0.2); display: inline-flex; align-items: center; gap: 4px;">⚡ DYNAMIC</span>`;
 
+        const prodTitle = p.name || p.productName || `Product #${pid}`;
         const overrideControls = `
           <div style="display: flex; align-items: center; gap: 6px;">
             <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 7px; border-radius: 6px; font-size: 11px; font-weight: 800; user-select: none; border: 1.5px solid ${isOverride ? '#d97706' : 'var(--border-color)'}; background: ${isOverride ? 'rgba(217,119,6,0.12)' : 'var(--bg-subtle)'}; color: ${isOverride ? '#d97706' : 'var(--text-muted)'};" title="${isOverride ? 'Price is LOCKED. Uncheck to release back to dynamic mode.' : 'Click to lock price at entered amount.'}">
-              <input type="checkbox" id="lockCheckbox_${pid}" ${isOverride ? 'checked' : ''} onchange="toggleManualPriceLock(${pid}, this.checked)" style="cursor: pointer; accent-color: #d97706; width: 14px; height: 14px;">
+              <input type="checkbox" id="lockCheckbox_${pid}" ${isOverride ? 'checked' : ''} onchange="toggleManualPriceLock(${pid}, this.checked)" style="cursor: pointer; accent-color: #d97706; width: 14px; height: 14px;" aria-label="Lock pricing for ${prodTitle}">
               <span>${isOverride ? '🔒 Locked' : '🔓 Lock'}</span>
             </label>
-            <input id="quickPriceInput_${pid}" type="number" step="0.5" value="${Number(livePrice)}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); applyManualPriceOverride(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid ${isOverride ? '#d97706' : '#cbd5e1'}; border-radius: 6px; font-size: 13px;" title="Type new price and press Enter or click Enter button">
-            <button class="btn-primary" id="btnEnterPrice_${pid}" style="padding: 5px 10px; font-size: 11px; font-weight: 800; background: #d97706; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;" onclick="applyManualPriceOverride(${pid})" title="Apply price overwrite (or press Enter key)">↵ Enter</button>
-            <button class="btn-primary" style="padding: 5px 9px; font-size: 11px; font-weight: 800; background: #2563eb; white-space: nowrap; cursor: pointer;" onclick="releaseManualPriceOverride(${pid})" title="Release manual override and resume dynamic DWMA settlement">🔓 Release</button>
+            <input id="quickPriceInput_${pid}" type="number" step="0.5" value="${Number(livePrice)}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); applyManualPriceOverride(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid ${isOverride ? '#d97706' : '#cbd5e1'}; border-radius: 6px; font-size: 13px;" title="Type new price and press Enter or click Enter button" aria-label="Manual price override for ${prodTitle}">
+            <button class="btn-primary" id="btnEnterPrice_${pid}" style="padding: 5px 10px; font-size: 11px; font-weight: 800; background: #d97706; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;" onclick="applyManualPriceOverride(${pid})" title="Apply price overwrite (or press Enter key)" aria-label="Apply manual price for ${prodTitle}">↵ Enter</button>
+            <button class="btn-primary" style="padding: 5px 9px; font-size: 11px; font-weight: 800; background: #2563eb; white-space: nowrap; cursor: pointer;" onclick="releaseManualPriceOverride(${pid})" title="Release manual override and resume dynamic DWMA settlement" aria-label="Release manual override for ${prodTitle}">🔓 Release</button>
           </div>`;
 
         return `
@@ -5230,32 +6145,43 @@
               </div>
             </td>
             <td><span id="livePriceDisplay_${pid}" style="font-weight: 900; color: ${isOverride ? '#d97706' : '#059669'}; font-size: 15px; background: ${isOverride ? 'rgba(217,119,6,0.12)' : 'rgba(5,150,105,0.1)'}; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">${isOverride ? '<span title="Price is manually locked" style="font-size: 13px;">🔒</span>' : ''}₹${livePrice}</span></td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 3px; width: 130px;">
+                <canvas id="adminSparkline_${pid}" style="width: 130px; height: 36px; display: block; border-radius: 6px; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color);"></canvas>
+                <div style="display: flex; justify-content: space-between; font-size: 9.5px; font-family: monospace; color: var(--text-muted); font-weight: 700; padding: 0 2px;">
+                  <span id="adminSparklinePts_${pid}">30 PTS</span>
+                  <span id="adminSparklineDelta_${pid}">--</span>
+                </div>
+              </div>
+            </td>
             <td id="modeBadgeCol_${pid}">${modeBadge}</td>
             <td id="basePriceCol_${pid}" style="font-weight: 700;">₹${basePrice}</td>
             <td id="minPriceCol_${pid}" style="color: #dc2626; font-weight: 700;">₹${minPrice}</td>
             <td id="maxPriceCol_${pid}" style="color: #2563eb; font-weight: 700;">₹${maxPrice}</td>
             <td>
               <div style="display: flex; align-items: center; gap: 4px;">
-                <input id="targetInput_${pid}" type="number" step="0.05" min="0.05" value="${target}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveProductTargetSales(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #3b82f6; border-radius: 6px; font-size: 13px;" title="Target sales per minute. Press Enter or click Save.">
-                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669; cursor: pointer;" onclick="saveProductTargetSales(${pid})" title="Save Target Sales to PostgreSQL">💾</button>
+                <input id="targetInput_${pid}" type="number" step="0.05" min="0.05" value="${target}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveProductTargetSales(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #3b82f6; border-radius: 6px; font-size: 13px;" title="Target sales per minute. Press Enter or click Save." aria-label="Target sales per minute for ${prodTitle}">
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669; cursor: pointer;" onclick="saveProductTargetSales(${pid})" title="Save Target Sales to PostgreSQL" aria-label="Save target sales for ${prodTitle}">💾</button>
               </div>
             </td>
             <td>
               <div style="display: flex; align-items: center; gap: 4px;">
-                <input id="weightedSalesInput_${pid}" type="number" step="0.05" min="0" value="${weightedSales}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveProductWeightedSales(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #10b981; border-radius: 6px; font-size: 13px;" title="Weighted sales (S_w). Press Enter or click Save.">
-                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669; cursor: pointer;" onclick="saveProductWeightedSales(${pid})" title="Save Weighted Sales to PostgreSQL">💾</button>
+                <input id="weightedSalesInput_${pid}" type="number" step="0.05" min="0" value="${weightedSales}" onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveProductWeightedSales(${pid}); }" style="width: 58px; padding: 4px 6px; font-weight: 700; text-align: center; border: 1.5px solid #10b981; border-radius: 6px; font-size: 13px;" title="Weighted sales (S_w). Press Enter or click Save." aria-label="Weighted sales S_w for ${prodTitle}">
+                <button class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: #059669; cursor: pointer;" onclick="saveProductWeightedSales(${pid})" title="Save Weighted Sales to PostgreSQL" aria-label="Save weighted sales for ${prodTitle}">💾</button>
               </div>
             </td>
             <td>${overrideControls}</td>
             <td>
               <div style="display: flex; gap: 6px;">
-                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb); cursor: pointer;" onclick="openProductTradingDrawer(${pid})" title="Open granular trading instrument view">🔍 Inspect</button>
-                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;" onclick="editProductPricing(${pid})" title="Edit basic details">✏️</button>
+                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb); cursor: pointer;" onclick="openProductTradingDrawer(${pid})" title="Open granular trading instrument view" aria-label="Inspect trading drawer for ${prodTitle}">🔍 Inspect</button>
+                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;" onclick="editProductPricing(${pid})" title="Edit basic details" aria-label="Edit details for ${prodTitle}">✏️</button>
               </div>
             </td>
           </tr>
         `;
       }).join('');
+
+      requestAnimationFrame(renderAllAdminSparklines);
 
       if (activeId) {
         const restoredEl = document.getElementById(activeId);
@@ -6825,6 +7751,19 @@
 
           const subPrices = stompClient.subscribe('/topic/prices', function (message) {
             if (message.body) {
+              try {
+                const updates = JSON.parse(message.body);
+                if (Array.isArray(updates)) {
+                  updates.forEach(u => {
+                    const pid = u.productId || u.id;
+                    const newP = Number(u.currentPrice !== undefined ? u.currentPrice : (u.newPrice !== undefined ? u.newPrice : u.price));
+                    const oldP = Number(u.oldPrice !== undefined ? u.oldPrice : newP);
+                    if (pid && !isNaN(newP)) {
+                      recordAdminLivePricePoint(pid, newP, oldP, u.reason || u.explanation);
+                    }
+                  });
+                }
+              } catch (e) {}
               scheduleBatchWsRefresh({ prices: true, batches: true, history: true, dashboard: true });
             }
           });
@@ -7048,9 +7987,6 @@
     }
 
     function setThemeMode(isDark) {
-      localStorage.removeItem('pubexchange_contrast_mode');
-      document.body.classList.remove('high-contrast-mode');
-
       if (isDark) {
         document.body.classList.add('dark-theme-mode');
         document.documentElement.setAttribute('data-theme', 'dark');
@@ -7061,6 +7997,7 @@
         localStorage.setItem('pubexchange_theme_mode', 'light');
       }
       updateThemeButtonUI(isDark);
+      announceToScreenReader(isDark ? 'Theme switched to Dark mode' : 'Theme switched to Light porcelain mode');
     }
 
     function updateThemeButtonUI(isDark) {
@@ -7368,12 +8305,29 @@
 
       const overlay = document.getElementById('productTradingDrawerOverlay');
       if (overlay) overlay.classList.add('active');
+      lastActiveElementBeforeDrawer = document.activeElement;
+      announceToScreenReader(`Product trading drawer opened for ${prod.name || 'Instrument #' + productId}. Press Escape to close.`);
+      setTimeout(() => {
+        const closeBtn = document.querySelector('#productTradingDrawer button');
+        if (closeBtn) closeBtn.focus();
+      }, 80);
+
+      requestAnimationFrame(() => {
+        drawAdminDrawerSparkline(productId, prod);
+      });
+      setTimeout(() => {
+        drawAdminDrawerSparkline(productId, prod);
+      }, 250);
     }
 
     function closeProductTradingDrawer() {
       const overlay = document.getElementById('productTradingDrawerOverlay');
       if (overlay) overlay.classList.remove('active');
       currentDrawerProductId = null;
+      announceToScreenReader('Trading drawer closed');
+      if (lastActiveElementBeforeDrawer && typeof lastActiveElementBeforeDrawer.focus === 'function') {
+        lastActiveElementBeforeDrawer.focus();
+      }
     }
 
     async function saveDrawerProductPricing() {
@@ -7538,6 +8492,17 @@
           <div>
             <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Demand Ratio</div>
             <div id="drawerDemandRatio" style="font-size: 20px; font-weight: 900; font-family: var(--font-mono); color: #10b981;">1.00x</div>
+          </div>
+        </div>
+
+        <!-- Live DWMA Price History Sparkline (30 PTS) -->
+        <div style="background: var(--bg-surface); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-size: 11.5px; font-weight: 800; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">📈 30-Point Live DWMA Price Trend</div>
+            <span id="drawerSparklinePts" style="font-size: 10px; font-family: var(--font-mono); font-weight: 700; color: var(--accent-cyan);">30 PTS &bull; LIVE</span>
+          </div>
+          <div style="position: relative; width: 100%; height: 90px; border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
+            <canvas id="drawerProductSparkline" style="width: 100%; height: 90px; display: block;"></canvas>
           </div>
         </div>
 

@@ -2703,8 +2703,8 @@
       // Build data points list
       let dataPoints = [];
       if (history.length > 0) {
-        // Take last 40 data points
-        dataPoints = history.slice(-40).map(h => ({
+        // Take last 30 data points (consistent across POS, LED Wall, and Admin)
+        dataPoints = history.slice(-30).map(h => ({
           time: new Date(h.timestamp),
           price: Number(h.price),
           change: Number(h.priceChange || 0),
@@ -2752,6 +2752,11 @@
       const rawSpan = maxP - minP;
       minP = Math.max(10, minP - Math.max(1.5, rawSpan * 0.12));
       maxP = maxP + Math.max(1.5, rawSpan * 0.12);
+      if (maxP - minP < 3.0) {
+        const center = (maxP + minP) / 2;
+        minP = center - 1.5;
+        maxP = center + 1.5;
+      }
       const priceSpan = Math.max(2, maxP - minP);
 
       const getY = (val) => {
@@ -3523,7 +3528,7 @@
         if (type === 'PRICING_TIMING_CHANGED' || msg.settlementIntervalSeconds || msg.intervalSeconds) {
           updatePricingTimingState(msg.payload || msg);
           fetchPricingConfiguration();
-        } else if (type === 'PRODUCT_PRICE_UPDATE' || type === 'REFRESH_PRODUCTS') {
+        } else if (type === 'PRODUCT_PRICE_UPDATE' || type === 'REFRESH_PRODUCTS' || type === 'NEW_ORDER_PLACED' || type === 'CART_CHECKOUT_COMPLETED' || type === 'ORDER_CREATED') {
           fetchProducts();
         }
       };
@@ -3570,9 +3575,9 @@
         // Append to history array for this specific product
         if (!priceHistoryMap[pId]) priceHistoryMap[pId] = [];
         
-        // Avoid duplicate immediate entries
+        // Avoid duplicate immediate entries — only add if new price or initial
         const lastEntry = priceHistoryMap[pId][priceHistoryMap[pId].length - 1];
-        if (!lastEntry || Math.abs(new Date(nowIso) - new Date(lastEntry.timestamp)) > 2000 || lastEntry.price !== newPrice) {
+        if (!lastEntry || Math.abs(lastEntry.price - newPrice) > 0.001) {
           priceHistoryMap[pId].push({
             timestamp: nowIso,
             price: newPrice,
@@ -3580,6 +3585,9 @@
             priceChange: priceChange,
             reason: item.reason || item.explanation || 'Live Settlement'
           });
+          if (priceHistoryMap[pId].length > 50) {
+            priceHistoryMap[pId].shift();
+          }
         }
       });
 
