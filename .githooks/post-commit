@@ -1,0 +1,16 @@
+#!/bin/sh
+# Git Post-Commit Hook: Auto-push commits immediately to origin
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+if [ "$branch" != "" ] && [ "$branch" != "HEAD" ]; then
+    echo ""
+    echo "================================================================"
+    echo ">>> [AUTO-HOOK] Pushing local commit to origin/$branch..."
+    git push origin "$branch"
+    if [ $? -eq 0 ]; then
+        echo ">>> [AUTO-HOOK] Successfully pushed to GitHub!"
+    else
+        echo ">>> [AUTO-HOOK] Push failed (network or permissions). Auto-sync engine will retry."
+    fi
+    echo "================================================================"
+    echo ""
+fi
