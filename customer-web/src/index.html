@@ -2312,7 +2312,7 @@
                 <!-- 1. Product Visual Area -->
                 <div class="card-img-banner">
                   <img src="${imgUrl}" alt="${p.name}" class="beverage-photo" loading="lazy" id="beverageImg-${p.id}" />
-                  <span class="fruit-pill" id="fruitPill-${p.id}">${icon} ${shortName}</span>
+                  <span class="fruit-pill" id="fruitPill-${p.id}">${icon} 100% FRESH</span>
                 </div>
 
                 <!-- 2. Product Identity -->
@@ -2338,9 +2338,8 @@
                   <span class="chart-micro-tag" id="sparklinePts-${p.id}">30 PTS &bull; LIVE</span>
                 </div>
                 
-                <!-- 5. Compact Market Limits & Demand Info -->
-                <div class="card-meta-row">
-                  <span class="limits-text" id="posLimits-${p.id}">Base ₹${baseP.toFixed(0)} &bull; F: ₹${minP.toFixed(0)} &bull; C: ₹${maxP.toFixed(0)}</span>
+                <!-- 5. Market Demand Indicator -->
+                <div class="card-meta-row" style="justify-content: flex-end;">
                   <span class="demand-pill" id="posDemandCat-${p.id}" style="color: ${demandColor};">${demandCategory}</span>
                 </div>
               </div>
@@ -2357,8 +2356,6 @@
         products.forEach(p => {
           const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
           const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
-          const minP = Number(p.minCupPrice !== undefined ? p.minCupPrice : 18.0);
-          const maxP = Number(p.maxCupPrice !== undefined ? p.maxCupPrice : 35.0);
           const diff = activePrice - baseP;
 
           // In-place name & identity update
@@ -2370,8 +2367,7 @@
           const pillEl = document.getElementById(`fruitPill-${p.id}`);
           if (pillEl) {
             const icon = getFruitIcon(p);
-            const shortName = getShortFlavourLabel(p);
-            pillEl.innerHTML = `${icon} ${shortName}`;
+            pillEl.innerHTML = `${icon} 100% FRESH`;
           }
           const imgEl = document.getElementById(`beverageImg-${p.id}`);
           if (imgEl && p.name) {
@@ -2387,9 +2383,6 @@
 
           const priceEl = document.getElementById(`priceMain-${p.id}`);
           if (priceEl) priceEl.textContent = `₹${activePrice.toFixed(2)}`;
-
-          const limitsEl = document.getElementById(`posLimits-${p.id}`);
-          if (limitsEl) limitsEl.innerHTML = `Base ₹${baseP.toFixed(0)} &bull; F: ₹${minP.toFixed(0)} &bull; C: ₹${maxP.toFixed(0)}`;
 
           const demandCatEl = document.getElementById(`posDemandCat-${p.id}`);
           if (demandCatEl) {
