@@ -23,8 +23,8 @@ if (Test-Path $pidFile) {
     }
 }
 
-$argString = "-NoLogo -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath`" -IntervalMinutes $IntervalMinutes -Quiet"
-$proc = Start-Process powershell.exe -ArgumentList $argString -WorkingDirectory $RepoRoot -PassThru
+$argList = @("-NoLogo", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", $scriptPath, "-IntervalMinutes", "$IntervalMinutes", "-Quiet")
+$proc = Start-Process powershell.exe -ArgumentList $argList -WorkingDirectory $RepoRoot -PassThru
 
 # Give process a moment to initialize
 Start-Sleep -Milliseconds 700
