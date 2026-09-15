@@ -374,9 +374,10 @@ public class JuiceInventoryAndPricingTests {
     @Test
     @DisplayName("Phase 14: Transactional multi-batch split volume deduction across partial batches")
     void testMultiBatchSplitVolumeDeduction() {
+        String uniqueFlavour = "SPLIT_" + System.currentTimeMillis();
         Product testDrink = productRepository.save(Product.builder()
                 .name("Split Batch Test Juice")
-                .flavour("SPLIT_TEST")
+                .flavour(uniqueFlavour)
                 .defaultCupSizeMl(250)
                 .defaultCupPrice(new BigDecimal("25.00"))
                 .currentCupPrice(new BigDecimal("25.00"))
