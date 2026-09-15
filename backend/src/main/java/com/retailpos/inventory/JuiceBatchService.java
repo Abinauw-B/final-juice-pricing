@@ -84,6 +84,7 @@ public class JuiceBatchService {
                     throw new IllegalStateException("Insufficient inventory for product ID " + productId + ": No active juice batch available");
                 }
 
+                // 1. Single batch fast path: Check if any active batch can satisfy the full request
                 JuiceBatch activeBatch = null;
                 for (JuiceBatch b : activeBatches) {
                     if (b.getRemainingVolumeMl() >= mlToDeduct) {
@@ -95,27 +96,69 @@ public class JuiceBatchService {
                     }
                 }
 
-                if (activeBatch == null) {
-                    throw new IllegalStateException("Insufficient inventory for product ID " + productId + 
-                            ": No active batch has at least " + mlToDeduct + " ml remaining");
+                if (activeBatch != null) {
+                    activeBatch.deductVolume(mlToDeduct);
+                    JuiceBatch updatedBatch = batchRepository.save(activeBatch);
+
+                    // Log transaction
+                    InventoryTransaction tx = InventoryTransaction.builder()
+                            .productId(productId)
+                            .batchId(updatedBatch.getId())
+                            .transactionType("POS_SALE")
+                            .volumeChangeMl(-mlToDeduct)
+                            .notes("Deducted " + mlToDeduct + " ml for sale. Remaining: " + updatedBatch.getRemainingVolumeMl() + " ml")
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                    transactionRepository.save(tx);
+
+                    return updatedBatch;
                 }
 
-                activeBatch.deductVolume(mlToDeduct);
+                // 2. Multi-batch transactional split deduction (Phase 14)
+                int totalAvailableMl = activeBatches.stream()
+                        .mapToInt(JuiceBatch::getRemainingVolumeMl)
+                        .sum();
 
-                JuiceBatch updatedBatch = batchRepository.save(activeBatch);
+                if (totalAvailableMl < mlToDeduct) {
+                    throw new IllegalStateException("Insufficient inventory for product ID " + productId +
+                            ": Requested " + mlToDeduct + " ml, but total available stock across all active batches is only " + totalAvailableMl + " ml");
+                }
 
-                // Log transaction
-                InventoryTransaction tx = InventoryTransaction.builder()
-                        .productId(productId)
-                        .batchId(updatedBatch.getId())
-                        .transactionType("POS_SALE")
-                        .volumeChangeMl(-mlToDeduct)
-                        .notes("Deducted " + mlToDeduct + " ml for sale. Remaining: " + updatedBatch.getRemainingVolumeMl() + " ml")
-                        .createdAt(LocalDateTime.now())
-                        .build();
-                transactionRepository.save(tx);
+                int remainingToDeduct = mlToDeduct;
+                JuiceBatch lastUpdatedBatch = null;
 
-                return updatedBatch;
+                for (JuiceBatch b : activeBatches) {
+                    int available = b.getRemainingVolumeMl();
+                    if (available <= 0) {
+                        b.setStatus(JuiceBatch.BatchStatus.DEPLETED);
+                        batchRepository.save(b);
+                        continue;
+                    }
+
+                    int deductFromThisBatch = Math.min(available, remainingToDeduct);
+                    b.deductVolume(deductFromThisBatch);
+                    if (b.getRemainingVolumeMl() == 0) {
+                        b.setStatus(JuiceBatch.BatchStatus.DEPLETED);
+                    }
+                    lastUpdatedBatch = batchRepository.save(b);
+
+                    InventoryTransaction tx = InventoryTransaction.builder()
+                            .productId(productId)
+                            .batchId(lastUpdatedBatch.getId())
+                            .transactionType("POS_SALE_SPLIT")
+                            .volumeChangeMl(-deductFromThisBatch)
+                            .notes("Split deducted " + deductFromThisBatch + " ml for sale (portion of " + mlToDeduct + " ml). Remaining in batch: " + lastUpdatedBatch.getRemainingVolumeMl() + " ml")
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                    transactionRepository.save(tx);
+
+                    remainingToDeduct -= deductFromThisBatch;
+                    if (remainingToDeduct <= 0) {
+                        break;
+                    }
+                }
+
+                return lastUpdatedBatch;
             } catch (org.springframework.dao.PessimisticLockingFailureException e) {
                 if (attempt == maxAttempts) throw e;
                 try { Thread.sleep(25L * attempt); } catch (InterruptedException ignored) {}

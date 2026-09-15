@@ -17,9 +17,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${cors.allowed-origins:https://final-juice-pricing-admin.vercel.app,https://final-juice-pricing.vercel.app,http://localhost:8000,http://localhost:8001,http://localhost:8002}")
     private String allowedOrigins;
 
+    @org.springframework.context.annotation.Bean
+    public org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler wsBrokerTaskScheduler() {
+        org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler scheduler = new org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(2);
+        scheduler.setThreadNamePrefix("ws-heartbeat-");
+        scheduler.initialize();
+        return scheduler;
+    }
+
     @Override
     public void configureMessageBroker(@org.springframework.lang.NonNull MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic");
+        config.enableSimpleBroker("/topic")
+            .setHeartbeatValue(new long[]{10000, 10000})
+            .setTaskScheduler(wsBrokerTaskScheduler());
         config.setApplicationDestinationPrefixes("/app");
     }
 

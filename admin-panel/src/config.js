@@ -19,35 +19,24 @@
     global.location.protocol === 'file:'
   );
 
-  // 2. Check for runtime URL overrides via query param: e.g. ?api_url=https://your-backend.railway.app
+  // 2. Security hardening (Phase 5): Purge legacy or malicious runtime URL overrides from localStorage
   try {
-    const searchParams = new URLSearchParams(global.location.search);
-    const apiParam = searchParams.get('api_url') || searchParams.get('backend_url');
-    if (apiParam) {
-      localStorage.setItem('pubexchange_backend_url', apiParam.trim());
-    }
+    localStorage.removeItem('pubexchange_backend_url');
   } catch (e) {
-    // Ignore URL/Storage permission errors
+    // Ignore storage errors in restricted contexts
   }
 
-  // 3. Stored backend URL in browser localStorage
-  let storedBackendUrl = null;
-  try {
-    storedBackendUrl = localStorage.getItem('pubexchange_backend_url');
-  } catch (e) {}
-
-  // 4. Injected environment override (e.g. window.__ENV__.API_BASE_URL)
+  // 3. Injected environment override (e.g. window.__ENV__.API_BASE_URL)
   const envApiUrl = (global.__ENV__ && global.__ENV__.API_BASE_URL) || global.BACKEND_API_URL;
 
-  // 5. Determine base backend URL
-  let rawBaseUrl = (envApiUrl || storedBackendUrl || '').trim();
+  // 4. Determine base backend URL strictly from environment or origin defaults
+  let rawBaseUrl = (envApiUrl || '').trim();
 
   if (!rawBaseUrl) {
     if (isLocalhost) {
       rawBaseUrl = 'http://localhost:8088';
     } else {
-      // Production default fallback: In Vercel, can be updated via window.__ENV__ or query param
-      rawBaseUrl = (global.__ENV__ && global.__ENV__.PROD_BACKEND_URL) || 'https://YOUR-BACKEND-URL';
+      rawBaseUrl = (global.__ENV__ && global.__ENV__.PROD_BACKEND_URL) || global.location.origin;
     }
   }
 

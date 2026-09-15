@@ -1,29 +1,36 @@
+# ==============================================================================
+# Production Environment Profile: application-prod.yml
+# Strict Enterprise Production Security, Resiliency, & Performance Configuration
+# ==============================================================================
+
 server:
   port: ${PORT:${SERVER_PORT:8088}}
   shutdown: graceful
   tomcat:
     threads:
-      max: ${TOMCAT_MAX_THREADS:300}
-      min-spare: 50
+      max: ${TOMCAT_MAX_THREADS:200}
+      min-spare: 25
     max-connections: 10000
     accept-count: 1000
 
 spring:
   application:
-    name: retail-pos-backend
+    name: retail-pos-backend-prod
   lifecycle:
     timeout-per-shutdown-phase: 30s
   datasource:
-    url: ${DATABASE_URL:${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:retailposdb}}}
+    url: ${DATABASE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:retailposdb}}
     driver-class-name: org.postgresql.Driver
     username: ${DATABASE_USERNAME:${DB_USERNAME:postgres}}
     password: ${DATABASE_PASSWORD:${DB_PASSWORD:postgres}}
     hikari:
+      # Sized safely for 2-4 replicas: 4 replicas * 25 connections = 100 connections max
       maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:25}
       minimum-idle: ${SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE:5}
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
+      pool-name: RetailPosHikariProdPool
   data:
     redis:
       url: ${REDIS_URL:}
@@ -35,23 +42,26 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+    open-in-view: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
   flyway:
     enabled: true
     baseline-on-migrate: true
+    # STRICT PRODUCTION IMMUTABILITY: Never drop database schema on validation errors
     clean-disabled: true
     clean-on-validation-error: false
     locations: classpath:db/migration
 
 jwt:
-  secret: ${JWT_SECRET:PubExchangeSuperSecretKeyForJWTAuth2026EnterpriseProductionEngine!}
+  # Mandatory in production — JwtTokenProvider fails startup if missing or default
+  secret: ${JWT_SECRET:}
   expiration-ms: 86400000
   refresh-expiration-ms: 604800000
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:${APP_CORS_ALLOWED_ORIGINS:https://final-juice-pricing-admin.vercel.app,https://final-juice-pricing.vercel.app,http://localhost:8000,http://localhost:8001,http://localhost:8002}}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:${APP_CORS_ALLOWED_ORIGINS:https://final-juice-pricing-admin.vercel.app,https://final-juice-pricing.vercel.app}}
 
 management:
   endpoints:
@@ -65,14 +75,15 @@ management:
     redis:
       enabled: false
 
+# Production Safety: Live autonomous trading simulation strictly disabled
 market:
   simulator:
-    enabled: ${MARKET_SIMULATOR_ENABLED:false}
+    enabled: false
 
 pricing:
   settlement-interval-seconds: 60
   settlement-interval-ms: 60000
-  price-decrease-step: 4.00
+  price-decrease-step: 1.00
   round:
     interval-ms: 60000
   default-target-orders: 5
@@ -93,18 +104,18 @@ pricing:
     time: 0.10
   idle-decay-percent: 4
   max-change-percent: 10
+  # Production Safety: Random crashes strictly disabled; manual admin crash retained
   crash:
     enabled: false
     probability: 0.00
     multiplier: 0.55
   minimum-change-percent: 1
 
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operationsSorter: alpha
-    tagsSorter: alpha
-    display-request-duration: true
-    show-extensions: true
+logging:
+  level:
+    root: INFO
+    com.retailpos: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate: WARN
+    com.zaxxer.hikari: INFO
