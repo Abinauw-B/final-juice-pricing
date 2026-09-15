@@ -394,11 +394,13 @@ async function runStage7Validation() {
       readyRes.status === 200 && readyRes.json && readyRes.json.readiness === true
     );
 
-    // 23. Telemetry Metrics Endpoint
-    const metricsRes = await httpRequest(`${API_BASE}/metrics`);
+    // 23. Telemetry Metrics Endpoint (Authenticated Admin Access)
+    const metricsRes = await httpRequest(`${API_BASE}/metrics`, {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
     logResult(
       23, 'Telemetry System Metrics Endpoint (/api/metrics)',
-      'HTTP 200 & Telemetry data returned',
+      'HTTP 200 & Telemetry data returned (Authenticated)',
       `HTTP ${metricsRes.status}`,
       metricsRes.status === 200
     );
