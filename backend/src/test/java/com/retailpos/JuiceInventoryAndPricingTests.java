@@ -50,6 +50,9 @@ public class JuiceInventoryAndPricingTests {
     @Autowired
     private MarketCrashService marketCrashService;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     private Product mangoProduct;
 
     @BeforeEach
@@ -366,5 +369,60 @@ public class JuiceInventoryAndPricingTests {
         assertEquals(new BigDecimal("30.00"), productRepository.findById(orange.getId()).get().getCurrentCupPrice(), "Orange must remain ₹30.00");
         assertEquals(new BigDecimal("22.00"), productRepository.findById(mint.getId()).get().getCurrentCupPrice(), "Mint must remain ₹22.00");
         assertEquals(new BigDecimal("28.00"), productRepository.findById(mango.getId()).get().getCurrentCupPrice(), "Mango must remain ₹28.00");
+    }
+
+    @Test
+    @DisplayName("Phase 14: Transactional multi-batch split volume deduction across partial batches")
+    void testMultiBatchSplitVolumeDeduction() {
+        Product testDrink = productRepository.save(Product.builder()
+                .name("Split Batch Test Juice")
+                .flavour("SPLIT_TEST")
+                .defaultCupSizeMl(250)
+                .defaultCupPrice(new BigDecimal("25.00"))
+                .currentCupPrice(new BigDecimal("25.00"))
+                .minCupPrice(new BigDecimal("20.00"))
+                .maxCupPrice(new BigDecimal("30.00"))
+                .build());
+
+        // Batch A: 150 ml
+        JuiceBatch batchA = batchRepository.save(JuiceBatch.builder()
+                .productId(testDrink.getId())
+                .batchCode("BATCH-SPLIT-A-" + System.currentTimeMillis())
+                .containerCapacityMl(20000)
+                .initialVolumeMl(20000)
+                .remainingVolumeMl(150)
+                .cupSizeMl(250)
+                .status(JuiceBatch.BatchStatus.ACTIVE)
+                .build());
+
+        // Batch B: 150 ml
+        JuiceBatch batchB = batchRepository.save(JuiceBatch.builder()
+                .productId(testDrink.getId())
+                .batchCode("BATCH-SPLIT-B-" + System.currentTimeMillis())
+                .containerCapacityMl(20000)
+                .initialVolumeMl(20000)
+                .remainingVolumeMl(150)
+                .cupSizeMl(250)
+                .status(JuiceBatch.BatchStatus.ACTIVE)
+                .build());
+
+        // Request 250 ml (Neither batch has 250 ml individually, but total = 300 ml >= 250 ml)
+        JuiceBatch result = juiceBatchService.deductBatchVolume(testDrink.getId(), 250);
+        assertNotNull(result, "Split deduction must succeed across multiple batches");
+
+        JuiceBatch refreshedA = batchRepository.findById(batchA.getId()).orElseThrow();
+        JuiceBatch refreshedB = batchRepository.findById(batchB.getId()).orElseThrow();
+
+        assertEquals(0, refreshedA.getRemainingVolumeMl(), "Batch A should be fully depleted (0 ml remaining)");
+        assertEquals(JuiceBatch.BatchStatus.DEPLETED, refreshedA.getStatus(), "Batch A should be marked DEPLETED");
+
+        assertEquals(50, refreshedB.getRemainingVolumeMl(), "Batch B should have 50 ml remaining (150 - 100)");
+        assertEquals(JuiceBatch.BatchStatus.ACTIVE, refreshedB.getStatus(), "Batch B should remain ACTIVE");
+
+        // Clean up test records
+        batchRepository.delete(refreshedA);
+        batchRepository.delete(refreshedB);
+        jdbcTemplate.update("DELETE FROM inventory_transactions WHERE product_id = ?", testDrink.getId());
+        productRepository.delete(testDrink);
     }
 }
