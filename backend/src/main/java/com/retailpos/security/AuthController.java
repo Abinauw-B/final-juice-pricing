@@ -69,87 +69,63 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        if (request == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("success", false, "message", "Request body is required"));
+        }
+
         String username = request.getUsername();
         String password = request.getPassword();
 
-        if (username == null || username.isBlank()) {
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("success", false, "message", "Username is required"));
+                    .body(Map.of("success", false, "message", "Username and password are required"));
         }
 
-        // 1. Try to find the user in the database
-        User user = userRepository.findByUsername(username)
-                .or(() -> userRepository.findByEmail(username))
+        // 1. Strict database user lookup
+        User user = userRepository.findByUsername(username.trim())
+                .or(() -> userRepository.findByEmail(username.trim()))
                 .orElse(null);
 
-        if (user != null) {
-            // Real user found — validate BCrypt password
-            if (user.getPassword() != null && !user.getPassword().isBlank()) {
-                boolean matches = password != null && passwordEncoder.matches(password, user.getPassword());
-                if (!matches) {
-                    log.warn("Failed login attempt for user: {}", username);
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                            .body(Map.of("success", false, "message", "Invalid username or password"));
-                }
-            }
-
-            user.setLastLoginAt(LocalDateTime.now());
-            userRepository.save(user);
-            String roleName = roleRepository.findById(user.getRoleId()).map(r -> r.getName()).orElse("ADMIN");
-            user.setRoleName(roleName);
-
-            log.info("User '{}' logged in successfully with role '{}'", username, roleName);
-
-            String token = jwtTokenProvider.generateToken(user.getUsername(), roleName);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("token", token);
-            response.put("refreshToken", "ref_" + System.currentTimeMillis());
-            response.put("user", user);
-
-            return ResponseEntity.ok(response);
-        }
-
-        // 2. Demo/dev user fallback — only allowed in non-production profiles
-        boolean isDev = isDevProfile();
-        if (!isDev) {
-            log.warn("Login attempt for non-existent user '{}' rejected in production mode", username);
+        if (user == null) {
+            log.warn("Authentication failed: User '{}' not found in database", username);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("success", false, "message", "Invalid username or password"));
         }
 
-        // Dev mode: create synthetic user for quick bootstrapping
-        log.info("Dev mode: Creating synthetic user for '{}'", username);
-        String roleName = switch (username.toLowerCase()) {
-            case "superadmin" -> "SUPER_ADMIN";
-            case "admin" -> "ADMIN";
-            case "manager" -> "MANAGER";
-            case "cashier" -> "CASHIER";
-            case "kitchen" -> "KITCHEN_STAFF";
-            case "inventory" -> "INVENTORY_MANAGER";
-            default -> "VIEWER";
-        };
+        // 2. Account active and deletion status checks
+        if (Boolean.TRUE.equals(user.getIsDeleted()) || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            log.warn("Authentication rejected: User '{}' account is inactive or deleted (Status: {})", username, user.getStatus());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "Account is deactivated or disabled"));
+        }
 
-        user = User.builder()
-                .id(100L)
-                .username(username)
-                .email(username + "@pubexchange.com")
-                .fullName(username.substring(0, 1).toUpperCase() + username.substring(1) + " User")
-                .roleId(1L)
-                .roleName(roleName)
-                .status("ACTIVE")
-                .lastLoginAt(LocalDateTime.now())
-                .build();
+        // 3. Mandatory BCrypt password hash verification
+        if (user.getPassword() == null || user.getPassword().isBlank() || !passwordEncoder.matches(password, user.getPassword())) {
+            log.warn("Authentication failed: Password mismatch for user '{}'", username);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "Invalid username or password"));
+        }
 
-        String token = jwtTokenProvider.generateToken(user.getUsername(), roleName);
+        // 4. Update login telemetry & resolve role
+        user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        String roleName = roleRepository.findById(user.getRoleId())
+                .map(r -> r.getName())
+                .orElse("VIEWER");
+        user.setRoleName(roleName);
+
+        log.info("User '{}' authenticated successfully with verified role '{}'", username, roleName);
+
+        String accessToken = jwtTokenProvider.generateToken(user.getUsername(), roleName);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUsername(), roleName);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("token", token);
-        response.put("refreshToken", "ref_" + System.currentTimeMillis());
+        response.put("token", accessToken);
+        response.put("refreshToken", refreshToken);
         response.put("user", user);
-        response.put("devMode", true);
 
         return ResponseEntity.ok(response);
     }
@@ -158,18 +134,12 @@ public class AuthController {
     public ResponseEntity<?> getProfile(@RequestParam(defaultValue = "admin") String username) {
         User user = userRepository.findByUsername(username).orElse(null);
         if (user == null) {
-            user = User.builder()
-                    .id(1L)
-                    .username(username)
-                    .email(username + "@pubexchange.com")
-                    .fullName("Enterprise Administrator")
-                    .roleName("SUPER_ADMIN")
-                    .status("ACTIVE")
-                    .build();
-        } else {
-            String roleName = roleRepository.findById(user.getRoleId()).map(r -> r.getName()).orElse("ADMIN");
-            user.setRoleName(roleName);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "message", "User not found"));
         }
+
+        String roleName = roleRepository.findById(user.getRoleId()).map(r -> r.getName()).orElse("VIEWER");
+        user.setRoleName(roleName);
         return ResponseEntity.ok(user);
     }
 
@@ -181,33 +151,61 @@ public class AuthController {
                     .body(Map.of("success", false, "message", "User not found"));
         }
 
-        // Validate old password if the user has one set
-        if (user.getPassword() != null && !user.getPassword().isBlank()) {
-            if (request.getOldPassword() == null || !passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("success", false, "message", "Current password is incorrect"));
-            }
+        if (user.getPassword() == null || user.getPassword().isBlank()
+                || request.getOldPassword() == null
+                || !passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "Current password is incorrect"));
+        }
+
+        if (request.getNewPassword() == null || request.getNewPassword().length() < 8) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("success", false, "message", "New password must be at least 8 characters long"));
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+        log.info("Password changed successfully for user '{}'", username);
         return ResponseEntity.ok(Map.of("success", true, "message", "Password changed successfully"));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> body) {
-        // In a full implementation, validate the refresh token
-        String token = jwtTokenProvider.generateToken("admin", "ADMIN");
-        return ResponseEntity.ok(Map.of("success", true, "token", token));
-    }
+    public ResponseEntity<?> refreshToken(@RequestBody(required = false) Map<String, String> body) {
+        if (body == null || !body.containsKey("refreshToken") || body.get("refreshToken") == null || body.get("refreshToken").isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "Valid refreshToken is required"));
+        }
 
-    /**
-     * Checks if the application is running in a development profile.
-     * Demo user fallback is only available when dev/default profile is active.
-     */
-    private boolean isDevProfile() {
-        if (activeProfile == null || activeProfile.isBlank()) return true;
-        String lower = activeProfile.toLowerCase();
-        return lower.contains("dev") || lower.contains("default") || lower.contains("local") || lower.contains("test");
+        String refreshToken = body.get("refreshToken").trim();
+
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "Invalid or expired refresh token"));
+        }
+
+        String tokenType = jwtTokenProvider.getTokenTypeFromJWT(refreshToken);
+        if (!"REFRESH".equalsIgnoreCase(tokenType)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "Token provided is not a valid refresh token"));
+        }
+
+        String username = jwtTokenProvider.getUsernameFromJWT(refreshToken);
+        if (username == null || username.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "Refresh token subject is invalid"));
+        }
+
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null || Boolean.TRUE.equals(user.getIsDeleted()) || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            log.warn("Refresh token rejected: User '{}' does not exist or is inactive", username);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "User account is no longer active"));
+        }
+
+        String roleName = roleRepository.findById(user.getRoleId()).map(r -> r.getName()).orElse("VIEWER");
+        String newAccessToken = jwtTokenProvider.generateToken(user.getUsername(), roleName);
+
+        log.info("Access token refreshed securely for user '{}' with role '{}'", username, roleName);
+        return ResponseEntity.ok(Map.of("success", true, "token", newAccessToken));
     }
 }
