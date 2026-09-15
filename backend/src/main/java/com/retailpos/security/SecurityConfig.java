@@ -74,23 +74,21 @@ public class SecurityConfig {
                 // WebSocket endpoints (authentication handled at STOMP layer)
                 .requestMatchers("/ws/**").permitAll()
 
-                // Health check, telemetry, and actuator probes
-                .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/api/health", "/api/health/**", "/api/readiness", "/api/liveness", "/api/metrics").permitAll()
+                // Health check and readiness probes (public for cloud orchestration & load balancers)
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+                .requestMatchers("/api/health", "/api/health/**", "/api/readiness", "/api/liveness").permitAll()
 
-                // H2 console (dev only)
-                .requestMatchers("/h2-console/**").permitAll()
-
-                // OpenAPI / Swagger UI (Phase 36)
+                // OpenAPI / Swagger UI
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs").permitAll()
 
-                // Reports summary endpoint (used by admin dashboard on initial load)
+                // Reports summary endpoint (used by dashboard on initial load)
                 .requestMatchers(HttpMethod.GET, "/api/reports/**", "/api/dashboard").permitAll()
 
                 // Notifications read endpoint
                 .requestMatchers(HttpMethod.GET, "/api/notifications/**").permitAll()
 
-                // Admin role enforcement
+                // Admin & Manager role enforcement (Actuator management, internal metrics, and sensitive operations)
+                .requestMatchers("/actuator/**", "/api/metrics").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/api/admin/**", "/api/pricing/reset-all", "/api/pricing/reset", "/api/pricing/market-crash/trigger", "/api/pricing/market-crash/stop").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
 
                 // --- All other endpoints require authentication ---

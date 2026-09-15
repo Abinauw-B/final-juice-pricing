@@ -24,18 +24,21 @@ public class LiveMarketSimulatorService {
     private final POSService posService;
     private final MarketCrashService marketCrashService;
 
-    private volatile boolean enabled = true;
+    private volatile boolean enabled = false;
     private final AtomicLong simulatedOrdersCount = new AtomicLong(0);
     private volatile LocalDateTime lastOrderTime = null;
     private final Random random = new Random();
 
     public LiveMarketSimulatorService(ProductRepository productRepository,
                                       POSService posService,
-                                      MarketCrashService marketCrashService) {
+                                      MarketCrashService marketCrashService,
+                                      @org.springframework.beans.factory.annotation.Value("${market.simulator.enabled:false}") boolean defaultEnabled) {
         this.productRepository = productRepository;
         this.posService = posService;
         this.marketCrashService = marketCrashService;
-        log.info("[LIVE_MARKET_SIMULATOR] Initialized. Autonomous trading simulation is ENABLED by default.");
+        this.enabled = defaultEnabled;
+        log.info("[LIVE_MARKET_SIMULATOR] Initialized. Autonomous trading simulation is {} (Config: market.simulator.enabled={})",
+                this.enabled ? "ENABLED" : "DISABLED", defaultEnabled);
     }
 
     /**

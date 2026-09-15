@@ -364,7 +364,9 @@ public class POSService {
     private CheckoutResponse doProcessCheckout(CheckoutRequest request) {
 
         String orderNum = "ORD-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
-        String paymentMethod = (request.getPaymentMethod() != null) ? request.getPaymentMethod().toUpperCase() : "CASH";
+        String rawPayment = (request.getPaymentMethod() != null) ? request.getPaymentMethod().trim().toUpperCase() : "CASH";
+        Set<String> validPaymentMethods = Set.of("CASH", "UPI", "CARD", "BOT_CASH");
+        String paymentMethod = validPaymentMethods.contains(rawPayment) ? rawPayment : "CASH";
 
         BigDecimal subtotal = BigDecimal.ZERO;
         List<SalesOrderItem> orderItems = new ArrayList<>();
@@ -440,9 +442,46 @@ public class POSService {
                     .build());
         }
 
-        BigDecimal discount = (request.getDiscountAmount() != null) ? request.getDiscountAmount() : BigDecimal.ZERO;
-        BigDecimal tax = (request.getTaxAmount() != null) ? request.getTaxAmount() : BigDecimal.ZERO;
-        BigDecimal orderTotal = subtotal.subtract(discount).add(tax);
+        // Server-Authoritative Discount Determination (Phase 6)
+        BigDecimal requestedDiscount = (request.getDiscountAmount() != null && request.getDiscountAmount().compareTo(BigDecimal.ZERO) > 0)
+                ? request.getDiscountAmount()
+                : BigDecimal.ZERO;
+        BigDecimal authorizedDiscount = BigDecimal.ZERO;
+
+        if (requestedDiscount.compareTo(BigDecimal.ZERO) > 0) {
+            org.springframework.security.core.Authentication auth =
+                    org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+
+            boolean isAuthorizedStaff = auth != null && auth.isAuthenticated() && auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                            || a.getAuthority().equals("ROLE_SUPER_ADMIN")
+                            || a.getAuthority().equals("ROLE_MANAGER"));
+
+            if (isAuthorizedStaff) {
+                // Maximum authorized staff discount is capped at 20% of the subtotal
+                BigDecimal maxAllowed = subtotal.multiply(new BigDecimal("0.20")).setScale(2, java.math.RoundingMode.HALF_UP);
+                if (requestedDiscount.compareTo(maxAllowed) <= 0) {
+                    authorizedDiscount = requestedDiscount;
+                    log.info("[CHECKOUT DISCOUNT] Authorized staff ({}) applied valid discount of ₹{} on subtotal ₹{}",
+                            auth.getName(), authorizedDiscount, subtotal);
+                } else {
+                    authorizedDiscount = maxAllowed;
+                    log.warn("[CHECKOUT DISCOUNT] Authorized staff ({}) requested discount of ₹{} exceeding 20% limit. Clamped to ₹{}",
+                            auth.getName(), requestedDiscount, maxAllowed);
+                }
+            } else {
+                // Unauthenticated / customer requests cannot arbitrarily dictate discounts
+                log.warn("[SECURITY VIOLATION] Unauthorized checkout discount request of ₹{} rejected from client. Resetting to ₹0.00",
+                        requestedDiscount);
+                authorizedDiscount = BigDecimal.ZERO;
+            }
+        }
+
+        BigDecimal discount = authorizedDiscount;
+        BigDecimal tax = (request.getTaxAmount() != null && request.getTaxAmount().compareTo(BigDecimal.ZERO) >= 0)
+                ? request.getTaxAmount()
+                : BigDecimal.ZERO;
+        BigDecimal orderTotal = subtotal.subtract(discount).add(tax).max(BigDecimal.ZERO);
 
         salesOrder.setSubtotal(subtotal);
         salesOrder.setDiscountAmount(discount);
