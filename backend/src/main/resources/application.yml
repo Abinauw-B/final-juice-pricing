@@ -54,6 +54,9 @@ management:
     web:
       exposure:
         include: health,info,metrics
+  health:
+    redis:
+      enabled: false
 
 pricing:
   settlement-interval-seconds: 60

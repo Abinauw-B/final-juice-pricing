@@ -85,7 +85,8 @@ public class AuthController {
         if (user != null) {
             // Real user found — validate BCrypt password
             if (user.getPassword() != null && !user.getPassword().isBlank()) {
-                if (password == null || !passwordEncoder.matches(password, user.getPassword())) {
+                boolean matches = password != null && passwordEncoder.matches(password, user.getPassword());
+                if (!matches) {
                     log.warn("Failed login attempt for user: {}", username);
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                             .body(Map.of("success", false, "message", "Invalid username or password"));

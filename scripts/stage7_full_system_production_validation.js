@@ -40,7 +40,7 @@ function httpRequest(urlStr, options = {}) {
 }
 
 function getJwtToken(username, role) {
-  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const header = Buffer.from(JSON.stringify({ alg: 'HS512', typ: 'JWT' })).toString('base64url');
   const payload = Buffer.from(JSON.stringify({
     sub: username,
     role: role,
@@ -49,7 +49,7 @@ function getJwtToken(username, role) {
   })).toString('base64url');
   
   const secret = 'PubExchangeSuperSecretKeyForJWTAuth2026EnterpriseProductionEngine!';
-  const signature = crypto.createHmac('sha256', secret)
+  const signature = crypto.createHmac('sha512', secret)
     .update(`${header}.${payload}`)
     .digest('base64url');
 
@@ -79,7 +79,7 @@ async function runStage7Validation() {
   console.log('🚀 STAGE 7 — PROJECT-WIDE PRODUCTION SYSTEM VALIDATION (30 CHECKS)');
   console.log('====================================================================\n');
 
-  const adminToken = getJwtToken('admin', 'ADMIN');
+  let adminToken = getJwtToken('admin', 'ADMIN');
   const customerToken = getJwtToken('customer', 'CUSTOMER');
 
   try {
@@ -111,19 +111,27 @@ async function runStage7Validation() {
       flywayCount >= 11
     );
 
-    // 4. Authentication Mechanism (JWT Token Verification)
+    // 4. Authentication Mechanism (Real Server JWT Login Verification)
+    const loginRes = await httpRequest(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'superadmin', password: 'password' })
+    });
+    if (loginRes.json && loginRes.json.token) {
+      adminToken = loginRes.json.token;
+    }
     logResult(
       4, 'JWT Token Generation & Provider Verification',
-      'Valid HMAC-SHA256 JWT Signed Token',
-      `Admin Token Present: ${adminToken.length > 20}`,
-      adminToken.length > 20
+      'HTTP 200 & Real Server-Issued JWT Signed Token',
+      `Login HTTP: ${loginRes.status}, Token Received: ${Boolean(adminToken && adminToken.length > 20)}`,
+      loginRes.status === 200 && Boolean(adminToken && adminToken.length > 20)
     );
 
     // 5. Authorization RBAC Controls
     const anonRes = await httpRequest(`${API_BASE}/pricing/reset-all`, { method: 'POST' });
     const custRes = await httpRequest(`${API_BASE}/pricing/reset-all`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${customerToken}`, 'X-User-Role': 'CUSTOMER' }
+      headers: { 'Authorization': `Bearer ${customerToken}` }
     });
     logResult(
       5, 'Authorization RBAC Access Control',
@@ -163,7 +171,10 @@ async function runStage7Validation() {
     );
 
     // 9. Dynamic Pricing Engine Trajectory Evaluation
-    const evalRes = await httpRequest(`${API_BASE}/pricing/evaluate`, { method: 'POST' });
+    const evalRes = await httpRequest(`${API_BASE}/pricing/evaluate`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
     logResult(
       9, 'Dynamic Pricing Engine Evaluation',
       'HTTP 200 & Trajectory Evaluation Complete',
@@ -172,20 +183,28 @@ async function runStage7Validation() {
     );
 
     // 10. Market Crash Control System
-    const crashTrig = await httpRequest(`${API_BASE}/pricing/market-crash/trigger?durationMinutes=1`, { method: 'POST' });
-    const crashStat = await httpRequest(`${API_BASE}/pricing/market-crash/status`);
-    const crashStop = await httpRequest(`${API_BASE}/pricing/market-crash/stop`, { method: 'POST' });
+    const crashTrig = await httpRequest(`${API_BASE}/pricing/market-crash/trigger?durationMinutes=1`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    const crashStat = await httpRequest(`${API_BASE}/pricing/market-crash/status`, {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    const crashStop = await httpRequest(`${API_BASE}/pricing/market-crash/stop`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
     logResult(
       10, 'Market Crash Control Protocol',
       'Trigger -> Active true -> Stop -> Active false',
       `Triggered=${crashTrig.status}, Active=${crashStat.json ? crashStat.json.active : 'N/A'}, Stopped=${crashStop.status}`,
-      crashTrig.status === 200 && crashStop.status === 200
+      crashTrig.status === 200 && crashStat.json && crashStat.json.active === true && crashStop.status === 200
     );
 
     // 11. Pricing Sandbox Simulator Isolation
     const sandRes = await httpRequest(`${API_BASE}/pricing/simulate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
       body: JSON.stringify({
         flavourName: 'Fresh Mango Juice',
         initialVolumeMl: 20000,
@@ -207,7 +226,7 @@ async function runStage7Validation() {
     // 12. Deploy Pricing Parameters from Sandbox to Live POS
     const deployRes = await httpRequest(`${API_BASE}/pricing/deploy`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
       body: JSON.stringify({
         productId: 1,
         flavour: 'Fresh Mango Juice',
@@ -290,10 +309,11 @@ async function runStage7Validation() {
 
     // 17. High Concurrency Stress Test (50 Parallel Checkouts)
     // Refill container stock across products to support high concurrency load
-    for (let pId = 1; pId <= 8; pId++) {
+    const canonicalProdIds = [1, 2, 3, 4, 5, 6, 7, 23];
+    for (const pId of canonicalProdIds) {
       await httpRequest(`${API_BASE}/pos/products/${pId}/stock`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
         body: JSON.stringify({ volumeMl: 200000 })
       });
     }
@@ -301,13 +321,14 @@ async function runStage7Validation() {
     const concPromises = Array.from({ length: 50 }).map(async (_, i) => {
       let attempts = 0;
       let lastRes = null;
+      const targetProdId = canonicalProdIds[i % canonicalProdIds.length];
       while (attempts < 5) {
         try {
           const res = await httpRequest(`${API_BASE}/pos/checkout`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              items: [{ productId: (i % 8) + 1, quantity: 1, unitPrice: 22.00 }],
+              items: [{ productId: targetProdId, quantity: 1, unitPrice: 22.00 }],
               paymentMethod: 'CARD',
               cashGiven: 50.00
             })
@@ -452,8 +473,11 @@ async function runStage7Validation() {
         cashGiven: 50.00
       })
     });
-    const tamperOrderId = tamperCheckout.json ? (tamperCheckout.json.orderId || tamperCheckout.json.id) : 0;
-    const orderItemPriceStr = execSync(`${PG_BIN}psql.exe" -U postgres -h localhost -p 5432 -d retailposdb -t -A -c "SELECT unit_price FROM sales_order_items WHERE order_id=${tamperOrderId} LIMIT 1;"`, { env, encoding: 'utf8' }).trim();
+    const tamperOrderId = (tamperCheckout.json && (tamperCheckout.json.orderId || tamperCheckout.json.id)) || 0;
+    let orderItemPriceStr = '0';
+    if (tamperOrderId > 0) {
+      orderItemPriceStr = execSync(`${PG_BIN}psql.exe" -U postgres -h localhost -p 5432 -d retailposdb -t -A -c "SELECT unit_price FROM sales_order_items WHERE order_id=${tamperOrderId} LIMIT 1;"`, { env, encoding: 'utf8' }).trim();
+    }
     logResult(
       30, 'Server-Authoritative Price Enforcement (Client Price Tamper Protection)',
       'Client ₹1.00 tamper attempt rejected; DB records backend authoritative price (₹22/₹23)',

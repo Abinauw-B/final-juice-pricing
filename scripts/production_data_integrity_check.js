@@ -3,10 +3,19 @@ const { execSync } = require('child_process');
 
 const API_BASE = 'http://localhost:8088/api';
 
+let authToken = null;
+
 async function fetchJson(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
+  const headers = {
+    ...(options.headers || {})
+  };
+  if (authToken && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
   return new Promise((resolve, reject) => {
-    const req = http.request(url, options, (res) => {
+    const req = http.request(url, { ...options, headers }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
@@ -38,6 +47,18 @@ async function runDataIntegrityCheck() {
     console.log(`${status} ${title}`);
     console.log(`       DETAIL: ${detail}\n`);
   }
+
+  // Obtain JWT authentication token for protected endpoints
+  try {
+    const authRes = await fetchJson('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'superadmin', password: 'password' })
+    });
+    if (authRes.data && authRes.data.token) {
+      authToken = authRes.data.token;
+    }
+  } catch (e) {}
 
   // 1. Backend Connectivity & Health
   try {

@@ -64,7 +64,7 @@ async function runCrossPanelSyncValidation() {
   const authRes = await httpRequest(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: 'admin', password: 'adminpassword' })
+    body: JSON.stringify({ username: 'superadmin', password: 'password' })
   });
   adminToken = authRes.json.token;
   logResult(1, 'Super Admin Authentication', 'JWT Token generated', `Token present: ${!!adminToken}`, authRes.status === 200 && !!adminToken);
@@ -80,7 +80,7 @@ async function runCrossPanelSyncValidation() {
     headers: authHeaders,
     body: JSON.stringify({ reason: 'Cross-Panel Sync Baseline Reset' })
   });
-  const resetCount = resetRes.json.resetCount || resetRes.json.productsReset || (resetRes.json.prices ? resetRes.json.prices.length : 0);
+  const resetCount = resetRes.json.productsReset || resetRes.json.resetCount || (resetRes.json.prices ? resetRes.json.prices.length : 0);
   logResult(
     2, 'Admin Reset Live Market Prices',
     'HTTP 200 OK & PostgreSQL reset count 8',
@@ -90,10 +90,10 @@ async function runCrossPanelSyncValidation() {
 
   // 3. Verify PostgreSQL Authoritative Product State
   const posProducts = await httpRequest(`${API_BASE}/pos/products`);
-  const allBasePrice = posProducts.json.every(p => Number(p.currentCupPrice) === 25.00 || Number(p.currentCupPrice) === 22.00);
+  const allBasePrice = posProducts.json.every(p => Number(p.currentCupPrice) === Number(p.defaultCupPrice));
   logResult(
     3, 'PostgreSQL Single Source of Truth Price Baseline',
-    'Every product currentCupPrice = base price (₹25.00)',
+    'Every product currentCupPrice = authoritative base price',
     `Products count=${posProducts.json.length}, All base price=${allBasePrice}`,
     posProducts.status === 200 && posProducts.json.length >= 8 && allBasePrice
   );

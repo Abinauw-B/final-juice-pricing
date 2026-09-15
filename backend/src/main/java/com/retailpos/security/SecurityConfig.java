@@ -53,9 +53,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
 
                 // Customer POS endpoints (cashiers and customers don't need JWT)
-                .requestMatchers(HttpMethod.GET, "/api/pos/products", "/api/products").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pos/products", "/api/products", "/api/pos/orders/**", "/api/orders/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pos/products/**", "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/pos/checkout", "/api/pos/orders", "/api/checkout", "/api/orders").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/pos/products/*/stock", "/api/products/*/stock").permitAll()
+
+                // Inventory batches read endpoints (used by POS and monitoring)
+                .requestMatchers(HttpMethod.GET, "/api/batches", "/api/batches/**").permitAll()
 
                 // Live pricing read endpoints (needed by POS and LED display)
                 .requestMatchers(HttpMethod.GET, "/api/pricing/market", "/api/pricing/status", "/api/pricing/live", "/api/pricing/products").permitAll()
@@ -70,9 +74,9 @@ public class SecurityConfig {
                 // WebSocket endpoints (authentication handled at STOMP layer)
                 .requestMatchers("/ws/**").permitAll()
 
-                // Health check and actuator
+                // Health check, telemetry, and actuator probes
                 .requestMatchers("/actuator/**").permitAll()
-                .requestMatchers("/api/health").permitAll()
+                .requestMatchers("/api/health", "/api/health/**", "/api/readiness", "/api/liveness", "/api/metrics").permitAll()
 
                 // H2 console (dev only)
                 .requestMatchers("/h2-console/**").permitAll()
@@ -86,8 +90,23 @@ public class SecurityConfig {
                 // Notifications read endpoint
                 .requestMatchers(HttpMethod.GET, "/api/notifications/**").permitAll()
 
+                // Admin role enforcement
+                .requestMatchers("/api/admin/**", "/api/pricing/reset-all", "/api/pricing/reset", "/api/pricing/market-crash/trigger", "/api/pricing/market-crash/stop").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
+
                 // --- All other endpoints require authentication ---
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setContentType("application/json");
+                    response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getOutputStream().println("{\"success\":false,\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setContentType("application/json");
+                    response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                    response.getOutputStream().println("{\"success\":false,\"status\":403,\"error\":\"Forbidden\",\"message\":\"Access denied: insufficient permissions\"}");
+                })
             )
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
             // Wire the JWT filter before Spring Security's default auth filter

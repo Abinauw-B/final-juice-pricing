@@ -128,19 +128,81 @@
     html {
       height: 100%;
       overflow: hidden;
+      background-color: var(--bg-page);
     }
 
     body {
       background-color: var(--bg-page);
       color: var(--text-primary);
       height: 100vh;
+      height: 100dvh;
       max-height: 100vh;
+      width: 100vw;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       padding: 8px 14px;
       -webkit-font-smoothing: antialiased;
       box-sizing: border-box;
+    }
+
+    /* ==========================================================================
+       FULLSCREEN ZERO-WHITESPACE FULL BLEED CONTROLS
+       ========================================================================== */
+    :fullscreen,
+    :-webkit-full-screen,
+    :-moz-full-screen,
+    :-ms-fullscreen {
+      width: 100vw !important;
+      height: 100vh !important;
+      background: var(--bg-page) !important;
+    }
+
+    :fullscreen body,
+    :-webkit-full-screen body,
+    body.is-fullscreen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      padding: 6px 12px !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      background-color: var(--bg-page) !important;
+    }
+
+    :fullscreen .main-layout,
+    :-webkit-full-screen .main-layout,
+    body.is-fullscreen .main-layout {
+      height: calc(100vh - 100px) !important;
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+    }
+
+    :fullscreen .main-section-card,
+    :-webkit-full-screen .main-section-card,
+    body.is-fullscreen .main-section-card {
+      height: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      min-height: 0 !important;
+    }
+
+    :fullscreen .product-grid,
+    :-webkit-full-screen .product-grid,
+    body.is-fullscreen .product-grid {
+      height: 100% !important;
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+    }
+
+    :fullscreen .sidebar-wrapper,
+    :-webkit-full-screen .sidebar-wrapper,
+    body.is-fullscreen .sidebar-wrapper {
+      height: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      gap: 6px !important;
     }
 
     /* ==========================================================================
@@ -409,47 +471,72 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(2, 1fr);
-      gap: 8px;
-      flex: 1;
+      gap: 7px;
+      flex: 1 1 auto;
       min-height: 0;
+      height: 100%;
       overflow: hidden;
     }
 
-    /* PRODUCT CARD */
+    /* PRODUCT CARD — Zero Whitespace & Full Height Flex Expansion */
     .product-card {
       background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 6px 8px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      padding: 7px 9px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+      justify-content: flex-start;
+      align-items: stretch;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+      box-shadow: var(--shadow-card);
       position: relative;
       min-height: 0;
+      height: 100%;
       overflow: hidden;
+      box-sizing: border-box;
+      gap: 4px;
     }
     .product-card:hover {
       border-color: var(--border-strong);
       box-shadow: var(--shadow-hover);
     }
 
-    /* Product Image Banner */
+    .card-top-section {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .card-bottom-section {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-top: 0;
+    }
+
+    /* Product Image Banner — High Impact & Prominent */
     .product-img-wrapper {
       position: relative;
       width: 100%;
-      height: 46px;
-      border-radius: 6px;
+      height: 74px;
+      border-radius: 8px;
       overflow: hidden;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       margin-bottom: 3px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
     }
     .product-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .product-card:hover .product-img {
+      transform: scale(1.04);
     }
     .product-img-overlay {
       position: absolute;
@@ -458,134 +545,141 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      padding: 2px 6px;
+      padding: 4px 8px;
       pointer-events: none;
     }
     .fruit-badge {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(15, 23, 42, 0.94);
+      border: 1.5px solid rgba(255, 255, 255, 0.45);
       color: #FFFFFF;
-      padding: 1px 5px;
+      padding: 2px 8px;
       border-radius: 6px;
-      font-size: 9.5px;
-      font-weight: 700;
+      font-size: 11.5px;
+      font-weight: 900;
+      letter-spacing: 0.2px;
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
     }
     .live-indicator-badge {
-      background: rgba(16, 185, 129, 0.9);
+      background: #10B981;
       color: #FFFFFF;
-      padding: 1px 5px;
-      border-radius: 6px;
-      font-size: 8.5px;
-      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 9px;
+      font-weight: 900;
       font-family: var(--font-mono);
       display: flex;
       align-items: center;
-      gap: 2px;
+      gap: 3px;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.7);
     }
 
     /* Card Details Header */
     .product-title-row {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1px;
+      align-items: center;
+      margin-bottom: 0px;
     }
     .product-name {
-      font-size: 12.5px;
-      font-weight: 800;
+      font-size: 17.5px;
+      font-weight: 900;
       color: var(--text-primary);
-      line-height: 1.1;
+      line-height: 1.15;
+      letter-spacing: -0.015em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-transform: uppercase;
     }
     .product-size {
-      font-size: 9.5px;
+      font-size: 10px;
       color: var(--text-muted);
-      font-weight: 600;
+      font-weight: 700;
+      letter-spacing: 0.3px;
     }
 
-    /* Price Row */
+    /* Price Row — Ultra Bold, High Contrast & Highly Visible */
     .product-price-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin: 2px 0 3px 0;
+      padding: 0;
     }
     .product-price {
-      font-size: 17px;
-      font-weight: 800;
+      font-size: 34px;
+      font-weight: 900;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
-      font-feature-settings: 'tnum' 1;
+      font-feature-settings: 'tnum' 1, 'ss01' 1;
+      letter-spacing: -0.035em;
       color: var(--text-primary);
-      line-height: 1.1;
+      line-height: 1;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+      display: inline-flex;
+      align-items: baseline;
     }
     .delta-badge {
-      font-size: 9.5px;
-      font-weight: 700;
-      padding: 2px 5px;
-      border-radius: 4px;
+      font-size: 11.5px;
+      font-weight: 900;
+      padding: 3.5px 8px;
+      border-radius: 6px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       display: inline-flex;
       align-items: center;
-      gap: 2px;
+      gap: 3px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     }
     .delta-surge {
       background: var(--accent-emerald-bg);
       color: var(--accent-emerald);
       border: 1px solid var(--accent-emerald-border);
+      font-weight: 900;
     }
     .delta-decay {
       background: var(--accent-rose-bg);
       color: var(--accent-rose);
       border: 1px solid var(--accent-rose-border);
+      font-weight: 900;
     }
     .delta-stable {
       background: var(--bg-subtle);
       color: var(--text-secondary);
       border: 1px solid var(--border-color);
+      font-weight: 800;
     }
 
-    /* REAL PRICE HISTORY GRAPH CONTAINER — Premium enlarged fintech sparkline */
+    /* REAL PRICE HISTORY GRAPH CONTAINER — Flex Growth Full Height */
     .chart-container-wrapper {
       position: relative;
       width: 100%;
-      height: 125px;
+      flex: 1 1 auto;
       min-height: 110px;
-      background: linear-gradient(165deg, rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.95) 100%);
-      border: 1.5px solid var(--border-color);
+      height: 100%;
+      background: linear-gradient(165deg, #090f1d 0%, #050811 100%) !important;
+      border: 1.5px solid rgba(56, 189, 248, 0.30);
       border-radius: 8px;
-      padding: 2px;
-      margin: 4px 0;
+      padding: 0;
+      margin: 0;
       overflow: hidden;
-      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.25), 0 3px 10px rgba(0, 0, 0, 0.08);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
     }
     body[data-theme="light"] .chart-container-wrapper,
     html[data-theme="light"] .chart-container-wrapper {
-      background: linear-gradient(165deg, rgba(241, 245, 249, 0.9) 0%, rgba(226, 232, 240, 0.98) 100%);
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+      background: linear-gradient(165deg, #0d1527 0%, #070c18 100%) !important;
+      border-color: rgba(56, 189, 248, 0.35);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.08);
     }
     .chart-container-wrapper:hover {
       border-color: var(--border-strong);
       box-shadow: inset 0 0 0 1px var(--border-color), 0 6px 16px rgba(0,0,0,0.12);
-    }
-    /* Glowing tint strip at top for surge/decay state — injected via JS class */
-    .chart-container-wrapper.chart-surge {
-      border-color: rgba(5, 150, 105, 0.45);
-      box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.2), inset 0 0 24px rgba(5, 150, 105, 0.08);
-    }
-    .chart-container-wrapper.chart-decay {
-      border-color: rgba(220, 38, 38, 0.45);
-      box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.2), inset 0 0 24px rgba(220, 38, 38, 0.08);
-    }
-    .chart-container-wrapper.chart-stable {
-      border-color: rgba(2, 132, 199, 0.35);
     }
     .chart-header-row {
       position: absolute;
@@ -595,16 +689,18 @@
       align-items: center;
       font-size: 8.5px;
       font-weight: 800;
-      color: var(--text-muted);
+      color: #94A3B8;
       text-transform: uppercase;
       font-family: var(--font-mono);
-      letter-spacing: 0.4px;
+      letter-spacing: 0.5px;
       pointer-events: none;
       z-index: 2;
     }
     .product-chart-canvas {
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      inset: 0;
+      width: 100% !important;
+      height: 100% !important;
       display: block;
       cursor: crosshair;
     }
@@ -615,21 +711,21 @@
       border: 1px solid var(--border-subtle);
       border-radius: 6px;
       padding: 3px 6px;
-      margin: 3px 0 4px 0;
+      margin: 1px 0 2px 0;
     }
     .tank-label {
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 8.5px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-muted);
       margin-bottom: 2px;
     }
     .tank-percent-badge {
       font-family: var(--font-mono);
       font-size: 8.5px;
-      font-weight: 800;
+      font-weight: 900;
       padding: 1px 4px;
       border-radius: 3px;
       background: rgba(56, 189, 248, 0.12);
@@ -660,9 +756,9 @@
       background: var(--bg-subtle);
       border: 1px solid var(--border-subtle);
       border-radius: 4px;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
       font-size: 8.5px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-secondary);
     }
     .demand-dots {
@@ -734,8 +830,8 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       border-radius: 5px;
-      padding: 3px 4px;
-      margin-bottom: 3px;
+      padding: 2px 4px;
+      margin-bottom: 2px;
       font-size: 8.5px;
     }
     .spec-item {
@@ -752,14 +848,14 @@
     .spec-label {
       color: var(--text-muted);
       font-size: 7.5px;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.3px;
     }
     .spec-val {
       color: var(--text-primary);
-      font-weight: 800;
-      font-size: 9.5px;
+      font-weight: 900;
+      font-size: 10px;
       font-family: var(--font-mono);
       margin-top: 1px;
       white-space: nowrap;
@@ -773,13 +869,13 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 4px;
-      margin-top: 3px;
+      margin-top: 2px;
     }
     .btn-card-action {
       padding: 4px 6px;
       border-radius: 5px;
       font-size: 9.5px;
-      font-weight: 800;
+      font-weight: 900;
       text-align: center;
       cursor: pointer;
       text-decoration: none;
@@ -792,6 +888,8 @@
       justify-content: center;
       gap: 3px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
     .btn-card-action:hover {
       background: var(--bg-hover);
@@ -1544,8 +1642,8 @@
         <div style="display: flex; align-items: center; gap: 10px;">
           <span id="modalFruitIcon" style="font-size: 24px;">🍹</span>
           <div>
-            <div id="modalProductName" style="font-size: 17px; font-weight: 800; color: var(--text-primary);">Product Details</div>
-            <div id="modalProductFlavour" style="font-size: 11.5px; color: var(--text-muted); font-weight: 600;">250 ml standard cup</div>
+            <div id="modalProductName" style="font-size: 18px; font-weight: 900; color: var(--text-primary); text-transform: uppercase;">Product Details</div>
+            <div id="modalProductFlavour" style="font-size: 11.5px; color: var(--text-muted); font-weight: 700;">250 ml standard cup</div>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeProductModal()">✕</button>
@@ -1554,7 +1652,7 @@
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
           <div class="summary-card" style="padding: 10px 14px;">
             <div class="summary-label">Current Price</div>
-            <div class="summary-value" id="modalCurrentPrice" style="color: var(--accent-cyan); font-size: 18px;">₹25.00</div>
+            <div class="summary-value" id="modalCurrentPrice" style="color: var(--accent-cyan); font-size: 22px; font-weight: 900;">₹25.00</div>
           </div>
           <div class="summary-card" style="padding: 10px 14px;">
             <div class="summary-label">Base Rate</div>
@@ -2069,47 +2167,47 @@
     }
 
     /* ==========================================================================
-       FLAVOUR GRAPH COLOR MAPPINGS (User Specific Design Tokens)
+       FLAVOUR GRAPH COLOR MAPPINGS (Vibrant High-Contrast Neon Pro Palette)
        ========================================================================== */
     const FLAVOUR_COLORS = {
       MANGO: {
-        stroke: '#EAB308',       // Yellow
-        rgb: '234, 179, 8',
-        fade: '#CA8A04'
+        stroke: '#F59E0B',       // Electric Gold / Saffron
+        rgb: '245, 158, 11',
+        fade: '#D97706'
       },
       LEMON: {
-        stroke: '#84CC16',       // Light Green
+        stroke: '#84CC16',       // Vivid Neon Lime
         rgb: '132, 204, 22',
         fade: '#65A30D'
       },
       MINT: {
-        stroke: '#047857',       // Dark Green
-        rgb: '4, 120, 87',
-        fade: '#065F46'
+        stroke: '#10B981',       // Vibrant Emerald
+        rgb: '16, 185, 129',
+        fade: '#059669'
       },
       STRAWBERRY: {
-        stroke: '#EC4899',       // Pink
-        rgb: '236, 72, 153',
-        fade: '#DB2777'
+        stroke: '#F43F5E',       // Radiant Rose / Pink
+        rgb: '244, 63, 94',
+        fade: '#E11D48'
       },
       GRAPE: {
-        stroke: '#9333EA',       // Purple
-        rgb: '147, 51, 234',
-        fade: '#7E22CE'
+        stroke: '#A855F7',       // Luminous Purple / Violet
+        rgb: '168, 85, 247',
+        fade: '#9333EA'
       },
       LYCHEE: {
-        stroke: '#FB923C',       // Peach
+        stroke: '#FB923C',       // Sunset Peach / Coral
         rgb: '251, 146, 60',
         fade: '#EA580C'
       },
       THUNDER: {
-        stroke: '#92400E',       // Brown
-        rgb: '146, 64, 14',
-        fade: '#78350F'
+        stroke: '#38BDF8',       // Electric Cyan / Ice Blue
+        rgb: '56, 189, 248',
+        fade: '#0284C7'
       },
       ORANGE: {
-        stroke: '#F97316',       // Orange
-        rgb: '249, 115, 22',
+        stroke: '#FF7A00',       // Electric Orange
+        rgb: '255, 122, 0',
         fade: '#EA580C'
       }
     };
@@ -2122,8 +2220,8 @@
       if (f.includes('MINT')) return FLAVOUR_COLORS.MINT;
       if (f.includes('STRAWBERRY')) return FLAVOUR_COLORS.STRAWBERRY;
       if (f.includes('GRAPE')) return FLAVOUR_COLORS.GRAPE;
-      if (f.includes('LYCHEE') || f.includes('GUAVA') || f.includes('MELON')) return FLAVOUR_COLORS.LYCHEE;
-      if (f.includes('THUNDER') || f.includes('ENERGY')) return FLAVOUR_COLORS.THUNDER;
+      if (f.includes('LYCHEE') || f.includes('GUAVA') || f.includes('MELON') || f.includes('PEACH')) return FLAVOUR_COLORS.LYCHEE;
+      if (f.includes('THUNDER') || f.includes('ENERGY') || f.includes('BLUE')) return FLAVOUR_COLORS.THUNDER;
       if (f.includes('ORANGE')) return FLAVOUR_COLORS.ORANGE;
 
       const idMap = {
@@ -2168,12 +2266,38 @@
     applyTheme(currentTheme);
 
     function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        }
       } else {
-        if (document.exitFullscreen) document.exitFullscreen();
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
       }
     }
+
+    // Fullscreen state listener to resize canvas charts without lag or whitespace
+    function handleFullscreenChange() {
+      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      if (isFs) {
+        document.body.classList.add('is-fullscreen');
+      } else {
+        document.body.classList.remove('is-fullscreen');
+      }
+      setTimeout(renderAllCharts, 50);
+      setTimeout(renderAllCharts, 200);
+      if (activeModalProductId) {
+        setTimeout(() => renderModalChart(activeModalProductId), 200);
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 
     function updateClock() {
       const now = new Date();
@@ -2509,7 +2633,8 @@
 
           return `
             <div class="product-card" id="card_prod_${p.id}">
-              <div>
+              <!-- Top Identity & Price Section -->
+              <div class="card-top-section">
                 <!-- Image Banner -->
                 <div class="product-img-wrapper">
                   <img src="${imgUrl}" alt="${name}" class="product-img" loading="lazy" />
@@ -2530,20 +2655,23 @@
                   <div class="product-price" id="card_price_${p.id}" style="color: ${priceColor};">₹${activePrice}</div>
                   <div id="card_badge_${p.id}">${badgeHtml}</div>
                 </div>
+              </div>
 
-                <!-- REAL PRICE HISTORY GRAPH -->
-                <div class="chart-container-wrapper" id="chart_wrapper_${p.id}">
-                  <div class="chart-header-row">
-                    <span>PRICE TREND</span>
-                    <span id="chart_pts_count_${p.id}">REAL-TIME DWMA</span>
-                  </div>
-                  <canvas id="chart_canvas_${p.id}" class="product-chart-canvas"></canvas>
-                  <div id="chart_empty_${p.id}" class="chart-empty-state" style="display: none;">
-                    <div>Waiting for price history...</div>
-                    <div style="font-size: 9.5px; margin-top: 2px; color: var(--text-muted);">Next 1-min settlement will log here</div>
-                  </div>
+              <!-- REAL PRICE HISTORY GRAPH -->
+              <div class="chart-container-wrapper" id="chart_wrapper_${p.id}">
+                <div class="chart-header-row">
+                  <span>PRICE TREND</span>
+                  <span id="chart_pts_count_${p.id}">REAL-TIME DWMA</span>
                 </div>
+                <canvas id="chart_canvas_${p.id}" class="product-chart-canvas"></canvas>
+                <div id="chart_empty_${p.id}" class="chart-empty-state" style="display: none;">
+                  <div>Waiting for price history...</div>
+                  <div style="font-size: 9.5px; margin-top: 2px; color: var(--text-muted);">Next 1-min settlement will log here</div>
+                </div>
+              </div>
 
+              <!-- Bottom Metrics & Action Section -->
+              <div class="card-bottom-section">
                 <!-- 20L Tank Batch Volume Liquid Gauge -->
                 <div class="tank-volume-row">
                   <div class="tank-label">
@@ -2580,16 +2708,16 @@
                     <span class="spec-val" id="card_target_${p.id}">${targetDisplay}</span>
                   </div>
                 </div>
-              </div>
 
-              <!-- Card Actions -->
-              <div class="card-footer-actions">
-                <button class="btn-card-action" onclick="openProductModal(${p.id})">
-                  🔍 Details
-                </button>
-                <a href="${CONFIG.POS_URL || 'index.html'}" target="_blank" class="btn-card-action btn-card-action-pos">
-                  🛒 Buy POS
-                </a>
+                <!-- Card Actions -->
+                <div class="card-footer-actions">
+                  <button class="btn-card-action" onclick="openProductModal(${p.id})">
+                    🔍 Details
+                  </button>
+                  <a href="${CONFIG.POS_URL || 'index.html'}" target="_blank" class="btn-card-action btn-card-action-pos">
+                    🛒 Buy POS
+                  </a>
+                </div>
               </div>
             </div>
           `;
@@ -2688,13 +2816,13 @@
       // Make sure canvas display buffer accurately matches container dimensions
       const parent = canvas.parentElement;
       const width = parent && parent.clientWidth > 0 ? parent.clientWidth : (canvas.clientWidth > 0 ? canvas.clientWidth : 240);
-      const height = parent && parent.clientHeight > 0 ? parent.clientHeight : (canvas.clientHeight > 0 ? canvas.clientHeight : 125);
+      const height = parent && parent.clientHeight > 0 ? parent.clientHeight : (canvas.clientHeight > 0 ? canvas.clientHeight : 115);
       
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 2, 3);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
 
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
@@ -2737,10 +2865,10 @@
         ptsCountEl.innerHTML = `${dataPoints.length} PTS &bull; DWMA &bull; ${currentPricingTiming.shortLabel.toUpperCase()}`;
       }
 
-      // Chart Padding — enlarged for 122px container
-      const padLeft = 32;
+      // Chart Padding — dynamically tailored to container height
+      const padLeft = 36;
       const padRight = 14;
-      const padTop = 22;
+      const padTop = 20;
       const padBottom = 16;
       const plotWidth = Math.max(10, width - padLeft - padRight);
       const plotHeight = Math.max(10, height - padTop - padBottom);
@@ -2812,15 +2940,14 @@
       ctx.fillRect(padLeft, yBase, plotWidth, Math.max(0, yFloor - yBase));
 
       // 1. Draw Grid Lines & Distinctive Y-Axis Labels
-      ctx.font = 'bold 8.5px JetBrains Mono, monospace';
-      ctx.fillStyle = textColor;
+      ctx.font = 'bold 9.5px JetBrains Mono, monospace';
       ctx.textAlign = 'right';
 
       // Horizontal grid lines at Base, Floor, Ceiling
       const gridLevels = [
-        { price: ceilingPrice, label: `₹${ceilingPrice.toFixed(0)} MAX`, color: isLight ? '#059669' : '#34D399', stroke: isLight ? 'rgba(16, 185, 129, 0.3)' : 'rgba(52, 211, 153, 0.35)', dash: [2, 4] },
-        { price: basePrice, label: `₹${basePrice.toFixed(0)} BASE`, color: isLight ? '#4F46E5' : '#818CF8', stroke: baseLineColor, dash: [4, 4], width: 1.3 },
-        { price: floorPrice, label: `₹${floorPrice.toFixed(0)} MIN`, color: isLight ? '#DC2626' : '#FB7185', stroke: isLight ? 'rgba(239, 68, 68, 0.3)' : 'rgba(244, 63, 94, 0.35)', dash: [2, 4] }
+        { price: ceilingPrice, label: `₹${ceilingPrice.toFixed(0)} MAX`, color: '#34D399', stroke: 'rgba(52, 211, 153, 0.4)', dash: [3, 4] },
+        { price: basePrice, label: `₹${basePrice.toFixed(0)} BASE`, color: '#38BDF8', stroke: 'rgba(56, 189, 248, 0.5)', dash: [4, 4], width: 1.2 },
+        { price: floorPrice, label: `₹${floorPrice.toFixed(0)} MIN`, color: '#FB7185', stroke: 'rgba(251, 113, 133, 0.4)', dash: [3, 4] }
       ];
 
       gridLevels.forEach(lvl => {
@@ -2828,7 +2955,7 @@
         if (y < padTop - 2 || y > padTop + plotHeight + 2) return;
         ctx.beginPath();
         ctx.strokeStyle = lvl.stroke;
-        ctx.lineWidth = lvl.width || 0.8;
+        ctx.lineWidth = lvl.width || 0.9;
         ctx.setLineDash(lvl.dash);
         ctx.moveTo(padLeft, y);
         ctx.lineTo(width - padRight, y);
@@ -2836,7 +2963,7 @@
         ctx.setLineDash([]);
         
         ctx.fillStyle = lvl.color;
-        ctx.fillText(lvl.label, padLeft - 3, y + 3);
+        ctx.fillText(lvl.label, padLeft - 4, y + 3.5);
       });
 
       // 2. Draw Area Gradient Fill — rich multi-stop lush tint
@@ -2853,17 +2980,17 @@
       ctx.closePath();
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
-      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.44)`);
-      areaGrad.addColorStop(0.35, `rgba(${strokeColorRgb}, 0.18)`);
-      areaGrad.addColorStop(0.75, `rgba(${strokeColorRgb}, 0.05)`);
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.50)`);
+      areaGrad.addColorStop(0.35, `rgba(${strokeColorRgb}, 0.22)`);
+      areaGrad.addColorStop(0.75, `rgba(${strokeColorRgb}, 0.06)`);
       areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.0)`);
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
       // 3. Draw Smooth Line Stroke with double glowing aura
       ctx.save();
-      ctx.shadowColor = `rgba(${strokeColorRgb}, 0.8)`;
-      ctx.shadowBlur = 12;
+      ctx.shadowColor = strokeColor;
+      ctx.shadowBlur = 15;
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
@@ -2873,7 +3000,7 @@
         ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 3.0;
+      ctx.lineWidth = 3.5;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
@@ -2899,27 +3026,27 @@
       // Outer ripple ring
       ctx.beginPath();
       ctx.arc(lastX, lastY, 13, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.15)`;
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.20)`;
       ctx.fill();
 
       // Mid pulsing ring
       ctx.beginPath();
       ctx.arc(lastX, lastY, 8, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${strokeColorRgb}, 0.45)`;
-      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = `rgba(${strokeColorRgb}, 0.55)`;
+      ctx.lineWidth = 1.8;
       ctx.stroke();
 
       // Core dot with glow
       ctx.save();
       ctx.shadowColor = strokeColor;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 12;
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
       // White center
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 1.8, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 2, 0, Math.PI * 2);
       ctx.fillStyle = '#FFFFFF';
       ctx.fill();
       ctx.restore();
@@ -2927,39 +3054,38 @@
       // 6. Floating Glass Price Pill next to beacon
       ctx.save();
       const labelText = `₹${latestPrice.toFixed(2)}`;
-      ctx.font = 'bold 9.5px JetBrains Mono, monospace';
-      const labelW = ctx.measureText(labelText).width + 10;
-      const pillH = 15;
+      ctx.font = 'bold 11px JetBrains Mono, monospace';
+      const labelW = ctx.measureText(labelText).width + 12;
+      const pillH = 18;
       const labelX = Math.min(lastX + 12, width - padRight - labelW);
       const labelY = Math.max(padTop + 2, Math.min(lastY - pillH / 2, padTop + plotHeight - pillH));
       
       // Pill rounded backdrop
       ctx.beginPath();
       if (typeof ctx.roundRect === 'function') {
-        ctx.roundRect(labelX, labelY, labelW, pillH, 4);
+        ctx.roundRect(labelX, labelY, labelW, pillH, 5);
       } else {
         ctx.rect(labelX, labelY, labelW, pillH);
       }
-      ctx.fillStyle = isLight ? 'rgba(15, 23, 42, 0.88)' : 'rgba(8, 12, 24, 0.94)';
+      ctx.fillStyle = 'rgba(6, 10, 20, 0.95)';
       ctx.fill();
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       // Pill text
       ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'left';
-      ctx.fillText(labelText, labelX + 5, labelY + 11);
+      ctx.fillText(labelText, labelX + 6, labelY + 13);
       ctx.restore();
 
       // 7. X-Axis Time Labels
       if (dataPoints.length > 1) {
-        ctx.font = 'bold 8px JetBrains Mono, monospace';
-        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8.5px JetBrains Mono, monospace';
+        ctx.fillStyle = '#94A3B8';
         ctx.textAlign = 'left';
         const firstTime = dataPoints[0].time.toTimeString().split(' ')[0].slice(0, 5);
         ctx.fillText(firstTime, padLeft + 2, height - 3);
-
         ctx.textAlign = 'right';
         const lastTime = dataPoints[dataPoints.length - 1].time.toTimeString().split(' ')[0].slice(0, 5);
         ctx.fillText(`NOW ${lastTime}`, width - padRight, height - 3);

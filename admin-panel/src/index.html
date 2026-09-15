@@ -1649,13 +1649,16 @@
                 <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Admin can maintain and vary baseline
                   prices, circuit breaker floors (₹20), ceilings (₹30), or set manual live price overrides.</p>
               </div>
-              <div style="display: flex; gap: 8px;">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button class="btn-primary"
                   style="background: linear-gradient(135deg, #059669, #047857); padding: 8px 14px; font-size: 13px;"
                   onclick="loadLivePricingProducts()">🔄 Refresh Prices</button>
                 <button class="btn-primary"
                   style="background: linear-gradient(135deg, #d97706, #b45309); padding: 8px 14px; font-size: 13px;"
                   onclick="resetLiveMarketPrices()">↺ Reset All to Base (₹25)</button>
+                <button class="btn-primary" id="btnBulkEditAllJuices"
+                  style="background: linear-gradient(135deg, #7c3aed, #6d28d9); padding: 8px 14px; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);"
+                  onclick="openBulkEditJuicesModal()" title="Modify parameters across every juice simultaneously">⚡ Make Changes for Every Juice</button>
                 <button class="btn-primary" style="background: #2563eb; padding: 8px 14px; font-size: 13px;"
                   onclick="showNewFlavourModal()">+ Add New Juice</button>
               </div>
@@ -2379,11 +2382,11 @@
   <!-- Dedicated Edit Product Pricing & Limits Modal -->
   <div id="editProductPricingModal" style="display: none;" class="modal-overlay">
     <div
-      style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; width: 480px; padding: 24px; box-shadow: var(--shadow-lg);">
+      style="background: var(--bg-card, #ffffff); border: 1px solid var(--border-color); border-radius: 16px; width: 480px; padding: 24px; box-shadow: var(--shadow-lg); color: var(--text-main);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">💰 Edit Beverage Pricing Details</h3>
+        <h3 id="editPricingModalTitle" style="font-size: 18px; font-weight: 800; color: var(--text-main, #0f172a); margin: 0;">💰 Edit Beverage Pricing Details</h3>
         <button onclick="closeEditProductPricingModal()"
-          style="background: transparent; border: none; font-size: 20px; cursor: pointer; color: #64748b;">✕</button>
+          style="background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted, #64748b);">✕</button>
       </div>
       <input type="hidden" id="editPricingProductId">
 
@@ -2458,11 +2461,112 @@
 
       <div style="display: flex; gap: 12px; justify-content: flex-end;">
         <button onclick="closeEditProductPricingModal()"
-          style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
+          style="padding: 10px 16px; background: var(--bg-surface, #ffffff); border: 1px solid var(--border-color, #cbd5e1); color: var(--text-main, #0f172a); border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
         <button id="btnSavePricingDetails" onclick="submitProductPricingDetails()" class="btn-primary"
           style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 10px 20px; font-weight: 800; cursor: pointer;">💾
           Save &amp; Broadcast to POS</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Dedicated Bulk Edit Juices Modal ("Make Changes for Every Juice") -->
+  <div id="bulkEditJuicesModal" style="display: none;" class="modal-overlay">
+    <div
+      style="background: var(--bg-card, #ffffff); border: 1px solid var(--border-color); border-radius: 16px; width: 940px; max-width: 95vw; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: var(--shadow-lg); color: var(--text-main);">
+      
+      <!-- Modal Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 22px;">🍹⚡</span>
+            <h3 style="font-size: 19px; font-weight: 900; color: var(--text-main); margin: 0;">Make Changes for Every Juice</h3>
+            <span style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 9999px;">BATCH MAINTENANCE</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin: 6px 0 0 0;">
+            Adjust live prices, base baselines, circuit breaker limits (floor/ceiling), and sales targets across every beverage variety simultaneously.
+          </p>
+        </div>
+        <button onclick="closeBulkEditJuicesModal()"
+          style="background: transparent; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); padding: 4px 8px; line-height: 1;">✕</button>
+      </div>
+
+      <!-- Quick Batch Preset Bar -->
+      <div style="background: var(--bg-subtle, rgba(124, 58, 237, 0.05)); border: 1.5px dashed rgba(124, 58, 237, 0.35); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;">
+        <div style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <span>⚡ Quick Batch Presets</span>
+          <span style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">(Fill values below and click "Apply to All Rows" to quickly set uniform parameters)</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) 160px; gap: 10px; align-items: flex-end;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Set Base (₹)</label>
+            <input type="number" id="bulkPresetBase" placeholder="e.g. 25.00" step="0.5" style="width: 100%; padding: 6px 8px; font-weight: 700; font-size: 13px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; color: #dc2626; margin-bottom: 3px;">Set Floor (₹)</label>
+            <input type="number" id="bulkPresetFloor" placeholder="e.g. 18.00" step="0.5" style="width: 100%; padding: 6px 8px; font-weight: 700; font-size: 13px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; color: #2563eb; margin-bottom: 3px;">Set Ceiling (₹)</label>
+            <input type="number" id="bulkPresetCeiling" placeholder="e.g. 30.00" step="0.5" style="width: 100%; padding: 6px 8px; font-weight: 700; font-size: 13px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Target (cups/min)</label>
+            <input type="number" id="bulkPresetTarget" placeholder="e.g. 0.55" step="0.05" style="width: 100%; padding: 6px 8px; font-weight: 700; font-size: 13px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; color: #059669; margin-bottom: 3px;">Shift All Live Prices</label>
+            <div style="display: flex; gap: 4px;">
+              <button type="button" class="btn-primary" style="padding: 6px 8px; font-size: 11px; background: #dc2626;" onclick="applyBulkPriceShift(-2)" title="Subtract ₹2 from all live prices">-₹2</button>
+              <button type="button" class="btn-primary" style="padding: 6px 8px; font-size: 11px; background: #ea580c;" onclick="applyBulkPriceShift(-1)" title="Subtract ₹1 from all live prices">-₹1</button>
+              <button type="button" class="btn-primary" style="padding: 6px 8px; font-size: 11px; background: #059669;" onclick="applyBulkPriceShift(1)" title="Add ₹1 to all live prices">+₹1</button>
+              <button type="button" class="btn-primary" style="padding: 6px 8px; font-size: 11px; background: #047857;" onclick="applyBulkPriceShift(2)" title="Add ₹2 to all live prices">+₹2</button>
+            </div>
+          </div>
+          <div>
+            <button type="button" class="btn-primary" onclick="applyBulkPresetsToRows()"
+              style="width: 100%; padding: 8px 10px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #7c3aed, #6d28d9); border-radius: 8px; cursor: pointer;">
+              ⚡ Apply to All Rows
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Juices Batch Table -->
+      <div style="overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 10px;">
+        <table class="table-custom" style="margin-top: 0;">
+          <thead>
+            <tr>
+              <th style="width: 50px;">ID</th>
+              <th>Beverage Variety</th>
+              <th style="width: 120px; color: #059669;">Live Price (₹)</th>
+              <th style="width: 115px;">Base (₹)</th>
+              <th style="width: 115px; color: #dc2626;">Floor (₹)</th>
+              <th style="width: 115px; color: #2563eb;">Ceiling (₹)</th>
+              <th style="width: 115px;">Target / min</th>
+              <th style="width: 80px; text-align: center;">Reset</th>
+            </tr>
+          </thead>
+          <tbody id="bulkEditJuicesTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
+        <div id="bulkEditStatusMessage" style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">
+          Ready to make changes for all juices.
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button onclick="closeBulkEditJuicesModal()"
+            style="padding: 10px 18px; background: var(--bg-surface, #ffffff); border: 1px solid var(--border-color, #cbd5e1); color: var(--text-main, #0f172a); border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
+          <button id="btnSaveBulkJuicesChanges" onclick="saveAllJuicesBulkChanges()" class="btn-primary"
+            style="background: linear-gradient(135deg, #7c3aed, #4f46e5); padding: 10px 22px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+            💾 Save Changes for Every Juice
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -5950,12 +6054,12 @@
               <div style="display: flex; align-items: center; gap: 10px;">
                 <img src="${imgUrl}" alt="${p.name || p.productName}" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;" />
                 <div>
-                  <div style="font-size: 14px;">${icon} ${p.name || p.productName}</div>
-                  <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">${p.flavour || 'JUICE'}</div>
+                  <div style="font-size: 14.5px; font-weight: 900; letter-spacing: -0.01em;">${icon} ${p.name || p.productName}</div>
+                  <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">${p.flavour || 'JUICE'}</div>
                 </div>
               </div>
             </td>
-            <td><span id="livePriceDisplay_${pid}" style="font-weight: 900; color: ${isOverride ? '#d97706' : '#059669'}; font-size: 15px; background: ${isOverride ? 'rgba(217,119,6,0.12)' : 'rgba(5,150,105,0.1)'}; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">${isOverride ? '<span title="Price is manually locked" style="font-size: 13px;">🔒</span>' : ''}₹${livePrice}</span></td>
+            <td><span id="livePriceDisplay_${pid}" style="font-weight: 900; color: ${isOverride ? '#d97706' : '#059669'}; font-size: 16px; font-family: var(--font-mono); background: ${isOverride ? 'rgba(217,119,6,0.12)' : 'rgba(5,150,105,0.1)'}; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">${isOverride ? '<span title="Price is manually locked" style="font-size: 13px;">🔒</span>' : ''}₹${livePrice}</span></td>
             <td>
               <div style="display: flex; flex-direction: column; gap: 3px; width: 130px;">
                 <canvas id="adminSparkline_${pid}" style="width: 130px; height: 36px; display: block; border-radius: 6px; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color);"></canvas>
@@ -5982,9 +6086,9 @@
             </td>
             <td>${overrideControls}</td>
             <td>
-              <div style="display: flex; gap: 6px;">
-                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb); cursor: pointer;" onclick="openProductTradingDrawer(${pid})" title="Open granular trading instrument view" aria-label="Inspect trading drawer for ${prodTitle}">🔍 Inspect</button>
-                <button class="btn-primary" style="padding: 5px 10px; font-size: 11.5px; background: var(--bg-subtle); border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;" onclick="editProductPricing(${pid})" title="Edit basic details" aria-label="Edit details for ${prodTitle}">✏️</button>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <button class="btn-primary" style="padding: 6px 12px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #059669, #047857); color: #ffffff; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(5,150,105,0.25);" onclick="editProductPricing(${pid})" title="Make changes for ${prodTitle}" id="btnEditJuice_${pid}" aria-label="Make changes for ${prodTitle}">✏️ Make Changes</button>
+                <button class="btn-primary" style="padding: 6px 10px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #0284c7, #2563eb); border-radius: 6px; cursor: pointer;" onclick="openProductTradingDrawer(${pid})" title="Open granular trading instrument view" aria-label="Inspect trading drawer for ${prodTitle}">🔍 Inspect</button>
               </div>
             </td>
           </tr>
@@ -6010,6 +6114,11 @@
       const p = liveProductsCache.find(prod => prod.id === productId) || {
         id: productId, name: flavoursMap[productId] || `Product #${productId}`, description: 'Fresh handcrafted juice', currentCupPrice: 25, defaultCupPrice: 25, minCupPrice: 20, maxCupPrice: 30, targetSalesPer1Minute: 0.55, volatility: 0.08
       };
+
+      const titleEl = document.getElementById('editPricingModalTitle');
+      if (titleEl) {
+        titleEl.innerHTML = `✏️ Make Changes: <span style="color: #2563eb;">${p.name || ('Juice #' + p.id)}</span>`;
+      }
 
       document.getElementById('editPricingProductId').value = p.id;
       document.getElementById('editPricingJuiceName').value = p.name;
@@ -6089,6 +6198,289 @@
         await loadBatches();
         await refreshDashboard();
         setButtonLoading(btn, false);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       MAKE CHANGES FOR EVERY JUICE (BULK / BATCH MAINTENANCE)
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    function openBulkEditJuicesModal() {
+      const tbody = document.getElementById('bulkEditJuicesTableBody');
+      if (!tbody) return;
+
+      const prods = (liveProductsCache && liveProductsCache.length > 0) ? liveProductsCache : [];
+      if (prods.length === 0) {
+        showToast('No products loaded yet. Please wait for prices to refresh.', 'warning');
+        return;
+      }
+
+      tbody.innerHTML = prods.map(p => {
+        const pid = p.productId || p.id;
+        const icon = getFruitIconAdmin(p);
+        const name = p.name || p.productName || `Juice #${pid}`;
+        const livePrice = Number(p.currentCupPrice || p.currentPrice || 25).toFixed(2);
+        const basePrice = Number(p.defaultCupPrice || p.basePrice || 25).toFixed(2);
+        const minPrice = Number(p.minCupPrice || 20).toFixed(2);
+        const maxPrice = Number(p.maxCupPrice || 30).toFixed(2);
+        const target = (p.targetSalesPer1Minute || p.targetSales || (p.targetSalesPer2Minute ? p.targetSalesPer2Minute / 2.0 : 0.55));
+
+        return `
+          <tr id="bulkRow_${pid}">
+            <td style="font-weight: 700; font-family: monospace; color: var(--text-muted);">#${pid}</td>
+            <td style="font-weight: 700;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">${icon}</span>
+                <div>
+                  <div style="font-weight: 800; font-size: 13.5px;">${name}</div>
+                  <div style="font-size: 10.5px; color: var(--text-muted);">${p.flavour || 'JUICE'}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <input type="number" id="bulk_live_${pid}" value="${livePrice}" step="0.5" min="1"
+                style="width: 100%; padding: 6px 8px; font-size: 14px; font-weight: 800; text-align: center; border: 1.5px solid #059669; color: #059669;"
+                data-original="${livePrice}">
+            </td>
+            <td>
+              <input type="number" id="bulk_base_${pid}" value="${basePrice}" step="0.5" min="1"
+                style="width: 100%; padding: 6px 8px; font-size: 13px; font-weight: 700; text-align: center;"
+                data-original="${basePrice}">
+            </td>
+            <td>
+              <input type="number" id="bulk_floor_${pid}" value="${minPrice}" step="0.5" min="1"
+                style="width: 100%; padding: 6px 8px; font-size: 13px; font-weight: 700; text-align: center; border-color: #f87171;"
+                data-original="${minPrice}">
+            </td>
+            <td>
+              <input type="number" id="bulk_ceiling_${pid}" value="${maxPrice}" step="0.5" min="1"
+                style="width: 100%; padding: 6px 8px; font-size: 13px; font-weight: 700; text-align: center; border-color: #60a5fa;"
+                data-original="${maxPrice}">
+            </td>
+            <td>
+              <input type="number" id="bulk_target_${pid}" value="${Number(target).toFixed(2)}" step="0.05" min="0.05"
+                style="width: 100%; padding: 6px 8px; font-size: 13px; font-weight: 700; text-align: center;"
+                data-original="${Number(target).toFixed(2)}">
+            </td>
+            <td style="text-align: center;">
+              <button type="button" class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); cursor: pointer;"
+                onclick="resetBulkRow(${pid})" title="Reset this row to original values">↺</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const msg = document.getElementById('bulkEditStatusMessage');
+      if (msg) msg.textContent = `Ready to modify parameters across all ${prods.length} juices.`;
+
+      document.getElementById('bulkEditJuicesModal').style.display = 'flex';
+    }
+
+    function closeBulkEditJuicesModal() {
+      document.getElementById('bulkEditJuicesModal').style.display = 'none';
+    }
+
+    function applyBulkPresetsToRows() {
+      const presetBase = parseFloat(document.getElementById('bulkPresetBase').value);
+      const presetFloor = parseFloat(document.getElementById('bulkPresetFloor').value);
+      const presetCeiling = parseFloat(document.getElementById('bulkPresetCeiling').value);
+      const presetTarget = parseFloat(document.getElementById('bulkPresetTarget').value);
+
+      if (isNaN(presetBase) && isNaN(presetFloor) && isNaN(presetCeiling) && isNaN(presetTarget)) {
+        showToast('Please enter at least one preset value to apply.', 'warning');
+        return;
+      }
+
+      if (!isNaN(presetFloor) && !isNaN(presetCeiling) && presetFloor >= presetCeiling) {
+        showToast('Floor price must be strictly less than Ceiling price.', 'danger');
+        return;
+      }
+
+      if (!isNaN(presetBase) && !isNaN(presetFloor) && presetBase < presetFloor) {
+        showToast('Base price cannot be below Floor price.', 'danger');
+        return;
+      }
+
+      if (!isNaN(presetBase) && !isNaN(presetCeiling) && presetBase > presetCeiling) {
+        showToast('Base price cannot exceed Ceiling price.', 'danger');
+        return;
+      }
+
+      let count = 0;
+      (liveProductsCache || []).forEach(p => {
+        const pid = p.productId || p.id;
+        if (!isNaN(presetBase)) {
+          const el = document.getElementById(`bulk_base_${pid}`);
+          if (el) { el.value = presetBase.toFixed(2); el.style.backgroundColor = 'rgba(37, 99, 235, 0.1)'; }
+        }
+        if (!isNaN(presetFloor)) {
+          const el = document.getElementById(`bulk_floor_${pid}`);
+          if (el) { el.value = presetFloor.toFixed(2); el.style.backgroundColor = 'rgba(220, 38, 38, 0.1)'; }
+        }
+        if (!isNaN(presetCeiling)) {
+          const el = document.getElementById(`bulk_ceiling_${pid}`);
+          if (el) { el.value = presetCeiling.toFixed(2); el.style.backgroundColor = 'rgba(37, 99, 235, 0.1)'; }
+        }
+        if (!isNaN(presetTarget)) {
+          const el = document.getElementById(`bulk_target_${pid}`);
+          if (el) { el.value = presetTarget.toFixed(2); el.style.backgroundColor = 'rgba(16, 185, 129, 0.1)'; }
+        }
+        count++;
+      });
+
+      const msg = document.getElementById('bulkEditStatusMessage');
+      if (msg) msg.textContent = `Applied presets to all ${count} juices. Click "Save Changes for Every Juice" to persist.`;
+      showToast(`⚡ Presets applied to all ${count} juices! Click Save to apply.`, 'info');
+    }
+
+    function applyBulkPriceShift(delta) {
+      let count = 0;
+      (liveProductsCache || []).forEach(p => {
+        const pid = p.productId || p.id;
+        const liveInput = document.getElementById(`bulk_live_${pid}`);
+        const floorInput = document.getElementById(`bulk_floor_${pid}`);
+        const ceilInput = document.getElementById(`bulk_ceiling_${pid}`);
+        if (liveInput) {
+          const current = parseFloat(liveInput.value) || 25;
+          const floor = floorInput ? (parseFloat(floorInput.value) || 18) : 18;
+          const ceil = ceilInput ? (parseFloat(ceilInput.value) || 35) : 35;
+          const shifted = Math.min(Math.max(current + delta, floor), ceil);
+          liveInput.value = shifted.toFixed(2);
+          liveInput.style.backgroundColor = delta > 0 ? 'rgba(5, 150, 105, 0.15)' : 'rgba(220, 38, 38, 0.15)';
+          count++;
+        }
+      });
+
+      const msg = document.getElementById('bulkEditStatusMessage');
+      if (msg) msg.textContent = `Shifted live price by ${delta > 0 ? '+' : ''}₹${delta} across all juices.`;
+    }
+
+    function resetBulkRow(pid) {
+      ['live', 'base', 'floor', 'ceiling', 'target'].forEach(field => {
+        const el = document.getElementById(`bulk_${field}_${pid}`);
+        if (el && el.dataset.original) {
+          el.value = el.dataset.original;
+          el.style.backgroundColor = '';
+        }
+      });
+    }
+
+    async function saveAllJuicesBulkChanges() {
+      const btn = document.getElementById('btnSaveBulkJuicesChanges');
+      const statusMsg = document.getElementById('bulkEditStatusMessage');
+      const prods = (liveProductsCache && liveProductsCache.length > 0) ? liveProductsCache : [];
+      if (prods.length === 0) return;
+
+      // 1. Client-side Validation Pass
+      const payloads = [];
+      for (const p of prods) {
+        const pid = p.productId || p.id;
+        const liveEl = document.getElementById(`bulk_live_${pid}`);
+        const baseEl = document.getElementById(`bulk_base_${pid}`);
+        const floorEl = document.getElementById(`bulk_floor_${pid}`);
+        const ceilEl = document.getElementById(`bulk_ceiling_${pid}`);
+        const targetEl = document.getElementById(`bulk_target_${pid}`);
+
+        if (!liveEl || !baseEl || !floorEl || !ceilEl || !targetEl) continue;
+
+        const live = parseFloat(liveEl.value);
+        const base = parseFloat(baseEl.value);
+        const floor = parseFloat(floorEl.value);
+        const ceil = parseFloat(ceilEl.value);
+        const target = parseFloat(targetEl.value);
+        const name = p.name || p.productName || `Product #${pid}`;
+
+        if (isNaN(floor) || isNaN(ceil) || floor <= 0 || ceil <= 0 || floor >= ceil) {
+          showToast(`❌ ${name}: Circuit breaker Floor (₹${floor}) must be greater than 0 and less than Ceiling (₹${ceil}).`, 'danger');
+          floorEl.focus();
+          return;
+        }
+
+        if (isNaN(base) || base < floor || base > ceil) {
+          showToast(`❌ ${name}: Base price (₹${base}) must be between Floor (₹${floor}) and Ceiling (₹${ceil}).`, 'danger');
+          baseEl.focus();
+          return;
+        }
+
+        if (isNaN(live) || live < floor || live > ceil) {
+          showToast(`❌ ${name}: Live price (₹${live}) must be between Floor (₹${floor}) and Ceiling (₹${ceil}).`, 'danger');
+          liveEl.focus();
+          return;
+        }
+
+        if (isNaN(target) || target <= 0) {
+          showToast(`❌ ${name}: Target sales must be greater than 0.`, 'danger');
+          targetEl.focus();
+          return;
+        }
+
+        payloads.push({
+          id: pid,
+          name: name,
+          flavour: p.flavour || name.toUpperCase().replace(/\s+/g, '_'),
+          description: p.description || 'Fresh handcrafted juice',
+          currentCupPrice: live,
+          defaultCupPrice: base,
+          minCupPrice: floor,
+          maxCupPrice: ceil,
+          targetSales: target,
+          targetSalesPer1Minute: target,
+          weightedSales: p.weightedSales !== undefined && p.weightedSales !== null ? p.weightedSales : target,
+          volatility: p.volatility || 0.08
+        });
+      }
+
+      setButtonLoading(btn, true, '💾 Saving all juices...');
+      if (statusMsg) statusMsg.textContent = `Saving changes to PostgreSQL database...`;
+
+      let savedCount = 0;
+      let errorCount = 0;
+
+      for (let i = 0; i < payloads.length; i++) {
+        const item = payloads[i];
+        if (statusMsg) statusMsg.textContent = `Saving juice ${i + 1}/${payloads.length}: ${item.name}...`;
+
+        try {
+          const res = await apiFetch(`/pos/products/${item.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(item)
+          });
+
+          await apiFetch(`/admin/pricing/products/${item.id}/config`, {
+            method: 'PUT',
+            body: JSON.stringify({ targetSales: item.targetSales, weightedSales: item.weightedSales })
+          });
+
+          await apiFetch(`/pricing/products/${item.id}/price?newPrice=${item.currentCupPrice}&reason=MANUAL_BULK_ADMIN_UPDATE`, {
+            method: 'POST'
+          });
+
+          if (res.ok) {
+            savedCount++;
+            flavoursMap[item.id] = item.name;
+          } else {
+            errorCount++;
+          }
+        } catch (err) {
+          console.error(`Error saving juice #${item.id}:`, err);
+          errorCount++;
+        }
+      }
+
+      saveFlavoursMap();
+      broadcastEvent('PRODUCT_PRICE_UPDATE', { bulkUpdate: true, timestamp: new Date().toISOString() });
+
+      setButtonLoading(btn, false);
+      closeBulkEditJuicesModal();
+
+      await loadLivePricingProducts();
+      await loadBatches();
+      await refreshDashboard();
+
+      if (errorCount === 0) {
+        showToast(`✅ Successfully saved and broadcasted changes for all ${savedCount} juices!`, 'success');
+      } else {
+        showToast(`⚠️ Updated ${savedCount} juices, but ${errorCount} had errors. Check logs.`, 'warning');
       }
     }
 

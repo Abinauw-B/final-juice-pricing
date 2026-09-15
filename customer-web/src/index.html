@@ -808,7 +808,7 @@
     .card-img-banner {
       position: relative;
       width: 100%;
-      height: 78px;
+      height: 90px;
       border-radius: var(--radius-md);
       overflow: hidden;
       margin-bottom: 8px;
@@ -837,8 +837,8 @@
       border: 1px solid rgba(255, 255, 255, 0.15);
       padding: 2px 7px;
       border-radius: var(--radius-sm);
-      font-size: 10px;
-      font-weight: 700;
+      font-size: 10.5px;
+      font-weight: 800;
       color: #FFFFFF;
       display: flex;
       align-items: center;
@@ -851,11 +851,12 @@
     }
 
     .card-name {
-      font-size: 14px;
-      font-weight: 800;
+      font-size: 16px;
+      font-weight: 900;
       color: var(--text-primary);
-      line-height: 1.25;
-      letter-spacing: -0.01em;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -863,7 +864,7 @@
 
     .card-size {
       font-size: 10.5px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-muted);
     }
 
@@ -883,14 +884,15 @@
     }
 
     .price-main {
-      font-size: 24px;
+      font-size: 30px;
       font-weight: 900;
       color: var(--text-primary);
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
-      font-feature-settings: 'tnum' 1;
+      font-feature-settings: 'tnum' 1, 'ss01' 1;
       line-height: 1;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     }
 
     .price-rate-label {
@@ -903,9 +905,9 @@
     }
 
     .price-status-badge {
-      font-size: 10px;
-      font-weight: 800;
-      padding: 3px 7px;
+      font-size: 10.5px;
+      font-weight: 900;
+      padding: 3px 8px;
       border-radius: var(--radius-sm);
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
@@ -2527,12 +2529,16 @@
       ctx.closePath();
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
-      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.25)`);
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.35)`);
+      areaGrad.addColorStop(0.5, `rgba(${strokeColorRgb}, 0.12)`);
       areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.0)`);
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
-      // Main Stroke Line
+      // Main Stroke Line with glow
+      ctx.save();
+      ctx.shadowColor = strokeColor;
+      ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
@@ -2542,23 +2548,29 @@
         ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.0;
+      ctx.lineWidth = 2.4;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
+      ctx.restore();
 
-      // Latest Point Beacon Dot
+      // Latest Point Beacon Dot with concentric glow
       const lastX = getX(dataPoints.length - 1);
       const lastY = getY(dataPoints[dataPoints.length - 1].price);
 
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.25)`;
+      ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.2)`;
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 2.2, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
       ctx.fill();
     }
 

@@ -62,24 +62,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // Also support X-User-Role header for admin panel compatibility
-        // This allows the admin UI to pass role info when JWT is not yet wired in the frontend
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            String roleHeader = request.getHeader("X-User-Role");
-            if (roleHeader != null && !roleHeader.isBlank()) {
-                String effectiveRole = roleHeader.trim().toUpperCase();
-                // Only allow admin-level roles via header (not CUSTOMER)
-                if (!"CUSTOMER".equalsIgnoreCase(effectiveRole)) {
-                    List<SimpleGrantedAuthority> authorities = List.of(
-                            new SimpleGrantedAuthority("ROLE_" + effectiveRole)
-                    );
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken("header-user", null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
-            }
-        }
-
         filterChain.doFilter(request, response);
     }
 
