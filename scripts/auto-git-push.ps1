@@ -159,18 +159,19 @@ if ($SingleRun) {
     if ($success) { exit 0 } else { exit 1 }
 }
 
-# Ensure only ONE background/loop watcher runs at a time using a named Mutex
-$mutexName = "Local\JuiceDynamicPricingAutoPushMutex"
-$createdNew = $false
-try {
-    $script:AppMutex = New-Object System.Threading.Mutex($true, $mutexName, [ref]$createdNew)
-    if (-not $createdNew) {
-        Write-Log "Another auto-push watcher instance is already running. Exiting." "WARN"
-        exit 0
+# Ensure only ONE background/loop watcher runs at a time using PID tracking
+$pidFile = Join-Path $PSScriptRoot ".autopush.pid"
+if (Test-Path $pidFile) {
+    $existingPidStr = (Get-Content $pidFile -ErrorAction SilentlyContinue).Trim()
+    if ($existingPidStr -and ($existingPidStr -ne "$PID")) {
+        $existingProc = Get-Process -Id $existingPidStr -ErrorAction SilentlyContinue
+        if ($existingProc -and ($existingProc.ProcessName -like "*powershell*")) {
+            Write-Log "Another auto-push watcher instance is already running (PID: $existingPidStr). Exiting." "WARN"
+            exit 0
+        }
     }
-} catch {
-    # Fallback if mutex cannot be created
 }
+$PID | Out-File -FilePath $pidFile -Encoding ascii -Force
 
 # Continuous Loop Mode
 $intervalSeconds = [Math]::Max(30, $IntervalMinutes * 60)
