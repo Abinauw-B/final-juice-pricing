@@ -1653,9 +1653,9 @@
                 <button class="btn-primary"
                   style="background: linear-gradient(135deg, #059669, #047857); padding: 8px 14px; font-size: 13px;"
                   onclick="loadLivePricingProducts()">🔄 Refresh Prices</button>
-                <button class="btn-primary"
+                <button class="btn-primary" id="btnResetAllPricesToolbar"
                   style="background: linear-gradient(135deg, #d97706, #b45309); padding: 8px 14px; font-size: 13px;"
-                  onclick="resetLiveMarketPrices()">↺ Reset All to Base (₹25)</button>
+                  onclick="resetLiveMarketPrices()">↺ Reset All to Base (₹<span id="toolbarResetValueDisplay">25</span>)</button>
                 <button class="btn-primary" id="btnBulkEditAllJuices"
                   style="background: linear-gradient(135deg, #7c3aed, #6d28d9); padding: 8px 14px; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);"
                   onclick="openBulkEditJuicesModal()" title="Modify parameters across every juice simultaneously">⚡ Make Changes for Every Juice</button>
@@ -2501,6 +2501,32 @@
           <span>⚡ Quick Batch Presets</span>
           <span style="font-size: 11.5px; font-weight: 600; color: var(--text-muted);">(Fill values below and click "Apply to All Rows" to quickly set uniform parameters)</span>
         </div>
+
+        <!-- Reset Base Value Control Strip -->
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: rgba(217, 119, 6, 0.08); border: 1.5px solid rgba(217, 119, 6, 0.35); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span style="font-size: 16px;">↺</span>
+            <span style="font-size: 12.5px; font-weight: 800; color: #b45309;">Reset Base Value:</span>
+            <div style="display: inline-flex; align-items: center; gap: 4px;">
+              <span style="font-weight: 800; color: var(--text-main);">₹</span>
+              <input type="number" id="bulkResetValueInput" value="25" step="0.5" min="1"
+                onkeydown="if(event.key==='Enter'){ event.preventDefault(); changeBulkResetValue(); }"
+                style="width: 70px; padding: 5px 8px; font-weight: 800; font-size: 13.5px; text-align: center; border: 1.5px solid #d97706; border-radius: 6px; background: var(--bg-card); color: var(--text-main);">
+            </div>
+            <button type="button" id="btnChangeResetValue" onclick="changeBulkResetValue()" class="btn-primary"
+              style="background: linear-gradient(135deg, #d97706, #b45309); padding: 6px 14px; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);"
+              title="Set and apply the reset value across presets and all products">
+              ✏️ Change Reset Value
+            </button>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" onclick="resetAllBulkRowsToResetValue()" class="btn-primary"
+              style="background: #ea580c; padding: 6px 14px; font-size: 12px; font-weight: 800; cursor: pointer;"
+              title="Immediately reset every juice row to this reset value">
+              ↺ Reset All Rows to ₹<span id="displayResetValue">25</span>
+            </button>
+          </div>
+        </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) 160px; gap: 10px; align-items: flex-end;">
           <div>
             <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px;">Set Base (₹)</label>
@@ -2549,7 +2575,14 @@
               <th style="width: 115px; color: #dc2626;">Floor (₹)</th>
               <th style="width: 115px; color: #2563eb;">Ceiling (₹)</th>
               <th style="width: 115px;">Target / min</th>
-              <th style="width: 80px; text-align: center;">Reset</th>
+              <th style="width: 95px; text-align: center;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                  <span>Reset</span>
+                  <button type="button" class="btn-primary" onclick="resetAllBulkRowsToResetValue()"
+                    style="padding: 2px 6px; font-size: 10px; background: #ea580c; border-radius: 4px; line-height: 1.2; cursor: pointer;"
+                    title="Reset all rows to the reset value">↺ All (₹<span id="colHeaderResetValueDisplay">25</span>)</button>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody id="bulkEditJuicesTableBody">
@@ -6408,11 +6441,20 @@
             </td>
             <td style="text-align: center;">
               <button type="button" class="btn-primary" style="padding: 4px 8px; font-size: 11px; background: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); cursor: pointer;"
-                onclick="resetBulkRow(${pid})" title="Reset this row to original values">↺</button>
+                onclick="resetBulkRowToResetValue(${pid})" title="Reset this row to ₹${Number(globalResetValue).toFixed(2)}">↺ ₹<span id="rowResetVal_${pid}">${Number(globalResetValue).toFixed(0)}</span></button>
             </td>
           </tr>
         `;
       }).join('');
+
+      const resetInput = document.getElementById('bulkResetValueInput');
+      if (resetInput) resetInput.value = globalResetValue;
+      const displayReset = document.getElementById('displayResetValue');
+      if (displayReset) displayReset.textContent = globalResetValue % 1 === 0 ? globalResetValue.toString() : globalResetValue.toFixed(2);
+      const colHeaderReset = document.getElementById('colHeaderResetValueDisplay');
+      if (colHeaderReset) colHeaderReset.textContent = globalResetValue % 1 === 0 ? globalResetValue.toString() : globalResetValue.toFixed(2);
+      const presetBaseEl = document.getElementById('bulkPresetBase');
+      if (presetBaseEl && !presetBaseEl.value) presetBaseEl.value = Number(globalResetValue).toFixed(2);
 
       const msg = document.getElementById('bulkEditStatusMessage');
       if (msg) msg.textContent = `Ready to modify parameters across all ${prods.length} juices.`;
@@ -6542,14 +6584,99 @@
       if (msg) msg.textContent = `Shifted live price by ${delta > 0 ? '+' : ''}₹${delta} across all juices.`;
     }
 
+    let globalResetValue = 25.00;
+
+    function resetBulkRowToResetValue(pid) {
+      const baseEl = document.getElementById(`bulk_base_${pid}`);
+      const liveEl = document.getElementById(`bulk_live_${pid}`);
+      const floorEl = document.getElementById(`bulk_floor_${pid}`);
+      const ceilEl = document.getElementById(`bulk_ceiling_${pid}`);
+      const targetEl = document.getElementById(`bulk_target_${pid}`);
+
+      const resetVal = Number(globalResetValue) || 25.00;
+      if (baseEl) {
+        baseEl.value = resetVal.toFixed(2);
+        baseEl.style.backgroundColor = 'rgba(217, 119, 6, 0.15)';
+      }
+      if (liveEl) {
+        liveEl.value = resetVal.toFixed(2);
+        liveEl.style.backgroundColor = 'rgba(5, 150, 105, 0.15)';
+      }
+      if (floorEl) {
+        floorEl.value = (resetVal - 5 > 0 ? (resetVal - 5).toFixed(2) : '18.00');
+        floorEl.style.backgroundColor = 'rgba(220, 38, 38, 0.1)';
+      }
+      if (ceilEl) {
+        ceilEl.value = (resetVal + 5).toFixed(2);
+        ceilEl.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
+      }
+      if (targetEl) {
+        targetEl.value = '0.55';
+        targetEl.style.backgroundColor = '';
+      }
+    }
+
     function resetBulkRow(pid) {
-      ['live', 'base', 'floor', 'ceiling', 'target'].forEach(field => {
-        const el = document.getElementById(`bulk_${field}_${pid}`);
-        if (el && el.dataset.original) {
-          el.value = el.dataset.original;
-          el.style.backgroundColor = '';
-        }
+      resetBulkRowToResetValue(pid);
+    }
+
+    function resetAllBulkRowsToResetValue() {
+      let count = 0;
+      (liveProductsCache || []).forEach(p => {
+        const pid = p.productId || p.id;
+        resetBulkRowToResetValue(pid);
+        count++;
       });
+      const resetVal = Number(globalResetValue) || 25.00;
+      const msg = document.getElementById('bulkEditStatusMessage');
+      if (msg) msg.textContent = `Reset all ${count} juices to ₹${resetVal.toFixed(2)}.`;
+      showToast(`↺ All ${count} juices reset to base ₹${resetVal.toFixed(2)}!`, 'info');
+    }
+
+    function changeBulkResetValue() {
+      const input = document.getElementById('bulkResetValueInput');
+      if (!input) return;
+      const val = parseFloat(input.value);
+      if (isNaN(val) || val <= 0) {
+        showToast('Please enter a valid positive reset value.', 'warning');
+        input.focus();
+        return;
+      }
+
+      globalResetValue = val;
+      const valStr = val % 1 === 0 ? val.toFixed(0) : val.toFixed(2);
+
+      // Update display labels across the UI
+      ['displayResetValue', 'toolbarResetValueDisplay', 'colHeaderResetValueDisplay'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = valStr;
+      });
+
+      // Update Quick Batch Preset Base input
+      const presetBaseEl = document.getElementById('bulkPresetBase');
+      if (presetBaseEl) presetBaseEl.value = val.toFixed(2);
+
+      // Update preset floor & ceiling intelligently if out of bounds
+      const presetFloorEl = document.getElementById('bulkPresetFloor');
+      if (presetFloorEl && (parseFloat(presetFloorEl.value) >= val || isNaN(parseFloat(presetFloorEl.value)))) {
+        presetFloorEl.value = (val - 5 > 0 ? (val - 5).toFixed(2) : '18.00');
+      }
+      const presetCeilingEl = document.getElementById('bulkPresetCeiling');
+      if (presetCeilingEl && (parseFloat(presetCeilingEl.value) <= val || isNaN(parseFloat(presetCeilingEl.value)))) {
+        presetCeilingEl.value = (val + 5).toFixed(2);
+      }
+
+      // Update all row button labels in the modal table
+      (liveProductsCache || []).forEach(p => {
+        const pid = p.productId || p.id;
+        const rowSpan = document.getElementById(`rowResetVal_${pid}`);
+        if (rowSpan) rowSpan.textContent = valStr;
+      });
+
+      // Automatically apply to all rows in table
+      resetAllBulkRowsToResetValue();
+
+      showToast(`✅ Reset value changed to ₹${val.toFixed(2)} and applied to all products!`, 'success');
     }
 
     async function saveAllJuicesBulkChanges() {
@@ -7767,16 +7894,16 @@
     }
 
     function resetLiveMarketPrices() {
-      const defaultPrice = currentPricingConfig?.global?.defaultCupPrice || '25.00';
+      const defaultPrice = globalResetValue || currentPricingConfig?.global?.defaultCupPrice || '25.00';
       const modal = document.getElementById('confirmResetPricesModal');
       const modalText = document.getElementById('confirmResetModalBodyText');
       if (modalText) {
-        modalText.innerHTML = `This will reset all 8 live market prices to <strong>₹${Number(defaultPrice).toFixed(2)}</strong>.<br><br><strong>Production market state will be changed in PostgreSQL and Redis.</strong>`;
+        modalText.innerHTML = `This will reset all live market prices to <strong>₹${Number(defaultPrice).toFixed(2)}</strong>.<br><br><strong>Production market state will be changed in PostgreSQL and Redis.</strong>`;
       }
       if (modal) {
         modal.style.display = 'flex';
       } else {
-        if (confirm(`Confirm Reset\n\nThis will reset all 8 live market prices to base ₹${Number(defaultPrice).toFixed(2)}.\n\nProduction market state will be changed in PostgreSQL and Redis.`)) {
+        if (confirm(`Confirm Reset\n\nThis will reset all live market prices to base ₹${Number(defaultPrice).toFixed(2)}.\n\nProduction market state will be changed in PostgreSQL and Redis.`)) {
           executeResetLiveMarketPrices();
         }
       }
