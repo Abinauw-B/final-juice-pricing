@@ -2519,12 +2519,13 @@
             <input type="number" id="bulkPresetTarget" placeholder="e.g. 0.55" step="0.05" style="width: 100%; padding: 6px 8px; font-weight: 700; font-size: 13px;">
           </div>
           <div>
-            <label style="display: block; font-size: 11px; font-weight: 700; color: #059669; margin-bottom: 3px;">Shift All Live Prices</label>
+            <label style="display: block; font-size: 11px; font-weight: 700; color: #059669; margin-bottom: 3px;">Live Price Actions</label>
             <div style="display: flex; gap: 4px;">
-              <button type="button" class="btn-primary" style="padding: 6px 8px; font-size: 11px; background: #dc2626;" onclick="applyBulkPriceShift(-2)" title="Subtract ₹2 from all live prices">-₹2</button>
-              <button type="button" class="btn-primary" style="padding: 6px 8px; font-size: 11px; background: #ea580c;" onclick="applyBulkPriceShift(-1)" title="Subtract ₹1 from all live prices">-₹1</button>
-              <button type="button" class="btn-primary" style="padding: 6px 8px; font-size: 11px; background: #059669;" onclick="applyBulkPriceShift(1)" title="Add ₹1 to all live prices">+₹1</button>
-              <button type="button" class="btn-primary" style="padding: 6px 8px; font-size: 11px; background: #047857;" onclick="applyBulkPriceShift(2)" title="Add ₹2 to all live prices">+₹2</button>
+              <button type="button" class="btn-primary" style="padding: 6px 8px; font-size: 11px; background: #059669; font-weight: 800; white-space: nowrap;" onclick="returnAllBulkLivePricesToBase()" title="Return all live prices to their base price">↺ Return to Base</button>
+              <button type="button" class="btn-primary" style="padding: 6px 7px; font-size: 11px; background: #dc2626;" onclick="applyBulkPriceShift(-2)" title="Subtract ₹2 from all live prices">-₹2</button>
+              <button type="button" class="btn-primary" style="padding: 6px 7px; font-size: 11px; background: #ea580c;" onclick="applyBulkPriceShift(-1)" title="Subtract ₹1 from all live prices">-₹1</button>
+              <button type="button" class="btn-primary" style="padding: 6px 7px; font-size: 11px; background: #059669;" onclick="applyBulkPriceShift(1)" title="Add ₹1 to all live prices">+₹1</button>
+              <button type="button" class="btn-primary" style="padding: 6px 7px; font-size: 11px; background: #047857;" onclick="applyBulkPriceShift(2)" title="Add ₹2 to all live prices">+₹2</button>
             </div>
           </div>
           <div>
@@ -6276,10 +6277,11 @@
           name: name,
           flavour: flavour,
           description: desc,
-          currentCupPrice: currentPrice,
+          currentCupPrice: basePrice, // live price returns to base price!
           defaultCupPrice: basePrice,
           minCupPrice: minPrice,
           maxCupPrice: maxPrice,
+          pricingMode: 'DYNAMIC',
           targetSales: targetSales,
           targetSalesPer1Minute: targetSales,
           targetSalesPer2Minute: targetSales * 2.0,
@@ -6298,7 +6300,11 @@
             body: JSON.stringify({ targetSales: payload.targetSales, weightedSales: payload.weightedSales })
           });
 
-          await apiFetch(`/pricing/products/${pid}/price?newPrice=${payload.currentCupPrice}&reason=MANUAL_OVERALL_ADMIN_UPDATE`, {
+          await apiFetch(`/pricing/products/${pid}/price?newPrice=${payload.defaultCupPrice}&reason=RETURN_TO_BASE_PRICE`, {
+            method: 'POST'
+          });
+
+          await apiFetch(`/pricing/products/${pid}/release-override`, {
             method: 'POST'
           });
 
@@ -6381,6 +6387,7 @@
             </td>
             <td>
               <input type="number" id="bulk_base_${pid}" value="${basePrice}" step="0.5" min="1"
+                oninput="syncBulkLiveToBase(${pid})"
                 style="width: 100%; padding: 6px 8px; font-size: 13px; font-weight: 700; text-align: center;"
                 data-original="${basePrice}">
             </td>
@@ -6417,6 +6424,38 @@
       document.getElementById('bulkEditJuicesModal').style.display = 'none';
     }
 
+    function syncBulkLiveToBase(pid) {
+      const baseEl = document.getElementById(`bulk_base_${pid}`);
+      const liveEl = document.getElementById(`bulk_live_${pid}`);
+      if (baseEl && liveEl) {
+        const val = parseFloat(baseEl.value);
+        if (!isNaN(val)) {
+          liveEl.value = val.toFixed(2);
+          liveEl.style.backgroundColor = 'rgba(5, 150, 105, 0.15)';
+        }
+      }
+    }
+
+    function returnAllBulkLivePricesToBase() {
+      let count = 0;
+      (liveProductsCache || []).forEach(p => {
+        const pid = p.productId || p.id;
+        const baseEl = document.getElementById(`bulk_base_${pid}`);
+        const liveEl = document.getElementById(`bulk_live_${pid}`);
+        if (baseEl && liveEl) {
+          const baseVal = parseFloat(baseEl.value);
+          if (!isNaN(baseVal)) {
+            liveEl.value = baseVal.toFixed(2);
+            liveEl.style.backgroundColor = 'rgba(5, 150, 105, 0.15)';
+            count++;
+          }
+        }
+      });
+      const msg = document.getElementById('bulkEditStatusMessage');
+      if (msg) msg.textContent = `Returned all ${count} products to their base prices.`;
+      showToast(`↺ All ${count} juices returned to their base prices!`, 'info');
+    }
+
     function applyBulkPresetsToRows() {
       const presetBase = parseFloat(document.getElementById('bulkPresetBase').value);
       const presetFloor = parseFloat(document.getElementById('bulkPresetFloor').value);
@@ -6446,10 +6485,21 @@
       let count = 0;
       (liveProductsCache || []).forEach(p => {
         const pid = p.productId || p.id;
+        const baseEl = document.getElementById(`bulk_base_${pid}`);
+        const liveEl = document.getElementById(`bulk_live_${pid}`);
+
         if (!isNaN(presetBase)) {
-          const el = document.getElementById(`bulk_base_${pid}`);
-          if (el) { el.value = presetBase.toFixed(2); el.style.backgroundColor = 'rgba(37, 99, 235, 0.1)'; }
+          if (baseEl) { baseEl.value = presetBase.toFixed(2); baseEl.style.backgroundColor = 'rgba(37, 99, 235, 0.1)'; }
+          // Every product returns to the base price!
+          if (liveEl) { liveEl.value = presetBase.toFixed(2); liveEl.style.backgroundColor = 'rgba(5, 150, 105, 0.15)'; }
+        } else if (baseEl && liveEl) {
+          const currentBase = parseFloat(baseEl.value);
+          if (!isNaN(currentBase)) {
+            liveEl.value = currentBase.toFixed(2);
+            liveEl.style.backgroundColor = 'rgba(5, 150, 105, 0.15)';
+          }
         }
+
         if (!isNaN(presetFloor)) {
           const el = document.getElementById(`bulk_floor_${pid}`);
           if (el) { el.value = presetFloor.toFixed(2); el.style.backgroundColor = 'rgba(220, 38, 38, 0.1)'; }
@@ -6466,8 +6516,8 @@
       });
 
       const msg = document.getElementById('bulkEditStatusMessage');
-      if (msg) msg.textContent = `Applied presets to all ${count} juices. Click "Save Changes for Every Juice" to persist.`;
-      showToast(`⚡ Presets applied to all ${count} juices! Click Save to apply.`, 'info');
+      if (msg) msg.textContent = `Applied presets to all ${count} juices and returned live prices to base price. Click "Save Changes for Every Juice" to persist.`;
+      showToast(`⚡ Presets applied and all ${count} juices returned to base price!`, 'info');
     }
 
     function applyBulkPriceShift(delta) {
@@ -6520,8 +6570,11 @@
 
         if (!liveEl || !baseEl || !floorEl || !ceilEl || !targetEl) continue;
 
-        const live = parseFloat(liveEl.value);
         const base = parseFloat(baseEl.value);
+        const live = base;
+        if (liveEl) {
+          liveEl.value = base.toFixed(2);
+        }
         const floor = parseFloat(floorEl.value);
         const ceil = parseFloat(ceilEl.value);
         const target = parseFloat(targetEl.value);
@@ -6556,12 +6609,14 @@
           name: name,
           flavour: p.flavour || name.toUpperCase().replace(/\s+/g, '_'),
           description: p.description || 'Fresh handcrafted juice',
-          currentCupPrice: live,
+          currentCupPrice: base,
           defaultCupPrice: base,
           minCupPrice: floor,
           maxCupPrice: ceil,
+          pricingMode: 'DYNAMIC',
           targetSales: target,
           targetSalesPer1Minute: target,
+          targetSalesPer2Minute: target * 2.0,
           weightedSales: p.weightedSales !== undefined && p.weightedSales !== null ? p.weightedSales : target,
           volatility: p.volatility || 0.08
         });
@@ -6588,7 +6643,11 @@
             body: JSON.stringify({ targetSales: item.targetSales, weightedSales: item.weightedSales })
           });
 
-          await apiFetch(`/pricing/products/${item.id}/price?newPrice=${item.currentCupPrice}&reason=MANUAL_BULK_ADMIN_UPDATE`, {
+          await apiFetch(`/pricing/products/${item.id}/price?newPrice=${item.defaultCupPrice}&reason=RETURN_TO_BASE_PRICE`, {
+            method: 'POST'
+          });
+
+          await apiFetch(`/pricing/products/${item.id}/release-override`, {
             method: 'POST'
           });
 
