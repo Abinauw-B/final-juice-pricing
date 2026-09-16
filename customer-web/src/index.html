@@ -32,6 +32,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
   <script src="config.js"></script>
+  <link rel="stylesheet" href="pub-exchange-tokens.css">
 
   <style>
     :root,
@@ -635,48 +636,171 @@
       opacity: 0.6;
     }
 
-    /* ═══════ 3. MARKET CRASH ALERT BANNER ═══════ */
+    /* ═══════ 3. MARKET CRASH ALERT BANNER & VIBRANT STYLING ═══════ */
+    .pos-crash-strobe-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 99999;
+      background: radial-gradient(circle at center, rgba(239, 68, 68, 0.45) 0%, rgba(245, 158, 11, 0.25) 50%, transparent 80%);
+      opacity: 0;
+      transition: opacity 0.3s ease-out;
+    }
+    .pos-crash-strobe-overlay.active {
+      opacity: 1;
+      animation: crashStrobePulse 0.8s ease-out forwards;
+    }
+    @keyframes crashStrobePulse {
+      0% { opacity: 0; transform: scale(0.95); }
+      30% { opacity: 0.85; transform: scale(1.02); }
+      70% { opacity: 0.5; }
+      100% { opacity: 0; transform: scale(1); }
+    }
+
     .market-crash-banner {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(185, 28, 28, 0.95) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: linear-gradient(135deg, #b91c1c 0%, #dc2626 40%, #991b1b 100%);
+      border: 2px solid #f87171;
       border-radius: var(--radius-card);
-      padding: 12px 20px;
-      margin-bottom: 14px;
+      padding: 16px 24px;
+      margin-bottom: 18px;
       display: none;
       align-items: center;
       justify-content: space-between;
       color: #ffffff;
-      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.35);
-      animation: crashPulse 2s infinite ease-in-out;
+      box-shadow: 0 10px 36px rgba(220, 38, 38, 0.5), 0 0 20px rgba(245, 158, 11, 0.35);
+      animation: crashPulse 1.6s infinite ease-in-out;
+      backdrop-filter: blur(14px);
+      position: relative;
+      overflow: hidden;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .market-crash-banner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 5px;
+      background: repeating-linear-gradient(45deg, #facc15, #facc15 15px, #000000 15px, #000000 30px);
+      animation: hazardShift 1s linear infinite;
+    }
+    .market-crash-banner::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 5px;
+      background: repeating-linear-gradient(45deg, #facc15, #facc15 15px, #000000 15px, #000000 30px);
+      animation: hazardShift 1s linear infinite reverse;
+    }
+    @keyframes hazardShift {
+      0% { background-position: 0 0; }
+      100% { background-position: 42px 0; }
     }
 
     .crash-title {
-      font-size: 15px;
-      font-weight: 800;
+      font-size: 16px;
+      font-weight: 900;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
+      letter-spacing: 0.02em;
+    }
+    .crash-title-badge {
+      background: #facc15;
+      color: #000000;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      animation: badgeFlash 0.8s infinite alternate;
+    }
+    @keyframes badgeFlash {
+      0% { opacity: 0.85; transform: scale(0.98); }
+      100% { opacity: 1; transform: scale(1.04); }
     }
 
     .crash-timer {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 22px;
+      font-weight: 900;
       font-family: var(--font-mono);
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 3px 14px;
-      border-radius: var(--radius-md);
-      color: #FDE047;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #facc15;
+      padding: 6px 18px;
+      border-radius: 12px;
+      color: #facc15;
       font-variant-numeric: tabular-nums;
+      box-shadow: 0 0 16px rgba(250, 204, 21, 0.4), inset 0 0 10px rgba(250, 204, 21, 0.2);
+      text-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     @keyframes crashPulse {
       0%, 100% {
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+        box-shadow: 0 10px 36px rgba(220, 38, 38, 0.45), 0 0 0 1px rgba(239, 68, 68, 0.4);
       }
       50% {
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.7);
+        box-shadow: 0 12px 48px rgba(220, 38, 38, 0.75), 0 0 25px rgba(245, 158, 11, 0.5), 0 0 0 3px rgba(250, 204, 21, 0.6);
       }
+    }
+
+    /* Vibrant Product Card Crash Mode */
+    .flavour-card.crash-mode-card {
+      border: 2px solid #ef4444 !important;
+      box-shadow: 0 0 24px rgba(239, 68, 68, 0.35), 0 0 45px rgba(245, 158, 11, 0.18) !important;
+      background: linear-gradient(180deg, var(--bg-card) 0%, rgba(239, 68, 68, 0.06) 100%) !important;
+      animation: cardCrashAura 2s infinite ease-in-out;
+    }
+    @keyframes cardCrashAura {
+      0%, 100% { box-shadow: 0 0 18px rgba(239, 68, 68, 0.3), 0 8px 24px rgba(0, 0, 0, 0.2); }
+      50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.6), 0 0 20px rgba(245, 158, 11, 0.35), 0 8px 28px rgba(0, 0, 0, 0.3); }
+    }
+    .flavour-card.crash-mode-card::before {
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #ef4444) !important;
+      height: 4px !important;
+      animation: hazardShift 1.2s linear infinite;
+    }
+
+    .crash-original-strikethrough {
+      font-size: 13px;
+      color: #ef4444;
+      text-decoration: line-through;
+      margin-right: 6px;
+      font-weight: 700;
+      opacity: 0.85;
+    }
+
+    .crash-discount-pill {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .add-to-cart-btn.crash-btn-pulse {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 45%, #ea580c 100%) !important;
+      color: #ffffff !important;
+      font-weight: 900 !important;
+      box-shadow: 0 4px 18px rgba(220, 38, 38, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+      animation: crashBtnPulse 1.4s infinite alternate ease-in-out;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    }
+    .add-to-cart-btn.crash-btn-pulse:hover {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 45%, #f97316 100%) !important;
+      box-shadow: 0 6px 24px rgba(220, 38, 38, 0.75) !important;
+      transform: translateY(-2px);
+    }
+    @keyframes crashBtnPulse {
+      0% { transform: scale(1); box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4); }
+      100% { transform: scale(1.02); box-shadow: 0 6px 22px rgba(239, 68, 68, 0.7), 0 0 12px rgba(245, 158, 11, 0.4); }
     }
 
     /* ═══════ 4. MAIN LAYOUT (GRID + STICKY POS CART) ═══════ */
@@ -1369,15 +1493,25 @@
     </div>
   </div>
 
+  <!-- Full-Screen Aurora Strobe Alert Effect -->
+  <div id="posCrashStrobeOverlay" class="pos-crash-strobe-overlay"></div>
+
   <!-- 4. Market Crash Alert Header -->
   <div class="market-crash-banner" id="marketCrashBanner">
     <div class="crash-title">
-      <span>🚨 MARKET CRASH ACTIVE!</span>
-      <span style="font-size: 13px; font-weight: 600; opacity: 0.95;" id="marketCrashBannerMsg">
-        All Drink Prices Dropped to Floor Limit ₹18.00!
+      <span class="crash-title-badge">⚡ EMERGENCY EVENT</span>
+      <span style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">🚨</span>
+        <span style="font-size: 16px; font-weight: 900; letter-spacing: 0.02em;">MARKET CRASH IN PROGRESS!</span>
+      </span>
+      <span style="font-size: 13.5px; font-weight: 700; color: #fef08a; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(254,240,138,0.3);" id="marketCrashBannerMsg">
+        ALL DRINK PRICES DROPPED TO ABSOLUTE FLOOR LIMIT ₹20.00!
       </span>
     </div>
-    <div class="crash-timer" id="crashTimerDisplay">03:00</div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="font-size: 12px; font-weight: 800; color: #facc15; text-transform: uppercase; letter-spacing: 0.05em; display: none;" id="crashHurryNotice">🔥 HURRY, ORDER NOW:</span>
+      <div class="crash-timer" id="crashTimerDisplay">⏱️ 03:00</div>
+    </div>
   </div>
 
   <!-- 5. Main POS Grid + Sticky Cart Container -->
@@ -1397,27 +1531,31 @@
         </div>
       </div>
 
-      <div class="flavour-grid" id="productGrid">
-        <!-- Skeleton Loading Cards -->
-        <div class="flavour-card" style="opacity: 0.6; pointer-events: none;">
-          <div style="height: 120px; background: rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 12px; animation: pulse 1.5s infinite;"></div>
-          <div style="height: 18px; width: 70%; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 8px;"></div>
-          <div style="height: 24px; width: 40%; background: rgba(255,255,255,0.06); border-radius: 6px;"></div>
+      <div class="flavour-grid px-stagger-enter" id="productGrid">
+        <!-- Skeleton Loading Cards (replaced by renderProducts) -->
+        <div class="flavour-card px-skeleton" style="opacity: 0.7; pointer-events: none; min-height: 320px;">
+          <div class="px-skeleton" style="height: 120px; border-radius: 12px; margin-bottom: 12px;"></div>
+          <div class="px-skeleton px-skeleton-text long"></div>
+          <div class="px-skeleton px-skeleton-text short"></div>
+          <div class="px-skeleton" style="height: 40px; border-radius: 8px; margin-top: 12px;"></div>
         </div>
-        <div class="flavour-card" style="opacity: 0.6; pointer-events: none;">
-          <div style="height: 120px; background: rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 12px; animation: pulse 1.5s infinite; animation-delay: 0.2s;"></div>
-          <div style="height: 18px; width: 70%; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 8px;"></div>
-          <div style="height: 24px; width: 40%; background: rgba(255,255,255,0.06); border-radius: 6px;"></div>
+        <div class="flavour-card px-skeleton" style="opacity: 0.7; pointer-events: none; min-height: 320px; animation-delay: 0.15s;">
+          <div class="px-skeleton" style="height: 120px; border-radius: 12px; margin-bottom: 12px;"></div>
+          <div class="px-skeleton px-skeleton-text long"></div>
+          <div class="px-skeleton px-skeleton-text short"></div>
+          <div class="px-skeleton" style="height: 40px; border-radius: 8px; margin-top: 12px;"></div>
         </div>
-        <div class="flavour-card" style="opacity: 0.6; pointer-events: none;">
-          <div style="height: 120px; background: rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 12px; animation: pulse 1.5s infinite; animation-delay: 0.4s;"></div>
-          <div style="height: 18px; width: 70%; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 8px;"></div>
-          <div style="height: 24px; width: 40%; background: rgba(255,255,255,0.06); border-radius: 6px;"></div>
+        <div class="flavour-card px-skeleton" style="opacity: 0.7; pointer-events: none; min-height: 320px; animation-delay: 0.3s;">
+          <div class="px-skeleton" style="height: 120px; border-radius: 12px; margin-bottom: 12px;"></div>
+          <div class="px-skeleton px-skeleton-text long"></div>
+          <div class="px-skeleton px-skeleton-text short"></div>
+          <div class="px-skeleton" style="height: 40px; border-radius: 8px; margin-top: 12px;"></div>
         </div>
-        <div class="flavour-card" style="opacity: 0.6; pointer-events: none;">
-          <div style="height: 120px; background: rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 12px; animation: pulse 1.5s infinite; animation-delay: 0.6s;"></div>
-          <div style="height: 18px; width: 70%; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 8px;"></div>
-          <div style="height: 24px; width: 40%; background: rgba(255,255,255,0.06); border-radius: 6px;"></div>
+        <div class="flavour-card px-skeleton" style="opacity: 0.7; pointer-events: none; min-height: 320px; animation-delay: 0.45s;">
+          <div class="px-skeleton" style="height: 120px; border-radius: 12px; margin-bottom: 12px;"></div>
+          <div class="px-skeleton px-skeleton-text long"></div>
+          <div class="px-skeleton px-skeleton-text short"></div>
+          <div class="px-skeleton" style="height: 40px; border-radius: 8px; margin-top: 12px;"></div>
         </div>
       </div>
     </main>
@@ -1491,6 +1629,17 @@
     </div>
   </div>
 
+  <!-- Network Disconnect Banner -->
+  <div class="px-network-banner" id="posNetworkBanner" role="alert">
+    <span>⚠ Connection lost — attempting to reconnect...</span>
+  </div>
+
+  <!-- ARIA Live Region for Price Announcements -->
+  <div class="px-live-region" aria-live="polite" aria-atomic="true" id="posAriaLive"></div>
+
+  <!-- Toast Container -->
+  <div class="px-toast-container" id="posToastContainer"></div>
+
   <script>
     const CONFIG = window.CONFIG;
     let isBackendOnline = true;
@@ -1505,6 +1654,177 @@
     let previousPriceMap = {};
     let flashEffectMap = {};
     let currentPricingConfig = null;
+
+    // ═══════ UI ENHANCEMENT UTILITIES ═══════
+
+    // Toast Notification System (Professional upgrade)
+    function showPosToast(message, type = 'info', opts = {}) {
+      let container = document.getElementById('posToastContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'posToastContainer';
+        container.className = 'px-toast-container';
+        document.body.appendChild(container);
+      }
+      const icons = { info: 'ℹ️', success: '✅', warning: '⚠️', error: '❌', critical: '🚨' };
+      const toast = document.createElement('div');
+      toast.className = `px-toast px-toast--${type}`;
+      const duration = opts.duration || (type === 'critical' ? 8000 : 4000);
+      let isPaused = false;
+      let remaining = duration;
+      let startTime = Date.now();
+
+      let html = `<span class="px-toast-icon">${icons[type] || icons.info}</span>`;
+      html += `<div class="px-toast-body">`;
+      if (opts.title) html += `<span class="px-toast-title">${opts.title}</span>`;
+      html += `<span class="px-toast-message">${message}</span></div>`;
+      if (opts.undoFn) html += `<button class="px-toast-undo" onclick="event.stopPropagation()">Undo</button>`;
+      html += `<button class="px-toast-close" onclick="this.parentElement.classList.add('exiting'); setTimeout(() => this.parentElement.remove(), 250)">&times;</button>`;
+      html += `<div class="px-toast-progress" style="width: 100%;"></div>`;
+      toast.innerHTML = html;
+
+      if (opts.undoFn) {
+        toast.querySelector('.px-toast-undo').addEventListener('click', () => {
+          opts.undoFn();
+          toast.classList.add('exiting');
+          setTimeout(() => toast.remove(), 250);
+        });
+      }
+
+      // Hover-to-pause
+      toast.addEventListener('mouseenter', () => { isPaused = true; remaining -= (Date.now() - startTime); });
+      toast.addEventListener('mouseleave', () => { isPaused = false; startTime = Date.now(); scheduleRemoval(); });
+
+      container.appendChild(toast);
+      const progressBar = toast.querySelector('.px-toast-progress');
+      if (progressBar) {
+        progressBar.style.transition = `width ${duration}ms linear`;
+        requestAnimationFrame(() => { progressBar.style.width = '0%'; });
+      }
+
+      function scheduleRemoval() {
+        setTimeout(() => {
+          if (isPaused) return;
+          toast.classList.add('exiting');
+          setTimeout(() => toast.remove(), 250);
+        }, remaining);
+      }
+      scheduleRemoval();
+
+      // Cap at 5 visible toasts
+      const toasts = container.querySelectorAll('.px-toast:not(.exiting)');
+      if (toasts.length > 5) {
+        toasts[0].classList.add('exiting');
+        setTimeout(() => toasts[0].remove(), 250);
+      }
+    }
+
+    // Animated Number Transition
+    function animateNumber(element, newValue, prefix = '₹', decimals = 2) {
+      if (!element) return;
+      const currentText = element.textContent.replace(/[^0-9.-]/g, '');
+      const oldValue = parseFloat(currentText) || 0;
+      const target = parseFloat(newValue) || 0;
+      if (Math.abs(oldValue - target) < 0.001) return;
+      const duration = 400;
+      const startTime = performance.now();
+
+      function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+      function update(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOutCubic(progress);
+        const current = oldValue + (target - oldValue) * easedProgress;
+        element.textContent = `${prefix}${current.toFixed(decimals)}`;
+        if (progress < 1) requestAnimationFrame(update);
+        else element.classList.add('changing');
+      }
+      requestAnimationFrame(update);
+      setTimeout(() => element.classList.remove('changing'), 350);
+    }
+
+    // Price Flash Detection — applies green/red glow on card when price changes
+    function applyPriceFlash(productId, oldPrice, newPrice) {
+      const card = document.getElementById(`flavourCard-${productId}`);
+      if (!card || Math.abs(newPrice - oldPrice) < 0.001) return;
+      card.classList.remove('px-price-surge', 'px-price-decay');
+      void card.offsetWidth; // Force reflow to restart animation
+      if (newPrice > oldPrice) {
+        card.classList.add('px-price-surge');
+      } else {
+        card.classList.add('px-price-decay');
+      }
+      setTimeout(() => { card.classList.remove('px-price-surge', 'px-price-decay'); }, 1300);
+    }
+
+    // Network Banner Control
+    function showNetworkBanner(reconnecting = false) {
+      const banner = document.getElementById('posNetworkBanner');
+      if (!banner) return;
+      if (reconnecting) {
+        banner.classList.add('reconnecting');
+        banner.querySelector('span').textContent = '🔄 Reconnecting to market feed...';
+      } else {
+        banner.classList.remove('reconnecting');
+        banner.querySelector('span').textContent = '⚠ Connection lost — attempting to reconnect...';
+      }
+      banner.classList.add('active');
+    }
+    function hideNetworkBanner() {
+      const banner = document.getElementById('posNetworkBanner');
+      if (banner) banner.classList.remove('active', 'reconnecting');
+    }
+
+    // ARIA Price Announcements
+    function announcePrice(productName, price, direction) {
+      const liveRegion = document.getElementById('posAriaLive');
+      if (!liveRegion) return;
+      const dirText = direction === 'up' ? 'increased to' : (direction === 'down' ? 'decreased to' : 'is now');
+      liveRegion.textContent = `${productName} price ${dirText} ₹${price.toFixed(2)}`;
+    }
+
+    // Modal Transition Helpers
+    function openModalAnimated(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+      modal.style.display = 'flex';
+      modal.style.opacity = '0';
+      const content = modal.querySelector('.receipt-modal') || modal.firstElementChild;
+      if (content) {
+        content.style.transform = 'scale(0.92) translateY(12px)';
+        content.style.opacity = '0';
+      }
+      requestAnimationFrame(() => {
+        modal.style.transition = 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+        modal.style.opacity = '1';
+        if (content) {
+          content.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease';
+          content.style.transform = 'scale(1) translateY(0)';
+          content.style.opacity = '1';
+        }
+      });
+    }
+    function closeModalAnimated(modalId, callback) {
+      const modal = document.getElementById(modalId);
+      if (!modal) { if (callback) callback(); return; }
+      const content = modal.querySelector('.receipt-modal') || modal.firstElementChild;
+      modal.style.transition = 'opacity 0.2s ease';
+      modal.style.opacity = '0';
+      if (content) {
+        content.style.transition = 'transform 0.2s ease, opacity 0.15s ease';
+        content.style.transform = 'scale(0.92) translateY(12px)';
+        content.style.opacity = '0';
+      }
+      setTimeout(() => {
+        modal.style.display = 'none';
+        modal.style.opacity = '';
+        modal.style.transition = '';
+        if (content) { content.style.transform = ''; content.style.opacity = ''; content.style.transition = ''; }
+        if (callback) callback();
+      }, 220);
+    }
+
 
     const fruitIcons = {
       1: '🥭',
@@ -1579,9 +1899,10 @@
       const pctVal = baseP > 0 ? Math.abs(((diff / baseP) * 100).toFixed(1)) : '0.0';
 
       if (isCrash) {
+        const discountPct = baseP > 0 ? Math.max(15, Math.round(((baseP - activePrice) / baseP) * 100)) : 40;
         return {
-          badgeClass: 'badge-down',
-          badgeText: '▼ CRASH'
+          badgeClass: 'badge-down crash-discount-pill',
+          badgeText: `🔥 -${discountPct}% FLOOR`
         };
       }
       if (diff > 0.05) {
@@ -1793,18 +2114,32 @@
 
     function playMarketCrashSiren() {
       try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+        
+        // Multi-frequency alert sweep
+        const now = audioCtx.currentTime;
+        osc.frequency.setValueAtTime(480, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.35);
+        osc.frequency.exponentialRampToValueAtTime(480, now + 0.7);
+        osc.frequency.exponentialRampToValueAtTime(960, now + 1.1);
+        osc.frequency.exponentialRampToValueAtTime(440, now + 1.5);
+        
+        gain.gain.setValueAtTime(0.28, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.6);
+        
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 1.0);
+        osc.start(now);
+        osc.stop(now + 1.6);
       } catch (e) { }
     }
 
@@ -1820,6 +2155,15 @@
     });
 
     window.addEventListener('storage', (e) => {
+      if (e.key === 'pubexchange_market_crash_active' || e.key === 'pubexchange_market_crash_end_time') {
+        if (e.newValue === 'true' || localStorage.getItem('pubexchange_market_crash_active') === 'true') {
+          const endTime = Number(localStorage.getItem('pubexchange_market_crash_end_time') || '0');
+          const remaining = endTime > Date.now() ? Math.ceil((endTime - Date.now()) / 1000) : 180;
+          triggerLocalMarketCrash(remaining);
+        } else if (e.newValue === 'false') {
+          stopLocalMarketCrash();
+        }
+      }
       if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event' || e.key === 'pubexchange_sim_params' || e.key === 'pubexchange_flavours_map') && e.newValue) {
         try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) { }
         fetchProducts();
@@ -1882,7 +2226,12 @@
         updatePricingTimingState(payload);
         fetchPricingConfiguration();
       } else if (type === 'MARKET_CRASH_TRIGGER' || type === 'MARKET_CRASH_START') {
-        triggerLocalMarketCrash(msg.payload?.durationSeconds || 180);
+        const p = msg.payload || msg;
+        let remaining = 180;
+        if (p.durationSeconds) remaining = Number(p.durationSeconds);
+        else if (p.remainingSeconds) remaining = Number(p.remainingSeconds);
+        else if (p.endTime) remaining = Math.max(1, Math.round((Number(p.endTime) - Date.now()) / 1000));
+        triggerLocalMarketCrash(remaining);
       } else if (type === 'MARKET_CRASH_STOP') {
         stopLocalMarketCrash();
       }
@@ -1915,17 +2264,32 @@
       isMarketCrashActive = true;
       crashRemainingSeconds = seconds;
 
+      // 1. Dynamic Aurora Screen Strobe Flash
+      const strobe = document.getElementById('posCrashStrobeOverlay');
+      if (strobe) {
+        strobe.classList.remove('active');
+        void strobe.offsetWidth; // force DOM reflow
+        strobe.classList.add('active');
+        setTimeout(() => strobe.classList.remove('active'), 1000);
+      }
+
+      // 2. Play Venue Acoustic Alarm Tone
       if (!wasActive) playMarketCrashSiren();
 
+      // 3. Immediately override all beverage prices to floor price (₹20.00)
       products.forEach(p => {
+        p.currentCupPrice = (p.minCupPrice !== undefined && p.minCupPrice !== null) ? Number(p.minCupPrice) : 20.0;
         p.trendDirection = 'DOWN';
-        p.trend = 'CRASH';
+        p.trend = 'CRASH FLOOR';
       });
 
       const bannerMsg = document.getElementById('marketCrashBannerMsg');
       if (bannerMsg) {
-        bannerMsg.textContent = `All beverage prices dropped to floor limit ₹20.00!`;
+        bannerMsg.textContent = `ALL BEVERAGE PRICES COLLAPSED TO FLOOR LIMIT ₹20.00!`;
       }
+
+      const hurryNotice = document.getElementById('crashHurryNotice');
+      if (hurryNotice) hurryNotice.style.display = 'inline-block';
 
       const crashBanner = document.getElementById('marketCrashBanner');
       if (crashBanner) crashBanner.style.display = 'flex';
@@ -1938,7 +2302,7 @@
         const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
         const timerDisp = document.getElementById('crashTimerDisplay');
-        if (timerDisp) timerDisp.textContent = timeStr;
+        if (timerDisp) timerDisp.textContent = `⏱️ ${timeStr}`;
 
         if (healthBadge) {
           healthBadge.className = 'status-badge-offline';
@@ -1947,6 +2311,9 @@
       };
 
       updateTimer();
+
+      // Force full card rebuild into vibrant crash theme
+      lastRenderedPosCardIds = '';
       renderProducts();
       renderTicker();
       renderCart();
@@ -1969,12 +2336,16 @@
       const crashBanner = document.getElementById('marketCrashBanner');
       if (crashBanner) crashBanner.style.display = 'none';
 
+      const hurryNotice = document.getElementById('crashHurryNotice');
+      if (hurryNotice) hurryNotice.style.display = 'none';
+
       const healthBadge = document.getElementById('backendHealthBadge');
       if (healthBadge) {
         healthBadge.className = 'status-badge-live';
         healthBadge.innerHTML = `<span class="dot"></span> LIVE &bull; Backend Connected`;
       }
 
+      lastRenderedPosCardIds = '';
       fetchProducts();
     }
 
@@ -2307,9 +2678,12 @@
           }
 
           const themeClass = getFlavourThemeClass(p);
+          const crashCardClass = isMarketCrashActive ? 'crash-mode-card' : '';
+          const crashBtnClass = isMarketCrashActive ? 'crash-btn-pulse' : '';
+          const strikeHtml = isMarketCrashActive ? `<span class="crash-original-strikethrough">₹${baseP.toFixed(2)}</span>` : '';
 
           return `
-            <div class="flavour-card ${themeClass} ${p.flashEffect || ''}" id="flavourCard-${p.id}">
+            <div class="flavour-card ${themeClass} ${crashCardClass} ${p.flashEffect || ''}" id="flavourCard-${p.id}">
               <div>
                 <!-- 1. Product Visual Area -->
                 <div class="card-img-banner">
@@ -2326,8 +2700,11 @@
                 <!-- 3. Current Live Price (Dominant Hero) & Market Movement Badge -->
                 <div class="price-hero-section">
                   <div class="price-primary-col">
-                    <span class="price-main" id="priceMain-${p.id}">₹${activePrice.toFixed(2)}</span>
-                    <span class="price-rate-label">LIVE CUP PRICE</span>
+                    <div style="display: flex; align-items: baseline;">
+                      ${strikeHtml}
+                      <span class="price-main" id="priceMain-${p.id}">₹${activePrice.toFixed(2)}</span>
+                    </div>
+                    <span class="price-rate-label">${isMarketCrashActive ? '🔥 CRASH FLOOR RATE' : 'LIVE CUP PRICE'}</span>
                   </div>
                   <span class="price-status-badge ${badgeInfo.badgeClass}" id="marketBadge-${p.id}">
                     ${badgeInfo.badgeText}
@@ -2342,13 +2719,13 @@
                 
                 <!-- 5. Market Demand Indicator -->
                 <div class="card-meta-row" style="justify-content: flex-end;">
-                  <span class="demand-pill" id="posDemandCat-${p.id}" style="color: ${demandColor};">${demandCategory}</span>
+                  <span class="demand-pill" id="posDemandCat-${p.id}" style="color: ${demandColor};">${isMarketCrashActive ? '⚡ CRASH FLOOR LIMIT' : demandCategory}</span>
                 </div>
               </div>
 
               <!-- 6. Primary Action Button -->
-              <button class="add-to-cart-btn" id="posAddToCart-${p.id}" onclick="addToCart(${p.id})">
-                ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 Buy at Crash Rate ₹${activePrice.toFixed(2)}` : '+ ADD TO ORDER')}
+              <button class="add-to-cart-btn ${crashBtnClass}" id="posAddToCart-${p.id}" onclick="addToCart(${p.id})">
+                ${!isBackendOnline ? '🔴 Market Offline' : (isMarketCrashActive ? `🔥 BUY AT CRASH RATE ₹${activePrice.toFixed(2)}!` : '+ ADD TO ORDER')}
               </button>
             </div>
           `;
@@ -2383,12 +2760,40 @@
             badgeEl.textContent = badgeInfo.badgeText;
           }
 
+          const cardEl = document.getElementById(`flavourCard-${p.id}`);
+          if (cardEl) {
+            if (isMarketCrashActive) cardEl.classList.add('crash-mode-card');
+            else cardEl.classList.remove('crash-mode-card');
+          }
+
+          const btnEl = document.getElementById(`posAddToCart-${p.id}`);
+          if (btnEl) {
+            if (isMarketCrashActive) {
+              btnEl.classList.add('crash-btn-pulse');
+              btnEl.innerHTML = `🔥 BUY AT CRASH RATE ₹${activePrice.toFixed(2)}!`;
+            } else {
+              btnEl.classList.remove('crash-btn-pulse');
+              btnEl.textContent = !isBackendOnline ? '🔴 Market Offline' : '+ ADD TO ORDER';
+            }
+          }
+
           const priceEl = document.getElementById(`priceMain-${p.id}`);
-          if (priceEl) priceEl.textContent = `₹${activePrice.toFixed(2)}`;
+          if (priceEl) {
+            const prevP = previousPriceMap[p.id];
+            if (prevP !== undefined && Math.abs(prevP - activePrice) > 0.01) {
+              applyPriceFlash(p.id, prevP, activePrice);
+              announcePrice(p.name, activePrice, activePrice > prevP ? 'up' : 'down');
+            }
+            previousPriceMap[p.id] = activePrice;
+            animateNumber(priceEl, activePrice);
+          }
 
           const demandCatEl = document.getElementById(`posDemandCat-${p.id}`);
           if (demandCatEl) {
-            if (diff > 0.05) {
+            if (isMarketCrashActive) {
+              demandCatEl.textContent = '⚡ CRASH FLOOR LIMIT';
+              demandCatEl.style.color = 'var(--accent-rose)';
+            } else if (diff > 0.05) {
               demandCatEl.textContent = '🔥 HIGH DEMAND';
               demandCatEl.style.color = 'var(--warning)';
             } else if (diff < -0.05) {
@@ -2743,8 +3148,21 @@
               totalAmount: totalAmount,
               timestamp: new Date().toISOString()
             });
+            pubExchangeChannel.postMessage({
+              type: 'BATCH_UPDATED',
+              orderNumber: orderNumber,
+              totalAmount: totalAmount,
+              timestamp: new Date().toISOString()
+            });
           } catch (e) { }
         }
+        try {
+          localStorage.setItem('pubexchange_last_event', JSON.stringify({
+            type: 'BATCH_UPDATED',
+            orderNumber: orderNumber,
+            timestamp: Date.now()
+          }));
+        } catch (e) { }
 
         const modalItemsHtml = completedCart.map(i => {
           const liveProduct = products.find(p => p.id === i.product.id) || i.product;
@@ -2767,7 +3185,8 @@
           </div>
         `;
         document.getElementById('modalPaymentMethod').textContent = paymentMethod;
-        document.getElementById('receiptModal').style.display = 'flex';
+        openModalAnimated('receiptModal');
+        showPosToast(`Order #${orderNumber} completed — ₹${Number(totalAmount).toFixed(2)}`, 'success', { title: 'Checkout Success' });
 
         await fetchProducts();
 
@@ -2798,8 +3217,7 @@
     }
 
     async function closeReceiptModal() {
-      const modal = document.getElementById('receiptModal');
-      if (modal) modal.style.display = 'none';
+      closeModalAnimated('receiptModal');
       cart = [];
       renderCart();
       await fetchProducts();
@@ -2968,6 +3386,7 @@
           isConnectingWS = false;
           isWsConnected = true;
           wsReconnectAttempts = 0;
+          hideNetworkBanner();
 
           const badge = document.getElementById('backendHealthBadge');
           if (badge && !isMarketCrashActive) {
@@ -3031,6 +3450,12 @@
                     const existingIdx = products.findIndex(p => p.id === np.id || (p.name && np.name && p.name.toLowerCase() === np.name.toLowerCase()));
                     if (existingIdx !== -1) {
                       const existing = products[existingIdx];
+                      const oldPrice = Number(existing.currentCupPrice !== undefined ? existing.currentCupPrice : (existing.price || 0));
+                      const newPrice = Number(np.currentCupPrice !== undefined ? np.currentCupPrice : (np.price || 0));
+                      if (oldPrice > 0 && newPrice > 0 && Math.abs(newPrice - oldPrice) > 0.01) {
+                        applyPriceFlash(np.id || existing.id, oldPrice, newPrice);
+                        announcePrice(np.name || existing.name, newPrice, newPrice > oldPrice ? 'up' : 'down');
+                      }
                       products[existingIdx] = { ...existing, ...np };
                     } else {
                       products.push(np);
@@ -3112,6 +3537,7 @@
           isWsConnected = false;
           cleanupStompSubscriptions();
           wsReconnectAttempts++;
+          showNetworkBanner(true);
           const badge = document.getElementById('backendHealthBadge');
           if (badge && !isMarketCrashActive) {
             badge.className = 'status-badge-offline';
@@ -3127,6 +3553,7 @@
         isWsConnected = false;
         cleanupStompSubscriptions();
         wsReconnectAttempts++;
+        showNetworkBanner(true);
         const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
         wsReconnectTimer = setTimeout(() => {
           connectWebSocket();

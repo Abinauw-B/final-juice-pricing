@@ -10,6 +10,9 @@ import com.retailpos.inventory.JuiceBatchService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,14 +31,16 @@ public class POSController {
     private final SalesOrderRepository salesOrderRepository;
     private final PriceHistoryRepository priceHistoryRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-    public POSController(POSService posService, ProductRepository productRepository, JuiceBatchService juiceBatchService, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, SimpMessagingTemplate messagingTemplate) {
+    public POSController(POSService posService, ProductRepository productRepository, JuiceBatchService juiceBatchService, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, SimpMessagingTemplate messagingTemplate, @Autowired(required = false) JdbcTemplate jdbcTemplate) {
         this.posService = posService;
         this.productRepository = productRepository;
         this.juiceBatchService = juiceBatchService;
         this.salesOrderRepository = salesOrderRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.messagingTemplate = messagingTemplate;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     private void broadcastProductUpdate() {
@@ -168,6 +173,7 @@ public class POSController {
             if (details.getTargetOrders() != null) existing.setTargetOrders(details.getTargetOrders());
             if (details.getWeightedSales() != null) existing.setWeightedSales(details.getWeightedSales());
             if (details.getVolatility() != null) existing.setVolatility(details.getVolatility());
+            if (details.getIsActive() != null) existing.setIsActive(details.getIsActive());
             existing.setLastPriceChangeTimestamp(LocalDateTime.now());
             existing.setPriceVersion(existing.getPriceVersion() != null ? existing.getPriceVersion() + 1 : 1);
             Product updated = productRepository.saveAndFlush(existing);
@@ -177,9 +183,30 @@ public class POSController {
     }
 
     @DeleteMapping("/products/{id}")
+    @Transactional
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         if (productRepository.existsById(id)) {
-            productRepository.deleteById(id);
+            if (jdbcTemplate != null) {
+                try {
+                    jdbcTemplate.update("DELETE FROM pricing_configurations WHERE product_id = ?", id);
+                    jdbcTemplate.update("DELETE FROM product_correlations WHERE source_product_id = ? OR target_product_id = ?", id, id);
+                    jdbcTemplate.update("DELETE FROM market_events WHERE product_id = ?", id);
+                    jdbcTemplate.update("DELETE FROM market_crash_snapshots WHERE product_id = ?", id);
+                    jdbcTemplate.update("DELETE FROM juice_batches WHERE product_id = ?", id);
+                    jdbcTemplate.update("DELETE FROM price_history WHERE product_id = ?", id);
+                    jdbcTemplate.update("DELETE FROM inventory_transactions WHERE product_id = ?", id);
+                    jdbcTemplate.update("DELETE FROM sales_order_items WHERE product_id = ?", id);
+                } catch (Exception ignored) {}
+            }
+            try {
+                productRepository.deleteById(id);
+            } catch (Exception ex) {
+                // If foreign key constraint still blocks hard deletion, perform safe soft-delete
+                productRepository.findById(id).ifPresent(p -> {
+                    p.setIsActive(false);
+                    productRepository.saveAndFlush(p);
+                });
+            }
             broadcastProductUpdate();
             return ResponseEntity.ok().build();
         }
@@ -210,6 +237,10 @@ public class POSController {
         }
         try {
             POSService.CheckoutResponse response = posService.processCheckout(request);
+            try {
+                messagingTemplate.convertAndSend("/topic/batches", juiceBatchService.getAllBatches());
+                messagingTemplate.convertAndSend("/topic/orders", response);
+            } catch (Exception ignored) {}
             return ResponseEntity.ok(response);
         } catch (org.springframework.dao.DataIntegrityViolationException dive) {
             if (request != null && request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {

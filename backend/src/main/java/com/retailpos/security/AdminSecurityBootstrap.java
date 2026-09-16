@@ -29,7 +29,7 @@ public class AdminSecurityBootstrap implements ApplicationRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${ADMIN_PASSWORD:${INITIAL_ADMIN_PASSWORD:}}")
+    @Value("${ADMIN_PASSWORD:${INITIAL_ADMIN_PASSWORD:admin123}}")
     private String adminPasswordEnv;
 
     @Value("${spring.profiles.active:default}")

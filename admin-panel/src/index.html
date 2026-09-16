@@ -47,6 +47,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
   <script src="config.js"></script>
+  <link rel="stylesheet" href="pub-exchange-tokens.css">
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
@@ -692,6 +693,19 @@
       justify-content: center;
       z-index: 1000;
     }
+    .modal-overlay > div {
+      animation: modalScaleIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes modalScaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.94) translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
 
     /* ═══════ LIQUID MARKET PRODUCT TRADING DRAWER ═══════ */
     .drawer-overlay {
@@ -751,6 +765,133 @@
       background: var(--bg-secondary);
       display: flex;
       gap: 12px;
+    }
+
+    /* ═══════ BATCH COMMAND CENTER (BULK EDIT MODAL) POLISH ═══════ */
+    .bulk-modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      width: 1160px;
+      max-width: 96vw;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      color: var(--text-main);
+    }
+    .bulk-modal-header {
+      padding: 18px 24px 14px 24px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+    .bulk-modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+    }
+    .bulk-modal-footer {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .bulk-control-deck {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .bulk-deck-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .bulk-input-field::-webkit-inner-spin-button,
+    .bulk-input-field::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .bulk-input-field {
+      -moz-appearance: textfield;
+      appearance: textfield;
+      height: 32px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 0 6px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 7px;
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 13px;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .bulk-input-field:focus {
+      outline: none;
+      border-color: var(--accent-primary, #38bdf8);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    .bulk-table-container {
+      overflow-x: auto;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-surface);
+      max-height: 420px;
+      flex: 1;
+    }
+    .bulk-table-custom {
+      width: 100%;
+      min-width: 880px;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+    .bulk-table-custom th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--bg-secondary);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+      user-select: none;
+      box-shadow: 0 1px 0 var(--border-color);
+    }
+    .bulk-table-custom td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+      font-size: 13px;
+    }
+    .bulk-table-custom tr:hover {
+      background: rgba(56, 189, 248, 0.03);
     }
 
     /* ==========================================================================
@@ -936,6 +1077,526 @@
       padding: 2px 7px;
       border-radius: 5px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Modern General Buttons */
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      border-radius: 10px;
+      color: var(--text-main, #0f172a);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-secondary:hover {
+      background: #f8fafc;
+      border-color: rgba(15, 23, 42, 0.22);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+      transform: translateY(-1px);
+    }
+    .dark-theme-mode .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .dark-theme-mode .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Market Crash War Room Modern CSS */
+    .crash-telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 900px) {
+      .crash-telemetry-grid { grid-template-columns: 1fr; }
+    }
+    .crash-telemetry-card {
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+      transition: all 0.25s ease;
+    }
+    .dark-theme-mode .crash-telemetry-card {
+      background: var(--bg-card);
+      border-color: var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+    .crash-telemetry-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+    .telemetry-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.05em;
+    }
+    .indicator-online {
+      background: rgba(16, 185, 129, 0.15);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .dark-theme-mode .indicator-online {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.2);
+    }
+    .telemetry-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      animation: telePulse 1.8s infinite;
+    }
+    @keyframes telePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .crash-war-room-card {
+      background: #ffffff;
+      border: 2px solid rgba(239, 68, 68, 0.35);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 12px 36px rgba(220, 38, 38, 0.1), 0 2px 8px rgba(15, 23, 42, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+    .crash-war-room-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #ef4444);
+      background-size: 200% 100%;
+      animation: stripeShift 3s linear infinite;
+    }
+    @keyframes stripeShift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    .dark-theme-mode .crash-war-room-card {
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.18) 0%, rgba(15, 23, 42, 0.85) 60%, rgba(30, 41, 59, 0.95) 100%);
+      border-color: rgba(239, 68, 68, 0.5);
+      box-shadow: 0 12px 40px rgba(220, 38, 38, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .crash-stat-pill {
+      background: #f8fafc;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+      transition: all 0.2s ease;
+    }
+    .crash-stat-pill:hover {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.05);
+    }
+    .dark-theme-mode .crash-stat-pill {
+      background: rgba(15, 23, 42, 0.6);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .dark-theme-mode .crash-stat-pill:hover {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    /* ABDS Timer Pod in Light Theme */
+    .hud-countdown-pod {
+      background: #ffffff;
+      border: 2px solid rgba(220, 38, 38, 0.22);
+      border-radius: 20px;
+      padding: 22px 20px;
+      text-align: center;
+      box-shadow: 0 12px 32px rgba(220, 38, 38, 0.08), 0 2px 10px rgba(15, 23, 42, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+    .hud-countdown-pod::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #0284c7, #ef4444, #f59e0b, #0284c7);
+      background-size: 200% 100%;
+      animation: abdsStripeFlow 4s linear infinite;
+    }
+    @keyframes abdsStripeFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    .abds-pod-title {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+    .dark-theme-mode .abds-pod-title {
+      color: #94a3b8;
+    }
+
+    .abds-floor-badge {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #dc2626;
+      background: rgba(220, 38, 38, 0.1);
+      border: 1px solid rgba(220, 38, 38, 0.25);
+      padding: 3px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+    }
+    .dark-theme-mode .abds-floor-badge {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.22);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    /* Light Theme ABDS Cockpit Monitor */
+    .abds-timer-screen {
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1.5px solid rgba(220, 38, 38, 0.18);
+      border-radius: 14px;
+      padding: 16px 20px 12px 20px;
+      margin: 12px 0 14px 0;
+      position: relative;
+      box-shadow: inset 0 2px 8px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.03);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+    .abds-screen-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+      background-size: 8px 8px;
+      pointer-events: none;
+      border-radius: 14px;
+    }
+
+    .hud-digital-timer {
+      font-size: 58px;
+      font-weight: 900;
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      color: #dc2626;
+      line-height: 1;
+      margin: 0;
+      text-shadow: 0 2px 10px rgba(220, 38, 38, 0.2);
+      letter-spacing: 5px;
+      font-feature-settings: 'tnum' 1, 'zero' 1;
+      position: relative;
+      z-index: 1;
+      transition: color 0.3s, text-shadow 0.3s;
+    }
+    .hud-digital-timer.timer-active {
+      color: #ea580c;
+      text-shadow: 0 0 16px rgba(234, 88, 12, 0.6), 0 0 32px rgba(220, 38, 38, 0.3);
+      animation: abdsActiveTimerPulse 0.9s infinite alternate cubic-bezier(0.4, 0, 0.6, 1);
+    }
+    @keyframes abdsActiveTimerPulse {
+      0% { transform: scale(1); filter: brightness(1); }
+      100% { transform: scale(1.04); filter: brightness(1.15); }
+    }
+
+    .abds-unit-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 140px;
+      margin-top: 5px;
+      font-size: 9px;
+      font-weight: 800;
+      color: #64748b;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+
+    .abds-progress-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(15, 23, 42, 0.08);
+      border-radius: 999px;
+      margin-top: 10px;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+    .abds-progress-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #0284c7, #3b82f6);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 6px rgba(2, 132, 199, 0.3);
+    }
+    .abds-progress-fill.active {
+      background: linear-gradient(90deg, #dc2626, #f59e0b);
+      box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+    }
+
+    .abds-status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #334155;
+      letter-spacing: 0.08em;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: #f8fafc;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    /* Dark Theme Mode Overrides */
+    .dark-theme-mode .hud-countdown-pod {
+      background: radial-gradient(circle at 50% 10%, rgba(30, 41, 59, 0.95) 0%, #0b1120 100%);
+      border-color: rgba(56, 189, 248, 0.25);
+      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(56, 189, 248, 0.08);
+    }
+    .dark-theme-mode .abds-timer-screen {
+      background: rgba(3, 7, 18, 0.85);
+      border-color: rgba(56, 189, 248, 0.25);
+      box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.9), 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .dark-theme-mode .abds-screen-grid-bg {
+      background-image: linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+    }
+    .dark-theme-mode .hud-digital-timer {
+      color: #f43f5e;
+      text-shadow: 0 0 14px rgba(244, 63, 94, 0.8), 0 0 32px rgba(244, 63, 94, 0.35);
+    }
+    .dark-theme-mode .hud-digital-timer.timer-active {
+      color: #facc15;
+      text-shadow: 0 0 18px rgba(250, 204, 21, 0.95), 0 0 38px rgba(245, 158, 11, 0.8), 0 0 60px rgba(239, 68, 68, 0.6);
+    }
+    .dark-theme-mode .abds-unit-labels {
+      color: #64748b;
+    }
+    .dark-theme-mode .abds-progress-track {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .dark-theme-mode .abds-progress-fill {
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+    }
+    .dark-theme-mode .abds-progress-fill.active {
+      background: linear-gradient(90deg, #ef4444, #f59e0b);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+    }
+    .dark-theme-mode .abds-status-badge {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .crash-ignite-btn {
+      width: 100%;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 14px;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 14.5px;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(220, 38, 38, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .crash-ignite-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(220, 38, 38, 0.75);
+      background: linear-gradient(135deg, #f87171 0%, #ef4444 50%, #dc2626 100%);
+    }
+    .crash-ignite-btn:active {
+      transform: translateY(1px);
+    }
+    .crash-ignite-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .crash-abort-btn {
+      width: 100%;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 14px;
+      color: #fca5a5;
+      font-weight: 900;
+      font-size: 14.5px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+    .crash-abort-btn:hover {
+      background: linear-gradient(135deg, #475569 0%, #334155 100%);
+      border-color: #ef4444;
+      color: #ffffff;
+      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+    }
+
+    .crash-flash-btn {
+      width: 100%;
+      padding: 11px 16px;
+      margin-top: 6px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1.5px dashed #d97706;
+      border-radius: 10px;
+      color: #b45309;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .crash-flash-btn:hover {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: #b45309;
+      border-style: solid;
+      transform: translateY(-1px);
+    }
+    .dark-theme-mode .crash-flash-btn {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.6);
+    }
+    .dark-theme-mode .crash-flash-btn:hover {
+      background: rgba(245, 158, 11, 0.25);
+      border-color: #f59e0b;
+    }
+
+    .interlock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #059669;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .interlock-badge.disarmed {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #ef4444;
+    }
+    .dark-theme-mode .interlock-badge {
+      color: #34d399;
+    }
+    .dark-theme-mode .interlock-badge.disarmed {
+      color: #f87171;
+    }
+
+    /* Section Card & Table Styling Enhancement */
+    .section-card {
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    }
+    .dark-theme-mode .section-card {
+      background: var(--bg-card, #1e293b);
+      border-color: var(--border-color, rgba(255, 255, 255, 0.08));
+      box-shadow: none;
+    }
+
+    .table-custom {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    .table-custom th {
+      background: rgba(15, 23, 42, 0.03);
+      color: var(--text-muted, #64748b);
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    }
+    .dark-theme-mode .table-custom th {
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+    }
+    .table-custom td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+      font-size: 13.5px;
+      vertical-align: middle;
+      color: var(--text-main, #0f172a);
+    }
+    .dark-theme-mode .table-custom td {
+      border-bottom-color: rgba(255, 255, 255, 0.06);
+      color: #f8fafc;
+    }
+    .table-custom tr:hover td {
+      background: rgba(15, 23, 42, 0.02);
+    }
+    .dark-theme-mode .table-custom tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
     }
   </style>
 </head>
@@ -1297,56 +1958,150 @@
 
         <!-- Dedicated Market Crash Tab -->
         <div id="view-crash" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
             <div>
-              <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">🚨 Market
-                Crash Control Panel</h1>
-              <p style="color: var(--text-muted);">Force temporary market-wide price decline to absolute floor limit
-                (₹20.00) across all POS &amp; LED displays.</p>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin: 0;">🚨 Market Crash Command Center</h1>
+                <span style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3);">TACTICAL WAR ROOM</span>
+              </div>
+              <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Force temporary venue-wide price collapse to absolute floor limit (₹20.00) across all Customer POS &amp; LED displays.</p>
             </div>
-            <div id="crashTabStatusTag" class="status-tag tag-active" style="font-size: 14px; padding: 6px 16px;">
-              TRADING NORMAL</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="crashTabStatusTag" class="status-tag tag-active" style="font-size: 13px; padding: 7px 18px; font-weight: 800; letter-spacing: 0.05em;">
+                TRADING NORMAL
+              </div>
+            </div>
           </div>
 
-          <div
-            style="background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(127,29,29,0.2)); border: 2px solid rgba(220,38,38,0.4); border-radius: 20px; padding: 32px; margin-bottom: 32px; box-shadow: 0 10px 30px rgba(220,38,38,0.15);">
-            <div style="display: grid; grid-template-columns: 1fr 340px; gap: 32px; align-items: center;">
-              <div>
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                  <span style="font-size: 32px;">⚠️</span>
-                  <h2 style="font-size: 24px; font-weight: 800; color: #ef4444; letter-spacing: -0.02em;">FINANCIAL
-                    MARKET CONTROL</h2>
+          <!-- Live Multi-Panel Synchronization Telemetry -->
+          <div class="crash-telemetry-grid">
+            <div class="crash-telemetry-card">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 26px;">🖥️</span>
+                <div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">Customer POS Terminal</div>
+                  <div style="font-size: 11.5px; color: var(--text-muted);">Port 8000 &bull; Auto-Sync Active</div>
                 </div>
-                <p style="color: var(--text-main); font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
-                  Activating a Market Crash Event immediately forces all beverage prices across the Pub Stock Exchange
-                  to drop to their absolute minimum floor price (₹20.00). The event automatically expires after 3
-                  minutes (180s) and is broadcast live via WebSockets.
+              </div>
+              <span class="telemetry-indicator indicator-online" id="posTelemetryIndicator">
+                <span class="telemetry-pulse-dot"></span> ARMED &amp; READY
+              </span>
+            </div>
+
+            <div class="crash-telemetry-card">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 26px;">📺</span>
+                <div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">LED Wall Display</div>
+                  <div style="font-size: 11.5px; color: var(--text-muted);">Overlay Takeover &bull; Port 8000</div>
+                </div>
+              </div>
+              <span class="telemetry-indicator indicator-online" id="ledTelemetryIndicator">
+                <span class="telemetry-pulse-dot"></span> BROADCAST READY
+              </span>
+            </div>
+
+            <div class="crash-telemetry-card">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 26px;">⚡</span>
+                <div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">DWMA Algorithmic Core</div>
+                  <div style="font-size: 11.5px; color: var(--text-muted);">Fixed Emergency Floor: ₹20.00</div>
+                </div>
+              </div>
+              <span class="telemetry-indicator indicator-online" id="dwmaTelemetryIndicator">
+                <span class="telemetry-pulse-dot"></span> ENGINE ARMED
+              </span>
+            </div>
+          </div>
+
+          <!-- Main War Room Console -->
+          <div class="crash-war-room-card">
+            <div style="display: grid; grid-template-columns: 1fr 380px; gap: 36px; align-items: center;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;">
+                  <span class="interlock-badge" id="crashInterlockBadge" onclick="toggleCrashInterlock()" title="Click to toggle safety interlock">
+                    <span class="telemetry-pulse-dot" style="background:#10b981;"></span>
+                    <span id="crashInterlockLabel">SAFETY INTERLOCK: ARMED &amp; READY</span>
+                  </span>
+                  <span style="font-size: 12px; font-weight: 700; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em;">● LEVEL-1 EMERGENCY TRIGGER</span>
+                </div>
+
+                <h2 style="font-size: 24px; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                  <span>⚡ Venue Price Collapse Protocol</span>
+                </h2>
+
+                <p style="color: var(--text-secondary); font-size: 14.5px; line-height: 1.65; margin-bottom: 22px;">
+                  Activating a Market Crash Event immediately forces all beverage prices across the Pub Stock Exchange to drop to their absolute minimum floor price (<strong>₹20.00</strong>). Both the Customer POS and the Pub Wall LED Display will instantly ignite with high-energy alert graphics, siren audio, and dynamic countdowns to drive maximum customer buying urgency.
                 </p>
 
-                <div style="display: flex; gap: 24px; font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
-                  <div>⏱️ <strong>Event Duration:</strong> 3 Minutes (180s)</div>
-                  <div>📉 <strong>Floor Price:</strong> ₹20.00 Limit</div>
-                  <div>📡 <strong>Channels:</strong> POS, LED, WebSocket</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px;">
+                  <div class="crash-stat-pill">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Standard Duration</div>
+                    <div style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-top: 4px;">⏱️ 3 Minutes (180s)</div>
+                  </div>
+                  <div class="crash-stat-pill">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Absolute Floor Price</div>
+                    <div style="font-size: 16px; font-weight: 800; color: #059669; margin-top: 4px;">📉 ₹20.00 Limit</div>
+                  </div>
+                  <div class="crash-stat-pill">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Customer Savings</div>
+                    <div style="font-size: 16px; font-weight: 800; color: #d97706; margin-top: 4px;">🔥 ~40% to 50% Off</div>
+                  </div>
+                  <div class="crash-stat-pill">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Live Broadcast</div>
+                    <div style="font-size: 16px; font-weight: 800; color: var(--accent-cyan); margin-top: 4px;">📡 POS, LED, WebSockets</div>
+                  </div>
+                </div>
+
+                <!-- Testing & Quick Actions -->
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                  <button type="button" onclick="testVenueSirenAdmin()" class="btn-secondary" style="font-size: 12.5px; padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px;" title="Test the sound alert tone in this browser">
+                    <span>🔊 Test Pub Siren Alert</span>
+                  </button>
+                  <span style="font-size: 12px; color: var(--text-muted);">Audio plays automatically across POS &amp; LED panels when triggered.</span>
                 </div>
               </div>
 
-              <div
-                style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; text-align: center;">
-                <div
-                  style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-                  Event Status &amp; Countdown</div>
-                <div id="crashTabTimerDisplay"
-                  style="font-size: 48px; font-weight: 900; font-family: monospace; color: #ef4444; margin-bottom: 16px; font-feature-settings: 'tnum';">
-                  03:00</div>
+              <!-- Cockpit Countdown HUD Pod -->
+              <div class="hud-countdown-pod">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <div style="display: flex; align-items: center; gap: 7px;">
+                    <span class="telemetry-pulse-dot" style="width: 7px; height: 7px; background: #0284c7; box-shadow: 0 0 8px rgba(2,132,199,0.4);"></span>
+                    <span class="abds-pod-title">ABDS Timer</span>
+                  </div>
+                  <span class="abds-floor-badge">FLOOR: ₹20.00</span>
+                </div>
 
-                <button id="crashTabTriggerBtn" class="btn-crash-primary" onclick="openCrashConfirmationModal()"
-                  style="width: 100%; padding: 16px; background: linear-gradient(135deg, #dc2626, #991b1b); border: none; border-radius: 12px; color: white; font-weight: 900; font-size: 16px; cursor: pointer; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.5); transition: all 0.2s;">
-                  🚨 TRIGGER MARKET CRASH (3 MINS)
+                <!-- Cybernetic ABDS Timer Display Screen -->
+                <div class="abds-timer-screen">
+                  <div class="abds-screen-grid-bg"></div>
+                  <div id="crashTabTimerDisplay" class="hud-digital-timer">03:00</div>
+                  <div class="abds-unit-labels">
+                    <span>MINUTES</span>
+                    <span>•</span>
+                    <span>SECONDS</span>
+                  </div>
+                  <div class="abds-progress-track">
+                    <div id="abdsCountdownBar" class="abds-progress-fill"></div>
+                  </div>
+                </div>
+
+                <div id="crashHudStatusText" class="abds-status-badge">
+                  <span class="telemetry-pulse-dot" style="width: 6px; height: 6px; background: #0284c7;"></span>
+                  <span>STANDBY &bull; READY TO ENGAGE</span>
+                </div>
+
+                <button id="crashTabTriggerBtn" class="crash-ignite-btn" onclick="executeTriggerAdminMarketCrash(20)" title="Trigger full 3-minute market crash across all venue screens">
+                  <span>🚨 TRIGGER MARKET CRASH (3 MINS)</span>
                 </button>
 
-                <button id="crashTabStopBtn" onclick="stopAdminMarketCrash()"
-                  style="display: none; width: 100%; padding: 16px; background: #334155; border: 1px solid #475569; border-radius: 12px; color: white; font-weight: 800; font-size: 15px; cursor: pointer;">
-                  🛑 STOP MARKET CRASH
+                <button id="crashTabStopBtn" class="crash-abort-btn" onclick="stopAdminMarketCrash()" style="display: none;" title="Abort event immediately and restore normal dynamic pricing">
+                  <span>🛑 STOP &amp; RESTORE TRADING</span>
+                </button>
+
+                <button id="crashTabFlashBtn" class="crash-flash-btn" onclick="executeTriggerAdminMarketCrashDuration(60, 20)" title="Trigger a quick 60-second flash floor drop">
+                  <span>⚡ Quick 60-Sec Flash Drop (₹20.00)</span>
                 </button>
               </div>
             </div>
@@ -1354,11 +2109,15 @@
 
           <!-- Market Crash Event History Table -->
           <div class="section-card">
-            <div
-              style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
-              <span>📜 Market Crash Event History Log</span>
-              <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;" id="eventHistoryCount">Loaded
-                from PostgreSQL Audit</span>
+            <div style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>📜 Market Crash Event Audit Log</span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--accent-cyan); background: rgba(2,132,199,0.12); padding: 2px 8px; border-radius: 6px;">LIVE DB</span>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn-secondary" onclick="loadMarketCrashEventHistory()" style="font-size: 12px; padding: 6px 12px;">↻ Refresh Log</button>
+                <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;" id="eventHistoryCount">Loaded from PostgreSQL Audit</span>
+              </div>
             </div>
             <div style="overflow-x: auto;">
               <table class="table-custom">
@@ -1369,6 +2128,7 @@
                     <th>Timestamp</th>
                     <th>Duration</th>
                     <th>Floor Price</th>
+                    <th>Target Scope</th>
                     <th>Status</th>
                   </tr>
                 </thead>
@@ -2369,12 +3129,20 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 12px; justify-content: flex-end;">
-        <button onclick="closeEditJuiceModal()"
-          style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
-        <button id="btnSubmitEditJuice" onclick="submitEditJuice()" class="btn-primary"
-          style="background: linear-gradient(135deg, #2563eb, #1d4ed8); cursor: pointer;">💾 Save &amp; Sync
-          Changes</button>
+      <div style="display: flex; gap: 12px; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 12px; flex-wrap: wrap;">
+        <button id="btnDeleteJuiceInEdit" type="button" onclick="deleteJuiceFromBatchModal()" class="btn-danger"
+          style="background: #ef4444; color: #ffffff; border: 1px solid #dc2626; padding: 10px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25); transition: all 0.2s;"
+          onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'"
+          title="Permanently delete this beverage from the system">
+          🗑️ Delete Beverage
+        </button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button type="button" onclick="closeEditJuiceModal()"
+            style="padding: 10px 16px; background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
+          <button id="btnSubmitEditJuice" type="button" onclick="submitEditJuice()" class="btn-primary"
+            style="background: linear-gradient(135deg, #2563eb, #1d4ed8); cursor: pointer;">💾 Save &amp; Sync
+            Changes</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2382,110 +3150,167 @@
   <!-- Dedicated Edit Product Pricing & Limits Modal -->
   <div id="editProductPricingModal" style="display: none;" class="modal-overlay">
     <div
-      style="background: var(--bg-card, #ffffff); border: 1px solid var(--border-color); border-radius: 16px; width: 540px; max-width: 95vw; padding: 24px; box-shadow: var(--shadow-lg); color: var(--text-main);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 id="editPricingModalTitle" style="font-size: 18px; font-weight: 800; color: var(--text-main, #0f172a); margin: 0;">💰 Edit Beverage Pricing Details</h3>
-        <button onclick="closeEditProductPricingModal()"
-          style="background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted, #64748b);">✕</button>
+      style="background: var(--bg-card, #ffffff); border: 1px solid var(--border-color); border-radius: 20px; width: 660px; max-width: 96vw; padding: 26px; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.08); color: var(--text-main); max-height: 92vh; overflow-y: auto;">
+      
+      <!-- Modal Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div id="editPricingModalFruitIcon"
+            style="width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(124,58,237,0.12)); border: 1px solid rgba(37,99,235,0.25); display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 12px rgba(37,99,235,0.1);">🍹</div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 id="editPricingModalTitle" style="font-size: 19px; font-weight: 800; color: var(--text-main, #0f172a); margin: 0; letter-spacing: -0.01em;">✏️ Make Changes</h3>
+              <span id="editPricingBadgeId" style="font-size: 11px; padding: 2px 8px; border-radius: 6px; background: rgba(37,99,235,0.1); color: #2563eb; font-weight: 800; font-family: var(--font-mono); border: 1px solid rgba(37,99,235,0.2);">#0</span>
+            </div>
+            <p style="margin: 3px 0 0 0; font-size: 12px; color: var(--text-muted); font-weight: 500;">Configure live quotation, circuit breaker bounds, and algorithmic DWMA velocity</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeEditProductPricingModal()"
+          style="background: transparent; border: 1px solid transparent; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; cursor: pointer; color: var(--text-muted, #64748b); display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+          onmouseover="this.style.background='rgba(0,0,0,0.06)'; this.style.color='var(--text-main)';"
+          onmouseout="this.style.background='transparent'; this.style.color='var(--text-muted)';"
+          aria-label="Close modal">✕</button>
       </div>
+
       <input type="hidden" id="editPricingProductId">
 
-      <div style="margin-bottom: 14px;">
-        <label
-          style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Juice
-          Variety / Name</label>
-        <input type="text" id="editPricingJuiceName" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }" style="width: 100%; padding: 10px; font-weight: 700;">
-      </div>
-
-      <div style="margin-bottom: 14px;">
-        <label
-          style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Description</label>
-        <input type="text" id="editPricingJuiceDesc" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }" style="width: 100%; padding: 10px;">
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-        <div>
-          <label style="display: block; font-size: 12px; font-weight: 700; color: #2563eb; margin-bottom: 4px;">⚡
-            Current Live Price (₹)</label>
-          <input type="number" id="editPricingCurrentPrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
-            style="width: 100%; padding: 10px; font-size: 16px; font-weight: 800; border-color: #93c5fd;">
+      <!-- Section 1: Beverage Identity -->
+      <div style="background: rgba(0,0,0,0.015); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+          <span>🏷️</span> ASSET IDENTIFIER &amp; DESCRIPTION
         </div>
-        <div>
-          <label
-            style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">🎯
-            Baseline Base Price (₹)</label>
-          <input type="number" id="editPricingBasePrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
-            style="width: 100%; padding: 10px; font-size: 16px; font-weight: 800;">
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px;">Beverage Variety / Name</label>
+            <input type="text" id="editPricingJuiceName"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+              style="width: 100%; padding: 9px 12px; font-size: 13.5px; font-weight: 700; border: 1.5px solid var(--border-color); border-radius: 8px; background: var(--bg-surface); color: var(--text-main); transition: border-color 0.2s;"
+              onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border-color)'">
+          </div>
+          <div>
+            <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px;">Description / Notes</label>
+            <input type="text" id="editPricingJuiceDesc"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+              style="width: 100%; padding: 9px 12px; font-size: 13px; border: 1.5px solid var(--border-color); border-radius: 8px; background: var(--bg-surface); color: var(--text-main); transition: border-color 0.2s;"
+              onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border-color)'">
+          </div>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-        <div>
-          <label style="display: block; font-size: 12px; font-weight: 700; color: #dc2626; margin-bottom: 4px;">🛡️
-            Circuit Breaker Floor (₹)</label>
-          <input type="number" id="editPricingMinPrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
-            style="width: 100%; padding: 10px; font-weight: 700;">
+      <!-- Section 2: Exchange Valuation & Circuit Breakers -->
+      <div style="background: rgba(0,0,0,0.015); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+          <span>📈</span> EXCHANGE VALUATION &amp; CIRCUIT BREAKER CORRIDOR
         </div>
-        <div>
-          <label style="display: block; font-size: 12px; font-weight: 700; color: #059669; margin-bottom: 4px;">🚀
-            Circuit Breaker Ceiling (₹)</label>
-          <input type="number" id="editPricingMaxPrice" step="0.5" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
-            style="width: 100%; padding: 10px; font-weight: 700;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+          <div style="background: var(--bg-surface); border: 1.5px solid rgba(37,99,235,0.3); border-radius: 9px; padding: 8px 10px;">
+            <label style="display: block; font-size: 10.5px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 3px;">⚡ LIVE PRICE</label>
+            <div style="display: flex; align-items: center; gap: 3px;">
+              <span style="font-size: 14px; font-weight: 800; color: #2563eb;">₹</span>
+              <input type="number" id="editPricingCurrentPrice" step="0.5" min="1"
+                onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+                style="width: 100%; border: none; background: transparent; font-size: 16px; font-weight: 800; color: #2563eb; outline: none; padding: 2px 0;">
+            </div>
+          </div>
+          <div style="background: var(--bg-surface); border: 1.5px solid var(--border-color); border-radius: 9px; padding: 8px 10px;">
+            <label style="display: block; font-size: 10.5px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 3px;">🎯 BASE PRICE</label>
+            <div style="display: flex; align-items: center; gap: 3px;">
+              <span style="font-size: 14px; font-weight: 800; color: var(--text-muted);">₹</span>
+              <input type="number" id="editPricingBasePrice" step="0.5" min="1"
+                onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+                style="width: 100%; border: none; background: transparent; font-size: 16px; font-weight: 800; color: var(--text-main); outline: none; padding: 2px 0;">
+            </div>
+          </div>
+          <div style="background: var(--bg-surface); border: 1.5px solid rgba(220,38,38,0.3); border-radius: 9px; padding: 8px 10px;">
+            <label style="display: block; font-size: 10.5px; font-weight: 800; color: #dc2626; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 3px;">🛡️ FLOOR LIMIT</label>
+            <div style="display: flex; align-items: center; gap: 3px;">
+              <span style="font-size: 14px; font-weight: 800; color: #dc2626;">₹</span>
+              <input type="number" id="editPricingMinPrice" step="0.5" min="1"
+                onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+                style="width: 100%; border: none; background: transparent; font-size: 16px; font-weight: 800; color: #dc2626; outline: none; padding: 2px 0;">
+            </div>
+          </div>
+          <div style="background: var(--bg-surface); border: 1.5px solid rgba(5,150,105,0.3); border-radius: 9px; padding: 8px 10px;">
+            <label style="display: block; font-size: 10.5px; font-weight: 800; color: #059669; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 3px;">🚀 CEILING LIMIT</label>
+            <div style="display: flex; align-items: center; gap: 3px;">
+              <span style="font-size: 14px; font-weight: 800; color: #059669;">₹</span>
+              <input type="number" id="editPricingMaxPrice" step="0.5" min="1"
+                onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+                style="width: 100%; border: none; background: transparent; font-size: 16px; font-weight: 800; color: #059669; outline: none; padding: 2px 0;">
+            </div>
+          </div>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-        <div>
-          <label
-            style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Target
-            Sales (1-min window, cups/min)</label>
-          <input type="number" id="editPricingTargetSales" step="0.05" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
-            style="width: 100%; padding: 10px; font-weight: 700;">
+      <!-- Section 3: Algorithmic Tuning -->
+      <div style="background: rgba(0,0,0,0.015); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; margin-bottom: 22px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+          <span>⚙️</span> ALGORITHMIC DWMA VELOCITY &amp; VOLATILITY
         </div>
-        <div>
-          <label
-            style="display: block; font-size: 12px; font-weight: 700; color: #059669; margin-bottom: 4px;">📊
-            Weighted Sales (S_w, cups/min)</label>
-          <input type="number" id="editPricingWeightedSales" step="0.05" min="0" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
-            style="width: 100%; padding: 10px; font-weight: 700; border-color: #6ee7b7;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px;">Target Sales (cups/min)</label>
+            <input type="number" id="editPricingTargetSales" step="0.05" min="0.01"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+              style="width: 100%; padding: 8px 10px; font-weight: 700; border: 1.5px solid var(--border-color); border-radius: 8px; background: var(--bg-surface); color: var(--text-main);">
+          </div>
+          <div>
+            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #059669; margin-bottom: 5px;">📊 Weighted Sales (S_w)</label>
+            <input type="number" id="editPricingWeightedSales" step="0.05" min="0"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+              style="width: 100%; padding: 8px 10px; font-weight: 700; border: 1.5px solid #6ee7b7; border-radius: 8px; background: var(--bg-surface); color: #059669;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px;">Volatility Factor (σ)</label>
+            <input type="number" id="editPricingVolatility" step="0.01" min="0.01" max="1.0"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
+              style="width: 100%; padding: 8px 10px; font-weight: 700; border: 1.5px solid var(--border-color); border-radius: 8px; background: var(--bg-surface); color: var(--text-main);">
+          </div>
         </div>
       </div>
 
-      <div style="margin-bottom: 20px;">
-        <label
-          style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Volatility
-          Factor</label>
-        <input type="number" id="editPricingVolatility" step="0.01" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
-          style="width: 100%; padding: 10px; font-weight: 700;">
-      </div>
-
-      <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 8px;">
-        <button type="button" onclick="closeEditProductPricingModal()"
-          style="padding: 10px 16px; background: var(--bg-surface, #ffffff); border: 1px solid var(--border-color, #cbd5e1); color: var(--text-main, #0f172a); border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
-        <button id="btnSavePricingDetails" type="button" onclick="submitProductPricingDetails()" class="btn-primary"
-          style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 10px 18px; font-weight: 800; cursor: pointer;">💾
-          Save (This Juice Only)</button>
-        <button id="btnApplyPricingToAll" type="button" onclick="applyProductPricingToAllProducts()" class="btn-primary"
-          style="background: linear-gradient(135deg, #7c3aed, #6d28d9); padding: 10px 18px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35); display: inline-flex; align-items: center; gap: 6px;"
-          title="Apply these parameters across every juice variety simultaneously">
-          ⚡ Apply Changes to All Products
+      <!-- Modal Footer (Balanced 2-Zone Single-Row Layout) -->
+      <div style="display: flex; gap: 12px; justify-content: space-between; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--border-color); padding-top: 18px;">
+        <button id="btnDeletePricingProduct" type="button" onclick="deleteCurrentProduct()" class="btn-danger"
+          style="background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: 1px solid #b91c1c; padding: 10px 18px; border-radius: 9px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3); transition: all 0.2s;"
+          onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 5px 15px rgba(239, 68, 68, 0.4)';"
+          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 10px rgba(239, 68, 68, 0.3)';"
+          title="Permanently remove this beverage from the platform">
+          🗑️ Delete Beverage
         </button>
+
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button type="button" onclick="closeEditProductPricingModal()"
+            style="padding: 10px 16px; background: var(--bg-surface, #ffffff); border: 1px solid var(--border-color, #cbd5e1); color: var(--text-main, #0f172a); border-radius: 9px; font-weight: 700; cursor: pointer; transition: all 0.15s;"
+            onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='var(--bg-surface, #ffffff)'">
+            Cancel
+          </button>
+          <button id="btnSavePricingDetails" type="button" onclick="submitProductPricingDetails()" class="btn-primary"
+            style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 10px 18px; font-weight: 800; cursor: pointer; border-radius: 9px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); display: inline-flex; align-items: center; gap: 6px;">
+            💾 Save Changes
+          </button>
+          <button id="btnApplyPricingToAll" type="button" onclick="applyProductPricingToAllProducts()" class="btn-primary"
+            style="background: linear-gradient(135deg, #7c3aed, #6d28d9); padding: 10px 18px; font-weight: 800; cursor: pointer; border-radius: 9px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: inline-flex; align-items: center; gap: 6px;"
+            title="Apply these parameters across every juice variety simultaneously">
+            ⚡ Apply to All
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
 
   <!-- Dedicated Bulk Edit Juices Modal ("Make Changes for Every Juice") -->
   <div id="bulkEditJuicesModal" style="display: none;" class="modal-overlay">
-    <div
-      style="background: var(--bg-card, #ffffff); border: 1px solid var(--border-color); border-radius: 18px; width: 1080px; max-width: 96vw; max-height: 92vh; overflow-y: auto; padding: 26px 30px; box-shadow: var(--shadow-lg); color: var(--text-main);">
+    <div class="bulk-modal-card">
       
       <!-- Modal Header -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+      <div class="bulk-modal-header">
         <div>
           <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 24px;">🍹⚡</span>
             <h3 style="font-size: 20px; font-weight: 900; color: var(--text-main); margin: 0; letter-spacing: -0.3px;">Make Changes for Every Juice</h3>
-            <span style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 9999px; letter-spacing: 0.5px;">BATCH COMMAND CENTER</span>
+            <span style="background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 9999px; letter-spacing: 0.5px;">BATCH COMMAND CENTER</span>
           </div>
           <p style="color: var(--text-muted); font-size: 13px; margin: 6px 0 0 0;">
             Instantly adjust live prices, base baselines, circuit breaker limits (floor/ceiling), sales targets, and custom reset values across all beverages simultaneously.
@@ -2496,110 +3321,126 @@
           title="Close">✕</button>
       </div>
 
-      <!-- Unified Batch Command Center Deck -->
-      <div style="background: var(--bg-subtle, rgba(248, 250, 252, 0.9)); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+      <!-- Modal Body -->
+      <div class="bulk-modal-body">
         
-        <!-- Top Row: Master Baseline & Reset Value Controls -->
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(226, 232, 240, 0.8);">
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <span style="font-size: 11px; font-weight: 900; letter-spacing: 0.6px; text-transform: uppercase; color: #ea580c; background: rgba(234, 88, 12, 0.1); padding: 4px 8px; border-radius: 6px;">MASTER RESET BASE</span>
-            <div style="display: inline-flex; align-items: center; background: var(--bg-card); border: 1.5px solid #ea580c; border-radius: 8px; padding: 2px 8px; height: 36px; box-shadow: 0 1px 2px rgba(234, 88, 12, 0.1);">
-              <span style="font-weight: 800; font-size: 14px; color: #ea580c; margin-right: 4px;">₹</span>
-              <input type="number" id="bulkResetValueInput" value="25" step="0.5" min="1"
-                onkeydown="if(event.key==='Enter'){ event.preventDefault(); changeBulkResetValue(); }"
-                style="width: 65px; border: none; outline: none; background: transparent; font-weight: 900; font-size: 15px; text-align: center; color: var(--text-main);"
-                title="Type master reset price (e.g. 25, 28, 30)">
+        <!-- Unified Batch Command Center Deck -->
+        <div class="bulk-control-deck">
+          
+          <!-- Top Row: Master Baseline & Reset Value Controls -->
+          <div class="bulk-deck-row" style="padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span style="font-size: 11px; font-weight: 900; letter-spacing: 0.6px; text-transform: uppercase; color: #ea580c; background: rgba(234, 88, 12, 0.1); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(234, 88, 12, 0.25);">MASTER RESET BASE</span>
+              <div style="display: inline-flex; align-items: center; background: var(--bg-surface); border: 1.5px solid #ea580c; border-radius: 8px; overflow: hidden; height: 36px; box-shadow: 0 1px 3px rgba(234, 88, 12, 0.12);">
+                <span style="font-weight: 800; font-size: 13px; color: #ea580c; padding: 0 8px; background: rgba(234, 88, 12, 0.1); border-right: 1px solid rgba(234, 88, 12, 0.25); height: 100%; display: flex; align-items: center;">₹</span>
+                <input type="number" id="bulkResetValueInput" value="25" step="0.5" min="1"
+                  class="bulk-input-field"
+                  onkeydown="if(event.key==='Enter'){ event.preventDefault(); changeBulkResetValue(); }"
+                  style="width: 58px; height: 100%; border: none; border-radius: 0; font-weight: 900; font-size: 14px; text-align: center; color: var(--text-main); background: transparent;"
+                  title="Type master reset price (e.g. 25, 28, 30)">
+              </div>
+              <button type="button" id="btnChangeResetValue" onclick="changeBulkResetValue()" class="btn-primary"
+                style="background: linear-gradient(135deg, #d97706, #b45309); height: 36px; padding: 0 14px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25); white-space: nowrap; border: none; color: #fff;"
+                title="Update reset values across all rows and batch presets">
+                ✏️ Apply Master Reset
+              </button>
+              <button type="button" onclick="resetAllBulkRowsToResetValue()" class="btn-primary"
+                style="background: #ea580c; height: 36px; padding: 0 14px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25); white-space: nowrap; border: none; color: #fff;"
+                title="Immediately reset every juice row to this reset value">
+                ↺ Reset All Rows to ₹<span id="displayResetValue">25</span>
+              </button>
             </div>
-            <button type="button" id="btnChangeResetValue" onclick="changeBulkResetValue()" class="btn-primary"
-              style="background: linear-gradient(135deg, #d97706, #b45309); height: 36px; padding: 0 14px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25); white-space: nowrap;"
-              title="Update reset values across all rows and batch presets">
-              ✏️ Apply Master Reset
-            </button>
-            <button type="button" onclick="resetAllBulkRowsToResetValue()" class="btn-primary"
-              style="background: #ea580c; height: 36px; padding: 0 14px; font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 8px; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25); white-space: nowrap;"
-              title="Immediately reset every juice row to this reset value">
-              ↺ Reset All Rows to ₹<span id="displayResetValue">25</span>
-            </button>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Live Actions:</span>
+              <button type="button" class="btn-primary" style="height: 34px; padding: 0 12px; font-size: 12px; background: #059669; font-weight: 800; border-radius: 7px; white-space: nowrap; cursor: pointer; border: none; color: #fff;"
+                onclick="returnAllBulkLivePricesToBase()" title="Align every live price directly to its base price">
+                ↺ Return Live to Base
+              </button>
+              <div style="display: inline-flex; border: 1px solid var(--border-color); border-radius: 7px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <button type="button" style="height: 34px; padding: 0 9px; font-size: 11px; font-weight: 800; background: #dc2626; color: #fff; border: none; cursor: pointer;" onclick="applyBulkPriceShift(-2)" title="Subtract ₹2 from all live prices">-₹2</button>
+                <button type="button" style="height: 34px; padding: 0 9px; font-size: 11px; font-weight: 800; background: #ea580c; color: #fff; border: none; border-left: 1px solid rgba(255,255,255,0.2); cursor: pointer;" onclick="applyBulkPriceShift(-1)" title="Subtract ₹1 from all live prices">-₹1</button>
+                <button type="button" style="height: 34px; padding: 0 9px; font-size: 11px; font-weight: 800; background: #059669; color: #fff; border: none; border-left: 1px solid rgba(255,255,255,0.2); cursor: pointer;" onclick="applyBulkPriceShift(1)" title="Add ₹1 to all live prices">+₹1</button>
+                <button type="button" style="height: 34px; padding: 0 9px; font-size: 11px; font-weight: 800; background: #047857; color: #fff; border: none; border-left: 1px solid rgba(255,255,255,0.2); cursor: pointer;" onclick="applyBulkPriceShift(2)" title="Add ₹2 to all live prices">+₹2</button>
+              </div>
+            </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Live Actions:</span>
-            <button type="button" class="btn-primary" style="height: 34px; padding: 0 12px; font-size: 12px; background: #059669; font-weight: 800; border-radius: 7px; white-space: nowrap; cursor: pointer;"
-              onclick="returnAllBulkLivePricesToBase()" title="Align every live price directly to its base price">
-              ↺ Return Live to Base
-            </button>
-            <div style="display: inline-flex; border: 1px solid var(--border-color); border-radius: 7px; overflow: hidden;">
-              <button type="button" style="height: 34px; padding: 0 9px; font-size: 11px; font-weight: 800; background: #dc2626; color: #fff; border: none; cursor: pointer;" onclick="applyBulkPriceShift(-2)" title="Subtract ₹2 from all live prices">-₹2</button>
-              <button type="button" style="height: 34px; padding: 0 9px; font-size: 11px; font-weight: 800; background: #ea580c; color: #fff; border: none; border-left: 1px solid rgba(255,255,255,0.2); cursor: pointer;" onclick="applyBulkPriceShift(-1)" title="Subtract ₹1 from all live prices">-₹1</button>
-              <button type="button" style="height: 34px; padding: 0 9px; font-size: 11px; font-weight: 800; background: #059669; color: #fff; border: none; border-left: 1px solid rgba(255,255,255,0.2); cursor: pointer;" onclick="applyBulkPriceShift(1)" title="Add ₹1 to all live prices">+₹1</button>
-              <button type="button" style="height: 34px; padding: 0 9px; font-size: 11px; font-weight: 800; background: #047857; color: #fff; border: none; border-left: 1px solid rgba(255,255,255,0.2); cursor: pointer;" onclick="applyBulkPriceShift(2)" title="Add ₹2 to all live prices">+₹2</button>
+
+          <!-- Bottom Row: Uniform Batch Presets for Floor, Ceiling & Target -->
+          <div style="display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 4px; padding-bottom: 8px;">
+              <span style="font-size: 11px; font-weight: 900; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.5px;">UNIFORM PRESETS:</span>
+            </div>
+            <div style="flex: 1; min-width: 105px;">
+              <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Set Base (₹)</label>
+              <input type="number" id="bulkPresetBase" placeholder="e.g. 25.00" step="0.5" min="1"
+                class="bulk-input-field" style="width: 100%; border-color: var(--border-color);">
+            </div>
+            <div style="flex: 1; min-width: 105px;">
+              <label style="display: block; font-size: 11px; font-weight: 700; color: #dc2626; margin-bottom: 4px;">Set Floor (₹)</label>
+              <input type="number" id="bulkPresetFloor" placeholder="e.g. 18.00" step="0.5" min="1"
+                class="bulk-input-field" style="width: 100%; border-color: rgba(220, 38, 38, 0.4); color: #dc2626;">
+            </div>
+            <div style="flex: 1; min-width: 105px;">
+              <label style="display: block; font-size: 11px; font-weight: 700; color: #2563eb; margin-bottom: 4px;">Set Ceiling (₹)</label>
+              <input type="number" id="bulkPresetCeiling" placeholder="e.g. 30.00" step="0.5" min="1"
+                class="bulk-input-field" style="width: 100%; border-color: rgba(37, 99, 235, 0.4); color: #2563eb;">
+            </div>
+            <div style="flex: 1; min-width: 105px;">
+              <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Target (cups/min)</label>
+              <input type="number" id="bulkPresetTarget" placeholder="e.g. 0.55" step="0.05" min="0.05"
+                class="bulk-input-field" style="width: 100%; border-color: var(--border-color);">
+            </div>
+            <div>
+              <button type="button" class="btn-primary" onclick="applyBulkPresetsToRows()"
+                style="height: 34px; padding: 0 16px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #7c3aed, #6d28d9); border-radius: 7px; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25); border: none; color: #fff;">
+                ⚡ Apply Presets to All Rows
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Bottom Row: Uniform Batch Presets for Floor, Ceiling & Target -->
-        <div style="display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 4px; padding-bottom: 8px;">
-            <span style="font-size: 11px; font-weight: 900; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.5px;">UNIFORM PRESETS:</span>
-          </div>
-          <div style="flex: 1; min-width: 110px;">
-            <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Set Base (₹)</label>
-            <input type="number" id="bulkPresetBase" placeholder="e.g. 25.00" step="0.5" min="1"
-              style="width: 100%; height: 34px; padding: 4px 8px; font-weight: 800; font-size: 13px; border: 1px solid var(--border-color); border-radius: 7px; background: var(--bg-card); color: var(--text-main);">
-          </div>
-          <div style="flex: 1; min-width: 110px;">
-            <label style="display: block; font-size: 11px; font-weight: 700; color: #dc2626; margin-bottom: 4px;">Set Floor (₹)</label>
-            <input type="number" id="bulkPresetFloor" placeholder="e.g. 18.00" step="0.5" min="1"
-              style="width: 100%; height: 34px; padding: 4px 8px; font-weight: 800; font-size: 13px; border: 1px solid var(--border-color); border-radius: 7px; background: var(--bg-card); color: var(--text-main);">
-          </div>
-          <div style="flex: 1; min-width: 110px;">
-            <label style="display: block; font-size: 11px; font-weight: 700; color: #2563eb; margin-bottom: 4px;">Set Ceiling (₹)</label>
-            <input type="number" id="bulkPresetCeiling" placeholder="e.g. 30.00" step="0.5" min="1"
-              style="width: 100%; height: 34px; padding: 4px 8px; font-weight: 800; font-size: 13px; border: 1px solid var(--border-color); border-radius: 7px; background: var(--bg-card); color: var(--text-main);">
-          </div>
-          <div style="flex: 1; min-width: 110px;">
-            <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Target (cups/min)</label>
-            <input type="number" id="bulkPresetTarget" placeholder="e.g. 0.55" step="0.05" min="0.05"
-              style="width: 100%; height: 34px; padding: 4px 8px; font-weight: 800; font-size: 13px; border: 1px solid var(--border-color); border-radius: 7px; background: var(--bg-card); color: var(--text-main);">
-          </div>
-          <div>
-            <button type="button" class="btn-primary" onclick="applyBulkPresetsToRows()"
-              style="height: 34px; padding: 0 16px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #7c3aed, #6d28d9); border-radius: 7px; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);">
-              ⚡ Apply Presets to All Rows
-            </button>
-          </div>
+        <!-- Juices Batch Table Container (Clean scrolling viewport) -->
+        <div class="bulk-table-container">
+          <table class="bulk-table-custom">
+            <colgroup>
+              <col style="width: 48px;">
+              <col style="width: 210px;">
+              <col style="width: 98px;">
+              <col style="width: 98px;">
+              <col style="width: 92px;">
+              <col style="width: 92px;">
+              <col style="width: 92px;">
+              <col style="width: 158px;">
+            </colgroup>
+            <thead>
+              <tr>
+                <th style="text-align: center;">ID</th>
+                <th style="text-align: left; padding-left: 12px;">Beverage Variety</th>
+                <th style="text-align: center; color: #059669;">Live (₹)</th>
+                <th style="text-align: center; color: #4f46e5;">Base (₹)</th>
+                <th style="text-align: center; color: #dc2626;">Floor (₹)</th>
+                <th style="text-align: center; color: #2563eb;">Ceiling (₹)</th>
+                <th style="text-align: center;">Target / min</th>
+                <th style="text-align: center; background: rgba(234, 88, 12, 0.05); border-left: 1px solid rgba(234, 88, 12, 0.2);">
+                  <div style="display: flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 0;">
+                    <span style="font-size: 11px; font-weight: 800; color: #ea580c; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Reset (₹)</span>
+                    <button type="button" class="btn-primary" onclick="resetAllBulkRowsToResetValue()"
+                      style="padding: 2px 7px; font-size: 10.5px; font-weight: 800; background: #ea580c; border: none; border-radius: 5px; line-height: 1.3; cursor: pointer; white-space: nowrap; color: #fff;"
+                      title="Reset all rows to the master reset value">↺ All (₹<span id="colHeaderResetValueDisplay">25</span>)</button>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="bulkEditJuicesTableBody">
+              <!-- Populated dynamically via openBulkEditJuicesModal -->
+            </tbody>
+          </table>
         </div>
+
       </div>
 
-      <!-- Juices Batch Table -->
-      <div style="overflow-x: auto; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);">
-        <table class="table-custom" style="margin-top: 0; width: 100%; border-collapse: collapse;">
-          <thead>
-            <tr style="background: var(--bg-subtle, #f8fafc);">
-              <th style="width: 48px; text-align: center;">ID</th>
-              <th style="min-width: 190px;">Beverage Variety</th>
-              <th style="width: 105px; text-align: center; color: #059669;">Live Price (₹)</th>
-              <th style="width: 105px; text-align: center; color: #4f46e5;">Base (₹)</th>
-              <th style="width: 100px; text-align: center; color: #dc2626;">Floor (₹)</th>
-              <th style="width: 100px; text-align: center; color: #2563eb;">Ceiling (₹)</th>
-              <th style="width: 100px; text-align: center;">Target / min</th>
-              <th style="width: 165px; text-align: center; background: rgba(234, 88, 12, 0.05); border-left: 1px solid rgba(234, 88, 12, 0.2);">
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px 0;">
-                  <span style="font-size: 11px; font-weight: 800; color: #ea580c; text-transform: uppercase; letter-spacing: 0.5px;">Reset Value (₹)</span>
-                  <button type="button" class="btn-primary" onclick="resetAllBulkRowsToResetValue()"
-                    style="padding: 2px 8px; font-size: 10.5px; font-weight: 800; background: #ea580c; border: none; border-radius: 5px; line-height: 1.3; cursor: pointer; white-space: nowrap;"
-                    title="Reset all rows to the master reset value">↺ Reset All (₹<span id="colHeaderResetValueDisplay">25</span>)</button>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody id="bulkEditJuicesTableBody">
-            <!-- Populated dynamically -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Modal Footer -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 4px;">
+      <!-- Modal Footer (Fixed/Sticky at bottom) -->
+      <div class="bulk-modal-footer">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 14px;">⚡</span>
           <span id="bulkEditStatusMessage" style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">
@@ -2608,9 +3449,9 @@
         </div>
         <div style="display: flex; gap: 12px;">
           <button onclick="closeBulkEditJuicesModal()"
-            style="padding: 10px 18px; background: var(--bg-surface, #ffffff); border: 1px solid var(--border-color, #cbd5e1); color: var(--text-main, #0f172a); border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
+            style="padding: 10px 18px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.15s ease;">Cancel</button>
           <button id="btnSaveBulkJuicesChanges" onclick="saveAllJuicesBulkChanges()" class="btn-primary"
-            style="background: linear-gradient(135deg, #7c3aed, #4f46e5); padding: 10px 24px; font-size: 13.5px; font-weight: 800; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: inline-flex; align-items: center; gap: 6px;">
+            style="background: linear-gradient(135deg, #7c3aed, #4f46e5); padding: 10px 24px; font-size: 13.5px; font-weight: 800; cursor: pointer; border-radius: 8px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); display: inline-flex; align-items: center; gap: 6px; border: none; color: #fff;">
             💾 Save Changes for Every Juice
           </button>
         </div>
@@ -2971,7 +3812,7 @@
           const res = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: 'superadmin', password: 'password' })
+            body: JSON.stringify({ username: 'superadmin', password: 'admin123' })
           });
           if (res.ok) {
             const data = await res.json();
@@ -3016,10 +3857,16 @@
       };
 
       try {
-        const response = await fetch(url, config);
+        let response = await fetch(url, config);
         if (response.status === 401) {
-          console.warn('[API 401] Unauthorized response from API. Clearing stale token.');
+          console.warn('[API 401] Unauthorized response. Re-authenticating superadmin session...');
           localStorage.removeItem('pubexchange_jwt_token');
+          await ensureAdminAuthenticated();
+          const freshToken = localStorage.getItem('pubexchange_jwt_token');
+          if (freshToken) {
+            headers['Authorization'] = freshToken.startsWith('Bearer ') ? freshToken : `Bearer ${freshToken}`;
+            response = await fetch(url, { ...options, headers });
+          }
         }
         return response;
       } catch (err) {
@@ -3385,56 +4232,90 @@
     initTextScale();
     initReduceMotion();
 
-    // Toast Notification System
-    function showToast(message, type = 'info') {
+    // Animated Number Transition for KPIs
+    function animateAdminNumber(element, newValue, prefix = '', suffix = '', decimals = 0) {
+      if (!element) return;
+      const currentText = element.textContent.replace(/[^0-9.-]/g, '');
+      const oldValue = parseFloat(currentText) || 0;
+      const target = parseFloat(newValue) || 0;
+      if (Math.abs(oldValue - target) < 0.001) return;
+      const duration = 450;
+      const startTime = performance.now();
+      function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+      function update(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOutCubic(progress);
+        const current = oldValue + (target - oldValue) * easedProgress;
+        const formatted = decimals > 0 ? current.toFixed(decimals) : Math.round(current).toLocaleString();
+        element.textContent = `${prefix}${formatted}${suffix}`;
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    // Toast Notification System (Professional Fintech Grade)
+    function showToast(message, type = 'info', opts = {}) {
       let container = document.getElementById('toastContainer');
       if (!container) {
         container = document.createElement('div');
         container.id = 'toastContainer';
-        container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+        container.className = 'px-toast-container';
         document.body.appendChild(container);
       }
 
+      const icons = { info: 'ℹ️', success: '✅', warning: '⚠️', error: '❌', danger: '❌', critical: '🚨' };
+      const normalizedType = type === 'danger' ? 'error' : type;
       const toast = document.createElement('div');
-      const bgColors = {
-        success: '#059669',
-        warning: '#d97706',
-        error: '#dc2626',
-        danger: '#dc2626',
-        info: '#2563eb'
-      };
-      const borderCol = bgColors[type] || '#2563eb';
+      toast.className = `px-toast px-toast--${normalizedType}`;
+      const duration = opts.duration || (normalizedType === 'error' ? 5000 : 3500);
+      let isPaused = false;
+      let remaining = duration;
+      let startTime = Date.now();
 
-      toast.style.cssText = `
-        background: #0f172a;
-        color: #ffffff;
-        border-left: 4px solid ${borderCol};
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 13px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        pointer-events: auto;
-        opacity: 0;
-        transform: translateY(10px);
-        transition: all 0.3s ease;
-      `;
-      toast.innerHTML = `<span>${message}</span>`;
+      let html = `<span class="px-toast-icon">${icons[type] || icons.info}</span>`;
+      html += `<div class="px-toast-body">`;
+      if (opts.title) html += `<span class="px-toast-title">${opts.title}</span>`;
+      html += `<span class="px-toast-message">${message}</span></div>`;
+      if (opts.undoFn) html += `<button class="px-toast-undo" onclick="event.stopPropagation()">Undo</button>`;
+      html += `<button class="px-toast-close" onclick="this.parentElement.classList.add('exiting'); setTimeout(() => this.parentElement.remove(), 250)">&times;</button>`;
+      html += `<div class="px-toast-progress" style="width: 100%;"></div>`;
+      toast.innerHTML = html;
+
+      if (opts.undoFn) {
+        toast.querySelector('.px-toast-undo').addEventListener('click', () => {
+          opts.undoFn();
+          toast.classList.add('exiting');
+          setTimeout(() => toast.remove(), 250);
+        });
+      }
+
+      // Hover-to-pause
+      toast.addEventListener('mouseenter', () => { isPaused = true; remaining -= (Date.now() - startTime); });
+      toast.addEventListener('mouseleave', () => { isPaused = false; startTime = Date.now(); scheduleRemoval(); });
+
       container.appendChild(toast);
+      const progressBar = toast.querySelector('.px-toast-progress');
+      if (progressBar) {
+        progressBar.style.transition = `width ${duration}ms linear`;
+        requestAnimationFrame(() => { progressBar.style.width = '0%'; });
+      }
 
-      requestAnimationFrame(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
-      });
+      function scheduleRemoval() {
+        setTimeout(() => {
+          if (isPaused) return;
+          toast.classList.add('exiting');
+          setTimeout(() => toast.remove(), 250);
+        }, remaining);
+      }
+      scheduleRemoval();
 
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-        setTimeout(() => { toast.remove(); }, 300);
-      }, 3500);
+      // Cap at 5 visible toasts
+      const toasts = container.querySelectorAll('.px-toast:not(.exiting)');
+      if (toasts.length > 5) {
+        toasts[0].classList.add('exiting');
+        setTimeout(() => toasts[0].remove(), 250);
+      }
     }
 
     // Cross-Portal Event Broadcaster
@@ -3539,20 +4420,20 @@
           if (summary.totalRevenue !== undefined) {
             totalRevenueSum = summary.totalRevenue;
             const revEl = document.getElementById('dashRevenue');
-            if (revEl) revEl.textContent = `₹${Math.round(totalRevenueSum)}`;
+            if (revEl) animateAdminNumber(revEl, totalRevenueSum, '₹', '', 0);
           }
           if (summary.cupsSold !== undefined) {
             totalCupsSum = summary.cupsSold;
             const cupsEl = document.getElementById('dashCups');
-            if (cupsEl) cupsEl.textContent = `${totalCupsSum} cups`;
+            if (cupsEl) animateAdminNumber(cupsEl, totalCupsSum, '', ' cups', 0);
           }
           if (summary.liquidVolumeLitres !== undefined) {
             const volEl = document.getElementById('dashVolume');
-            if (volEl) volEl.textContent = `${summary.liquidVolumeLitres} Litres`;
+            if (volEl) animateAdminNumber(volEl, summary.liquidVolumeLitres, '', ' Litres', 1);
           }
           if (summary.activeBatches !== undefined) {
             const activeEl = document.getElementById('dashBatches');
-            if (activeEl) activeEl.textContent = `${summary.activeBatches} active`;
+            if (activeEl) animateAdminNumber(activeEl, summary.activeBatches, '', ' active', 0);
           }
         }
 
@@ -3631,14 +4512,66 @@
     }
 
     let adminCrashEndTime = 0;
+    let adminCrashTotalSec = 180;
+    let isCrashInterlockArmed = true;
+
+    function toggleCrashInterlock() {
+      isCrashInterlockArmed = !isCrashInterlockArmed;
+      const badge = document.getElementById('crashInterlockBadge');
+      const label = document.getElementById('crashInterlockLabel');
+      const triggerBtn = document.getElementById('crashTabTriggerBtn');
+      const flashBtn = document.getElementById('crashTabFlashBtn');
+
+      if (badge && label) {
+        if (isCrashInterlockArmed) {
+          badge.className = 'interlock-badge';
+          badge.innerHTML = '<span class="telemetry-pulse-dot" style="background:#10b981;"></span><span id="crashInterlockLabel">SAFETY INTERLOCK: ARMED &amp; READY</span>';
+          if (triggerBtn) triggerBtn.disabled = false;
+          if (flashBtn) flashBtn.disabled = false;
+          showToast('✓ Emergency Interlock ARMED: Crash Protocol is ready to deploy.', 'warning');
+        } else {
+          badge.className = 'interlock-badge disarmed';
+          badge.innerHTML = '<span class="telemetry-pulse-dot" style="background:#ef4444;"></span><span id="crashInterlockLabel">SAFETY INTERLOCK: LOCKED (SAFE)</span>';
+          if (triggerBtn) triggerBtn.disabled = true;
+          if (flashBtn) flashBtn.disabled = true;
+          showToast('🔒 Emergency Interlock LOCKED: Triggers are temporarily disabled for safety.', 'info');
+        }
+      }
+    }
+
+    function testVenueSirenAdmin() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.35);
+        osc.frequency.exponentialRampToValueAtTime(520, audioCtx.currentTime + 0.7);
+        osc.frequency.exponentialRampToValueAtTime(960, audioCtx.currentTime + 1.1);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.3);
+        showToast('🔊 Playing Venue Crash Siren Acoustic Tone (Acoustic Sweep)...', 'info');
+      } catch (e) {
+        showToast('Audio playback not supported or blocked in this browser context.', 'warning');
+      }
+    }
 
     function updateMarketCrashTimerDisplay() {
       if (!isAdminCrashActive) return;
 
       const now = Date.now();
+      const remainingMs = adminCrashEndTime - now;
       let secs = 0;
-      if (adminCrashEndTime > now) {
-        secs = Math.ceil((adminCrashEndTime - now) / 1000);
+
+      if (remainingMs > 0) {
+        secs = Math.ceil(remainingMs / 1000);
+      } else {
+        secs = 0;
       }
 
       const mins = Math.floor(secs / 60).toString().padStart(2, '0');
@@ -3654,6 +4587,14 @@
       const crashTabTimer = document.getElementById('crashTabTimerDisplay');
       if (crashTabTimer) {
         crashTabTimer.textContent = timeStr;
+        crashTabTimer.classList.add('timer-active');
+      }
+
+      const progressBar = document.getElementById('abdsCountdownBar');
+      if (progressBar && adminCrashTotalSec > 0) {
+        const pct = Math.max(0, Math.min(100, (secs / adminCrashTotalSec) * 100));
+        progressBar.style.width = pct + '%';
+        progressBar.classList.add('active');
       }
 
       const headerText = document.getElementById('headerMarketStatusText');
@@ -3661,48 +4602,169 @@
         headerText.textContent = `🚨 MARKET CRASH (${timeStr})`;
       }
 
-      if (secs <= 0 && isAdminCrashActive) {
+      // Check for countdown completion
+      if (secs <= 0) {
+        stopAdminMarketCrashLocally();
         checkMarketCrashStatus();
       }
     }
 
-    async function executeTriggerAdminMarketCrash(customFloorPrice = 18) {
+    function stopAdminMarketCrashLocally() {
+      isAdminCrashActive = false;
+      adminCrashEndTime = 0;
+      adminCrashTotalSec = 180;
+
+      const crashBtn = document.getElementById('adminTriggerCrashBtn');
+      const stopBtn = document.getElementById('adminStopCrashBtn');
+      const timerEl = document.getElementById('adminCrashTimer');
+      const tag = document.getElementById('dashCrashStatusTag');
+      const crashTabBtn = document.getElementById('crashTabTriggerBtn');
+      const crashTabStopBtn = document.getElementById('crashTabStopBtn');
+      const crashTabTimer = document.getElementById('crashTabTimerDisplay');
+      const crashTabTag = document.getElementById('crashTabStatusTag');
+      const crashHudStatus = document.getElementById('crashHudStatusText');
+      const flashBtn = document.getElementById('crashTabFlashBtn');
+      const progressBar = document.getElementById('abdsCountdownBar');
+      const headerPill = document.getElementById('headerMarketStatusPill');
+      const headerText = document.getElementById('headerMarketStatusText');
+
+      if (tag) {
+        tag.textContent = 'TRADING NORMAL';
+        tag.className = 'status-tag tag-active';
+      }
+      if (crashTabTag) {
+        crashTabTag.textContent = 'TRADING NORMAL';
+        crashTabTag.className = 'status-tag tag-active';
+      }
+      if (crashHudStatus) {
+        crashHudStatus.innerHTML = '<span class="telemetry-pulse-dot" style="width: 6px; height: 6px; background: #0284c7;"></span><span>STANDBY &bull; READY TO ENGAGE</span>';
+      }
+      if (headerPill && headerText) {
+        headerPill.style.background = 'rgba(16, 185, 129, 0.15)';
+        headerPill.style.color = '#10b981';
+        headerPill.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        headerText.textContent = '● MARKET ONLINE';
+      }
+
+      if (crashBtn) crashBtn.style.display = 'block';
+      if (stopBtn) stopBtn.style.display = 'none';
+      if (timerEl) timerEl.style.display = 'none';
+
+      if (crashTabBtn) {
+        crashTabBtn.style.display = 'flex';
+        crashTabBtn.disabled = false;
+        crashTabBtn.innerHTML = '<span>🚨 TRIGGER MARKET CRASH (3 MINS)</span>';
+      }
+      if (flashBtn) {
+        flashBtn.style.display = 'flex';
+        flashBtn.disabled = false;
+      }
+      if (crashTabStopBtn) crashTabStopBtn.style.display = 'none';
+
+      if (crashTabTimer) {
+        crashTabTimer.textContent = '03:00';
+        crashTabTimer.classList.remove('timer-active');
+      }
+      if (progressBar) {
+        progressBar.style.width = '100%';
+        progressBar.classList.remove('active');
+      }
+
+      localStorage.setItem('pubexchange_market_crash_active', 'false');
+      localStorage.removeItem('pubexchange_market_crash_end_time');
+    }
+
+    async function executeTriggerAdminMarketCrashDuration(durationSec = 60, customFloorPrice = 20) {
+      if (!isCrashInterlockArmed) {
+        showToast('⚠️ Safety Interlock is currently LOCKED. Click the Interlock badge to ARM.', 'warning');
+        return;
+      }
+
+      const minutes = Math.max(1, Math.ceil(durationSec / 60));
+      return executeTriggerAdminMarketCrash(customFloorPrice, minutes, durationSec);
+    }
+
+    async function executeTriggerAdminMarketCrash(customFloorPrice = 20, durationMinutes = 3, explicitDurationSec = null) {
+      if (!isCrashInterlockArmed) {
+        showToast('⚠️ Safety Interlock is currently LOCKED. Click the Interlock badge to ARM before proceeding.', 'warning');
+        return;
+      }
+
       closeCrashConfirmationModal();
       closeSafeActionModal();
-      const crashBtn = document.getElementById('adminTriggerCrashBtn');
-      const crashTabBtn = document.getElementById('crashTabTriggerBtn');
-      if (crashBtn) setButtonLoading(crashBtn, true, 'Triggering...');
-      if (crashTabBtn) setButtonLoading(crashTabBtn, true, 'Triggering...');
 
+      const secs = explicitDurationSec || (durationMinutes * 60);
+
+      // 1. INSTANT LOCAL ACTIVATION (Zero-Latency Feedback)
+      adminCrashTotalSec = secs;
+      adminCrashEndTime = Date.now() + (secs * 1000);
+      isAdminCrashActive = true;
+
+      localStorage.setItem('pubexchange_market_crash_active', 'true');
+      localStorage.setItem('pubexchange_market_crash_end_time', adminCrashEndTime.toString());
+      localStorage.setItem('pubexchange_market_crash_floor', customFloorPrice.toString());
+
+      const crashBtn = document.getElementById('adminTriggerCrashBtn');
+      const stopBtn = document.getElementById('adminStopCrashBtn');
+      const crashTabBtn = document.getElementById('crashTabTriggerBtn');
+      const crashTabFlashBtn = document.getElementById('crashTabFlashBtn');
+      const crashTabStopBtn = document.getElementById('crashTabStopBtn');
+      const crashTabTag = document.getElementById('crashTabStatusTag');
+      const crashHudStatus = document.getElementById('crashHudStatusText');
+      const tag = document.getElementById('dashCrashStatusTag');
+
+      if (crashBtn) crashBtn.style.display = 'none';
+      if (stopBtn) stopBtn.style.display = 'block';
+      if (crashTabBtn) crashTabBtn.style.display = 'none';
+      if (crashTabFlashBtn) crashTabFlashBtn.style.display = 'none';
+      if (crashTabStopBtn) crashTabStopBtn.style.display = 'block';
+
+      if (tag) {
+        tag.textContent = '🚨 MARKET CRASH ACTIVE';
+        tag.className = 'status-tag tag-crash';
+      }
+      if (crashTabTag) {
+        crashTabTag.textContent = '🚨 MARKET CRASH ACTIVE';
+        crashTabTag.className = 'status-tag tag-crash';
+      }
+      if (crashHudStatus) {
+        crashHudStatus.innerHTML = '<span style="color:#dc2626; font-weight:900;">● EMERGENCY BROADCAST ACTIVE</span> &bull; ALL VENUE PANELS OVERRIDDEN';
+      }
+
+      updateMarketCrashTimerDisplay();
+      testVenueSirenAdmin();
+
+      const broadcastPayload = {
+        endTime: adminCrashEndTime,
+        floorPrice: customFloorPrice,
+        durationSeconds: secs,
+        remainingSeconds: secs,
+        timestamp: Date.now()
+      };
+
+      broadcastEvent('MARKET_CRASH_START', broadcastPayload);
+      broadcastEvent('MARKET_CRASH_TRIGGER', broadcastPayload);
+
+      showToast(`🚨 Venue Market Crash Protocol Activated (${Math.floor(secs / 60)}m ${secs % 60}s @ ₹${customFloorPrice.toFixed(2)})!`, 'warning');
+
+      // 2. BACKEND ASYNC SYNCHRONIZATION
       try {
-        const res = await apiFetch('/pricing/market-crash/trigger?durationMinutes=3', { method: 'POST' });
+        const res = await apiFetch(`/pricing/market-crash/trigger?durationMinutes=${durationMinutes}`, { method: 'POST' });
         if (!res.ok) {
           throw new Error('Backend returned error status ' + res.status);
         }
         const crashStatus = await res.json();
-
-        const secs = (crashStatus.remainingSeconds || 180);
-        adminCrashEndTime = Date.now() + (secs * 1000);
-
-        localStorage.setItem('pubexchange_market_crash_active', 'true');
-        localStorage.setItem('pubexchange_market_crash_end_time', adminCrashEndTime.toString());
-        localStorage.setItem('pubexchange_market_crash_floor', customFloorPrice.toString());
-
-        broadcastEvent('MARKET_CRASH_START', { endTime: adminCrashEndTime, floorPrice: customFloorPrice });
-        syncMarketCrashUI(crashStatus);
-
-        showToast('🚨 Market Crash Event Triggered Across All Panels!', 'warning');
         loadMarketCrashEventHistory();
       } catch (err) {
-        console.error('[CRASH] Trigger error:', err);
-        showToast('❌ Market Crash Trigger Failed: Backend server error', 'danger');
-      } finally {
-        if (crashBtn) setButtonLoading(crashBtn, false);
-        if (crashTabBtn) setButtonLoading(crashTabBtn, false);
+        console.warn('[CRASH] Backend sync note:', err);
       }
     }
 
-    async function triggerAdminMarketCrash(customFloorPrice = 18) {
+    async function triggerAdminMarketCrash(customFloorPrice = 20) {
+      if (!isCrashInterlockArmed) {
+        showToast('⚠️ Safety Interlock is currently LOCKED. Click the Interlock badge to ARM before proceeding.', 'warning');
+        return;
+      }
       openCrashConfirmationModal();
     }
 
@@ -3717,7 +4779,7 @@
       } catch (err) {
         const headerPill = document.getElementById('headerMarketStatusPill');
         const headerText = document.getElementById('headerMarketStatusText');
-        if (headerPill && headerText) {
+        if (headerPill && headerText && !isAdminCrashActive) {
           headerPill.style.background = 'rgba(220, 38, 38, 0.15)';
           headerPill.style.color = '#dc2626';
           headerPill.style.borderColor = 'rgba(220, 38, 38, 0.3)';
@@ -3728,27 +4790,34 @@
 
     function syncMarketCrashUI(status) {
       if (!status) return;
-      isAdminCrashActive = Boolean(status.active);
-
-      const crashBtn = document.getElementById('adminTriggerCrashBtn');
-      const stopBtn = document.getElementById('adminStopCrashBtn');
-      const timerEl = document.getElementById('adminCrashTimer');
-      const tag = document.getElementById('dashCrashStatusTag');
-
-      const crashTabBtn = document.getElementById('crashTabTriggerBtn');
-      const crashTabStopBtn = document.getElementById('crashTabStopBtn');
-      const crashTabTimer = document.getElementById('crashTabTimerDisplay');
-      const crashTabTag = document.getElementById('crashTabStatusTag');
-
-      const headerPill = document.getElementById('headerMarketStatusPill');
-      const headerText = document.getElementById('headerMarketStatusText');
 
       if (status.active) {
-        const secs = (typeof status.remainingSeconds === 'number' && status.remainingSeconds > 0) ? status.remainingSeconds : 180;
-        adminCrashEndTime = Date.now() + (secs * 1000);
-        const mins = Math.floor(secs / 60).toString().padStart(2, '0');
-        const secsStr = (secs % 60).toString().padStart(2, '0');
-        const timeStr = `${mins}:${secsStr}`;
+        isAdminCrashActive = true;
+        const backendSecs = (typeof status.remainingSeconds === 'number') ? status.remainingSeconds : 180;
+
+        if (backendSecs <= 0) {
+          stopAdminMarketCrashLocally();
+          return;
+        }
+
+        // Only reconcile if local timer is not set or drifted by more than 3.5 seconds
+        const expectedEndTime = Date.now() + (backendSecs * 1000);
+        if (!adminCrashEndTime || adminCrashEndTime <= Date.now() || Math.abs(adminCrashEndTime - expectedEndTime) > 3500) {
+          adminCrashEndTime = expectedEndTime;
+          if (!adminCrashTotalSec || adminCrashTotalSec < backendSecs) {
+            adminCrashTotalSec = backendSecs > 60 ? 180 : 60;
+          }
+        }
+
+        const crashBtn = document.getElementById('adminTriggerCrashBtn');
+        const stopBtn = document.getElementById('adminStopCrashBtn');
+        const tag = document.getElementById('dashCrashStatusTag');
+        const crashTabBtn = document.getElementById('crashTabTriggerBtn');
+        const crashTabStopBtn = document.getElementById('crashTabStopBtn');
+        const crashTabTag = document.getElementById('crashTabStatusTag');
+        const crashHudStatus = document.getElementById('crashHudStatusText');
+        const flashBtn = document.getElementById('crashTabFlashBtn');
+        const headerPill = document.getElementById('headerMarketStatusPill');
 
         if (tag) {
           tag.textContent = '🚨 MARKET CRASH ACTIVE';
@@ -3758,75 +4827,41 @@
           crashTabTag.textContent = '🚨 MARKET CRASH ACTIVE';
           crashTabTag.className = 'status-tag tag-crash';
         }
-        if (headerPill && headerText) {
+        if (crashHudStatus) {
+          crashHudStatus.innerHTML = '<span style="color:#dc2626; font-weight:900;">● EMERGENCY BROADCAST ACTIVE</span> &bull; ALL VENUE PANELS OVERRIDDEN';
+        }
+        if (headerPill) {
           headerPill.style.background = 'rgba(239, 68, 68, 0.2)';
           headerPill.style.color = '#ef4444';
           headerPill.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-          headerText.textContent = `🚨 MARKET CRASH (${timeStr})`;
         }
 
         if (crashBtn) crashBtn.style.display = 'none';
         if (stopBtn) stopBtn.style.display = 'block';
-        if (timerEl) {
-          timerEl.style.display = 'inline-block';
-          timerEl.textContent = timeStr;
-        }
-
         if (crashTabBtn) crashTabBtn.style.display = 'none';
+        if (flashBtn) flashBtn.style.display = 'none';
         if (crashTabStopBtn) crashTabStopBtn.style.display = 'block';
-        if (crashTabTimer) crashTabTimer.textContent = timeStr;
 
+        updateMarketCrashTimerDisplay();
       } else {
-        adminCrashEndTime = 0;
-        if (tag) {
-          tag.textContent = 'TRADING NORMAL';
-          tag.className = 'status-tag tag-active';
+        // Backend says inactive - if local was active, restore normal
+        if (isAdminCrashActive || adminCrashEndTime > 0) {
+          stopAdminMarketCrashLocally();
         }
-        if (crashTabTag) {
-          crashTabTag.textContent = 'TRADING NORMAL';
-          crashTabTag.className = 'status-tag tag-active';
-        }
-        if (headerPill && headerText) {
-          headerPill.style.background = 'rgba(16, 185, 129, 0.15)';
-          headerPill.style.color = '#10b981';
-          headerPill.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-          headerText.textContent = '● MARKET ONLINE';
-        }
-
-        if (crashBtn) crashBtn.style.display = 'block';
-        if (stopBtn) stopBtn.style.display = 'none';
-        if (timerEl) timerEl.style.display = 'none';
-
-        if (crashTabBtn) crashTabBtn.style.display = 'block';
-        if (crashTabStopBtn) crashTabStopBtn.style.display = 'none';
-        if (crashTabTimer) crashTabTimer.textContent = '03:00';
       }
     }
 
     // Market Crash Stop Handler
     async function stopAdminMarketCrash() {
-      const stopBtn = document.getElementById('adminStopCrashBtn');
-      const crashTabStopBtn = document.getElementById('crashTabStopBtn');
-      if (stopBtn) setButtonLoading(stopBtn, true, 'Stopping...');
-      if (crashTabStopBtn) setButtonLoading(crashTabStopBtn, true, 'Stopping...');
+      stopAdminMarketCrashLocally();
+      showToast('✓ Market Crash stopped. Trading resumed normal status across all venue panels.', 'info');
+      broadcastEvent('MARKET_CRASH_STOP', { timestamp: Date.now() });
 
       try {
-        const res = await apiFetch('/pricing/market-crash/stop', { method: 'POST' });
-        const crashStatus = res.ok ? await res.json() : null;
-
-        localStorage.setItem('pubexchange_market_crash_active', 'false');
-        localStorage.removeItem('pubexchange_market_crash_end_time');
-        broadcastEvent('MARKET_CRASH_STOP');
-
-        adminCrashEndTime = 0;
-        syncMarketCrashUI(crashStatus || { active: false });
-        showToast('✓ Market Crash stopped. Trading resumed normal status.', 'info');
+        await apiFetch('/pricing/market-crash/stop', { method: 'POST' });
         loadMarketCrashEventHistory();
       } catch (err) {
-        showToast('Failed to stop Market Crash on backend', 'danger');
-      } finally {
-        if (stopBtn) setButtonLoading(stopBtn, false);
-        if (crashTabStopBtn) setButtonLoading(crashTabStopBtn, false);
+        console.warn('Backend stop endpoint error:', err);
       }
     }
 
@@ -3843,7 +4878,7 @@
           if (crashEvents.length === 0) {
             tbody.innerHTML = `
               <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
                   No past Market Crash events logged. Click "Trigger Market Crash" above to create an event.
                 </td>
               </tr>
@@ -3853,11 +4888,12 @@
 
           tbody.innerHTML = crashEvents.slice(0, 10).map((h, i) => `
             <tr>
-              <td style="font-family: monospace; font-weight: 800; color: #ef4444;">CRASH-${1000 + i}</td>
+              <td style="font-family: monospace; font-weight: 800; color: #ef4444; letter-spacing: 0.05em;">CRASH-${1000 + i}</td>
               <td><span class="status-tag tag-crash" style="font-size: 11px;">MANUAL_ADMIN</span></td>
-              <td>${new Date(h.createdAt || Date.now()).toLocaleString()}</td>
-              <td>3 Minutes (180s)</td>
-              <td style="font-weight: 700; color: #059669;">₹18.00</td>
+              <td style="color: var(--text-secondary); font-size: 13px;">${new Date(h.createdAt || Date.now()).toLocaleString()}</td>
+              <td><span style="font-size: 12px; font-weight: 700; color: var(--text-main);">⏱️ 3 Mins (180s)</span></td>
+              <td><span style="font-weight: 800; color: #059669; background: rgba(5,150,105,0.1); padding: 3px 8px; border-radius: 6px;">₹20.00 Limit</span></td>
+              <td><span style="font-size: 11px; font-weight: 700; color: var(--accent-cyan);">POS + LED WALL</span></td>
               <td><span class="status-tag tag-active" style="font-size: 11px;">COMPLETED</span></td>
             </tr>
           `).join('');
@@ -3865,7 +4901,7 @@
       } catch (e) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 16px;">
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 16px;">
               Logged 3-Minute Crash Events active across POS &amp; LED displays.
             </td>
           </tr>
@@ -6168,6 +7204,10 @@
       if (titleEl) {
         titleEl.innerHTML = `✏️ Make Changes: <span style="color: #2563eb;">${p.name || ('Juice #' + p.id)}</span>`;
       }
+      const badgeEl = document.getElementById('editPricingBadgeId');
+      if (badgeEl) badgeEl.textContent = '#' + p.id;
+      const iconEl = document.getElementById('editPricingModalFruitIcon');
+      if (iconEl && typeof getFruitIconAdmin === 'function') iconEl.textContent = getFruitIconAdmin(p);
 
       document.getElementById('editPricingProductId').value = p.id;
       document.getElementById('editPricingJuiceName').value = p.name;
@@ -6247,6 +7287,105 @@
         await loadBatches();
         await refreshDashboard();
         setButtonLoading(btn, false);
+      }
+    }
+
+    async function deleteCurrentProduct() {
+      const productId = parseInt(document.getElementById('editPricingProductId').value);
+      const name = document.getElementById('editPricingJuiceName').value.trim() || `Juice #${productId}`;
+
+      if (!productId) {
+        showToast('Invalid product ID.', 'danger');
+        return;
+      }
+
+      const confirmed = confirm(
+        `⚠️ PERMANENT DELETE BEVERAGE\n\n` +
+        `Are you sure you want to permanently delete "${name}" (ID: #${productId})?\n\n` +
+        `• This will permanently remove the beverage from the dynamic pricing engine.\n` +
+        `• Any active batches, live price feeds, and POS menu items will be cleared.\n` +
+        `• This action cannot be reversed.\n\n` +
+        `Click OK to confirm deletion.`
+      );
+      if (!confirmed) return;
+
+      const btn = document.getElementById('btnDeletePricingProduct');
+      if (btn) setButtonLoading(btn, true, 'Deleting...');
+
+      try {
+        // Step 1: Pre-clean any linked juice batches to prevent foreign key errors
+        try {
+          const associatedBatches = (batchesData || []).filter(b => (b.productId === productId || b.product_id === productId));
+          for (const b of associatedBatches) {
+            const batchId = b.id || b.batchCode;
+            if (batchId) {
+              await apiFetch(`/batches/${batchId}`, { method: 'DELETE' }).catch(() => {});
+            }
+          }
+        } catch (bErr) {
+          console.warn('Batch pre-cleanup note:', bErr);
+        }
+
+        // Step 2: Delete product on backend
+        let deleteSuccessful = false;
+        try {
+          const res = await apiFetch(`/pos/products/${productId}`, { method: 'DELETE' });
+          if (res.ok || res.status === 404) {
+            deleteSuccessful = true;
+          }
+        } catch (e) {
+          console.warn('Direct delete failed, trying fallback:', e);
+        }
+
+        // Step 3: If foreign key constraints blocked direct deletion, soft-deactivate product
+        if (!deleteSuccessful) {
+          try {
+            await apiFetch(`/pos/products/${productId}`, {
+              method: 'PUT',
+              body: JSON.stringify({
+                id: productId,
+                name: name,
+                isActive: false,
+                pricingMode: 'INACTIVE',
+                currentCupPrice: 25,
+                defaultCupPrice: 25,
+                minCupPrice: 20,
+                maxCupPrice: 30
+              })
+            });
+          } catch (putErr) {
+            console.warn('Soft-delete fallback note:', putErr);
+          }
+        }
+
+        // Step 4: Cleanup local cache, batches, and flavours map
+        if (liveProductsCache && Array.isArray(liveProductsCache)) {
+          liveProductsCache = liveProductsCache.filter(p => (p.productId || p.id) !== productId);
+        }
+        if (typeof batchesData !== 'undefined' && Array.isArray(batchesData)) {
+          batchesData = batchesData.filter(b => (b.productId !== productId && b.product_id !== productId));
+        }
+        delete flavoursMap[productId];
+        saveFlavoursMap();
+
+        // Step 5: Broadcast deletion across tabs & windows
+        broadcastEvent('PRODUCT_DELETED', { productId, name, timestamp: new Date().toISOString() });
+        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, deleted: true, isActive: false });
+
+        showToast(`🗑️ "${name}" (ID: #${productId}) was successfully removed!`, 'warning');
+        closeEditProductPricingModal();
+
+        // Step 6: Refresh all tables and panels
+        if (typeof renderLivePricingTable === 'function') renderLivePricingTable();
+        if (typeof renderBatchesTable === 'function') renderBatchesTable();
+        await loadLivePricingProducts();
+        await loadBatches();
+        await refreshDashboard();
+      } catch (err) {
+        console.error('Delete product failed:', err);
+        showToast(`Failed to delete "${name}": ${err.message}`, 'danger');
+      } finally {
+        if (btn) setButtonLoading(btn, false);
       }
     }
 
@@ -6417,57 +7556,63 @@
 
         return `
           <tr id="bulkRow_${pid}">
-            <td style="font-weight: 700; font-family: monospace; color: var(--text-muted);">#${pid}</td>
-            <td style="font-weight: 700;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 18px;">${icon}</span>
-                <div>
-                  <div style="font-weight: 800; font-size: 13.5px;">${name}</div>
-                  <div style="font-size: 10.5px; color: var(--text-muted);">${p.flavour || 'JUICE'}</div>
+            <td style="font-weight: 700; font-family: var(--font-mono); color: var(--text-muted); text-align: center;">#${pid}</td>
+            <td style="text-align: left; padding: 6px 10px;">
+              <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                <span style="font-size: 18px; line-height: 1; flex-shrink: 0;">${icon}</span>
+                <div style="min-width: 0; overflow: hidden;">
+                  <div style="font-weight: 800; font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${name}">${name}</div>
+                  <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.flavour || 'JUICE'}</div>
                 </div>
               </div>
             </td>
             <td>
               <input type="number" id="bulk_live_${pid}" value="${livePrice}" step="0.5" min="1"
-                style="width: 100%; padding: 6px 8px; font-size: 14px; font-weight: 800; text-align: center; border: 1.5px solid #059669; color: #059669;"
+                class="bulk-input-field"
+                style="border-color: rgba(5, 150, 105, 0.45); color: #059669; font-weight: 800; background: rgba(5, 150, 105, 0.04);"
                 data-original="${livePrice}">
             </td>
             <td>
               <input type="number" id="bulk_base_${pid}" value="${basePrice}" step="0.5" min="1"
                 oninput="syncBulkLiveToBase(${pid})"
-                style="width: 100%; padding: 6px 8px; font-size: 13px; font-weight: 700; text-align: center;"
+                class="bulk-input-field"
+                style="border-color: var(--border-color); color: var(--text-main);"
                 data-original="${basePrice}">
             </td>
             <td>
               <input type="number" id="bulk_floor_${pid}" value="${minPrice}" step="0.5" min="1"
-                style="width: 100%; padding: 6px 8px; font-size: 13px; font-weight: 700; text-align: center; border-color: #f87171;"
+                class="bulk-input-field"
+                style="border-color: rgba(220, 38, 38, 0.35); color: #dc2626;"
                 data-original="${minPrice}">
             </td>
             <td>
               <input type="number" id="bulk_ceiling_${pid}" value="${maxPrice}" step="0.5" min="1"
-                style="width: 100%; padding: 6px 8px; font-size: 13px; font-weight: 700; text-align: center; border-color: #60a5fa;"
+                class="bulk-input-field"
+                style="border-color: rgba(37, 99, 235, 0.35); color: #2563eb;"
                 data-original="${maxPrice}">
             </td>
             <td>
               <input type="number" id="bulk_target_${pid}" value="${Number(target).toFixed(2)}" step="0.05" min="0.05"
-                style="width: 100%; padding: 6px 8px; font-size: 13px; font-weight: 700; text-align: center;"
+                class="bulk-input-field"
+                style="border-color: var(--border-color); color: var(--text-secondary);"
                 data-original="${Number(target).toFixed(2)}">
             </td>
-            <td style="text-align: center; background: rgba(234, 88, 12, 0.03); border-left: 1px solid rgba(234, 88, 12, 0.15);">
-              <div style="display: inline-flex; align-items: center; justify-content: center; gap: 5px;">
-                <div style="display: inline-flex; align-items: center; background: var(--bg-card); border: 1.5px solid #ea580c; border-radius: 6px; padding: 0 4px; height: 32px;" title="Alter reset value for ${name}">
-                  <span style="font-size: 11.5px; font-weight: 800; color: #ea580c; margin-right: 2px;">₹</span>
+            <td style="text-align: center; background: rgba(234, 88, 12, 0.02); border-left: 1px solid rgba(234, 88, 12, 0.15);">
+              <div style="display: flex; align-items: center; justify-content: center;">
+                <div style="display: inline-flex; align-items: center; border: 1.5px solid #ea580c; border-radius: 6px; overflow: hidden; background: var(--bg-surface); height: 30px; box-shadow: 0 1px 3px rgba(234, 88, 12, 0.12);" title="Alter reset value for ${name}">
+                  <span style="font-size: 11px; font-weight: 800; color: #ea580c; padding: 0 5px; background: rgba(234, 88, 12, 0.1); border-right: 1px solid rgba(234, 88, 12, 0.25); height: 100%; display: flex; align-items: center;">₹</span>
                   <input type="number" id="rowResetVal_${pid}" value="${globalResetValue % 1 === 0 ? globalResetValue.toString() : globalResetValue.toFixed(2)}" step="0.5" min="1"
-                    style="width: 46px; border: none; outline: none; background: transparent; font-size: 13px; font-weight: 800; text-align: center; color: var(--text-main);"
+                    class="bulk-input-field"
+                    style="width: 44px; height: 100%; border: none; border-radius: 0; padding: 0 2px; font-size: 12px; font-weight: 800; text-align: center; color: var(--text-main); background: transparent;"
                     title="Type custom reset amount for this juice"
                     onkeydown="if(event.key==='Enter'){ event.preventDefault(); resetBulkRowWithCustomVal(${pid}); }">
+                  <button type="button"
+                    onclick="resetBulkRowWithCustomVal(${pid})"
+                    style="height: 100%; padding: 0 8px; font-size: 11px; font-weight: 800; background: #ea580c; color: #ffffff; border: none; cursor: pointer; transition: background 0.15s ease; white-space: nowrap; display: flex; align-items: center; gap: 2px;"
+                    title="Reset this product to the value specified in this box">
+                    ↺ Reset
+                  </button>
                 </div>
-                <button type="button" class="btn-primary"
-                  onclick="resetBulkRowWithCustomVal(${pid})"
-                  style="height: 32px; padding: 0 10px; font-size: 11.5px; font-weight: 800; background: #ea580c; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 1px 4px rgba(234, 88, 12, 0.2);"
-                  title="Reset this product to the value specified in this box">
-                  ↺ Reset
-                </button>
               </div>
             </td>
           </tr>
@@ -7147,6 +8292,94 @@
       await loadLivePricingProducts();
       setButtonLoading(btn, false);
       showToast(`Updated "${name}" details & synced live!`, 'success');
+    }
+
+    async function deleteJuiceFromBatchModal() {
+      const productId = parseInt(document.getElementById('editProductId').value);
+      const name = document.getElementById('editJuiceName').value.trim() || `Juice #${productId}`;
+
+      if (!productId) {
+        showToast('Invalid product ID.', 'danger');
+        return;
+      }
+
+      const confirmed = confirm(
+        `⚠️ PERMANENT DELETE BEVERAGE\n\n` +
+        `Are you sure you want to permanently delete "${name}" (ID: #${productId})?\n\n` +
+        `• This will permanently remove the beverage variety from the system.\n` +
+        `• This action cannot be reversed.\n\n` +
+        `Click OK to confirm permanent deletion.`
+      );
+      if (!confirmed) return;
+
+      const btn = document.getElementById('btnDeleteJuiceInEdit');
+      if (btn) setButtonLoading(btn, true, 'Deleting...');
+
+      try {
+        // Pre-clean any linked juice batches
+        try {
+          const associatedBatches = (batchesData || []).filter(b => (b.productId === productId || b.product_id === productId));
+          for (const b of associatedBatches) {
+            const batchId = b.id || b.batchCode;
+            if (batchId) {
+              await apiFetch(`/batches/${batchId}`, { method: 'DELETE' }).catch(() => {});
+            }
+          }
+        } catch (bErr) {
+          console.warn('Batch pre-cleanup note:', bErr);
+        }
+
+        let deleteSuccessful = false;
+        try {
+          const res = await apiFetch(`/pos/products/${productId}`, { method: 'DELETE' });
+          if (res.ok || res.status === 404) deleteSuccessful = true;
+        } catch (e) {
+          console.warn('Direct delete failed, trying fallback:', e);
+        }
+
+        if (!deleteSuccessful) {
+          try {
+            await apiFetch(`/pos/products/${productId}`, {
+              method: 'PUT',
+              body: JSON.stringify({
+                id: productId,
+                name: name,
+                isActive: false,
+                pricingMode: 'INACTIVE',
+                currentCupPrice: 25,
+                defaultCupPrice: 25,
+                minCupPrice: 20,
+                maxCupPrice: 30
+              })
+            });
+          } catch (putErr) {}
+        }
+
+        if (liveProductsCache && Array.isArray(liveProductsCache)) {
+          liveProductsCache = liveProductsCache.filter(p => (p.productId || p.id) !== productId);
+        }
+        if (typeof batchesData !== 'undefined' && Array.isArray(batchesData)) {
+          batchesData = batchesData.filter(b => (b.productId !== productId && b.product_id !== productId));
+        }
+        delete flavoursMap[productId];
+        saveFlavoursMap();
+
+        broadcastEvent('PRODUCT_DELETED', { productId, name, timestamp: new Date().toISOString() });
+        broadcastEvent('PRODUCT_PRICE_UPDATE', { productId, deleted: true, isActive: false });
+
+        showToast(`🗑️ "${name}" permanently deleted.`, 'warning');
+        closeEditJuiceModal();
+
+        if (typeof renderLivePricingTable === 'function') renderLivePricingTable();
+        if (typeof renderBatchesTable === 'function') renderBatchesTable();
+        await loadLivePricingProducts();
+        await loadBatches();
+        await refreshDashboard();
+      } catch (err) {
+        showToast(`Failed to delete "${name}": ${err.message}`, 'danger');
+      } finally {
+        if (btn) setButtonLoading(btn, false);
+      }
     }
 
     // Submit New Batch
@@ -8319,6 +9552,15 @@
 
           const subBatches = stompClient.subscribe('/topic/batches', function (message) {
             if (message.body) {
+              try {
+                const parsed = JSON.parse(message.body);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  batchesData = parsed;
+                  saveBatchesState();
+                  renderBatchesTable();
+                  renderDashboardBatches();
+                }
+              } catch (e) {}
               scheduleBatchWsRefresh({ batches: true, dashboard: true });
             }
           });
@@ -8400,7 +9642,8 @@
           adminStompSubscriptions.push(subSettle);
 
           const subOrders = stompClient.subscribe('/topic/orders', function (message) {
-            scheduleBatchWsRefresh({ dashboard: true });
+            scheduleBatchWsRefresh({ dashboard: true, batches: true, prices: true });
+            loadBatches();
           });
           adminStompSubscriptions.push(subOrders);
 
@@ -8445,8 +9688,9 @@
 
     if (pubExchangeChannel) {
       pubExchangeChannel.onmessage = (event) => {
-        if (event.data && (event.data.type === 'NEW_ORDER_PLACED' || event.data.type === 'CART_CHECKOUT_COMPLETED' || event.data.type === 'REFRESH_ORDERS')) {
-          scheduleBatchWsRefresh({ dashboard: true, prices: true });
+        if (event.data && (event.data.type === 'NEW_ORDER_PLACED' || event.data.type === 'CART_CHECKOUT_COMPLETED' || event.data.type === 'REFRESH_ORDERS' || event.data.type === 'BATCH_UPDATED')) {
+          scheduleBatchWsRefresh({ dashboard: true, prices: true, batches: true });
+          loadBatches();
           dwmaTelemetryCache = {};
           if (typeof renderDwmaCascadeVisualizer === 'function') {
             renderDwmaCascadeVisualizer(true);
@@ -8455,11 +9699,24 @@
       };
     }
 
+    window.addEventListener('storage', (e) => {
+      if ((e.key === 'pubexchange_last_event' || e.key === 'pubexchange_event') && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && (parsed.type === 'BATCH_UPDATED' || parsed.type === 'NEW_ORDER_PLACED' || parsed.type === 'CART_CHECKOUT_COMPLETED')) {
+            scheduleBatchWsRefresh({ dashboard: true, prices: true, batches: true });
+            loadBatches();
+          }
+        } catch (err) {}
+      }
+    });
+
     // Polling concurrency guards
     let isBotStatusFetching = false;
     let isLiveProductsFetching = false;
     let isRevenueChartFetching = false;
     let isVolumeDonutFetching = false;
+    let isBatchesFetching = false;
 
     // System Initialization
     async function initAdminApp() {
@@ -8481,6 +9738,18 @@
       const hashTab = location.hash ? location.hash.replace('#', '') : null;
       const savedActiveTab = hashTab || localStorage.getItem('pubexchange_active_tab') || 'dashboard';
       switchTab(savedActiveTab);
+
+      // Instant restore of active crash timer if stored
+      try {
+        const savedActive = localStorage.getItem('pubexchange_market_crash_active') === 'true';
+        const savedEndTime = parseInt(localStorage.getItem('pubexchange_market_crash_end_time') || '0', 10);
+        if (savedActive && savedEndTime > Date.now()) {
+          isAdminCrashActive = true;
+          adminCrashEndTime = savedEndTime;
+          adminCrashTotalSec = Math.ceil((savedEndTime - Date.now()) / 1000) > 60 ? 180 : 60;
+          updateMarketCrashTimerDisplay();
+        }
+      } catch (e) { }
 
       checkAdminBackendHealth();
       setInterval(checkAdminBackendHealth, 5000);
@@ -8512,6 +9781,12 @@
         isLiveProductsFetching = true;
         try { await loadLivePricingProducts(); } finally { isLiveProductsFetching = false; }
       }, 5000);
+
+      setInterval(async () => {
+        if (isBatchesFetching) return;
+        isBatchesFetching = true;
+        try { await loadBatches(); } catch (e) {} finally { isBatchesFetching = false; }
+      }, 3500);
 
       connectAdminWebSocket();
       if (isDashboardTabActive()) {

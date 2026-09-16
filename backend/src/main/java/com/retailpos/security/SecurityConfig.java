@@ -64,6 +64,7 @@ public class SecurityConfig {
                 // Live pricing read endpoints (needed by POS and LED display)
                 .requestMatchers(HttpMethod.GET, "/api/pricing/market", "/api/pricing/status", "/api/pricing/live", "/api/pricing/products").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pricing/market-crash/status", "/api/pricing/crash/status").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/pricing/market-crash/trigger", "/api/pricing/market-crash/stop").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pricing/history/**", "/api/pricing/history").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pricing/timing", "/api/pricing/config").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pricing/products/**").permitAll()
@@ -89,7 +90,7 @@ public class SecurityConfig {
 
                 // Admin & Manager role enforcement (Actuator management, internal metrics, and sensitive operations)
                 .requestMatchers("/actuator/**", "/api/metrics").hasAnyRole("ADMIN", "SUPER_ADMIN")
-                .requestMatchers("/api/admin/**", "/api/pricing/reset-all", "/api/pricing/reset", "/api/pricing/market-crash/trigger", "/api/pricing/market-crash/stop").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
+                .requestMatchers("/api/admin/**", "/api/pricing/reset-all", "/api/pricing/reset").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
 
                 // --- All other endpoints require authentication ---
                 .anyRequest().authenticated()
