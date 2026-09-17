@@ -190,6 +190,12 @@ public class MarketCrashService {
         return crashedProductIds.contains(productId);
     }
 
+    private LocalDateTime lastCrashEndTime;
+
+    public LocalDateTime getLastCrashEndTime() {
+        return lastCrashEndTime;
+    }
+
     public BigDecimal calculateCrashPrice(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null for crash calculation");
@@ -200,8 +206,12 @@ public class MarketCrashService {
         if (product.getMaxCupPrice() == null) {
             throw new IllegalArgumentException("Product ceiling price (maxCupPrice) is required for product ID: " + product.getId());
         }
+        BigDecimal configuredCrashPrice = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashPrice() : new BigDecimal("20.00");
         BigDecimal floor = product.getMinCupPrice();
-        return floor.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal ceiling = product.getMaxCupPrice();
+        // Invariant: crashPrice = MAX(configuredCrashPrice, product.minCupPrice) clamped to ceiling
+        BigDecimal crashPrice = configuredCrashPrice.max(floor).min(ceiling);
+        return crashPrice.setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getEffectivePrice(Product product) {
@@ -239,7 +249,7 @@ public class MarketCrashService {
         for (Product p : allProducts) {
             crashedProductIds.add(p.getId());
             BigDecimal preCrashPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : p.getDefaultCupPrice();
-            BigDecimal crashPrice = configuredCrashPrice;
+            BigDecimal crashPrice = configuredCrashPrice.max(p.getMinCupPrice()).min(p.getMaxCupPrice());
 
             // 2. Save immutable pre-crash snapshot in DB & Redis
             MarketCrashSnapshot snapshot = MarketCrashSnapshot.builder()
@@ -299,6 +309,7 @@ public class MarketCrashService {
         this.crashActive = false;
         LocalDateTime now = LocalDateTime.now();
         this.crashEndTime = now;
+        this.lastCrashEndTime = now;
 
         List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
         List<MarketCrashSnapshot> snapshots = (currentCrashCode != null) ? snapshotRepository.findByCrashCode(currentCrashCode) : Collections.emptyList();
@@ -316,6 +327,7 @@ public class MarketCrashService {
             if (restoredPrice == null) {
                 restoredPrice = p.getDefaultCupPrice() != null ? p.getDefaultCupPrice() : new BigDecimal("25.00");
             }
+            restoredPrice = restoredPrice.max(p.getMinCupPrice()).min(p.getMaxCupPrice());
 
             BigDecimal currentPrice = p.getCurrentCupPrice() != null ? p.getCurrentCupPrice() : new BigDecimal("20.00");
             p.setCurrentCupPrice(restoredPrice);

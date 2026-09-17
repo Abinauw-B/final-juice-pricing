@@ -60,6 +60,9 @@ public class PriceHistory {
     @Column(name = "settlement_id")
     private String settlementId;
 
+    @Column(name = "cycle_id")
+    private String cycleId;
+
     @Column(name = "demand_score", nullable = false)
     private Double demandScore = 50.0;
 
@@ -165,6 +168,8 @@ public class PriceHistory {
     public void setTriggerType(String triggerType) { this.triggerType = triggerType; }
     public String getSettlementId() { return settlementId; }
     public void setSettlementId(String settlementId) { this.settlementId = settlementId; }
+    public String getCycleId() { return cycleId != null ? cycleId : settlementId; }
+    public void setCycleId(String cycleId) { this.cycleId = cycleId; }
 
     public Integer getOrderCount() { return orderCount; }
     public void setOrderCount(Integer orderCount) { this.orderCount = orderCount; }
@@ -203,6 +208,7 @@ public class PriceHistory {
         private Integer unconsumedW0 = 0;
         private String triggerType = "SCHEDULED";
         private String settlementId;
+        private String cycleId;
         private Double demandScore = 50.0;
         private Double stockPressurePct = 0.0;
         private Double timeFactorMultiplier = 1.0;
@@ -234,6 +240,7 @@ public class PriceHistory {
         public PriceHistoryBuilder unconsumedW0(Integer unconsumedW0) { this.unconsumedW0 = unconsumedW0; return this; }
         public PriceHistoryBuilder triggerType(String triggerType) { this.triggerType = triggerType; return this; }
         public PriceHistoryBuilder settlementId(String settlementId) { this.settlementId = settlementId; return this; }
+        public PriceHistoryBuilder cycleId(String cycleId) { this.cycleId = cycleId; return this; }
         public PriceHistoryBuilder demandScore(Double demandScore) { this.demandScore = demandScore; return this; }
         public PriceHistoryBuilder stockPressurePct(Double stockPressurePct) { this.stockPressurePct = stockPressurePct; return this; }
         public PriceHistoryBuilder timeFactorMultiplier(Double timeFactorMultiplier) { this.timeFactorMultiplier = timeFactorMultiplier; return this; }
@@ -256,6 +263,7 @@ public class PriceHistory {
             ph.setUnconsumedW0(unconsumedW0);
             ph.setTriggerType(triggerType);
             ph.setSettlementId(settlementId);
+            ph.setCycleId(cycleId != null ? cycleId : settlementId);
             ph.setOrderCount(orderCount);
             ph.setRawPriceChangePercent(rawPriceChangePercent);
             ph.setAppliedPriceChangePercent(appliedPriceChangePercent);

@@ -372,18 +372,25 @@ public class POSService {
         List<SalesOrderItem> orderItems = new ArrayList<>();
         List<OrderItemResponse> itemResponses = new ArrayList<>();
 
+        boolean isCrash = (marketCrashService != null && marketCrashService.isCrashActive());
+
         SalesOrder salesOrder = SalesOrder.builder()
                 .orderNumber(orderNum)
                 .idempotencyKey(request.getIdempotencyKey())
                 .totalAmount(BigDecimal.ZERO)
                 .paymentMethod(paymentMethod)
                 .paymentStatus("COMPLETED")
+                .isCrashSale(isCrash)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         Set<Long> purchasedProductIds = new HashSet<>();
 
-        for (CartItemRequest itemReq : request.getItems()) {
+        // Deterministic sorting of cart items by productId ASC to prevent lock order inversion & deadlock
+        List<CartItemRequest> itemsToProcess = new ArrayList<>(request.getItems());
+        itemsToProcess.sort(Comparator.comparing(CartItemRequest::getProductId, Comparator.nullsLast(Comparator.naturalOrder())));
+
+        for (CartItemRequest itemReq : itemsToProcess) {
             Product product = productRepository.findById(itemReq.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + itemReq.getProductId()));
 
@@ -428,6 +435,7 @@ public class POSService {
                     .quantity(qty)
                     .totalPrice(itemTotal)
                     .volumeDeductedMl(totalVolumeMl)
+                    .isCrashSale(isCrash)
                     .build();
 
             orderItems.add(orderItem);

@@ -181,12 +181,17 @@ public class PriceAdjustmentService {
 
     @Transactional
     public PriceEvaluationResult evaluateAndAdjustPrice(Long productId) {
-        return evaluateAndAdjustPrice(productId, LocalDateTime.now());
+        return evaluateAndAdjustPrice(productId, LocalDateTime.now(), null, null);
     }
 
     @Transactional
     public PriceEvaluationResult evaluateAndAdjustPrice(Long productId, LocalDateTime evaluationTime) {
-        Product product = productRepository.findById(productId)
+        return evaluateAndAdjustPrice(productId, evaluationTime, null, null);
+    }
+
+    @Transactional
+    public PriceEvaluationResult evaluateAndAdjustPrice(Long productId, LocalDateTime evaluationTime, PricingConfigurationService.PricingConfigSnapshot snapshot, String cycleId) {
+        Product product = productRepository.findByIdWithLock(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
 
         LocalDateTime now = evaluationTime != null ? evaluationTime : LocalDateTime.now();
@@ -236,7 +241,6 @@ public class PriceAdjustmentService {
                 product.setPriceVersion((product.getPriceVersion() != null ? product.getPriceVersion() : 1) + 1);
                 product.setLastPriceChangeTimestamp(now);
             }
-            // DO NOT reset order_count during crash!
             productRepository.saveAndFlush(product);
 
             PriceHistory history = PriceHistory.builder()
@@ -252,9 +256,10 @@ public class PriceAdjustmentService {
                     .floorPrice(floor)
                     .ceilingPrice(ceiling)
                     .priceVersion(product.getPriceVersion())
+                    .cycleId(cycleId)
                     .triggerType("MARKET_CRASH_ROUND")
                     .reason("MARKET_CRASH_HOLD")
-                    .explanation("🚨 Market crash active: Price set to floor + 5% (₹" + crashPrice + ")")
+                    .explanation("🚨 Market crash active: Price set to floor (₹" + crashPrice + ")")
                     .createdAt(now)
                     .build();
             priceHistoryRepository.save(history);
@@ -297,28 +302,55 @@ public class PriceAdjustmentService {
                     .build();
         }
 
-        // --- SINGLE AUTHORITATIVE DWMA PRICING MODEL (DYNAMIC CONFIGURATION) ---
-        long configVersion = pricingConfigurationService != null ? pricingConfigurationService.getConfigurationVersion() : 1L;
-        BigDecimal weightW0 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW0() : new BigDecimal("1.0000");
-        BigDecimal weightW1 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW1() : new BigDecimal("0.5000");
-        BigDecimal weightW2 = pricingConfigurationService != null ? pricingConfigurationService.getWeightW2() : new BigDecimal("0.2500");
-        BigDecimal highThresh = pricingConfigurationService != null ? pricingConfigurationService.getHighDemandThreshold() : new BigDecimal("1.1000");
-        BigDecimal stableLow = pricingConfigurationService != null ? pricingConfigurationService.getStableDemandLowerThreshold() : new BigDecimal("0.9000");
-        BigDecimal lowThresh = pricingConfigurationService != null ? pricingConfigurationService.getLowDemandThreshold() : new BigDecimal("0.5000");
+        // --- SINGLE AUTHORITATIVE DWMA PRICING MODEL (SNAPSHOT CONFIGURATION) ---
+        PricingConfigurationService.PricingConfigSnapshot config = (snapshot != null)
+                ? snapshot
+                : (pricingConfigurationService != null ? pricingConfigurationService.getSnapshot() : new PricingConfigurationService.PricingConfigSnapshot(
+                        1L, 60, "1 min", new BigDecimal("1.0000"), new BigDecimal("0.5000"), new BigDecimal("0.2500"),
+                        new BigDecimal("1.1000"), new BigDecimal("0.9000"), new BigDecimal("0.5000"),
+                        new BigDecimal("1.00"), new BigDecimal("1.00"), new BigDecimal("20.00"), 180, Collections.emptyMap()
+                ));
+
+        long configVersion = config.getConfigurationVersion();
+        BigDecimal weightW0 = config.getWeightW0();
+        BigDecimal weightW1 = config.getWeightW1();
+        BigDecimal weightW2 = config.getWeightW2();
+        BigDecimal highThresh = config.getHighDemandThreshold();
+        BigDecimal stableLow = config.getStableDemandLowerThreshold();
+        BigDecimal lowThresh = config.getLowDemandThreshold();
+        int intervalSec = config.getSettlementIntervalSeconds();
 
         // 1. Time windows based on configured settlement interval: W0 [now - interval, now), W1 [now - 2*interval, now - interval), W2 [now - 3*interval, now - 2*interval)
-        int intervalSec = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
-
         LocalDateTime w0Start = now.minusSeconds(intervalSec);
-        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
-
         LocalDateTime w1Start = now.minusSeconds(2L * intervalSec);
         LocalDateTime w1End = now.minusSeconds(intervalSec);
-        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
-
         LocalDateTime w2Start = now.minusSeconds(3L * intervalSec);
         LocalDateTime w2End = now.minusSeconds(2L * intervalSec);
-        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
+
+        int w0, w1, w2;
+        try {
+            // Section 17 & 28: Server-side crash sales exclusion from demand measurement windows
+            w0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
+            w1 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
+            w2 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
+        } catch (Exception dbEx) {
+            // Section 17: Database failure must not become zero demand
+            log.error("[DEMAND_QUERY_FAILED] Failed to query sales demand for productId={}: {}. Safe preservation of current price.", productId, dbEx.getMessage());
+            return PriceEvaluationResult.builder()
+                    .productId(productId)
+                    .flavour(product.getFlavour())
+                    .oldPrice(oldPrice)
+                    .newPrice(oldPrice)
+                    .priceChange(BigDecimal.ZERO)
+                    .priceChanged(false)
+                    .demandRatio(1.0)
+                    .weightedSales(0.0)
+                    .targetSales(0.0)
+                    .demandLevelCategory("NORMAL")
+                    .explanation("Database error during demand measurement. Current price held safe.")
+                    .statusReason("QUERY_FAILURE_PRESERVE_PRICE")
+                    .build();
+        }
 
         // 2. Weighted sales calculation (DWMA normalized by sum of weights):
         // Sw = (w0*weightW0 + w1*weightW1 + w2*weightW2) / (weightW0 + weightW1 + weightW2)
@@ -342,26 +374,37 @@ public class PriceAdjustmentService {
 
         // 3. Target sales normalized to intervalSec:
         // Product target is defined per 1 minute (60 seconds). Normalized target for interval = targetPer1Min * (intervalSec / 60.0)
-        double baseTargetPer1Min = pricingConfigurationService != null
-                ? pricingConfigurationService.getTargetSalesForProduct(product)
-                : (product.getTargetSalesPer1Minute() != null && product.getTargetSalesPer1Minute() > 0 ? product.getTargetSalesPer1Minute() : 0.55);
+        double baseTargetPer1Min = (product.getTargetSalesPer1Minute() != null && product.getTargetSalesPer1Minute() > 0)
+                ? product.getTargetSalesPer1Minute()
+                : (pricingConfigurationService != null ? pricingConfigurationService.getTargetSalesForProduct(product) : 0.55);
         double normalizedTarget = baseTargetPer1Min * ((double) intervalSec / 60.0);
         BigDecimal targetSalesBd = BigDecimal.valueOf(normalizedTarget).setScale(4, RoundingMode.HALF_UP);
 
-        // 4. Demand ratio: R_d = S_w / TargetSales
-        BigDecimal rd = (targetSalesBd.compareTo(BigDecimal.ZERO) > 0)
-                ? sw.divide(targetSalesBd, 4, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO;
+        // 4. Demand ratio with Bayesian prior pseudo-count smoothing (Section 10 & 11):
+        // Rd = (Sw + K * Target) / ((1 + K) * Target)
+        // When Sw == Target: Rd = (Target + K * Target) / ((1 + K) * Target) = 1.0000 exactly!
+        BigDecimal rd;
+        if (targetSalesBd.compareTo(BigDecimal.ZERO) <= 0) {
+            rd = BigDecimal.ZERO;
+        } else {
+            double kPrior = 1.5;
+            double smoothedNumerator = weightedSales + (kPrior * normalizedTarget);
+            double smoothedDenominator = (1.0 + kPrior) * normalizedTarget;
+            double smoothedRd = smoothedNumerator / smoothedDenominator;
+            rd = BigDecimal.valueOf(smoothedRd).setScale(4, RoundingMode.HALF_UP);
+        }
         double demandRatio = rd.doubleValue();
 
-        // 5. Dynamic movement rules (Strictly +₹1.00, ₹0.00, -₹1.00, -₹2.00)
+        // 5. Dynamic movement rules (Strictly +₹1.00, ₹0.00, -₹1.00)
         BigDecimal deltaP;
         int movement;
         String reason;
         String demandLevelCategory;
 
         if (rd.compareTo(highThresh) >= 0) {
-            if (sw.compareTo(BigDecimal.ZERO) > 0) {
+            // Low-sample protection: prevent 1 isolated accidental purchase on micro-windows from triggering surge
+            boolean hasSufficientVolume = (w0 + w1 >= 2) || (targetSalesBd.compareTo(BigDecimal.ONE) >= 0 && w0 >= 1);
+            if (sw.compareTo(BigDecimal.ZERO) > 0 && hasSufficientVolume) {
                 deltaP = new BigDecimal("1.00");
                 movement = 1;
                 reason = "HIGH_DEMAND_SURGE";
@@ -369,7 +412,7 @@ public class PriceAdjustmentService {
             } else {
                 deltaP = BigDecimal.ZERO;
                 movement = 0;
-                reason = "HIGH_HISTORICAL_ZERO_CURRENT_HOLD";
+                reason = (sw.compareTo(BigDecimal.ZERO) == 0) ? "HIGH_HISTORICAL_ZERO_CURRENT_HOLD" : "LOW_SAMPLE_VOLUME_HOLD";
                 demandLevelCategory = "NORMAL";
             }
         } else if (rd.compareTo(stableLow) >= 0) {
@@ -389,6 +432,30 @@ public class PriceAdjustmentService {
             demandLevelCategory = "VERY_LOW";
         }
 
+        // Time-based decay pacing protection (Section 12 & 13):
+        // Decay occurs at most once per minimum decay quantum (60s) to prevent price collapse on micro-windows
+        if (movement < 0) {
+            LocalDateTime lastChange = product.getLastPriceChangeTimestamp();
+            int minDecayCooldownSeconds = Math.max(60, intervalSec);
+            if (lastChange != null && now.isBefore(lastChange.plusSeconds(minDecayCooldownSeconds))) {
+                deltaP = BigDecimal.ZERO;
+                movement = 0;
+                reason = "ZERO_DEMAND_COOLDOWN_HOLD";
+            }
+        }
+
+        // Floor and Ceiling boundary clamping (Section 3, 10)
+        if (oldPrice.compareTo(floor) <= 0 && deltaP.compareTo(BigDecimal.ZERO) < 0) {
+            deltaP = BigDecimal.ZERO;
+            movement = 0;
+            reason = "FLOOR_PRICE_REACHED";
+        }
+        if (oldPrice.compareTo(ceiling) >= 0 && deltaP.compareTo(BigDecimal.ZERO) > 0) {
+            deltaP = BigDecimal.ZERO;
+            movement = 0;
+            reason = "CEILING_PRICE_REACHED";
+        }
+
         // Validate strictly allowed price movement (+1.00, 0.00, -1.00)
         PricingConfigurationService.validatePriceMovement(deltaP);
 
@@ -398,8 +465,10 @@ public class PriceAdjustmentService {
         BigDecimal priceChange = newPrice.subtract(oldPrice);
         boolean changed = oldPrice.compareTo(newPrice) != 0;
 
-        String intervalLabel = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalLabel() : (intervalSec + "s");
-        String settlementKey = "SETTLEMENT_" + now.withSecond(0).withNano(0).toString();
+        String intervalLabel = config.getSettlementIntervalLabel();
+        String settlementKey = (cycleId != null && !cycleId.isBlank())
+                ? cycleId
+                : "SETTLEMENT_" + now.withSecond(0).withNano(0).toString();
 
         log.info("[PRICING_SETTLEMENT_START] product='{}' (id={}) window={} (interval={}s) oldPrice=₹{}", product.getName(), productId, intervalLabel, intervalSec, oldPrice);
         log.info("[PRODUCT_DEMAND_CALCULATED] product='{}' w0={} w1={} w2={} weightedSales={} target={} demandRatio={}",
@@ -451,6 +520,7 @@ public class PriceAdjustmentService {
                 .configVersion(configVersion)
                 .triggerType("SCHEDULED_ROUND")
                 .settlementId(settlementKey)
+                .cycleId(cycleId)
                 .calculationWindowStart(now.minusSeconds(intervalSec))
                 .calculationWindowEnd(now)
                 .reason(reason)
@@ -985,15 +1055,15 @@ public class PriceAdjustmentService {
 
         // DWMA time windows based on configured intervalSec
         LocalDateTime w0Start = now.minusSeconds(intervalSec);
-        int w0 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
+        int w0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
 
         LocalDateTime w1Start = now.minusSeconds(2L * intervalSec);
         LocalDateTime w1End = now.minusSeconds(intervalSec);
-        int w1 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
+        int w1 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
 
         LocalDateTime w2Start = now.minusSeconds(3L * intervalSec);
         LocalDateTime w2End = now.minusSeconds(2L * intervalSec);
-        int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
+        int w2 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
 
         BigDecimal sumWeights = weightW0.add(weightW1).add(weightW2);
         if (sumWeights.compareTo(BigDecimal.ZERO) <= 0) {
@@ -1008,15 +1078,23 @@ public class PriceAdjustmentService {
         double weightedSales = sw.doubleValue();
 
         BigDecimal targetSalesBd = BigDecimal.valueOf(normalizedTarget).setScale(4, RoundingMode.HALF_UP);
-        BigDecimal rd = (targetSalesBd.compareTo(BigDecimal.ZERO) > 0)
-                ? sw.divide(targetSalesBd, 4, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO;
+        BigDecimal rd;
+        if (targetSalesBd.compareTo(BigDecimal.ZERO) <= 0) {
+            rd = BigDecimal.ZERO;
+        } else {
+            double kPrior = 1.5;
+            double smoothedNumerator = weightedSales + (kPrior * normalizedTarget);
+            double smoothedDenominator = (1.0 + kPrior) * normalizedTarget;
+            double smoothedRd = smoothedNumerator / smoothedDenominator;
+            rd = BigDecimal.valueOf(smoothedRd).setScale(4, RoundingMode.HALF_UP);
+        }
         double demandRatio = rd.doubleValue();
 
         int movement;
         String category;
         if (rd.compareTo(highThresh) >= 0) {
-            if (w0 > 0) {
+            boolean hasSufficientVolume = (w0 + w1 >= 2) || (targetSalesBd.compareTo(BigDecimal.ONE) >= 0 && w0 >= 1);
+            if (sw.compareTo(BigDecimal.ZERO) > 0 && hasSufficientVolume) {
                 movement = incStep.intValue();
                 category = "HIGH";
             } else {
@@ -1027,31 +1105,38 @@ public class PriceAdjustmentService {
             movement = 0;
             category = "NORMAL";
         } else if (rd.compareTo(lowThresh) >= 0) {
-            if (currentPrice.compareTo(floor) <= 0) {
-                movement = 1;
-                category = "BARGAIN_BOUNCE";
-            } else {
-                movement = -1;
-                category = "LOW";
-            }
+            movement = -1;
+            category = "LOW";
         } else {
-            if (currentPrice.compareTo(floor) <= 0) {
-                movement = 1;
-                category = "BARGAIN_BOUNCE";
-            } else {
-                movement = -1;
-                category = "VERY_LOW";
+            movement = -1;
+            category = "VERY_LOW";
+        }
+
+        // Decay pacing
+        if (movement < 0) {
+            LocalDateTime lastChange = p.getLastPriceChangeTimestamp();
+            int minDecayCooldownSeconds = Math.max(60, intervalSec);
+            if (lastChange != null && now.isBefore(lastChange.plusSeconds(minDecayCooldownSeconds))) {
+                movement = 0;
             }
+        }
+
+        // Clamping
+        if (currentPrice.compareTo(floor) <= 0 && movement < 0) {
+            movement = 0;
+        }
+        if (currentPrice.compareTo(ceiling) >= 0 && movement > 0) {
+            movement = 0;
         }
 
         BigDecimal uncappedPrice = currentPrice.add(BigDecimal.valueOf(movement));
         BigDecimal projectedPrice = uncappedPrice.max(floor).min(ceiling).setScale(2, RoundingMode.HALF_UP);
 
         String breakdown = String.format(
-                "Current Window W0 [0–%ds]: %d, W1 [%ds–%ds]: %d, W2 [%ds–%ds]: %d | Weighted Sales: (%.2f*%d + %.2f*%d + %.2f*%d)/%.2f = %.2f | Target: %.2f cups (%ds) | Demand Ratio: %.2f / %.2f = %.4f (%s) | Movement: %+d => Projected: ₹%s",
+                "Current Window W0 [0–%ds]: %d, W1 [%ds–%ds]: %d, W2 [%ds–%ds]: %d | Weighted Sales: (%.2f*%d + %.2f*%d + %.2f*%d)/%.2f = %.2f | Target: %.2f cups (%ds) | Demand Ratio: %.4f (%s) | Movement: %+d => Projected: ₹%s",
                 intervalSec, w0, intervalSec, 2 * intervalSec, w1, 2 * intervalSec, 3 * intervalSec, w2,
                 weightW0.doubleValue(), w0, weightW1.doubleValue(), w1, weightW2.doubleValue(), w2, sumWeights.doubleValue(),
-                weightedSales, normalizedTarget, intervalSec, weightedSales, normalizedTarget, demandRatio, category, movement, projectedPrice
+                weightedSales, normalizedTarget, intervalSec, demandRatio, category, movement, projectedPrice
         );
 
         return new PriceDebugDTO(

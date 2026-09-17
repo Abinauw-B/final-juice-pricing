@@ -70,6 +70,48 @@ public class PricingConfigurationService {
         }
     }
 
+    // --- IMMUTABLE SNAPSHOT FOR CYCLE-CONSISTENT CALCULATIONS ---
+
+    public record PricingConfigSnapshot(
+            long version,
+            int intervalSeconds,
+            BigDecimal weightW0,
+            BigDecimal weightW1,
+            BigDecimal weightW2,
+            BigDecimal highDemandThreshold,
+            BigDecimal stableDemandLowerThreshold,
+            BigDecimal stableDemandUpperThreshold,
+            BigDecimal lowDemandThreshold,
+            BigDecimal increaseStep,
+            BigDecimal priceDecreaseStep,
+            BigDecimal defaultCupPrice,
+            BigDecimal minCupPrice,
+            BigDecimal maxCupPrice,
+            BigDecimal marketCrashPrice,
+            int marketCrashDurationSeconds
+    ) {}
+
+    public PricingConfigSnapshot getSnapshot() {
+        return new PricingConfigSnapshot(
+                getConfigurationVersion(),
+                getSettlementIntervalSeconds(),
+                getWeightW0(),
+                getWeightW1(),
+                getWeightW2(),
+                getHighDemandThreshold(),
+                getStableDemandLowerThreshold(),
+                getStableDemandUpperThreshold(),
+                getLowDemandThreshold(),
+                getIncreaseStep(),
+                getPriceDecreaseStep(),
+                getDefaultCupPrice(),
+                getMinCupPrice(),
+                getMaxCupPrice(),
+                getMarketCrashPrice(),
+                getMarketCrashDurationSeconds()
+        );
+    }
+
     // --- GETTERS FOR DWMA ENGINE ---
 
     public long getConfigurationVersion() {
@@ -499,8 +541,8 @@ public class PricingConfigurationService {
         }
         if (config.getSettlementIntervalSeconds() != null) {
             int interval = config.getSettlementIntervalSeconds();
-            if (!ALLOWED_INTERVALS.contains(interval)) {
-                throw new IllegalArgumentException("Invalid settlement interval: " + interval + "s. Allowed values are: 10s (10), 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600), 15 min (900).");
+            if (!isValidInterval(interval)) {
+                throw new IllegalArgumentException("Invalid settlement interval: " + interval + "s. Settlement interval must be between 5 seconds and 86400 seconds (24 hours).");
             }
         }
         if (config.getMarketCrashDurationSeconds() != null && config.getMarketCrashDurationSeconds() <= 0) {
@@ -534,7 +576,12 @@ public class PricingConfigurationService {
         }
     }
 
-    public static final Set<Integer> ALLOWED_INTERVALS = Set.of(10, 30, 60, 120, 300, 600, 900);
+    public static final Set<Integer> STANDARD_INTERVALS = Set.of(10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600);
+    public static final Set<Integer> ALLOWED_INTERVALS = STANDARD_INTERVALS;
+
+    public static boolean isValidInterval(int seconds) {
+        return seconds >= 5 && seconds <= 86400;
+    }
 
     public String getSettlementIntervalLabel() {
         int sec = getSettlementIntervalSeconds();
@@ -550,12 +597,15 @@ public class PricingConfigurationService {
     public static String getIntervalLabel(int seconds) {
         return switch (seconds) {
             case 10 -> "10 Seconds";
+            case 15 -> "15 Seconds";
             case 30 -> "30 Seconds";
             case 60 -> "1 Minute";
             case 120 -> "2 Minutes";
             case 300 -> "5 Minutes";
             case 600 -> "10 Minutes";
             case 900 -> "15 Minutes";
+            case 1800 -> "30 Minutes";
+            case 3600 -> "1 Hour";
             default -> (seconds % 60 == 0) ? (seconds / 60) + " Minutes" : seconds + " Seconds";
         };
     }
