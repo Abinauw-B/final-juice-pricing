@@ -89,7 +89,34 @@ public class PricingConfigurationService {
             BigDecimal maxCupPrice,
             BigDecimal marketCrashPrice,
             int marketCrashDurationSeconds
-    ) {}
+    ) {
+        public long getConfigurationVersion() { return version; }
+        public int getSettlementIntervalSeconds() { return intervalSeconds; }
+        public String getSettlementIntervalLabel() { return PricingConfigurationService.getIntervalLabel(intervalSeconds); }
+        public BigDecimal getWeightW0() { return weightW0; }
+        public BigDecimal getWeightW1() { return weightW1; }
+        public BigDecimal getWeightW2() { return weightW2; }
+        public BigDecimal getHighDemandThreshold() { return highDemandThreshold; }
+        public BigDecimal getStableDemandLowerThreshold() { return stableDemandLowerThreshold; }
+        public BigDecimal getStableDemandUpperThreshold() { return stableDemandUpperThreshold; }
+        public BigDecimal getLowDemandThreshold() { return lowDemandThreshold; }
+        public BigDecimal getIncreaseStep() { return increaseStep; }
+        public BigDecimal getPriceDecreaseStep() { return priceDecreaseStep; }
+        public BigDecimal getDefaultCupPrice() { return defaultCupPrice; }
+        public BigDecimal getMinCupPrice() { return minCupPrice; }
+        public BigDecimal getMaxCupPrice() { return maxCupPrice; }
+        public BigDecimal getMarketCrashPrice() { return marketCrashPrice; }
+        public int getMarketCrashDurationSeconds() { return marketCrashDurationSeconds; }
+
+        public static PricingConfigSnapshot defaultSnapshot() {
+            return new PricingConfigSnapshot(
+                    1L, 60, new BigDecimal("1.0000"), new BigDecimal("0.5000"), new BigDecimal("0.2500"),
+                    new BigDecimal("1.1000"), new BigDecimal("0.9000"), new BigDecimal("1.1000"), new BigDecimal("0.5000"),
+                    new BigDecimal("1.00"), new BigDecimal("1.00"), new BigDecimal("25.00"), new BigDecimal("20.00"),
+                    new BigDecimal("35.00"), new BigDecimal("20.00"), 180
+            );
+        }
+    }
 
     public PricingConfigSnapshot getSnapshot() {
         return new PricingConfigSnapshot(

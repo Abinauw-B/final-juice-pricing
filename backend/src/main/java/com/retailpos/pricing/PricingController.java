@@ -461,7 +461,7 @@ public class PricingController {
         res.put("active", true);
         res.put("pricingModel", "DWMA");
         res.put("nextSettlementAt", pricingEngineService != null && pricingEngineService.getNextSettlementTime() != null ? pricingEngineService.getNextSettlementTime().toString() : LocalDateTime.now().plusSeconds(interval).toString());
-        res.put("allowedIntervals", List.of(10, 30, 60, 120, 300, 600, 900));
+        res.put("allowedIntervals", PricingConfigurationService.STANDARD_INTERVALS.stream().sorted().toList());
         return ResponseEntity.ok(res);
     }
 
@@ -504,15 +504,15 @@ public class PricingController {
         if (selectedInterval == null) {
             Map<String, Object> err = new HashMap<>();
             err.put("error", "intervalSeconds is required");
-            err.put("allowedIntervals", List.of(10, 30, 60, 120, 300, 600, 900));
+            err.put("allowedIntervals", PricingConfigurationService.STANDARD_INTERVALS.stream().sorted().toList());
             return ResponseEntity.badRequest().body(err);
         }
 
-        if (!PricingConfigurationService.ALLOWED_INTERVALS.contains(selectedInterval)) {
+        if (!PricingConfigurationService.isValidInterval(selectedInterval)) {
             Map<String, Object> err = new HashMap<>();
             err.put("error", "Invalid settlement interval: " + selectedInterval
-                    + "s. Allowed values are: 10s (10), 30s (30), 1 min (60), 2 min (120), 5 min (300), 10 min (600), 15 min (900).");
-            err.put("allowedIntervals", List.of(10, 30, 60, 120, 300, 600, 900));
+                    + "s. Settlement interval must be between 5s and 86400s (24h).");
+            err.put("allowedIntervals", PricingConfigurationService.STANDARD_INTERVALS.stream().sorted().toList());
             return ResponseEntity.badRequest().body(err);
         }
 

@@ -305,11 +305,7 @@ public class PriceAdjustmentService {
         // --- SINGLE AUTHORITATIVE DWMA PRICING MODEL (SNAPSHOT CONFIGURATION) ---
         PricingConfigurationService.PricingConfigSnapshot config = (snapshot != null)
                 ? snapshot
-                : (pricingConfigurationService != null ? pricingConfigurationService.getSnapshot() : new PricingConfigurationService.PricingConfigSnapshot(
-                        1L, 60, "1 min", new BigDecimal("1.0000"), new BigDecimal("0.5000"), new BigDecimal("0.2500"),
-                        new BigDecimal("1.1000"), new BigDecimal("0.9000"), new BigDecimal("0.5000"),
-                        new BigDecimal("1.00"), new BigDecimal("1.00"), new BigDecimal("20.00"), 180, Collections.emptyMap()
-                ));
+                : (pricingConfigurationService != null ? pricingConfigurationService.getSnapshot() : PricingConfigurationService.PricingConfigSnapshot.defaultSnapshot());
 
         long configVersion = config.getConfigurationVersion();
         BigDecimal weightW0 = config.getWeightW0();

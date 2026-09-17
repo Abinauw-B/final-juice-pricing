@@ -175,10 +175,15 @@ public class PricingSettlementCoordinator {
 
             // 5. Execute Transactional Price Calculation & Persistence
             final String finalWindowKey = windowKey;
-            final int finalIntervalSec = intervalSeconds;
+            PricingConfigurationService.PricingConfigSnapshot snapshot = (pricingConfigurationService != null)
+                    ? pricingConfigurationService.getSnapshot()
+                    : null;
+            final PricingConfigurationService.PricingConfigSnapshot cycleConfig = snapshot;
+            final int finalIntervalSec = (snapshot != null) ? snapshot.getSettlementIntervalSeconds() : intervalSeconds;
 
             SettlementTransactionResult txResult = transactionTemplate.execute(status -> {
-                List<Product> products = productRepository.findByIsActiveTrueOrderByIdAsc();
+                // Section 20, 73, 74: Deterministic lock ordering on active products
+                List<Product> products = productRepository.findAllActiveWithLock();
                 List<PricingEngineService.ProductPriceDTO> dtos = new ArrayList<>();
                 int updatedCount = 0;
                 int unchangedCount = 0;
@@ -186,9 +191,9 @@ public class PricingSettlementCoordinator {
                 for (Product product : products) {
                     BigDecimal oldPrice = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice() : product.getDefaultCupPrice();
 
-                    // Evaluate demand and exact price movement
+                    // Evaluate demand and exact price movement using immutable cycle snapshot
                     PriceAdjustmentService.PriceEvaluationResult evalResult =
-                            priceAdjustmentService.evaluateAndAdjustPrice(product.getId(), now);
+                            priceAdjustmentService.evaluateAndAdjustPrice(product.getId(), now, cycleConfig, executionId);
 
                     Product reloaded = productRepository.findById(product.getId()).orElse(product);
                     BigDecimal newPrice = evalResult.getNewPrice() != null ? evalResult.getNewPrice() : reloaded.getCurrentCupPrice();
