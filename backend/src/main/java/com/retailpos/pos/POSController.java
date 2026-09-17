@@ -46,8 +46,16 @@ public class POSController {
     private void broadcastProductUpdate() {
         try {
             List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
-            messagingTemplate.convertAndSend("/topic/prices", allProducts);
-            messagingTemplate.convertAndSend("/topic/products", allProducts);
+            if (messagingTemplate != null) {
+                messagingTemplate.convertAndSend("/topic/prices", allProducts);
+                messagingTemplate.convertAndSend("/topic/products", allProducts);
+                messagingTemplate.convertAndSend("/topic/led-display", allProducts);
+                Map<String, Object> settleMsg = new HashMap<>();
+                settleMsg.put("type", "PRODUCT_UPDATED");
+                settleMsg.put("timestamp", LocalDateTime.now().toString());
+                settleMsg.put("products", allProducts);
+                messagingTemplate.convertAndSend("/topic/settlement", settleMsg);
+            }
         } catch (Exception e) {}
     }
 

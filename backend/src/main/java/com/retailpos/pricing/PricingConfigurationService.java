@@ -399,6 +399,7 @@ public class PricingConfigurationService {
                 List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
                 messagingTemplate.convertAndSend("/topic/prices", activeProducts);
                 messagingTemplate.convertAndSend("/topic/products", activeProducts);
+                messagingTemplate.convertAndSend("/topic/led-display", activeProducts);
                 Map<String, Object> settlementMsg = new HashMap<>();
                 settlementMsg.put("type", "PRICING_CONFIG_UPDATED");
                 settlementMsg.put("version", newVersion);
@@ -522,6 +523,12 @@ public class PricingConfigurationService {
                 List<Product> activeProds = productRepository.findByIsActiveTrueOrderByIdAsc();
                 messagingTemplate.convertAndSend("/topic/prices", activeProds);
                 messagingTemplate.convertAndSend("/topic/products", activeProds);
+                messagingTemplate.convertAndSend("/topic/led-display", activeProds);
+                Map<String, Object> settlementMsg = new HashMap<>();
+                settlementMsg.put("type", "PRODUCT_CONFIG_UPDATED");
+                settlementMsg.put("productId", productId);
+                settlementMsg.put("timestamp", java.time.LocalDateTime.now().toString());
+                messagingTemplate.convertAndSend("/topic/settlement", settlementMsg);
             }
         } catch (Exception e) {}
 

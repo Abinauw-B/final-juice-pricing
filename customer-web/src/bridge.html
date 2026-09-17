@@ -7,14 +7,17 @@
 <body>
   <script>
     const bc = new BroadcastChannel('pubexchange_market_channel');
+    const bc2 = new BroadcastChannel('pubexchange_channel');
 
     // 1. Forward events from Port 8000 BroadcastChannel to Admin Panel (Port 8001 parent window)
-    bc.onmessage = (event) => {
+    const forwardToParent = (event) => {
       if (!event.data) return;
       if (window.parent && window.parent !== window) {
         window.parent.postMessage(event.data, '*');
       }
     };
+    bc.onmessage = forwardToParent;
+    bc2.onmessage = forwardToParent;
 
     // 2. Handle postMessages sent down from Admin Panel into this iframe
     window.addEventListener('message', (event) => {
@@ -74,6 +77,19 @@
         localStorage.setItem('pubexchange_dynamic_products', JSON.stringify(payload.products));
       }
 
+      if (type === 'PRICING_TIMING_CHANGED' && payload) {
+        if (payload.intervalSeconds) {
+          localStorage.setItem('pubexchange_settlement_interval', String(payload.intervalSeconds));
+        }
+        if (payload.nextSettlementAt) {
+          localStorage.setItem('pubexchange_next_settlement_at', String(payload.nextSettlementAt));
+        }
+      }
+
+      if (type === 'RESET_ALL_PRICES' || type === 'RESET_ALL') {
+        localStorage.removeItem('pubexchange_dynamic_products');
+      }
+
       if (type === 'MARKET_CRASH_TRIGGER' && payload?.floorPrice) {
         localStorage.setItem('pubexchange_market_crash_floor', payload.floorPrice.toString());
         localStorage.setItem('pubexchange_market_crash_active', 'true');
@@ -85,8 +101,9 @@
         localStorage.removeItem('pubexchange_market_crash_end_time');
       }
 
-      // Broadcast on port 8000 origin channel
-      bc.postMessage({ type, payload });
+      // Broadcast on port 8000 origin channels
+      try { bc.postMessage({ type, payload }); } catch (e) {}
+      try { bc2.postMessage({ type, payload }); } catch (e) {}
     });
 
     // 3. Listen to Port 8000 storage events and notify parent Admin Panel

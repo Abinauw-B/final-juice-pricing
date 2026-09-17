@@ -285,13 +285,10 @@ public class PricingController {
         PriceAdjustmentService.ResetAllResponse response = priceAdjustmentService.resetAllProductsToDefault(reqId,
                 actor);
 
-        // 2. Broadcast STOMP ONLY AFTER TRANSACTION COMMIT SUCCESS
+        // 2. Broadcast STOMP to all portals AFTER TRANSACTION COMMIT SUCCESS
         try {
-            if (messagingTemplate != null) {
-                messagingTemplate.convertAndSend("/topic/prices", response.getPrices());
-                messagingTemplate.convertAndSend("/topic/products", response.getPrices());
-            }
-        } catch (Exception e) {
+            broadcastToAllPortals(response.getPrices(), "RESET_ALL");
+        } catch (Exception ignored) {
         }
 
         return ResponseEntity.ok(response);
@@ -360,6 +357,11 @@ public class PricingController {
         if (globalConfig != null && globalConfig.getSettlementIntervalSeconds() != null) {
             pricingEngineService.resetSettlementTiming(globalConfig.getSettlementIntervalSeconds());
         }
+        try {
+            List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+            broadcastToAllPortals(allProducts, "CONFIG_UPDATED");
+        } catch (Exception ignored) {
+        }
         return ResponseEntity.ok(updated);
     }
 
@@ -382,6 +384,11 @@ public class PricingController {
         String actor = (roleHeader != null && !roleHeader.isBlank()) ? roleHeader : "ADMIN";
         com.retailpos.pricing.model.PricingConfigDTO.ProductConfig updated = pricingConfigurationService
                 .updateProductConfiguration(productId, productConfig, actor, "ADMIN_PRODUCT_CONFIG_UPDATE");
+        try {
+            List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+            broadcastToAllPortals(allProducts, "PRODUCT_CONFIG_UPDATED");
+        } catch (Exception ignored) {
+        }
         return ResponseEntity.ok(updated);
     }
 
@@ -552,6 +559,7 @@ public class PricingController {
                 wsMsg.put("timestamp", LocalDateTime.now().toString());
                 messagingTemplate.convertAndSend("/topic/pricing-config", wsMsg);
                 messagingTemplate.convertAndSend("/topic/settlement", wsMsg);
+                messagingTemplate.convertAndSend("/topic/led-display", wsMsg);
             }
         } catch (Exception ignored) {
         }
