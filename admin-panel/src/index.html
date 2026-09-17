@@ -7,11 +7,6 @@
   <title>Admin Control Center - Juice Bar Stock Exchange</title>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
   <script>
     // Suppress Chromium legacy unload violation warnings & mark touch listeners passive to prevent scroll-blocking violations
     (function () {
@@ -50,13 +45,11 @@
   <link rel="stylesheet" href="pub-exchange-tokens.css">
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
-
     :root,
     html[data-theme="dark"],
     body.dark-theme-mode {
-      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --font-main: 'BL Melody', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'BL Melody', monospace;
 
       /* Dark Theme — "Obsidian" Tokens */
       --bg-page: #07090E;
@@ -143,6 +136,14 @@
       box-sizing: border-box;
       font-family: var(--font-main);
       letter-spacing: -0.012em;
+    }
+
+    button,
+    input,
+    textarea,
+    select,
+    option {
+      font-family: inherit;
     }
 
     body {
@@ -1311,7 +1312,7 @@
     .hud-digital-timer {
       font-size: 58px;
       font-weight: 900;
-      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      font-family: 'BL Melody', monospace;
       color: #dc2626;
       line-height: 1;
       margin: 0;
@@ -1712,12 +1713,12 @@
           </button>
 
           <!-- Interlinking Portal Links -->
-          <a id="adminNavPosLink" href="https://final-juice-pricing.vercel.app" target="_blank"
+          <a id="adminNavPosLink" href="http://localhost:8000" target="_blank"
             style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #ff6b00, #ea580c); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 107, 0, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;"
             aria-label="Open Customer POS in new tab">
             🛒 Customer POS
           </a>
-          <a id="adminNavLedLink" href="https://final-juice-pricing.vercel.app/led-display.html" target="_blank"
+          <a id="adminNavLedLink" href="http://localhost:8000/led-display.html" target="_blank"
             style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;"
             aria-label="Open LED Wall Display in new tab">
             📺 LED Ticker
@@ -2344,8 +2345,9 @@
                   style="background: #10b981; color: #fff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 9999px;">●
                   ACTIVE</span>
               </div>
-              <div style="font-size: 12px; font-weight: 700; color: var(--text-muted);">
-                SINGLE SOURCE OF TRUTH &bull; BACKEND PERSISTED IN POSTGRESQL
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 12px;">
+                <span>SINGLE SOURCE OF TRUTH &bull; BACKEND PERSISTED IN POSTGRESQL</span>
+                <a href="#globalEngineConfigCard" style="color: #2563eb; text-decoration: none; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; background: rgba(37,99,235,0.08);">⚙️ Advanced Parameters &darr;</a>
               </div>
             </div>
 
@@ -2449,7 +2451,7 @@
           </div>
 
           <!-- Global Engine Dynamic Configuration Card -->
-          <div class="section-card" style="margin-bottom: 24px; border: 1.5px solid #38bdf8;">
+          <div class="section-card" id="globalEngineConfigCard" style="margin-bottom: 24px; border: 1.5px solid #38bdf8;">
             <div
               style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
               <div>
@@ -2496,9 +2498,9 @@
                 <label
                   style="display: block; font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Market
                   Crash Floor Price (₹)</label>
-                <input type="number" id="cfgCrashPrice" value="18.00" step="0.50" min="1"
+                <input type="number" id="cfgCrashPrice" value="20.00" step="0.50" min="20"
                   style="width: 100%; padding: 8px; font-weight: 700; border-radius: 6px; color: #dc2626;">
-                <span style="font-size: 11px; color: var(--text-muted);">Temporary drop price during crash</span>
+                <span style="font-size: 11px; color: var(--text-muted);">Temporary drop price during crash (Min ₹20)</span>
               </div>
               <div>
                 <label
@@ -2594,14 +2596,14 @@
                   <label
                     style="display: block; font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Decay
                     Step 1 (-ΔP₁)</label>
-                  <input type="number" id="cfgDecreaseStep1" value="4.00" step="1.00" min="0"
+                  <input type="number" id="cfgDecreaseStep1" value="1.00" step="0.50" min="0" max="1.00"
                     style="width: 100%; padding: 8px; font-weight: 700; border-radius: 6px; color: #d97706;">
                 </div>
                 <div>
                   <label
                     style="display: block; font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Decay
                     Step 2 (-ΔP₂)</label>
-                  <input type="number" id="cfgDecreaseStep2" value="4.00" step="1.00" min="0"
+                  <input type="number" id="cfgDecreaseStep2" value="1.00" step="0.50" min="0" max="1.00"
                     style="width: 100%; padding: 8px; font-weight: 700; border-radius: 6px; color: #dc2626;">
                 </div>
                 <div>
@@ -5386,7 +5388,7 @@
         yaxisConfig = [{
           labels: {
             formatter: (val) => '₹' + Math.round(val),
-            style: { colors: '#94A3B8', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
+            style: { colors: '#94A3B8', fontSize: '10px', fontFamily: "'BL Melody', monospace" }
           }
         }];
       } else if (currentRevenueChartMode === 'velocity') {
@@ -5395,7 +5397,7 @@
         yaxisConfig = [{
           labels: {
             formatter: (val) => Math.round(val) + ' ord',
-            style: { colors: '#94A3B8', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
+            style: { colors: '#94A3B8', fontSize: '10px', fontFamily: "'BL Melody', monospace" }
           }
         }];
       } else { // 'both'
@@ -5406,18 +5408,18 @@
         ];
         yaxisConfig = [
           {
-            title: { text: 'Revenue (₹)', style: { color: '#10B981', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" } },
+            title: { text: 'Revenue (₹)', style: { color: '#10B981', fontSize: '10px', fontFamily: "'BL Melody', monospace" } },
             labels: {
               formatter: (val) => '₹' + Math.round(val),
-              style: { colors: '#10B981', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
+              style: { colors: '#10B981', fontSize: '10px', fontFamily: "'BL Melody', monospace" }
             }
           },
           {
             opposite: true,
-            title: { text: 'Orders/hr', style: { color: '#06B6D4', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" } },
+            title: { text: 'Orders/hr', style: { color: '#06B6D4', fontSize: '10px', fontFamily: "'BL Melody', monospace" } },
             labels: {
               formatter: (val) => Math.round(val) + ' ord',
-              style: { colors: '#06B6D4', fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }
+              style: { colors: '#06B6D4', fontSize: '10px', fontFamily: "'BL Melody', monospace" }
             }
           }
         ];
@@ -5430,7 +5432,7 @@
             height: 268,
             toolbar: { show: false },
             background: 'transparent',
-            fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
+            fontFamily: "'BL Melody', sans-serif",
             animations: {
               enabled: true,
               speed: 600,
@@ -5444,7 +5446,7 @@
             axisBorder: { show: false },
             axisTicks: { show: false },
             labels: {
-              style: { colors: '#94A3B8', fontSize: '11px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }
+              style: { colors: '#94A3B8', fontSize: '11px', fontFamily: "'BL Melody', monospace", fontWeight: 600 }
             }
           },
           yaxis: yaxisConfig,
@@ -5482,7 +5484,7 @@
             theme: 'dark',
             shared: true,
             intersect: false,
-            style: { fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" },
+            style: { fontSize: '12px', fontFamily: "'BL Melody', monospace" },
             y: {
               formatter: (val, opts) => {
                 if (currentRevenueChartMode === 'velocity') {
@@ -5715,7 +5717,7 @@
             type: isDonut ? 'donut' : 'pie',
             height: 268,
             background: 'transparent',
-            fontFamily: "'Plus Jakarta Sans', -apple-system, sans-serif",
+            fontFamily: "'BL Melody', sans-serif",
             animations: {
               enabled: true,
               speed: 600,
@@ -5737,14 +5739,14 @@
                     show: isDonut,
                     label: totalLabel,
                     fontSize: '10px',
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "'BL Melody', sans-serif",
                     fontWeight: 700,
                     color: '#64748B',
                     formatter: totalFormatter
                   },
                   value: {
                     fontSize: '17px',
-                    fontFamily: "'JetBrains Mono', monospace",
+                    fontFamily: "'BL Melody', monospace",
                     fontWeight: 800,
                     color: '#0F172A',
                     formatter: (val) => {
@@ -5761,19 +5763,19 @@
             enabled: true,
             formatter: (val) => val.toFixed(0) + '%',
             dropShadow: { enabled: true, blur: 3, opacity: 0.2 },
-            style: { fontSize: '10px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }
+            style: { fontSize: '10px', fontFamily: "'BL Melody', monospace", fontWeight: 700 }
           },
           legend: {
             position: 'bottom',
             fontSize: '11px',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: "'BL Melody', sans-serif",
             fontWeight: 600,
             markers: { width: 9, height: 9, radius: 3 },
             itemMargin: { horizontal: 6, vertical: 3 }
           },
           tooltip: {
             theme: 'dark',
-            style: { fontSize: '12px', fontFamily: "'JetBrains Mono', monospace" },
+            style: { fontSize: '12px', fontFamily: "'BL Melody', monospace" },
             y: { formatter: tooltipFormatter }
           }
         };
@@ -6354,7 +6356,7 @@
       // Y-Axis Labels for drawer
       if (isDrawer) {
         ctx.save();
-        ctx.font = 'bold 8px JetBrains Mono, monospace';
+        ctx.font = 'bold 8px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = isLight ? 'rgba(100, 116, 139, 0.7)' : 'rgba(148, 163, 184, 0.65)';
@@ -6463,7 +6465,6 @@
     let isSettlingCycle = false;
 
     function onPricingIntervalSelectChanged(val) {
-      // Per specification: Dropdown selection does NOT change "Current Cycle" until "Apply Pricing Timing" is clicked
       const sec = parseInt(val, 10) || 60;
       const labelMap = {
         10: '10 Seconds',
@@ -6475,10 +6476,34 @@
         900: '15 Minutes'
       };
       const label = labelMap[sec] || `${sec}s`;
+      const shortLabel = sec === 10 ? '10-Sec' :
+        (sec === 30 ? '30-Sec' :
+          (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`));
+
+      const activeSec = (activePricingTiming && activePricingTiming.intervalSeconds) ? Number(activePricingTiming.intervalSeconds) : 60;
+      const cycleDisplay = document.getElementById('timingCurrentCycleDisplay');
       const btn = document.getElementById('btnApplyPricingTiming');
-      if (btn) {
-        btn.style.boxShadow = '0 0 15px rgba(37, 99, 235, 0.7)';
-        btn.innerHTML = `⚡ APPLY (${label.toUpperCase()})`;
+
+      if (sec !== activeSec) {
+        if (cycleDisplay) {
+          cycleDisplay.innerHTML = `<span style="color: #f59e0b; font-weight: 800;">${shortLabel} (Click Apply)</span>`;
+        }
+        if (btn) {
+          btn.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.9)';
+          btn.innerHTML = `⚡ APPLY (${label.toUpperCase()})`;
+        }
+      } else {
+        if (cycleDisplay) {
+          cycleDisplay.textContent = `${shortLabel} DWMA`;
+        }
+        if (btn) {
+          btn.style.boxShadow = '';
+          btn.innerHTML = `⚡ APPLY PRICING TIMING`;
+        }
+      }
+
+      if (document.getElementById('cfgSettlementInterval')) {
+        document.getElementById('cfgSettlementInterval').value = sec;
       }
     }
 
@@ -6548,10 +6573,20 @@
       const label = labelMap[selectedSec] || `${selectedSec} Seconds`;
 
       try {
-        const res = await apiFetch('/pricing/timing', {
+        let res = await apiFetch('/admin/pricing/timing', {
           method: 'PUT',
           body: JSON.stringify({ intervalSeconds: selectedSec })
         });
+        if (!res.ok) {
+          res = await apiFetch('/pricing/timing', {
+            method: 'PUT',
+            body: JSON.stringify({ intervalSeconds: selectedSec })
+          });
+        }
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || `Server returned HTTP ${res.status}`);
+        }
 
         const newTarget = new Date(Date.now() + selectedSec * 1000).toISOString();
         localStorage.setItem('pubexchange_settlement_interval', String(selectedSec));
@@ -6559,12 +6594,13 @@
 
         activePricingTiming = {
           intervalSeconds: selectedSec,
+          settlementIntervalSeconds: selectedSec,
           intervalMinutes: selectedSec / 60.0,
           label: label,
           nextSettlementAt: newTarget
         };
 
-        // NOW update the "Current Cycle" display after clicking the apply button
+        // Update the "Current Cycle" display and reset button styling
         applyTimingToUI(activePricingTiming);
         startSettlementCountdownTicker();
 
@@ -6581,7 +6617,7 @@
         loadPricingConfiguration();
         loadPricingAuditLogs();
       } catch (e) {
-        showToast('Network error while updating pricing timing', 'error');
+        showToast(`Network error while updating pricing timing: ${e.message}`, 'error');
       } finally {
         if (btn) setButtonLoading(btn, false);
       }
@@ -6639,8 +6675,14 @@
           const targetTime = new Date(storedTarget).getTime();
           if (!isNaN(targetTime)) {
             const diffMs = targetTime - now;
-            if (diffMs > 0) {
-              remainingSec = Math.min(intervalSec, Math.ceil(diffMs / 1000));
+            if (diffMs > intervalSec * 1000) {
+              // Target belongs to a longer previous interval: reset immediately to prevent freeze
+              const newTarget = new Date(now + intervalSec * 1000).toISOString();
+              localStorage.setItem('pubexchange_next_settlement_at', newTarget);
+              if (activePricingTiming) activePricingTiming.nextSettlementAt = newTarget;
+              remainingSec = intervalSec;
+            } else if (diffMs > 0) {
+              remainingSec = Math.ceil(diffMs / 1000);
             } else {
               // Settlement cycle countdown completed -> Trigger dynamic juice pricing evaluation
               const newTarget = new Date(now + intervalSec * 1000).toISOString();
@@ -6764,7 +6806,7 @@
 
       const settlementInterval = parseInt(document.getElementById('cfgSettlementInterval').value) || 60;
       const crashDuration = parseInt(document.getElementById('cfgCrashDuration').value) || 180;
-      const crashPrice = parseFloat(document.getElementById('cfgCrashPrice').value) || 18.00;
+      let crashPrice = parseFloat(document.getElementById('cfgCrashPrice').value) || 20.00;
       const defaultPrice = parseFloat(document.getElementById('cfgDefaultPrice').value) || 25.00;
 
       const weightW0 = parseFloat(document.getElementById('cfgWeightW0').value) || 1.00;
@@ -6776,11 +6818,37 @@
       const stableUpper = parseFloat(document.getElementById('cfgStableUpper').value) || 1.10;
       const lowThresh = parseFloat(document.getElementById('cfgLowThreshold').value) || 0.50;
 
-      const incStep = parseFloat(document.getElementById('cfgIncreaseStep').value) || 1.00;
-      const decStep1 = parseFloat(document.getElementById('cfgDecreaseStep1').value) || 1.00;
-      const decStep2 = parseFloat(document.getElementById('cfgDecreaseStep2').value) || 1.00;
+      let incStep = parseFloat(document.getElementById('cfgIncreaseStep').value) || 1.00;
+      let decStep1 = parseFloat(document.getElementById('cfgDecreaseStep1').value) || 1.00;
+      let decStep2 = parseFloat(document.getElementById('cfgDecreaseStep2').value) || 1.00;
       const minPrice = parseFloat(document.getElementById('cfgMinPrice').value) || 20.00;
       const maxPrice = parseFloat(document.getElementById('cfgMaxPrice').value) || 30.00;
+
+      // Auto-clamp constraints matching backend rules
+      if (crashPrice < minPrice) {
+        crashPrice = minPrice;
+        if (document.getElementById('cfgCrashPrice')) {
+          document.getElementById('cfgCrashPrice').value = crashPrice.toFixed(2);
+        }
+      }
+      if (incStep > 1.0) {
+        incStep = 1.0;
+        if (document.getElementById('cfgIncreaseStep')) {
+          document.getElementById('cfgIncreaseStep').value = incStep.toFixed(2);
+        }
+      }
+      if (decStep1 > 1.0) {
+        decStep1 = 1.0;
+        if (document.getElementById('cfgDecreaseStep1')) {
+          document.getElementById('cfgDecreaseStep1').value = decStep1.toFixed(2);
+        }
+      }
+      if (decStep2 > 1.0) {
+        decStep2 = 1.0;
+        if (document.getElementById('cfgDecreaseStep2')) {
+          document.getElementById('cfgDecreaseStep2').value = decStep2.toFixed(2);
+        }
+      }
 
       // Validation
       if (settlementInterval <= 0) {
@@ -10309,6 +10377,16 @@
       origRenderLivePricingTable();
       renderDwmaCascadeVisualizer();
     };
+
+    function setupAdminPortalNavLinks() {
+      const posUrl = (window.CONFIG && window.CONFIG.POS_URL) || 'http://localhost:8000';
+      const posLink = document.getElementById('adminNavPosLink');
+      if (posLink) posLink.href = posUrl.endsWith('/index.html') ? posUrl : `${posUrl}/index.html`;
+
+      const ledLink = document.getElementById('adminNavLedLink');
+      if (ledLink) ledLink.href = `${posUrl.replace(/\/index\.html$/, '')}/led-display.html`;
+    }
+    setupAdminPortalNavLinks();
 
     const savedThemeAdmin = localStorage.getItem('pubexchange_theme_mode');
     setThemeMode(savedThemeAdmin === 'dark'); // Default to light porcelain theme (#d5e7f0)

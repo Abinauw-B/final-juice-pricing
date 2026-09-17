@@ -10,13 +10,54 @@
    Hosted in both customer-web/src/ and admin-panel/src/ directories.
    ============================================================================ */
 
+/* ─── GLOBAL TYPOGRAPHY: BL MELODY ─── */
+@font-face {
+  font-family: 'BL Melody';
+  src: url('fonts/BL-Melody.woff2') format('woff2'),
+       url('/fonts/BL-Melody.woff2') format('woff2'),
+       url('../fonts/BL-Melody.woff2') format('woff2'),
+       url('fonts/BLMelody.woff2') format('woff2'),
+       url('/fonts/BLMelody.woff2') format('woff2'),
+       url('fonts/BL-Melody.woff') format('woff'),
+       url('/fonts/BL-Melody.woff') format('woff'),
+       url('../fonts/BL-Melody.woff') format('woff'),
+       url('fonts/BL-Melody.ttf') format('truetype'),
+       url('/fonts/BL-Melody.ttf') format('truetype'),
+       url('../fonts/BL-Melody.ttf') format('truetype'),
+       url('fonts/BLMelody.ttf') format('truetype'),
+       url('/fonts/BLMelody.ttf') format('truetype'),
+       url('fonts/BL-Melody.otf') format('opentype'),
+       url('/fonts/BL-Melody.otf') format('opentype'),
+       local('BL Melody'),
+       local('BL-Melody'),
+       local('BLMelody');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+html,
+body,
+#root,
+#__next {
+  font-family: 'BL Melody', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+button,
+input,
+textarea,
+select,
+option {
+  font-family: inherit;
+}
+
 /* ─── DARK THEME (Default) ─── */
 :root,
 html[data-theme="dark"],
 body.dark-theme-mode {
   /* Fonts */
-  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-main: 'BL Melody', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'BL Melody', monospace;
 
   /* ── Surface & Background ── */
   --bg-page:       #080B11;

@@ -14,10 +14,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class PriceMovementUnitTest {
 
     public static BigDecimal calculateDWMAPrice(BigDecimal currentPrice, int w0, int w1, int w2, double targetSales, BigDecimal floor, BigDecimal ceiling) {
-        BigDecimal sw = BigDecimal.valueOf(w0).multiply(new BigDecimal("1.00"))
+        BigDecimal sumWeights = new BigDecimal("1.00").add(new BigDecimal("0.50")).add(new BigDecimal("0.25"));
+        BigDecimal rawSum = BigDecimal.valueOf(w0).multiply(new BigDecimal("1.00"))
                 .add(BigDecimal.valueOf(w1).multiply(new BigDecimal("0.50")))
-                .add(BigDecimal.valueOf(w2).multiply(new BigDecimal("0.25")))
-                .setScale(2, RoundingMode.HALF_UP);
+                .add(BigDecimal.valueOf(w2).multiply(new BigDecimal("0.25")));
+        BigDecimal sw = rawSum.divide(sumWeights, 4, RoundingMode.HALF_UP).setScale(2, RoundingMode.HALF_UP);
 
         BigDecimal targetSalesBd = BigDecimal.valueOf(targetSales).setScale(2, RoundingMode.HALF_UP);
         BigDecimal rd = (targetSalesBd.compareTo(BigDecimal.ZERO) > 0)
@@ -56,13 +57,13 @@ public class PriceMovementUnitTest {
     }
 
     @Test
-    @DisplayName("TEST B: Current ₹25.00, Normal Demand -> Expected: ₹25.00 (₹0)")
+    @DisplayName("TEST B: Current ₹25.00, Normal Demand (w0=w1=w2=target=1.00) -> Expected: ₹25.00 (₹0)")
     void test_B_Current25_NormalDemand_Returns25() {
         BigDecimal currentPrice = new BigDecimal("25.00");
         BigDecimal floor = new BigDecimal("20.00");
         BigDecimal ceiling = new BigDecimal("30.00");
 
-        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 1, 0, 0, 1.00, floor, ceiling);
+        BigDecimal newPrice = calculateDWMAPrice(currentPrice, 1, 1, 1, 1.00, floor, ceiling);
         assertEquals(new BigDecimal("25.00"), newPrice);
     }
 
@@ -306,13 +307,13 @@ public class PriceMovementUnitTest {
         PricingSimulationService.SimulationResponse res = simService.runSimulation(req);
         assertEquals(10, res.getSteps().size());
 
-        // Step 1: W0=4, W1=0, W2=0 => S_w=4.00, Target=0.55 => R_d=7.27 => Movement +1 => 26.00
+        // Step 1: W0=4, W1=0, W2=0 => S_w = 4.00 / 1.75 = 2.29, Target=0.55 => R_d = 2.29 / 0.55 = 4.16 => Movement +1 => 26.00
         PricingSimulationService.SimulationStep step1 = res.getSteps().get(0);
         assertEquals(4, step1.getW0());
         assertEquals(0, step1.getW1());
         assertEquals(0, step1.getW2());
-        assertEquals(4.00, step1.getWeightedSales(), 0.01);
-        assertEquals(7.27, step1.getDemandRatio(), 0.05);
+        assertEquals(2.29, step1.getWeightedSales(), 0.01);
+        assertEquals(4.16, step1.getDemandRatio(), 0.05);
         assertEquals("+₹1", step1.getPriceMovement());
         assertEquals(new BigDecimal("26.00"), step1.getPrice());
 

@@ -235,7 +235,10 @@ public class PricingConfigurationService {
             ));
         }
 
-        return new PricingConfigDTO(currentConfigVersion.get(), lastConfigUpdate.toString(), global, productConfigs);
+        PricingConfigDTO dto = new PricingConfigDTO(currentConfigVersion.get(), lastConfigUpdate.toString(), global, productConfigs);
+        int intervalSec = getSettlementIntervalSeconds();
+        dto.setNextSettlementAt(LocalDateTime.now().plusSeconds(intervalSec).toString());
+        return dto;
     }
 
     // --- TRANSACTIONAL UPDATES ---

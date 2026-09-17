@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Noida Pub Exchange - Master Command &amp; Web Ecosystem Portal</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="pub-exchange-tokens.css">
   <style>
     :root {
@@ -19,16 +17,20 @@
       --accent-purple: #a855f7;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --font-main: 'BL Melody', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'BL Melody', monospace;
     }
 
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: var(--font-main);
+      font-family: 'BL Melody', var(--font-main);
       letter-spacing: -0.015em;
+    }
+
+    button, input, textarea, select, option {
+      font-family: inherit;
     }
 
     body {
@@ -376,9 +378,9 @@
       <button id="rootReloadBtn" onclick="reloadAllFrames()" class="action-btn" style="background: rgba(255,255,255,0.06); color: var(--text-main);">
         🔄 Refresh All
       </button>
-      <a id="btnOpenAdmin" href="https://final-juice-pricing-admin.vercel.app" target="_blank" class="action-btn btn-admin">⚙️ Admin ↗</a>
-      <a id="btnOpenCustomer" href="https://final-juice-pricing.vercel.app" target="_blank" class="action-btn btn-customer">🍹 POS ↗</a>
-      <a id="btnOpenLed" href="https://final-juice-pricing.vercel.app/led-display.html" target="_blank" class="action-btn btn-led">📺 LED Wall ↗</a>
+      <a id="btnOpenAdmin" href="http://localhost:8001" target="_blank" class="action-btn btn-admin">⚙️ Admin ↗</a>
+      <a id="btnOpenCustomer" href="http://localhost:8000" target="_blank" class="action-btn btn-customer">🍹 POS ↗</a>
+      <a id="btnOpenLed" href="http://localhost:8000/led-display.html" target="_blank" class="action-btn btn-led">📺 LED Wall ↗</a>
     </div>
   </header>
 
@@ -394,10 +396,10 @@
         </div>
         <div class="frame-header-actions">
           <button class="frame-tool-btn" onclick="reloadFrame('adminFrame')">🔄 Reload</button>
-          <a id="popAdminLink" href="https://final-juice-pricing-admin.vercel.app" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
+          <a id="popAdminLink" href="http://localhost:8001" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
         </div>
       </div>
-      <iframe id="adminFrame" src="https://final-juice-pricing-admin.vercel.app"></iframe>
+      <iframe id="adminFrame" src="http://localhost:8001"></iframe>
     </div>
 
     <!-- Customer POS Frame Card -->
@@ -409,10 +411,10 @@
         </div>
         <div class="frame-header-actions">
           <button class="frame-tool-btn" onclick="reloadFrame('customerFrame')">🔄 Reload</button>
-          <a id="popCustomerLink" href="https://final-juice-pricing.vercel.app" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
+          <a id="popCustomerLink" href="http://localhost:8000" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
         </div>
       </div>
-      <iframe id="customerFrame" src="https://final-juice-pricing.vercel.app"></iframe>
+      <iframe id="customerFrame" src="http://localhost:8000"></iframe>
     </div>
 
     <!-- Wall LED TV Board Frame Card (Visible in Triple or Single LED mode) -->
@@ -424,10 +426,10 @@
         </div>
         <div class="frame-header-actions">
           <button class="frame-tool-btn" onclick="reloadFrame('ledFrame')">🔄 Reload</button>
-          <a id="popLedLink" href="https://final-juice-pricing.vercel.app/led-display.html" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
+          <a id="popLedLink" href="http://localhost:8000/led-display.html" target="_blank" class="frame-tool-btn">Pop Out ↗</a>
         </div>
       </div>
-      <iframe id="ledFrame" src="https://final-juice-pricing.vercel.app/led-display.html"></iframe>
+      <iframe id="ledFrame" src="http://localhost:8000/led-display.html"></iframe>
     </div>
 
   </main>

@@ -260,11 +260,11 @@ public class PricingSimulationService {
             int w1 = (salesHistory.size() >= 2) ? salesHistory.get(salesHistory.size() - 2) : 0;
             int w2 = (salesHistory.size() >= 3) ? salesHistory.get(salesHistory.size() - 3) : 0;
 
-            // Authoritative DWMA: S_w = 1.00 * W0 + 0.50 * W1 + 0.25 * W2
-            BigDecimal sw = BigDecimal.valueOf(w0).multiply(new BigDecimal("1.00"))
+            // Authoritative DWMA: S_w = (1.00 * W0 + 0.50 * W1 + 0.25 * W2) / 1.75
+            BigDecimal rawSum = BigDecimal.valueOf(w0).multiply(new BigDecimal("1.00"))
                     .add(BigDecimal.valueOf(w1).multiply(new BigDecimal("0.50")))
-                    .add(BigDecimal.valueOf(w2).multiply(new BigDecimal("0.25")))
-                    .setScale(2, RoundingMode.HALF_UP);
+                    .add(BigDecimal.valueOf(w2).multiply(new BigDecimal("0.25")));
+            BigDecimal sw = rawSum.divide(new BigDecimal("1.75"), 4, RoundingMode.HALF_UP).setScale(2, RoundingMode.HALF_UP);
 
             BigDecimal rd = (targetSales.compareTo(BigDecimal.ZERO) > 0)
                     ? sw.divide(targetSales, 2, RoundingMode.HALF_UP)

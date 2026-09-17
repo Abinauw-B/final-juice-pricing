@@ -320,13 +320,20 @@ public class PriceAdjustmentService {
         LocalDateTime w2End = now.minusSeconds(2L * intervalSec);
         int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
 
-        // 2. Weighted sales calculation:
-        // Admin-configured weighted sales acts as the authoritative sales demand for this product, plus any DWMA window sales:
+        // 2. Weighted sales calculation (DWMA normalized by sum of weights):
+        // Sw = (w0*weightW0 + w1*weightW1 + w2*weightW2) / (weightW0 + weightW1 + weightW2)
         double adminBaseWeightedSales = (product.getWeightedSales() != null && product.getWeightedSales() > 0) ? product.getWeightedSales() : 0.0;
 
-        BigDecimal dwmaLiveSales = BigDecimal.valueOf(w0).multiply(weightW0)
+        BigDecimal sumWeights = weightW0.add(weightW1).add(weightW2);
+        if (sumWeights.compareTo(BigDecimal.ZERO) <= 0) {
+            sumWeights = new BigDecimal("1.7500");
+        }
+
+        BigDecimal rawWeightedSum = BigDecimal.valueOf(w0).multiply(weightW0)
                 .add(BigDecimal.valueOf(w1).multiply(weightW1))
                 .add(BigDecimal.valueOf(w2).multiply(weightW2));
+
+        BigDecimal dwmaLiveSales = rawWeightedSum.divide(sumWeights, 4, RoundingMode.HALF_UP);
 
         BigDecimal sw = (w0 > 0 || w1 > 0 || w2 > 0)
                 ? BigDecimal.valueOf(adminBaseWeightedSales).add(dwmaLiveSales).setScale(2, RoundingMode.HALF_UP)
@@ -988,10 +995,16 @@ public class PriceAdjustmentService {
         LocalDateTime w2End = now.minusSeconds(2L * intervalSec);
         int w2 = salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
 
-        BigDecimal sw = BigDecimal.valueOf(w0).multiply(weightW0)
+        BigDecimal sumWeights = weightW0.add(weightW1).add(weightW2);
+        if (sumWeights.compareTo(BigDecimal.ZERO) <= 0) {
+            sumWeights = new BigDecimal("1.7500");
+        }
+
+        BigDecimal rawWeightedSum = BigDecimal.valueOf(w0).multiply(weightW0)
                 .add(BigDecimal.valueOf(w1).multiply(weightW1))
-                .add(BigDecimal.valueOf(w2).multiply(weightW2))
-                .setScale(2, RoundingMode.HALF_UP);
+                .add(BigDecimal.valueOf(w2).multiply(weightW2));
+
+        BigDecimal sw = rawWeightedSum.divide(sumWeights, 4, RoundingMode.HALF_UP).setScale(2, RoundingMode.HALF_UP);
         double weightedSales = sw.doubleValue();
 
         BigDecimal targetSalesBd = BigDecimal.valueOf(normalizedTarget).setScale(4, RoundingMode.HALF_UP);
@@ -1035,9 +1048,9 @@ public class PriceAdjustmentService {
         BigDecimal projectedPrice = uncappedPrice.max(floor).min(ceiling).setScale(2, RoundingMode.HALF_UP);
 
         String breakdown = String.format(
-                "Current Window W0 [0–%ds]: %d, W1 [%ds–%ds]: %d, W2 [%ds–%ds]: %d | Weighted Sales: %.2f*%d + %.2f*%d + %.2f*%d = %.2f | Target: %.2f cups (%ds) | Demand Ratio: %.2f / %.2f = %.4f (%s) | Movement: %+d => Projected: ₹%s",
+                "Current Window W0 [0–%ds]: %d, W1 [%ds–%ds]: %d, W2 [%ds–%ds]: %d | Weighted Sales: (%.2f*%d + %.2f*%d + %.2f*%d)/%.2f = %.2f | Target: %.2f cups (%ds) | Demand Ratio: %.2f / %.2f = %.4f (%s) | Movement: %+d => Projected: ₹%s",
                 intervalSec, w0, intervalSec, 2 * intervalSec, w1, 2 * intervalSec, 3 * intervalSec, w2,
-                weightW0.doubleValue(), w0, weightW1.doubleValue(), w1, weightW2.doubleValue(), w2,
+                weightW0.doubleValue(), w0, weightW1.doubleValue(), w1, weightW2.doubleValue(), w2, sumWeights.doubleValue(),
                 weightedSales, normalizedTarget, intervalSec, weightedSales, normalizedTarget, demandRatio, category, movement, projectedPrice
         );
 

@@ -7,11 +7,6 @@
   <title>Juice Bar Stock Exchange — Live Beverage Trading Terminal</title>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
   <script>
     // Suppress legacy unload permission violation warnings from SockJS
     (function () {
@@ -38,8 +33,8 @@
     :root,
     html[data-theme="dark"],
     body.dark-theme-mode {
-      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --font-main: 'BL Melody', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'BL Melody', monospace;
 
       /* Dark Theme — "Obsidian Market" Design Tokens */
       --bg-page: #080B11;
@@ -133,6 +128,14 @@
       box-sizing: border-box;
       font-family: var(--font-main);
       letter-spacing: -0.012em;
+    }
+
+    button,
+    input,
+    textarea,
+    select,
+    option {
+      font-family: inherit;
     }
 
     html {
@@ -1448,7 +1451,7 @@
       <button id="themeToggleBtnCustomer" onclick="toggleThemeMode()" class="btn-action-nav">
         ☀️ Theme: Light
       </button>
-      <a id="navAdminLink" href="https://final-juice-pricing-admin.vercel.app" target="_blank" class="btn-action-nav">
+      <a id="navAdminLink" href="http://localhost:8001" target="_blank" class="btn-action-nav">
         ⚙️ Admin Panel
       </a>
       <a id="navLedLink" href="led-display.html" target="_blank" class="btn-action-nav"
@@ -2912,7 +2915,7 @@
 
       // Y-Axis Labels
       ctx.save();
-      ctx.font = 'bold 7.5px JetBrains Mono, monospace';
+      ctx.font = 'bold 7.5px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = isLight ? 'rgba(100, 116, 139, 0.7)' : 'rgba(148, 163, 184, 0.65)';
@@ -3582,6 +3585,11 @@
     checkMarketCrashStatus();
     connectWebSocket();
     startSettlementCountdown();
+
+    const adminNavEl = document.getElementById('navAdminLink');
+    if (adminNavEl && window.CONFIG && window.CONFIG.ADMIN_URL) {
+      adminNavEl.href = window.CONFIG.ADMIN_URL;
+    }
 
     setInterval(checkBackendHealth, 5000);
     setInterval(() => {

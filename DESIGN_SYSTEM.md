@@ -76,8 +76,9 @@ All 4 frontends link this file via `<link rel="stylesheet">` before their local 
 | `--text-4xl` | 36px | Hero / LED display prices |
 
 **Fonts:**
-- **UI:** `Plus Jakarta Sans` (weights 300–900)
-- **Monospace / Numbers:** `JetBrains Mono` (weights 400–800, `font-variant-numeric: tabular-nums`)
+- **Primary & Global Font:** `BL Melody` (weights 100–900, variable / static woff2, woff, ttf, otf; globally inherited across all UI elements, cards, tables, tickers, modals, forms, charts, and canvas renderers)
+- **Fallback Stack:** `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`
+- **Monospace / Numerical Tabular:** `BL Melody`, `monospace` (`font-variant-numeric: tabular-nums`, `font-feature-settings: 'tnum' 1`)
 
 ---
 

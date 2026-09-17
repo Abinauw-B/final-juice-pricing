@@ -66,7 +66,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/pricing/market-crash/status", "/api/pricing/crash/status").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/pricing/market-crash/trigger", "/api/pricing/market-crash/stop").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pricing/history/**", "/api/pricing/history").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/pricing/timing", "/api/pricing/config").permitAll()
+                .requestMatchers("/api/pricing/timing", "/api/pricing/config", "/api/admin/pricing/timing", "/api/pricing/debug/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pricing/products/**").permitAll()
 
                 // Price quote / lock endpoint (used by POS checkout flow)
