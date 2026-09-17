@@ -44,10 +44,11 @@
       --bg-subtle: #D2DFED;
       --bg-hover: #E2EDF7;
 
-      /* Chart Chamber */
-      --chart-bg: #070C18;
+      /* Chart Chamber — Crisp Light Slate Cockpit */
+      --chart-bg: #F8FAFC;
       --chart-border: #CBD5E1;
-      --chart-grid: rgba(255, 255, 255, 0.08);
+      --chart-grid: rgba(15, 23, 42, 0.06);
+      --chart-header-color: #64748B;
 
       /* Structural Borders */
       --border-color: #D1DFEC;
@@ -107,6 +108,7 @@
       --chart-bg: #030611;
       --chart-border: rgba(56, 189, 248, 0.28);
       --chart-grid: rgba(255, 255, 255, 0.05);
+      --chart-header-color: #94A3B8;
 
       /* Structural Borders */
       --border-color: rgba(255, 255, 255, 0.10);
@@ -620,11 +622,11 @@
       margin-bottom: 0px;
     }
     .product-name {
-      font-size: 17.5px;
+      font-size: 22px;
       font-weight: 900;
       color: var(--text-primary);
-      line-height: 1.15;
-      letter-spacing: -0.015em;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -651,7 +653,7 @@
       gap: 6px;
     }
     .product-price {
-      font-size: 38px;
+      font-size: 46px;
       font-weight: 900;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
@@ -706,30 +708,40 @@
       border: 1.5px solid var(--border-color);
     }
 
-    /* REAL PRICE HISTORY GRAPH CONTAINER — Technical Dark Cockpit Chamber */
+    /* REAL PRICE HISTORY GRAPH CONTAINER — Technical Cockpit Chamber */
     .chart-container-wrapper {
       position: relative;
       width: 100%;
-      flex: 1 1 auto;
-      min-height: 108px;
-      height: 100%;
-      background: var(--chart-bg, #070c18) !important;
-      border: 1.5px solid var(--chart-border, rgba(56, 189, 248, 0.28));
+      flex: 0 0 auto;
+      min-height: 74px;
+      height: 78px;
+      max-height: 82px;
+      background: var(--chart-bg, #F8FAFC) !important;
+      border: 1.5px solid var(--chart-border, #CBD5E1);
       border-radius: 8px;
       padding: 0;
-      margin: 0;
+      margin: 2px 0 1px 0;
       overflow: hidden;
       transition: border-color 0.25s ease, box-shadow 0.25s ease;
-      box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
       display: flex;
       flex-direction: column;
     }
+    html[data-theme="dark"] .chart-container-wrapper,
+    body.dark-theme-mode .chart-container-wrapper {
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
     .chart-container-wrapper:hover {
       border-color: var(--accent-cyan);
+      box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.1), 0 0 12px var(--accent-cyan-glow);
+    }
+    html[data-theme="dark"] .chart-container-wrapper:hover,
+    body.dark-theme-mode .chart-container-wrapper:hover {
       box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.65), 0 0 14px var(--accent-cyan-glow);
     }
-    /* Subtle 8-Second Ambient Scanline Sheen */
-    .chart-container-wrapper::after {
+    /* Ambient Scanline Sheen in Dark mode only */
+    html[data-theme="dark"] .chart-container-wrapper::after,
+    body.dark-theme-mode .chart-container-wrapper::after {
       content: '';
       position: absolute;
       inset: 0;
@@ -745,13 +757,13 @@
     }
     .chart-header-row {
       position: absolute;
-      top: 4px; left: 8px; right: 8px;
+      top: 3px; left: 7px; right: 7px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 8.5px;
+      font-size: 8px;
       font-weight: 800;
-      color: #94A3B8;
+      color: var(--chart-header-color, #64748B);
       text-transform: uppercase;
       font-family: var(--font-mono);
       letter-spacing: 0.5px;
@@ -3101,7 +3113,7 @@
       // Make sure canvas display buffer accurately matches container dimensions
       const parent = canvas.parentElement;
       const width = parent && parent.clientWidth > 0 ? parent.clientWidth : (canvas.clientWidth > 0 ? canvas.clientWidth : 240);
-      const height = parent && parent.clientHeight > 0 ? parent.clientHeight : (canvas.clientHeight > 0 ? canvas.clientHeight : 115);
+      const height = parent && parent.clientHeight > 0 ? parent.clientHeight : (canvas.clientHeight > 0 ? canvas.clientHeight : 78);
       
       const dpr = Math.min(window.devicePixelRatio || 2, 3);
       canvas.width = Math.round(width * dpr);
@@ -3111,7 +3123,10 @@
 
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
-      ctx.clearRect(0, 0, width, height);
+
+      const isLight = currentTheme === 'light' || (!document.body.classList.contains('dark-theme-mode') && document.documentElement.getAttribute('data-theme') !== 'dark');
+      ctx.fillStyle = isLight ? '#F8FAFC' : '#030611';
+      ctx.fillRect(0, 0, width, height);
 
       // Build data points list
       let dataPoints = [];
@@ -3150,11 +3165,11 @@
         ptsCountEl.innerHTML = `${dataPoints.length} PTS &bull; DWMA &bull; ${currentPricingTiming.shortLabel.toUpperCase()}`;
       }
 
-      // Chart Padding — dynamically tailored to container height
-      const padLeft = 36;
-      const padRight = 14;
-      const padTop = 20;
-      const padBottom = 16;
+      // Chart Padding — tailored for compact 78px height
+      const padLeft = 34;
+      const padRight = 8;
+      const padTop = 13;
+      const padBottom = 12;
       const plotWidth = Math.max(10, width - padLeft - padRight);
       const plotHeight = Math.max(10, height - padTop - padBottom);
 
@@ -3181,10 +3196,10 @@
         return padLeft + (index / (dataPoints.length - 1)) * plotWidth;
       };
 
-      const isLight = currentTheme === 'light';
-      const gridColor = isLight ? 'rgba(203, 213, 225, 0.7)' : 'rgba(51, 65, 85, 0.6)';
+      const lastX = getX(dataPoints.length - 1);
+      const lastY = getY(latestPrice);
+
       const textColor = isLight ? '#64748B' : '#94A3B8';
-      const baseLineColor = isLight ? 'rgba(79, 70, 229, 0.45)' : 'rgba(129, 140, 248, 0.55)';
 
       // Determine flavor-specific graph color scheme
       const flavourColorObj = getProductChartColors(prod);
@@ -3199,19 +3214,23 @@
       const yBase = getY(basePrice);
       const yCeil = getY(ceilingPrice);
 
-      // Soft floor zone (below base) — warm red tint
+      // Soft floor zone (below base) — warm subtle tint
       const floorZoneGrad = ctx.createLinearGradient(0, yBase, 0, yFloor);
-      floorZoneGrad.addColorStop(0, 'rgba(244,63,94,0.0)');
-      floorZoneGrad.addColorStop(1, 'rgba(244,63,94,0.06)');
+      floorZoneGrad.addColorStop(0, isLight ? 'rgba(239,68,68,0.0)' : 'rgba(244,63,94,0.0)');
+      floorZoneGrad.addColorStop(1, isLight ? 'rgba(239,68,68,0.06)' : 'rgba(244,63,94,0.06)');
       ctx.fillStyle = floorZoneGrad;
       ctx.fillRect(padLeft, yBase, plotWidth, Math.max(0, yFloor - yBase));
 
       // 1. Draw Grid Lines & Distinctive Y-Axis Labels
-      ctx.font = 'bold 9.5px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = 'bold 8px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.textAlign = 'right';
 
       // Horizontal grid lines at Base, Floor, Ceiling
-      const gridLevels = [
+      const gridLevels = isLight ? [
+        { price: ceilingPrice, label: `₹${ceilingPrice.toFixed(0)} MAX`, color: '#059669', stroke: 'rgba(5, 150, 105, 0.35)', dash: [3, 3] },
+        { price: basePrice, label: `₹${basePrice.toFixed(0)} BASE`, color: '#0284C7', stroke: 'rgba(2, 132, 199, 0.40)', dash: [4, 3], width: 1.1 },
+        { price: floorPrice, label: `₹${floorPrice.toFixed(0)} MIN`, color: '#E11D48', stroke: 'rgba(225, 29, 72, 0.35)', dash: [3, 3] }
+      ] : [
         { price: ceilingPrice, label: `₹${ceilingPrice.toFixed(0)} MAX`, color: '#34D399', stroke: 'rgba(52, 211, 153, 0.4)', dash: [3, 4] },
         { price: basePrice, label: `₹${basePrice.toFixed(0)} BASE`, color: '#38BDF8', stroke: 'rgba(56, 189, 248, 0.5)', dash: [4, 4], width: 1.2 },
         { price: floorPrice, label: `₹${floorPrice.toFixed(0)} MIN`, color: '#FB7185', stroke: 'rgba(251, 113, 133, 0.4)', dash: [3, 4] }
@@ -3222,7 +3241,7 @@
         if (y < padTop - 2 || y > padTop + plotHeight + 2) return;
         ctx.beginPath();
         ctx.strokeStyle = lvl.stroke;
-        ctx.lineWidth = lvl.width || 0.9;
+        ctx.lineWidth = lvl.width || 0.8;
         ctx.setLineDash(lvl.dash);
         ctx.moveTo(padLeft, y);
         ctx.lineTo(width - padRight, y);
@@ -3230,7 +3249,7 @@
         ctx.setLineDash([]);
         
         ctx.fillStyle = lvl.color;
-        ctx.fillText(lvl.label, padLeft - 4, y + 3.5);
+        ctx.fillText(lvl.label, padLeft - 3, y + 3);
       });
 
       // 2. Draw Area Gradient Fill — rich multi-stop lush tint
@@ -3247,17 +3266,23 @@
       ctx.closePath();
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
-      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.24)`);
-      areaGrad.addColorStop(0.4, `rgba(${strokeColorRgb}, 0.08)`);
-      areaGrad.addColorStop(0.8, `rgba(${strokeColorRgb}, 0.02)`);
-      areaGrad.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
+      if (isLight) {
+        areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.28)`);
+        areaGrad.addColorStop(0.5, `rgba(${strokeColorRgb}, 0.10)`);
+        areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.01)`);
+      } else {
+        areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.24)`);
+        areaGrad.addColorStop(0.4, `rgba(${strokeColorRgb}, 0.08)`);
+        areaGrad.addColorStop(0.8, `rgba(${strokeColorRgb}, 0.02)`);
+        areaGrad.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
+      }
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
       // 3. Draw Smooth Line Stroke with double glowing aura
       ctx.save();
-      ctx.shadowColor = strokeColor;
-      ctx.shadowBlur = 15;
+      ctx.shadowColor = isLight ? `rgba(${strokeColorRgb}, 0.35)` : strokeColor;
+      ctx.shadowBlur = isLight ? 6 : 14;
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
@@ -3267,7 +3292,7 @@
         ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 3.5;
+      ctx.lineWidth = 2.8;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
@@ -3279,11 +3304,11 @@
           const x = getX(i), y = getY(pt.price);
           if (i === dataPoints.length - 1) return; // drawn as live beacon below
           ctx.beginPath();
-          ctx.arc(x, y, 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${strokeColorRgb}, 0.9)`;
+          ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${strokeColorRgb}, 0.85)`;
           ctx.fill();
           ctx.beginPath();
-          ctx.arc(x, y, 1.0, 0, Math.PI * 2);
+          ctx.arc(x, y, 0.8, 0, Math.PI * 2);
           ctx.fillStyle = '#FFFFFF';
           ctx.fill();
         });
@@ -3292,28 +3317,28 @@
       // 5. Beacon Dot at latest price — glowing concentric radar pulse
       // Outer ripple ring
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 13, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.20)`;
+      ctx.arc(lastX, lastY, 9, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, ${isLight ? 0.20 : 0.25})`;
       ctx.fill();
 
       // Mid pulsing ring
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 8, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${strokeColorRgb}, 0.55)`;
-      ctx.lineWidth = 1.8;
+      ctx.arc(lastX, lastY, 5.5, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${strokeColorRgb}, 0.65)`;
+      ctx.lineWidth = 1.4;
       ctx.stroke();
 
       // Core dot with glow
       ctx.save();
       ctx.shadowColor = strokeColor;
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = isLight ? 6 : 10;
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
       // White center
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 2, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 1.5, 0, Math.PI * 2);
       ctx.fillStyle = '#FFFFFF';
       ctx.fill();
       ctx.restore();
@@ -3321,41 +3346,41 @@
       // 6. Floating Glass Price Pill next to beacon
       ctx.save();
       const labelText = `₹${latestPrice.toFixed(2)}`;
-      ctx.font = 'bold 11px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
-      const labelW = ctx.measureText(labelText).width + 12;
-      const pillH = 18;
-      const labelX = Math.min(lastX + 12, width - padRight - labelW);
-      const labelY = Math.max(padTop + 2, Math.min(lastY - pillH / 2, padTop + plotHeight - pillH));
+      ctx.font = 'bold 9.5px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
+      const labelW = ctx.measureText(labelText).width + 8;
+      const pillH = 15;
+      const labelX = Math.min(lastX + 6, width - padRight - labelW);
+      const labelY = Math.max(padTop + 1, Math.min(lastY - pillH / 2, padTop + plotHeight - pillH));
       
       // Pill rounded backdrop
       ctx.beginPath();
       if (typeof ctx.roundRect === 'function') {
-        ctx.roundRect(labelX, labelY, labelW, pillH, 5);
+        ctx.roundRect(labelX, labelY, labelW, pillH, 4);
       } else {
         ctx.rect(labelX, labelY, labelW, pillH);
       }
-      ctx.fillStyle = 'rgba(6, 10, 20, 0.95)';
+      ctx.fillStyle = isLight ? '#0F172A' : '#0B1120';
       ctx.fill();
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.2;
       ctx.stroke();
 
       // Pill text
       ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'left';
-      ctx.fillText(labelText, labelX + 6, labelY + 13);
+      ctx.fillText(labelText, labelX + 4, labelY + 10.5);
       ctx.restore();
 
       // 7. X-Axis Time Labels
       if (dataPoints.length > 1) {
-        ctx.font = 'bold 8.5px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
-        ctx.fillStyle = '#94A3B8';
+        ctx.font = 'bold 7.5px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = isLight ? '#64748B' : '#94A3B8';
         ctx.textAlign = 'left';
         const firstTime = dataPoints[0].time.toTimeString().split(' ')[0].slice(0, 5);
-        ctx.fillText(firstTime, padLeft + 2, height - 3);
+        ctx.fillText(firstTime, padLeft + 2, height - 2);
         ctx.textAlign = 'right';
         const lastTime = dataPoints[dataPoints.length - 1].time.toTimeString().split(' ')[0].slice(0, 5);
-        ctx.fillText(`NOW ${lastTime}`, width - padRight, height - 3);
+        ctx.fillText(`NOW ${lastTime}`, width - padRight, height - 2);
       }
 
       // Attach Interactive Mouse Hover & Touch Events
