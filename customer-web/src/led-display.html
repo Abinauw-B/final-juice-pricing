@@ -2881,10 +2881,14 @@
     function normalizeProduct(p) {
       if (!p) return null;
       const id = p.id || p.beverageId || p.productId;
-      const currentCupPrice = p.currentCupPrice !== undefined ? Number(p.currentCupPrice) : (p.currentPrice !== undefined ? Number(p.currentPrice) : 25);
-      const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : 20);
-      const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 30);
-      const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25);
+      const existingProd = (typeof products !== 'undefined' && Array.isArray(products)) 
+        ? products.find(x => x && (x.id === id || (x.name && p.name && x.name.toLowerCase() === p.name.toLowerCase())))
+        : null;
+
+      const currentCupPrice = p.currentCupPrice !== undefined ? Number(p.currentCupPrice) : (p.currentPrice !== undefined ? Number(p.currentPrice) : (existingProd ? existingProd.currentCupPrice : 25));
+      const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : (existingProd ? existingProd.minCupPrice : 20));
+      const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : (existingProd ? existingProd.maxCupPrice : 30));
+      const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : (existingProd ? existingProd.basePrice : 25));
       const defaultCupSizeMl = p.defaultCupSizeMl || 250;
       let name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
       try {
@@ -4117,6 +4121,26 @@
             fetchProducts();
           });
 
+          // 3b. Subscribe to LED Display Dedicated Topic
+          stompClient.subscribe('/topic/led-display', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (res.type === 'PRICING_TIMING_CHANGED' || res.intervalSeconds) {
+                  updatePricingTimingState(res);
+                } else if (Array.isArray(res)) {
+                  products = res.map(normalizeProduct).filter(Boolean);
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderDashboard();
+                  return;
+                } else {
+                  handleIncomingPriceMessage(res);
+                }
+              } catch (e) {}
+            }
+            fetchProducts();
+          });
+
           // 4. Subscribe to Pricing Timing / Config Updates
           stompClient.subscribe('/topic/pricing-config', function (message) {
             if (message && message.body) {
@@ -4169,24 +4193,36 @@
     }
 
     const ledBroadcastChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
-    if (ledBroadcastChannel) {
-      ledBroadcastChannel.onmessage = (event) => {
-        if (!event || !event.data) return;
-        const msg = event.data;
-        const type = msg.type || (msg.flavourName ? 'SIMULATION_UPDATED' : null);
-        if (type === 'PRICING_TIMING_CHANGED' || msg.settlementIntervalSeconds || msg.intervalSeconds) {
-          updatePricingTimingState(msg.payload || msg);
-          fetchPricingConfiguration();
-        } else if (type === 'PRODUCT_PRICE_UPDATE' || type === 'REFRESH_PRODUCTS' || type === 'NEW_ORDER_PLACED' || type === 'CART_CHECKOUT_COMPLETED' || type === 'ORDER_CREATED') {
-          fetchProducts();
-        }
-      };
-    }
+    const ledMarketChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_market_channel') : null;
+
+    const handleLedCrossPanel = (event) => {
+      if (!event || !event.data) return;
+      const msg = event.data;
+      const type = msg.type || (msg.flavourName ? 'SIMULATION_UPDATED' : null);
+
+      if (type === 'RESET_ALL' || type === 'RESET_ALL_PRICES' || type === 'PRICES_RESET' || (msg.payload && msg.payload.reset) || msg.reset) {
+        try { localStorage.removeItem('pubexchange_dynamic_products'); } catch (e) {}
+        fetchProducts();
+        fetchPricingConfiguration();
+        return;
+      }
+
+      if (type === 'PRICING_TIMING_CHANGED' || msg.settlementIntervalSeconds || msg.intervalSeconds) {
+        updatePricingTimingState(msg.payload || msg);
+        fetchPricingConfiguration();
+      } else if (type === 'PRODUCT_PRICE_UPDATE' || type === 'REFRESH_PRODUCTS' || type === 'NEW_ORDER_PLACED' || type === 'CART_CHECKOUT_COMPLETED' || type === 'ORDER_CREATED' || type === 'CONFIG_UPDATED' || type === 'PRODUCT_CONFIG_UPDATED' || type === 'ADMIN_DEPLOY') {
+        fetchProducts();
+      }
+    };
+
+    if (ledBroadcastChannel) ledBroadcastChannel.onmessage = handleLedCrossPanel;
+    if (ledMarketChannel) ledMarketChannel.onmessage = handleLedCrossPanel;
 
     function handleIncomingPriceMessage(res) {
       let incoming = [];
       if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) incoming = res.updatedPrices;
       else if (res && res.changes && Array.isArray(res.changes)) incoming = res.changes;
+      else if (res && res.products && Array.isArray(res.products)) incoming = res.products;
       else if (Array.isArray(res)) incoming = res;
       else if (res && (res.id || res.beverageId || res.productId)) incoming = [res];
 

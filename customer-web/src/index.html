@@ -2181,6 +2181,20 @@
       const type = msg.type || (msg.flavourName ? 'SIMULATION_UPDATED' : null);
       if (!type) return;
 
+      if (type === 'RESET_ALL' || type === 'RESET_ALL_PRICES' || type === 'PRICES_RESET' || (msg.payload && msg.payload.reset) || msg.reset) {
+        try { localStorage.removeItem('pubexchange_dynamic_products'); } catch (e) {}
+        fetchProducts();
+        fetchPricingConfiguration();
+        return;
+      }
+
+      if (type === 'CONFIG_UPDATED' || type === 'PRODUCT_CONFIG_UPDATED' || type === 'ADMIN_DEPLOY' || (msg.payload && msg.payload.bulkUpdate) || msg.bulkUpdate) {
+        try { localStorage.removeItem('pubexchange_dynamic_products'); } catch (e) {}
+        fetchProducts();
+        fetchPricingConfiguration();
+        return;
+      }
+
       if (type === 'PRODUCT_PRICE_UPDATE' || type === 'NEW_FLAVOUR_ADDED' || type === 'BATCH_PRODUCT_PRICE_UPDATED' || type === 'PRICE_ENGINE_RUN' || type === 'BATCH_UPDATED' || type === 'PRICES_RECALCULATED' || type === 'REFRESH_PRODUCTS') {
         const payload = msg.payload || msg;
         if (payload && (payload.productId || payload.flavourName || payload.name)) {
@@ -2355,10 +2369,14 @@
     function normalizeProduct(p) {
       if (!p) return null;
       const id = p.id || p.beverageId || p.productId;
-      const currentCupPrice = p.currentCupPrice !== undefined ? Number(p.currentCupPrice) : (p.currentPrice !== undefined ? Number(p.currentPrice) : 25.0);
-      const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : 18.0);
-      const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : 35.0);
-      const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : 25.0);
+      const existingProd = (typeof products !== 'undefined' && Array.isArray(products))
+        ? products.find(x => x && (x.id === id || (x.name && p.name && x.name.toLowerCase() === p.name.toLowerCase())))
+        : null;
+
+      const currentCupPrice = p.currentCupPrice !== undefined ? Number(p.currentCupPrice) : (p.currentPrice !== undefined ? Number(p.currentPrice) : (existingProd ? existingProd.currentCupPrice : 25.0));
+      const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : (existingProd ? existingProd.minCupPrice : 18.0));
+      const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : (existingProd ? existingProd.maxCupPrice : 35.0));
+      const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : (existingProd ? existingProd.basePrice : 25.0));
       const targetSalesPer1Minute = (p.targetSalesPer1Minute !== undefined && p.targetSalesPer1Minute !== null)
         ? Number(p.targetSalesPer1Minute)
         : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : 0.40);
@@ -3441,6 +3459,8 @@
                   incoming = res.updatedPrices;
                 } else if (res && res.changes && Array.isArray(res.changes)) {
                   incoming = res.changes;
+                } else if (res && res.products && Array.isArray(res.products)) {
+                  incoming = res.products;
                 } else if (Array.isArray(res)) {
                   incoming = res;
                 } else if (res && (res.id || res.beverageId || res.productId)) {

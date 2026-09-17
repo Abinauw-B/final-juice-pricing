@@ -6658,6 +6658,39 @@
       await applyPricingTimingDirect();
     }
 
+    function closeTimingConfirmationModal() {
+      const modal = document.getElementById('confirmTimingModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function openTimingConfirmationModal() {
+      const modal = document.getElementById('confirmTimingModal');
+      if (!modal) return;
+      const sel = document.getElementById('pricingIntervalSelect');
+      const selectedSec = parseInt(sel ? sel.value : '60', 10);
+      const labelMap = {
+        10: '10 Seconds',
+        30: '30 Seconds',
+        60: '1 Minute',
+        120: '2 Minutes',
+        300: '5 Minutes',
+        600: '10 Minutes',
+        900: '15 Minutes'
+      };
+      const curLabel = (activePricingTiming && activePricingTiming.label) ? activePricingTiming.label : '1 Minute';
+      const newLabel = labelMap[selectedSec] || `${selectedSec} Seconds`;
+      const curEl = document.getElementById('modalCurrentTimingText');
+      if (curEl) curEl.textContent = curLabel;
+      const newEl = document.getElementById('modalNewTimingText');
+      if (newEl) newEl.textContent = newLabel;
+      modal.style.display = 'flex';
+    }
+
+    async function executeApplyPricingTiming() {
+      closeTimingConfirmationModal();
+      await applyPricingTimingDirect();
+    }
+
     function startSettlementCountdownTicker() {
       if (settlementCountdownInterval) clearInterval(settlementCountdownInterval);
 
@@ -7582,6 +7615,8 @@
         currentPrice: basePrice,
         timestamp: new Date().toISOString()
       });
+      broadcastEvent('REFRESH_PRODUCTS', { bulkUpdate: true, timestamp: new Date().toISOString() });
+      broadcastEvent('BATCH_PRODUCT_PRICE_UPDATED', { bulkUpdate: true, products: liveProductsCache, timestamp: new Date().toISOString() });
 
       setButtonLoading(btn, false);
       closeEditProductPricingModal();
@@ -9300,6 +9335,8 @@
         const data = await res.json();
         if (data && data.success === true) {
           broadcastEvent('PRODUCT_PRICE_UPDATE', { reset: true, timestamp: new Date().toISOString() });
+          broadcastEvent('RESET_ALL_PRICES', { reset: true, timestamp: new Date().toISOString() });
+          broadcastEvent('REFRESH_PRODUCTS', { reset: true, timestamp: new Date().toISOString() });
           await loadLivePricingProducts();
           await refreshDashboard({ manual: false });
           const confirmMsg = data.message || 'Live market prices reset successfully';
@@ -9638,11 +9675,17 @@
             if (message.body) {
               try {
                 const updates = JSON.parse(message.body);
-                if (Array.isArray(updates)) {
-                  updates.forEach(u => {
-                    const pid = u.productId || u.id;
-                    const newP = Number(u.currentPrice !== undefined ? u.currentPrice : (u.newPrice !== undefined ? u.newPrice : u.price));
-                    const oldP = Number(u.oldPrice !== undefined ? u.oldPrice : newP);
+                let list = [];
+                if (Array.isArray(updates)) list = updates;
+                else if (updates && Array.isArray(updates.updatedPrices)) list = updates.updatedPrices;
+                else if (updates && Array.isArray(updates.products)) list = updates.products;
+                else if (updates && (updates.id || updates.productId || updates.beverageId)) list = [updates];
+
+                if (list.length > 0) {
+                  list.forEach(u => {
+                    const pid = u.productId || u.id || u.beverageId;
+                    const newP = Number(u.currentCupPrice !== undefined ? u.currentCupPrice : (u.currentPrice !== undefined ? u.currentPrice : (u.newPrice !== undefined ? u.newPrice : u.price)));
+                    const oldP = Number(u.oldPrice !== undefined ? u.oldPrice : (u.defaultCupPrice !== undefined ? u.defaultCupPrice : newP));
                     if (pid && !isNaN(newP)) {
                       recordAdminLivePricePoint(pid, newP, oldP, u.reason || u.explanation);
                     }
@@ -9826,6 +9869,7 @@
       setInterval(updateMarketCrashTimerDisplay, 500);
       checkMarketPauseState();
       setInterval(checkMarketPauseState, 5000);
+      initPanelHub();
       refreshDashboard();
       loadNotifications();
       restoreSimulatorParams();
