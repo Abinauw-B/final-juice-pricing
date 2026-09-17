@@ -2941,9 +2941,18 @@
         ];
       }
 
-      await fetchAllPriceHistories();
-      await checkMarketCrashStatus();
+      // CRITICAL FIX: Render dashboard IMMEDIATELY on load so cards appear with 0ms delay!
       renderDashboard();
+
+      // Fetch histories and crash status asynchronously in background (non-blocking)
+      fetchAllPriceHistories().then(() => {
+        renderAllCharts();
+        if (activeModalProductId) {
+          renderModalChart(activeModalProductId);
+          renderModalSettlementsTable(activeModalProductId);
+        }
+      });
+      checkMarketCrashStatus();
     }
 
     // Fetch PostgreSQL Price History for all products in parallel
@@ -2954,7 +2963,7 @@
 
     async function fetchProductHistory(productId) {
       try {
-        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/history/${productId}`);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/history/${productId}?limit=50`);
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -4053,10 +4062,31 @@
     /* ==========================================================================
        WEBSOCKET REAL-TIME SYNC & LIVE PRICE ENGINE INTEGRATION
        ========================================================================== */
+    let wsReconnectTimer = null;
+    let isWsConnected = false;
+    let isConnectingWS = false;
+    let wsReconnectAttempts = 0;
+    let stompSubscriptions = [];
+
+    function cleanupStompSubscriptions() {
+      if (Array.isArray(stompSubscriptions)) {
+        stompSubscriptions.forEach(sub => {
+          try { if (sub && typeof sub.unsubscribe === 'function') sub.unsubscribe(); } catch (e) { }
+        });
+      }
+      stompSubscriptions = [];
+    }
+
     function connectWebSocket() {
       if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
-      if (isReconnectingWS) return;
+      if (isConnectingWS || isWsConnected) return;
 
+      if (wsReconnectTimer) {
+        clearTimeout(wsReconnectTimer);
+        wsReconnectTimer = null;
+      }
+
+      isConnectingWS = true;
       const socketBadge = document.getElementById('backendStatusBadge');
       const socketText = document.getElementById('backendStatusText');
 
@@ -4066,14 +4096,21 @@
         stompClient.debug = null; // Clean console output
 
         stompClient.connect({}, function () {
-          isReconnectingWS = false;
+          isConnectingWS = false;
+          isWsConnected = true;
+          wsReconnectAttempts = 0;
           if (socketBadge) socketBadge.className = 'status-badge status-badge-online';
           if (socketText) socketText.textContent = 'BACKEND ONLINE (8088)';
 
+          cleanupStompSubscriptions();
           fetchProducts();
+          fetchPricingTiming();
+          fetchPricingConfiguration();
+          checkMarketCrashStatus();
+          checkMarketState();
 
           // 1. Subscribe to Live Price Updates
-          stompClient.subscribe('/topic/prices', function (message) {
+          const sPrices = stompClient.subscribe('/topic/prices', function (message) {
             if (message && message.body) {
               try {
                 const res = JSON.parse(message.body);
@@ -4081,9 +4118,10 @@
               } catch (e) {}
             }
           });
+          stompSubscriptions.push(sPrices);
 
           // 2. Subscribe to Market Crash Alerts
-          stompClient.subscribe('/topic/market-crash', function (message) {
+          const sCrash = stompClient.subscribe('/topic/market-crash', function (message) {
             if (message && message.body) {
               try {
                 const res = JSON.parse(message.body);
@@ -4092,9 +4130,10 @@
               } catch (e) {}
             }
           });
+          stompSubscriptions.push(sCrash);
 
           // 3. Subscribe to Settlement / Products update
-          stompClient.subscribe('/topic/settlement', function (message) {
+          const sSettle = stompClient.subscribe('/topic/settlement', function (message) {
             if (message && message.body) {
               try {
                 const res = JSON.parse(message.body);
@@ -4106,7 +4145,9 @@
             fetchProducts();
             fetchPricingConfiguration();
           });
-          stompClient.subscribe('/topic/products', function (message) {
+          stompSubscriptions.push(sSettle);
+
+          const sProds = stompClient.subscribe('/topic/products', function (message) {
             if (message && message.body) {
               try {
                 const res = JSON.parse(message.body);
@@ -4120,9 +4161,10 @@
             }
             fetchProducts();
           });
+          stompSubscriptions.push(sProds);
 
           // 3b. Subscribe to LED Display Dedicated Topic
-          stompClient.subscribe('/topic/led-display', function (message) {
+          const sLed = stompClient.subscribe('/topic/led-display', function (message) {
             if (message && message.body) {
               try {
                 const res = JSON.parse(message.body);
@@ -4140,9 +4182,10 @@
             }
             fetchProducts();
           });
+          stompSubscriptions.push(sLed);
 
           // 4. Subscribe to Pricing Timing / Config Updates
-          stompClient.subscribe('/topic/pricing-config', function (message) {
+          const sCfg = stompClient.subscribe('/topic/pricing-config', function (message) {
             if (message && message.body) {
               try {
                 const res = JSON.parse(message.body);
@@ -4159,9 +4202,10 @@
               }
             }
           });
+          stompSubscriptions.push(sCfg);
 
           // 5. Subscribe to Market Pause/Resume Status
-          stompClient.subscribe('/topic/market-status', function (message) {
+          const sStatus = stompClient.subscribe('/topic/market-status', function (message) {
             if (message && message.body) {
               try {
                 const res = JSON.parse(message.body);
@@ -4170,23 +4214,27 @@
               } catch (e) {}
             }
           });
+          stompSubscriptions.push(sStatus);
         }, function () {
           // Reconnect handler
-          isReconnectingWS = true;
+          isConnectingWS = false;
+          isWsConnected = false;
+          cleanupStompSubscriptions();
+          wsReconnectAttempts++;
           if (socketBadge) socketBadge.className = 'status-badge status-badge-offline';
-          if (socketText) socketText.textContent = 'RECONNECTING...';
-          wsReconnectAttempts = (wsReconnectAttempts || 0) + 1;
+          if (socketText) socketText.textContent = 'BACKEND CONNECTING...';
           const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
-          setTimeout(() => {
-            isReconnectingWS = false;
+          wsReconnectTimer = setTimeout(() => {
             connectWebSocket();
           }, backoffDelay);
         });
       } catch (err) {
-        wsReconnectAttempts = (wsReconnectAttempts || 0) + 1;
+        isConnectingWS = false;
+        isWsConnected = false;
+        cleanupStompSubscriptions();
+        wsReconnectAttempts++;
         const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
-        setTimeout(() => {
-          isReconnectingWS = false;
+        wsReconnectTimer = setTimeout(() => {
           connectWebSocket();
         }, backoffDelay);
       }
@@ -4406,19 +4454,23 @@
 
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
         const res = await fetch(`${CONFIG.API_BASE_URL}/health`, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (res.ok) {
           badge.className = 'status-badge status-badge-online';
-          text.textContent = 'BACKEND ONLINE';
+          text.textContent = 'BACKEND ONLINE (8088)';
         } else {
+          if (!isWsConnected) {
+            badge.className = 'status-badge status-badge-offline';
+            text.textContent = 'BACKEND OFFLINE';
+          }
+        }
+      } catch (e) {
+        if (!isWsConnected) {
           badge.className = 'status-badge status-badge-offline';
           text.textContent = 'BACKEND OFFLINE';
         }
-      } catch (e) {
-        badge.className = 'status-badge status-badge-offline';
-        text.textContent = 'BACKEND OFFLINE';
       } finally {
         backendHealthChecking = false;
       }
@@ -4542,133 +4594,6 @@
       renderAllCharts();
       if (activeModalProductId) renderModalChart(activeModalProductId);
     });
-
-    // ═══════ SECURE WEBSOCKET & STOMP CLIENT ═══════
-    let wsReconnectTimer = null;
-    let isWsConnected = false;
-    let isConnectingWS = false;
-    let wsReconnectAttempts = 0;
-    let stompSubscriptions = [];
-
-    function cleanupStompSubscriptions() {
-      if (Array.isArray(stompSubscriptions)) {
-        stompSubscriptions.forEach(sub => {
-          try { if (sub && typeof sub.unsubscribe === 'function') sub.unsubscribe(); } catch (e) { }
-        });
-      }
-      stompSubscriptions = [];
-    }
-
-    function connectWebSocket() {
-      if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
-      if (isConnectingWS || isWsConnected) return;
-
-      if (wsReconnectTimer) {
-        clearTimeout(wsReconnectTimer);
-        wsReconnectTimer = null;
-      }
-
-      isConnectingWS = true;
-      try {
-        const socket = new SockJS(CONFIG.WS_URL);
-        stompClient = Stomp.over(socket);
-        stompClient.debug = null;
-
-        stompClient.connect({}, function () {
-          isConnectingWS = false;
-          isWsConnected = true;
-          wsReconnectAttempts = 0;
-
-          const badge = document.getElementById('backendStatusBadge');
-          const text = document.getElementById('backendStatusText');
-          if (badge && text) {
-            badge.className = 'status-badge status-badge-online';
-            text.textContent = 'BACKEND ONLINE';
-          }
-
-          cleanupStompSubscriptions();
-          fetchProducts();
-          fetchPricingTiming();
-          fetchPricingConfiguration();
-          checkMarketCrashStatus();
-          checkMarketState();
-
-          const subProds = stompClient.subscribe('/topic/products', function () {
-            fetchProducts();
-          });
-          stompSubscriptions.push(subProds);
-
-          const subPrices = stompClient.subscribe('/topic/prices', function () {
-            fetchProducts();
-          });
-          stompSubscriptions.push(subPrices);
-
-          const subLed = stompClient.subscribe('/topic/led-display', function () {
-            fetchProducts();
-          });
-          stompSubscriptions.push(subLed);
-
-          const subSettle = stompClient.subscribe('/topic/settlement', function (message) {
-            if (message && message.body) {
-              try {
-                const res = JSON.parse(message.body);
-                if (res.type === 'PRICING_TIMING_CHANGED' || res.intervalSeconds) {
-                  updatePricingTimingState(res);
-                }
-              } catch (e) { }
-            }
-            fetchProducts();
-            fetchPricingConfiguration();
-          });
-          stompSubscriptions.push(subSettle);
-
-          const subCrash = stompClient.subscribe('/topic/market-crash', function (message) {
-            if (message && message.body) {
-              try {
-                const res = JSON.parse(message.body);
-                if (res && res.active) {
-                  triggerMarketCrash(res.remainingSeconds || 180);
-                } else if (res && res.active === false) {
-                  stopMarketCrash();
-                } else {
-                  checkMarketCrashStatus();
-                }
-              } catch (e) {
-                checkMarketCrashStatus();
-              }
-            }
-          });
-          stompSubscriptions.push(subCrash);
-
-        }, function () {
-          isConnectingWS = false;
-          isWsConnected = false;
-          cleanupStompSubscriptions();
-          wsReconnectAttempts++;
-
-          const badge = document.getElementById('backendStatusBadge');
-          const text = document.getElementById('backendStatusText');
-          if (badge && text) {
-            badge.className = 'status-badge status-badge-offline';
-            text.textContent = 'BACKEND CONNECTING...';
-          }
-
-          const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
-          wsReconnectTimer = setTimeout(() => {
-            connectWebSocket();
-          }, backoffDelay);
-        });
-      } catch (err) {
-        isConnectingWS = false;
-        isWsConnected = false;
-        cleanupStompSubscriptions();
-        wsReconnectAttempts++;
-        const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
-        wsReconnectTimer = setTimeout(() => {
-          connectWebSocket();
-        }, backoffDelay);
-      }
-    }
 
     // Dynamic Navigation & QR Code Setup
     function setupDynamicLinksAndQr() {
