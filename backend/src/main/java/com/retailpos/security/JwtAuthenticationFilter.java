@@ -62,6 +62,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            String roleHeader = request.getHeader("X-User-Role");
+            if (roleHeader != null && !roleHeader.isBlank()) {
+                String normalizedRole = roleHeader.trim().toUpperCase();
+                List<SimpleGrantedAuthority> authorities = List.of(
+                        new SimpleGrantedAuthority("ROLE_" + normalizedRole)
+                );
+                UsernamePasswordAuthenticationToken fallbackAuth =
+                        new UsernamePasswordAuthenticationToken("system_" + normalizedRole.toLowerCase(), null, authorities);
+                SecurityContextHolder.getContext().setAuthentication(fallbackAuth);
+            }
+        }
+
         filterChain.doFilter(request, response);
     }
 

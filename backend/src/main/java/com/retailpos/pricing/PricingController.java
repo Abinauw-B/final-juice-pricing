@@ -176,6 +176,29 @@ public class PricingController {
         return ResponseEntity.ok(breakdown);
     }
 
+    private void broadcastToAllPortals(List<Product> products, String eventType) {
+        if (messagingTemplate == null) return;
+        try {
+            messagingTemplate.convertAndSend("/topic/prices", products);
+            messagingTemplate.convertAndSend("/topic/products", products);
+            messagingTemplate.convertAndSend("/topic/led-display", products);
+
+            Map<String, Object> settleMsg = new HashMap<>();
+            settleMsg.put("type", eventType != null ? eventType : "PRICES_UPDATED");
+            settleMsg.put("timestamp", LocalDateTime.now().toString());
+            settleMsg.put("products", products);
+            if (pricingEngineService != null && pricingEngineService.getNextSettlementTime() != null) {
+                settleMsg.put("nextSettlementAt", pricingEngineService.getNextSettlementTime().toString());
+            }
+            messagingTemplate.convertAndSend("/topic/settlement", settleMsg);
+
+            if (pricingConfigurationService != null) {
+                messagingTemplate.convertAndSend("/topic/pricing-config", pricingConfigurationService.getFullConfiguration());
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
     @PostMapping({ "/products/{productId}/price", "/admin/products/{productId}/price" })
     public ResponseEntity<PriceAdjustmentService.PriceEvaluationResult> updateManualPrice(
             @PathVariable Long productId,
@@ -184,16 +207,9 @@ public class PricingController {
         PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.updateManualPrice(productId, newPrice,
                 reason);
         try {
-            if (messagingTemplate != null) {
-                List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
-                messagingTemplate.convertAndSend("/topic/prices", activeProducts);
-                messagingTemplate.convertAndSend("/topic/products", activeProducts);
-                if (pricingConfigurationService != null) {
-                    messagingTemplate.convertAndSend("/topic/pricing-config",
-                            pricingConfigurationService.getFullConfiguration());
-                }
-            }
-        } catch (Exception e) {
+            List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+            broadcastToAllPortals(activeProducts, "MANUAL_PRICE_UPDATE");
+        } catch (Exception ignored) {
         }
         return ResponseEntity.ok(res);
     }
@@ -203,16 +219,9 @@ public class PricingController {
             @PathVariable Long productId) {
         PriceAdjustmentService.PriceEvaluationResult res = priceAdjustmentService.releaseManualOverride(productId);
         try {
-            if (messagingTemplate != null) {
-                List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
-                messagingTemplate.convertAndSend("/topic/prices", activeProducts);
-                messagingTemplate.convertAndSend("/topic/products", activeProducts);
-                if (pricingConfigurationService != null) {
-                    messagingTemplate.convertAndSend("/topic/pricing-config",
-                            pricingConfigurationService.getFullConfiguration());
-                }
-            }
-        } catch (Exception e) {
+            List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+            broadcastToAllPortals(activeProducts, "OVERRIDE_RELEASED");
+        } catch (Exception ignored) {
         }
         return ResponseEntity.ok(res);
     }
@@ -222,16 +231,9 @@ public class PricingController {
             @RequestBody PriceAdjustmentService.AdminPricingDeployRequest request) {
         Product updated = priceAdjustmentService.deployAdminPricing(request);
         try {
-            if (messagingTemplate != null) {
-                List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
-                messagingTemplate.convertAndSend("/topic/prices", allProducts);
-                messagingTemplate.convertAndSend("/topic/products", allProducts);
-                if (pricingConfigurationService != null) {
-                    messagingTemplate.convertAndSend("/topic/pricing-config",
-                            pricingConfigurationService.getFullConfiguration());
-                }
-            }
-        } catch (Exception e) {
+            List<Product> allProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+            broadcastToAllPortals(allProducts, "ADMIN_DEPLOY");
+        } catch (Exception ignored) {
         }
 
         Map<String, Object> response = new HashMap<>();

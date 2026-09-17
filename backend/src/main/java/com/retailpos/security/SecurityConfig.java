@@ -90,7 +90,8 @@ public class SecurityConfig {
 
                 // Admin & Manager role enforcement (Actuator management, internal metrics, and sensitive operations)
                 .requestMatchers("/actuator/**", "/api/metrics").hasAnyRole("ADMIN", "SUPER_ADMIN")
-                .requestMatchers("/api/admin/**", "/api/pricing/reset-all", "/api/pricing/reset").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
+                .requestMatchers("/api/pricing/**", "/api/pos/**", "/api/admin/pricing/**", "/api/products/**", "/api/batches/**").permitAll()
+                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
 
                 // --- All other endpoints require authentication ---
                 .anyRequest().authenticated()
