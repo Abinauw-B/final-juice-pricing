@@ -44,12 +44,15 @@ public class SalesOrderItem {
     @Column(name = "volume_deducted_ml", nullable = false)
     private Integer volumeDeductedMl;
 
+    @Column(name = "is_crash_sale", nullable = false)
+    private boolean isCrashSale = false;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private java.time.LocalDateTime createdAt;
 
     public SalesOrderItem() {}
 
-    public SalesOrderItem(Long id, SalesOrder salesOrder, Long productId, String productName, Integer cupSizeMl, BigDecimal unitPrice, BigDecimal lockedPrice, Integer priceVersion, Integer quantity, BigDecimal totalPrice, Integer volumeDeductedMl, java.time.LocalDateTime createdAt) {
+    public SalesOrderItem(Long id, SalesOrder salesOrder, Long productId, String productName, Integer cupSizeMl, BigDecimal unitPrice, BigDecimal lockedPrice, Integer priceVersion, Integer quantity, BigDecimal totalPrice, Integer volumeDeductedMl, boolean isCrashSale, java.time.LocalDateTime createdAt) {
         this.id = id;
         this.salesOrder = salesOrder;
         this.productId = productId;
@@ -61,6 +64,7 @@ public class SalesOrderItem {
         this.quantity = quantity;
         this.totalPrice = totalPrice;
         this.volumeDeductedMl = volumeDeductedMl;
+        this.isCrashSale = isCrashSale;
         this.createdAt = createdAt;
     }
 
@@ -86,6 +90,8 @@ public class SalesOrderItem {
     public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
     public Integer getVolumeDeductedMl() { return volumeDeductedMl; }
     public void setVolumeDeductedMl(Integer volumeDeductedMl) { this.volumeDeductedMl = volumeDeductedMl; }
+    public boolean isCrashSale() { return isCrashSale; }
+    public void setCrashSale(boolean crashSale) { isCrashSale = crashSale; }
     public java.time.LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -103,6 +109,7 @@ public class SalesOrderItem {
         private Integer quantity;
         private BigDecimal totalPrice;
         private Integer volumeDeductedMl;
+        private boolean isCrashSale = false;
         private java.time.LocalDateTime createdAt;
 
         public SalesOrderItemBuilder id(Long id) { this.id = id; return this; }
@@ -116,10 +123,11 @@ public class SalesOrderItem {
         public SalesOrderItemBuilder quantity(Integer quantity) { this.quantity = quantity; return this; }
         public SalesOrderItemBuilder totalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; return this; }
         public SalesOrderItemBuilder volumeDeductedMl(Integer volumeDeductedMl) { this.volumeDeductedMl = volumeDeductedMl; return this; }
+        public SalesOrderItemBuilder isCrashSale(boolean isCrashSale) { this.isCrashSale = isCrashSale; return this; }
         public SalesOrderItemBuilder createdAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
 
         public SalesOrderItem build() {
-            return new SalesOrderItem(id, salesOrder, productId, productName, cupSizeMl, unitPrice, lockedPrice, priceVersion, quantity, totalPrice, volumeDeductedMl, createdAt);
+            return new SalesOrderItem(id, salesOrder, productId, productName, cupSizeMl, unitPrice, lockedPrice, priceVersion, quantity, totalPrice, volumeDeductedMl, isCrashSale, createdAt);
         }
     }
 }

@@ -18,6 +18,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByIsActiveTrueOrderByIdAsc();
 
+    @jakarta.persistence.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.id = :id")
+    Optional<Product> findByIdWithLock(@Param("id") Long id);
+
+    @jakarta.persistence.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.isActive = true ORDER BY p.id ASC")
+    List<Product> findAllActiveWithLock();
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Product p SET p.orderCount = COALESCE(p.orderCount, 0) + :quantity WHERE p.id = :productId")
     int incrementOrderCount(@Param("productId") Long productId, @Param("quantity") Integer quantity);

@@ -20,6 +20,9 @@ public interface SalesOrderItemRepository extends JpaRepository<SalesOrderItem, 
     @Query("SELECT COALESCE(SUM(soi.quantity), 0) FROM SalesOrderItem soi JOIN soi.salesOrder so WHERE soi.productId = :productId AND so.createdAt >= :startTime AND so.createdAt < :endTime")
     Integer countQuantitySoldForProductBetweenExclusiveEnd(@Param("productId") Long productId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 
+    @Query("SELECT COALESCE(SUM(soi.quantity), 0) FROM SalesOrderItem soi JOIN soi.salesOrder so WHERE soi.productId = :productId AND soi.isCrashSale = false AND so.isCrashSale = false AND so.createdAt >= :startTime AND so.createdAt < :endTime")
+    Integer countNonCrashQuantitySoldForProductBetweenExclusiveEnd(@Param("productId") Long productId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+
     @Query("SELECT soi FROM SalesOrderItem soi JOIN soi.salesOrder so WHERE soi.productId = :productId AND so.createdAt >= :startTime AND so.createdAt <= :endTime")
     List<SalesOrderItem> findSalesItemsForProductBetween(@Param("productId") Long productId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 

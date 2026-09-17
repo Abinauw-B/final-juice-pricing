@@ -38,6 +38,9 @@ public class SalesOrder {
     @Column(name = "tax_amount")
     private BigDecimal taxAmount = BigDecimal.ZERO;
 
+    @Column(name = "is_crash_sale", nullable = false)
+    private boolean isCrashSale = false;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -46,7 +49,7 @@ public class SalesOrder {
 
     public SalesOrder() {}
 
-    public SalesOrder(Long id, String orderNumber, BigDecimal totalAmount, String paymentMethod, String paymentStatus, String idempotencyKey, BigDecimal subtotal, BigDecimal discountAmount, BigDecimal taxAmount, LocalDateTime createdAt, List<SalesOrderItem> items) {
+    public SalesOrder(Long id, String orderNumber, BigDecimal totalAmount, String paymentMethod, String paymentStatus, String idempotencyKey, BigDecimal subtotal, BigDecimal discountAmount, BigDecimal taxAmount, boolean isCrashSale, LocalDateTime createdAt, List<SalesOrderItem> items) {
         this.id = id;
         this.orderNumber = orderNumber;
         this.totalAmount = totalAmount;
@@ -56,6 +59,7 @@ public class SalesOrder {
         this.subtotal = subtotal != null ? subtotal : BigDecimal.ZERO;
         this.discountAmount = discountAmount != null ? discountAmount : BigDecimal.ZERO;
         this.taxAmount = taxAmount != null ? taxAmount : BigDecimal.ZERO;
+        this.isCrashSale = isCrashSale;
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
         this.items = items != null ? items : new ArrayList<>();
     }
@@ -78,6 +82,8 @@ public class SalesOrder {
     public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
     public BigDecimal getTaxAmount() { return taxAmount; }
     public void setTaxAmount(BigDecimal taxAmount) { this.taxAmount = taxAmount; }
+    public boolean isCrashSale() { return isCrashSale; }
+    public void setCrashSale(boolean crashSale) { isCrashSale = crashSale; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public List<SalesOrderItem> getItems() { return items; }
@@ -95,6 +101,7 @@ public class SalesOrder {
         private BigDecimal subtotal = BigDecimal.ZERO;
         private BigDecimal discountAmount = BigDecimal.ZERO;
         private BigDecimal taxAmount = BigDecimal.ZERO;
+        private boolean isCrashSale = false;
         private LocalDateTime createdAt = LocalDateTime.now();
         private List<SalesOrderItem> items = new ArrayList<>();
 
@@ -107,11 +114,12 @@ public class SalesOrder {
         public SalesOrderBuilder subtotal(BigDecimal subtotal) { this.subtotal = subtotal; return this; }
         public SalesOrderBuilder discountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; return this; }
         public SalesOrderBuilder taxAmount(BigDecimal taxAmount) { this.taxAmount = taxAmount; return this; }
+        public SalesOrderBuilder isCrashSale(boolean isCrashSale) { this.isCrashSale = isCrashSale; return this; }
         public SalesOrderBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
         public SalesOrderBuilder items(List<SalesOrderItem> items) { this.items = items; return this; }
 
         public SalesOrder build() {
-            return new SalesOrder(id, orderNumber, totalAmount, paymentMethod, paymentStatus, idempotencyKey, subtotal, discountAmount, taxAmount, createdAt, items);
+            return new SalesOrder(id, orderNumber, totalAmount, paymentMethod, paymentStatus, idempotencyKey, subtotal, discountAmount, taxAmount, isCrashSale, createdAt, items);
         }
     }
 }
