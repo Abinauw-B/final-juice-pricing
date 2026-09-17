@@ -64,7 +64,7 @@ async function runCrossPanelSyncValidation() {
   const authRes = await httpRequest(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: 'superadmin', password: 'password' })
+    body: JSON.stringify({ username: 'superadmin', password: 'admin123' })
   });
   adminToken = authRes.json.token;
   logResult(1, 'Super Admin Authentication', 'JWT Token generated', `Token present: ${!!adminToken}`, authRes.status === 200 && !!adminToken);

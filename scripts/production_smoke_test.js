@@ -91,7 +91,7 @@ async function runProductionSmokeTest() {
     const res = await fetchJson('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'superadmin', password: 'password' })
+      body: JSON.stringify({ username: 'superadmin', password: 'admin123' })
     });
     authToken = res.data.token || res.data.jwt;
     reportStep(4, "JWT Admin Authentication", "JWT token returned", `Token received: ${Boolean(authToken)}`, res.status === 200 && Boolean(authToken));
