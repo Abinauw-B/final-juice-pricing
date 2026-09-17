@@ -167,6 +167,8 @@ public class PricingSettlementCoordinator {
 
             if (!force && settlementRepository.existsByIdempotencyKey(windowKey)) {
                 log.info("[SETTLEMENT_DUPLICATE_SKIPPED] executionId={} Settlement for window {} already executed. Skipping.", executionId, windowKey);
+                long nextBucketEpoch = bucket + intervalSeconds;
+                nextSettlementTime = LocalDateTime.ofInstant(java.time.Instant.ofEpochSecond(nextBucketEpoch), java.time.ZoneId.systemDefault());
                 return buildCurrentMarketState(executionId, now, intervalSeconds);
             }
 

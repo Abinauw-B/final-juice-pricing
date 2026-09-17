@@ -43,8 +43,6 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
                         Instant targetInstant = nextTarget.atZone(java.time.ZoneId.systemDefault()).toInstant();
                         if (targetInstant.isAfter(Instant.now())) {
                             return targetInstant;
-                        } else {
-                            return Instant.now();
                         }
                     }
                     Instant lastActual = triggerContext.lastActualExecution();
@@ -52,10 +50,10 @@ public class DynamicPricingSchedulerConfig implements SchedulingConfigurer {
                         return Instant.now().plusSeconds(intervalSeconds);
                     }
                     Instant nextFromLast = lastActual.plusSeconds(intervalSeconds);
-                    if (nextFromLast.isBefore(Instant.now())) {
-                        return Instant.now();
+                    if (nextFromLast.isAfter(Instant.now())) {
+                        return nextFromLast;
                     }
-                    return nextFromLast;
+                    return Instant.now().plusSeconds(intervalSeconds);
                 }
         );
         log.info("[DYNAMIC SCHEDULER] Dynamic DWMA Settlement Scheduler registered successfully with live interval trigger.");

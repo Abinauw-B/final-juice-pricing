@@ -1,42 +1,17 @@
 package com.retailpos.pricing;
 
 import com.retailpos.domain.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 public class Bug1WeightedSumNormalizationTest {
-
-    private ProductRepository productRepository;
-    private PriceHistoryRepository priceHistoryRepository;
-    private SalesOrderItemRepository salesOrderItemRepository;
-    private PriceAdjustmentService priceAdjustmentService;
-
-    @BeforeEach
-    void setUp() {
-        productRepository = mock(ProductRepository.class);
-        priceHistoryRepository = mock(PriceHistoryRepository.class);
-        salesOrderItemRepository = mock(SalesOrderItemRepository.class);
-
-        priceAdjustmentService = new PriceAdjustmentService(
-                productRepository,
-                priceHistoryRepository,
-                salesOrderItemRepository,
-                null, // marketCrashService
-                null, // pricingProcessedSaleRepository
-                null, // redisRepository
-                null  // pricingConfigurationService (defaults to W0=1.0, W1=0.5, W2=0.25, interval=60s)
-        );
-        PriceAdjustmentService.setMarketPaused(false);
-    }
 
     @Test
     @DisplayName("BUG 1 REPRODUCTION: Stable demand w0=w1=w2=target must produce Rd in stable band [0.90, 1.10] and deltaP = 0")
@@ -58,10 +33,47 @@ public class Bug1WeightedSumNormalizationTest {
         product.setWeightedSales(null);
         product.setOrderCount(stableSales);
 
-        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-        // All three windows W0, W1, W2 return stable sales equal to target
-        when(salesOrderItemRepository.countQuantitySoldForProductBetweenExclusiveEnd(eq(productId), any(), any()))
-                .thenReturn(stableSales);
+        ProductRepository productRepo = (ProductRepository) Proxy.newProxyInstance(
+                ProductRepository.class.getClassLoader(),
+                new Class<?>[]{ProductRepository.class},
+                (proxy, method, args) -> {
+                    if (method.getName().equals("findByIdWithLock") || method.getName().equals("findById")) {
+                        return Optional.of(product);
+                    }
+                    if (method.getName().equals("saveAndFlush") || method.getName().equals("save")) {
+                        return product;
+                    }
+                    return null;
+                }
+        );
+
+        SalesOrderItemRepository salesRepo = (SalesOrderItemRepository) Proxy.newProxyInstance(
+                SalesOrderItemRepository.class.getClassLoader(),
+                new Class<?>[]{SalesOrderItemRepository.class},
+                (proxy, method, args) -> {
+                    if (method.getName().contains("count")) {
+                        return stableSales;
+                    }
+                    return 0;
+                }
+        );
+
+        PriceHistoryRepository historyRepo = (PriceHistoryRepository) Proxy.newProxyInstance(
+                PriceHistoryRepository.class.getClassLoader(),
+                new Class<?>[]{PriceHistoryRepository.class},
+                (proxy, method, args) -> null
+        );
+
+        PriceAdjustmentService priceAdjustmentService = new PriceAdjustmentService(
+                productRepo,
+                historyRepo,
+                salesRepo,
+                null,
+                null,
+                null,
+                null
+        );
+        PriceAdjustmentService.setMarketPaused(false);
 
         LocalDateTime evaluationTime = LocalDateTime.now();
         PriceAdjustmentService.PriceEvaluationResult result = priceAdjustmentService.evaluateAndAdjustPrice(productId, evaluationTime);
