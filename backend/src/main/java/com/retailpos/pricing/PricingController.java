@@ -128,16 +128,20 @@ public class PricingController {
     }
 
     @GetMapping({ "/history/{productId}", "/history" })
-    public ResponseEntity<List<PriceHistory>> getPriceHistory(@PathVariable(required = false) String productId) {
-        if (productId != null && !productId.isBlank()) {
+    public ResponseEntity<List<PriceHistory>> getPriceHistory(
+            @PathVariable(required = false) String productId,
+            @RequestParam(required = false, defaultValue = "50") Integer limit) {
+        int maxLimit = (limit != null && limit > 0) ? Math.min(limit, 200) : 50;
+        org.springframework.data.domain.PageRequest page = org.springframework.data.domain.PageRequest.of(0, maxLimit);
+        if (productId != null && !productId.isBlank() && !"all".equalsIgnoreCase(productId)) {
             try {
                 Long pid = Long.parseLong(productId);
-                return ResponseEntity.ok(priceHistoryRepository.findByProductIdOrderByCreatedAtDesc(pid));
+                return ResponseEntity.ok(priceHistoryRepository.findByProductIdOrderByCreatedAtDesc(pid, page));
             } catch (NumberFormatException nfe) {
                 return ResponseEntity.ok(java.util.Collections.emptyList());
             }
         }
-        return ResponseEntity.ok(priceHistoryRepository.findAllByOrderByCreatedAtDesc());
+        return ResponseEntity.ok(priceHistoryRepository.findAllByOrderByCreatedAtDesc(page).getContent());
     }
 
     @GetMapping("/products/{productId}/breakdown")
