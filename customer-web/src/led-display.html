@@ -868,46 +868,48 @@
       cursor: crosshair;
     }
 
-    /* 20L Tank Batch Volume Liquid Gauge */
+    /* 20L Tank Batch Volume Liquid Gauge (Image 1 Spec) */
     .tank-volume-row {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 3px 6px;
+      background: transparent;
+      border: none;
+      padding: 0 1px;
       margin: 1px 0 2px 0;
     }
     .tank-label {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
       color: var(--text-muted);
       margin-bottom: 2px;
     }
     .tank-percent-badge {
       font-family: var(--font-mono);
-      font-size: 10.5px;
-      font-weight: 900;
-      padding: 1px 4px;
-      border-radius: 3px;
-      background: rgba(56, 189, 248, 0.12);
-      color: var(--accent-cyan);
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 0;
+      background: transparent;
+      color: var(--text-muted);
     }
     .tank-bar-track {
       width: 100%;
-      height: 5px;
-      background: var(--bg-subtle);
+      height: 4px;
+      background: rgba(0, 0, 0, 0.07);
       border-radius: 999px;
       overflow: hidden;
       position: relative;
+    }
+    html[data-theme="dark"] .tank-bar-track,
+    body.dark-theme-mode .tank-bar-track {
+      background: rgba(255, 255, 255, 0.12);
     }
     .tank-bar-fill {
       height: 100%;
       border-radius: 999px;
       transition: width 0.4s ease;
-      background: linear-gradient(90deg, #0284c7, #38bdf8);
-      box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
+      background: #0284c7;
+      box-shadow: 0 0 4px rgba(2, 132, 199, 0.35);
     }
 
     /* Compact Demand Signal Container */
@@ -3298,11 +3300,11 @@
       if (f.includes('MANGO')) {
         return {
           rgb: '245, 158, 11',
-          accent: '#F59E0B',
+          accent: '#D97706',
           bgDark: 'linear-gradient(145deg, rgba(245, 158, 11, 0.20) 0%, #080c14 45%, #020408 100%)',
-          bgLight: 'linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%)',
+          bgLight: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 40%, #FFFFFF 100%)',
           borderDark: 'rgba(245, 158, 11, 0.75)',
-          borderLight: '#F59E0B',
+          borderLight: '#FDE68A',
           shadowDark: 'rgba(245, 158, 11, 0.3)',
           shadowLight: 'rgba(245, 158, 11, 0.2)',
           glow: 'rgba(245, 158, 11, 0.55)'
@@ -3311,11 +3313,11 @@
       if (f.includes('STRAWBERRY')) {
         return {
           rgb: '244, 63, 94',
-          accent: '#F43F5E',
+          accent: '#E11D48',
           bgDark: 'linear-gradient(145deg, rgba(244, 63, 94, 0.20) 0%, #080c14 45%, #020408 100%)',
-          bgLight: 'linear-gradient(135deg, #FFE4E6 0%, #FFFFFF 100%)',
+          bgLight: 'linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 40%, #FFFFFF 100%)',
           borderDark: 'rgba(244, 63, 94, 0.75)',
-          borderLight: '#F43F5E',
+          borderLight: '#FECDD3',
           shadowDark: 'rgba(244, 63, 94, 0.3)',
           shadowLight: 'rgba(244, 63, 94, 0.2)',
           glow: 'rgba(244, 63, 94, 0.55)'
@@ -3324,11 +3326,11 @@
       if (f.includes('ORANGE')) {
         return {
           rgb: '249, 115, 22',
-          accent: '#F97316',
+          accent: '#EA580C',
           bgDark: 'linear-gradient(145deg, rgba(249, 115, 22, 0.20) 0%, #080c14 45%, #020408 100%)',
-          bgLight: 'linear-gradient(135deg, #FFEDD5 0%, #FFFFFF 100%)',
+          bgLight: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 40%, #FFFFFF 100%)',
           borderDark: 'rgba(249, 115, 22, 0.75)',
-          borderLight: '#F97316',
+          borderLight: '#FED7AA',
           shadowDark: 'rgba(249, 115, 22, 0.3)',
           shadowLight: 'rgba(249, 115, 22, 0.2)',
           glow: 'rgba(249, 115, 22, 0.55)'
@@ -3337,11 +3339,11 @@
       if (f.includes('GRAPE')) {
         return {
           rgb: '168, 85, 247',
-          accent: '#A855F7',
+          accent: '#7C3AED',
           bgDark: 'linear-gradient(145deg, rgba(168, 85, 247, 0.20) 0%, #080c14 45%, #020408 100%)',
-          bgLight: 'linear-gradient(135deg, #F3E8FF 0%, #FFFFFF 100%)',
+          bgLight: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 40%, #FFFFFF 100%)',
           borderDark: 'rgba(168, 85, 247, 0.75)',
-          borderLight: '#A855F7',
+          borderLight: '#E9D5FF',
           shadowDark: 'rgba(168, 85, 247, 0.3)',
           shadowLight: 'rgba(168, 85, 247, 0.2)',
           glow: 'rgba(168, 85, 247, 0.55)'
@@ -3349,25 +3351,25 @@
       }
       if (f.includes('LEMON')) {
         return {
-          rgb: '234, 179, 8',
-          accent: '#EAB308',
-          bgDark: 'linear-gradient(145deg, rgba(234, 179, 8, 0.20) 0%, #080c14 45%, #020408 100%)',
-          bgLight: 'linear-gradient(135deg, #FEF9C3 0%, #FFFFFF 100%)',
-          borderDark: 'rgba(234, 179, 8, 0.75)',
-          borderLight: '#EAB308',
-          shadowDark: 'rgba(234, 179, 8, 0.3)',
-          shadowLight: 'rgba(234, 179, 8, 0.2)',
-          glow: 'rgba(234, 179, 8, 0.55)'
+          rgb: '132, 204, 22',
+          accent: '#65A30D',
+          bgDark: 'linear-gradient(145deg, rgba(132, 204, 22, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #F7FEE7 0%, #ECFCCB 40%, #FFFFFF 100%)',
+          borderDark: 'rgba(132, 204, 22, 0.75)',
+          borderLight: '#D9F99D',
+          shadowDark: 'rgba(132, 204, 22, 0.3)',
+          shadowLight: 'rgba(132, 204, 22, 0.2)',
+          glow: 'rgba(132, 204, 22, 0.55)'
         };
       }
       if (f.includes('MINT')) {
         return {
           rgb: '16, 185, 129',
-          accent: '#10B981',
+          accent: '#059669',
           bgDark: 'linear-gradient(145deg, rgba(16, 185, 129, 0.20) 0%, #080c14 45%, #020408 100%)',
-          bgLight: 'linear-gradient(135deg, #D1FAE5 0%, #FFFFFF 100%)',
+          bgLight: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 40%, #FFFFFF 100%)',
           borderDark: 'rgba(16, 185, 129, 0.75)',
-          borderLight: '#10B981',
+          borderLight: '#A7F3D0',
           shadowDark: 'rgba(16, 185, 129, 0.3)',
           shadowLight: 'rgba(16, 185, 129, 0.2)',
           glow: 'rgba(16, 185, 129, 0.55)'
@@ -3375,37 +3377,37 @@
       }
       if (f.includes('LYCHEE') || f.includes('MELON') || f.includes('GUAVA')) {
         return {
-          rgb: '251, 113, 133',
-          accent: '#FB7185',
-          bgDark: 'linear-gradient(145deg, rgba(251, 113, 133, 0.20) 0%, #080c14 45%, #020408 100%)',
-          bgLight: 'linear-gradient(135deg, #FFE4E6 0%, #FFFFFF 100%)',
-          borderDark: 'rgba(251, 113, 133, 0.75)',
-          borderLight: '#FB7185',
-          shadowDark: 'rgba(251, 113, 133, 0.3)',
-          shadowLight: 'rgba(251, 113, 133, 0.2)',
-          glow: 'rgba(251, 113, 133, 0.55)'
+          rgb: '234, 88, 12',
+          accent: '#EA580C',
+          bgDark: 'linear-gradient(145deg, rgba(234, 88, 12, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 40%, #FFFFFF 100%)',
+          borderDark: 'rgba(234, 88, 12, 0.75)',
+          borderLight: '#FED7AA',
+          shadowDark: 'rgba(234, 88, 12, 0.3)',
+          shadowLight: 'rgba(234, 88, 12, 0.2)',
+          glow: 'rgba(234, 88, 12, 0.55)'
         };
       }
       if (f.includes('THUNDER') || f.includes('ENERGY') || f.includes('MOJITO') || f.includes('BLUE')) {
         return {
-          rgb: '6, 182, 212',
-          accent: '#06B6D4',
-          bgDark: 'linear-gradient(145deg, rgba(6, 182, 212, 0.20) 0%, #080c14 45%, #020408 100%)',
-          bgLight: 'linear-gradient(135deg, #CFFAFE 0%, #FFFFFF 100%)',
-          borderDark: 'rgba(6, 182, 212, 0.75)',
-          borderLight: '#06B6D4',
-          shadowDark: 'rgba(6, 182, 212, 0.3)',
-          shadowLight: 'rgba(6, 182, 212, 0.2)',
-          glow: 'rgba(6, 182, 212, 0.55)'
+          rgb: '2, 132, 199',
+          accent: '#0284C7',
+          bgDark: 'linear-gradient(145deg, rgba(2, 132, 199, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 40%, #FFFFFF 100%)',
+          borderDark: 'rgba(2, 132, 199, 0.75)',
+          borderLight: '#BAE6FD',
+          shadowDark: 'rgba(2, 132, 199, 0.3)',
+          shadowLight: 'rgba(2, 132, 199, 0.2)',
+          glow: 'rgba(2, 132, 199, 0.55)'
         };
       }
       return {
         rgb: '245, 158, 11',
-        accent: '#F59E0B',
+        accent: '#D97706',
         bgDark: 'linear-gradient(145deg, rgba(245, 158, 11, 0.20) 0%, #080c14 45%, #020408 100%)',
-        bgLight: 'linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%)',
+        bgLight: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 40%, #FFFFFF 100%)',
         borderDark: 'rgba(245, 158, 11, 0.75)',
-        borderLight: '#F59E0B',
+        borderLight: '#FDE68A',
         shadowDark: 'rgba(245, 158, 11, 0.3)',
         shadowLight: 'rgba(245, 158, 11, 0.2)',
         glow: 'rgba(245, 158, 11, 0.55)'
@@ -3840,87 +3842,82 @@
       if (needsFullRebuild) {
         lastRenderedCardIds = currentIds;
         grid.innerHTML = products.map(p => {
-          const icon = getFruitIcon(p);
           const imgUrl = getBeverageImage(p);
           const name = p.name || p.flavour || 'Juice';
-          const cleanFlavour = getCleanFlavourName(p);
           const cupSize = p.defaultCupSizeMl || 250;
+          const theme = getJuiceThemeTokens(p);
 
           const baseP = Number(p.basePrice !== undefined ? p.basePrice : (p.defaultCupPrice !== undefined ? p.defaultCupPrice : 25)).toFixed(2);
           const activePrice = Number(isMarketCrashActive ? (p.minCupPrice != null ? p.minCupPrice : 20) : (p.currentCupPrice != null ? p.currentCupPrice : 25)).toFixed(2);
           const lastChange = (p.deltaPrice !== undefined ? Number(p.deltaPrice) : (p.priceDelta !== undefined ? Number(p.priceDelta) : (p.priceChange !== undefined ? Number(p.priceChange) : 0)));
           const movementReason = p.movementReason || p.movement || p.demandLevelCategory || (lastChange > 0 ? 'HIGH_DEMAND' : (lastChange < 0 ? 'LOW_DEMAND' : 'NORMAL_DEMAND'));
 
-          let badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (STABLE)</span>`;
+          let deltaPillClass = 'delta-stable';
+          let deltaPillText = '— ₹0.00';
           let priceColor = 'var(--text-primary)';
 
           if (isMarketCrashActive) {
-            badgeHtml = `<span class="delta-badge delta-decay">🚨 CRASH ₹${activePrice}</span>`;
+            deltaPillClass = 'delta-decay';
+            deltaPillText = `🚨 CRASH ₹${activePrice}`;
             priceColor = 'var(--accent-rose)';
           } else if (lastChange > 0) {
-            badgeHtml = `<span class="delta-badge delta-surge">▲ +₹${lastChange.toFixed(2)} (${movementReason})</span>`;
+            deltaPillClass = 'delta-surge';
+            deltaPillText = `+ ₹${lastChange.toFixed(2)}`;
             priceColor = 'var(--accent-emerald)';
           } else if (lastChange < 0) {
-            badgeHtml = `<span class="delta-badge delta-decay">▼ -₹${Math.abs(lastChange).toFixed(2)} (${movementReason})</span>`;
+            deltaPillClass = 'delta-decay';
+            deltaPillText = `- ₹${Math.abs(lastChange).toFixed(2)}`;
             priceColor = 'var(--accent-rose)';
           } else {
-            badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (${movementReason})</span>`;
+            deltaPillClass = 'delta-stable';
+            deltaPillText = `— ₹0.00`;
           }
+          const badgeHtml = `<span class="card-delta-pill ${deltaPillClass}">${deltaPillText}</span>`;
 
           const targetDisplay = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
 
           const remainingVolMl = p.remainingVolumeMl !== undefined ? p.remainingVolumeMl : (20000 - ((p.id * 1370) % 6000));
           const tankPct = Math.max(10, Math.min(100, Math.round((remainingVolMl / 20000) * 100)));
           const remainingLitres = (remainingVolMl / 1000).toFixed(1);
-          const remainingCups = Math.floor(remainingVolMl / cupSize);
           
           let demandDotsHtml = '';
-          let demandLabel = 'NORMAL FLOW (1.0x)';
+          let demandLabel = 'BALANCED (1.0x)';
           if (isMarketCrashActive) {
             demandDotsHtml = '<span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
             demandLabel = '🚨 MARKET CRASH';
           } else if (lastChange > 0) {
             demandDotsHtml = '<span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot"></span>';
-            demandLabel = '🔥 SURGE DEMAND (1.75x)';
+            demandLabel = 'SURGE (1.75x)';
           } else if (lastChange < 0) {
             demandDotsHtml = '<span class="demand-dot active-low"></span><span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
-            demandLabel = '❄️ LOW DEMAND (0.50x)';
+            demandLabel = 'LOW (0.50x)';
           } else {
             demandDotsHtml = '<span class="demand-dot active-normal"></span><span class="demand-dot active-normal"></span><span class="demand-dot active-normal"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
-            demandLabel = '⚖️ BALANCED (1.0x)';
+            demandLabel = 'BALANCED (1.0x)';
           }
 
           return `
-            <div class="product-card" id="card_prod_${p.id}">
-              <!-- Top Identity & Price Section -->
-              <div class="card-top-section">
-                <!-- Image Banner -->
-                <div class="product-img-wrapper">
-                  <img src="${imgUrl}" alt="${name}" class="product-img" loading="lazy" />
-                  <div class="product-img-overlay">
-                    <span class="fruit-badge" id="card_badge_fruit_${p.id}">${icon} ${cleanFlavour}</span>
-                    <span class="live-indicator-badge">● LIVE</span>
+            <div class="product-card" id="card_prod_${p.id}" style="--card-tint-bg: ${theme.bgLight}; --card-tint-border: ${theme.borderLight || theme.accent}; --card-accent: ${theme.accent};">
+              <!-- Top Compact Header: Thumbnail, Name & Price -->
+              <div class="card-header-compact">
+                <div class="card-header-left">
+                  <img src="${imgUrl}" alt="${name}" class="card-thumbnail" loading="lazy" />
+                  <div class="card-header-titles">
+                    <div class="product-name" id="card_name_${p.id}" title="${name}">${name}</div>
+                    <div class="product-size">${cupSize} ml standard cup</div>
                   </div>
                 </div>
-
-                <!-- Title & Size -->
-                <div class="product-title-row">
-                  <div class="product-name" id="card_name_${p.id}">${name}</div>
-                </div>
-                <div class="product-size">${cupSize} ml standard cup</div>
-
-                <!-- Current Price & Delta -->
-                <div class="product-price-row">
+                <div class="card-header-right">
                   <div class="product-price" id="card_price_${p.id}" style="color: ${priceColor};">₹${activePrice}</div>
-                  <div id="card_badge_${p.id}">${badgeHtml}</div>
+                  <div class="card-delta-wrap" id="card_badge_${p.id}">${badgeHtml}</div>
                 </div>
               </div>
 
-              <!-- REAL PRICE HISTORY GRAPH -->
+              <!-- Price Trend Canvas Graph (Plot Preserved) -->
               <div class="chart-container-wrapper" id="chart_wrapper_${p.id}">
                 <div class="chart-header-row">
                   <span>PRICE TREND</span>
-                  <span id="chart_pts_count_${p.id}">REAL-TIME DWMA</span>
+                  <span id="chart_pts_count_${p.id}">30 PTS • DWMA</span>
                 </div>
                 <canvas id="chart_canvas_${p.id}" class="product-chart-canvas"></canvas>
                 <div id="chart_empty_${p.id}" class="chart-empty-state" style="display: none;">
@@ -3929,72 +3926,75 @@
                 </div>
               </div>
 
-              <!-- Bottom Metrics & Action Section -->
-              <div class="card-bottom-section">
-                <!-- 20L Tank Batch Volume & Demand Flow Gauge -->
-                <div class="tank-volume-row">
-                  <div class="tank-label">
-                    <div style="display: inline-flex; align-items: center; gap: 4px;">
-                      <span>🛢️ Tank</span>
-                      <span class="tank-percent-badge" id="card_tank_badge_${p.id}">${tankPct}% • ${remainingLitres}L</span>
-                    </div>
-                    <div class="demand-pill-compact" title="${demandLabel}">
-                      <span id="card_demand_label_${p.id}" class="demand-label-text">${demandLabel}</span>
-                      <div class="demand-dots" id="card_demand_dots_${p.id}">${demandDotsHtml}</div>
-                    </div>
+              <!-- Tank Volume Row & Flow Status -->
+              <div class="tank-volume-row">
+                <div class="tank-label">
+                  <div style="display: inline-flex; align-items: center; gap: 4px;">
+                    <span style="font-size: 9.5px; color: var(--accent-cyan);">💧</span>
+                    <span class="tank-percent-badge" id="card_tank_badge_${p.id}">Tank ${tankPct}% • ${remainingLitres}L</span>
                   </div>
-                  <div class="tank-bar-track">
-                    <div class="tank-bar-fill" id="card_tank_fill_${p.id}" style="width: ${tankPct}%;"></div>
+                  <div class="demand-pill-compact" title="${demandLabel}">
+                    <span id="card_demand_label_${p.id}" class="demand-label-text">${demandLabel}</span>
+                    <div class="demand-dots" id="card_demand_dots_${p.id}">${demandDotsHtml}</div>
+                  </div>
+                </div>
+                <div class="tank-bar-track">
+                  <div class="tank-bar-fill" id="card_tank_fill_${p.id}" style="width: ${tankPct}%;"></div>
+                </div>
+              </div>
+
+              <!-- 3-Column Info Strip: LIMITS | DWMA | SETTLED (Image 1 Spec) -->
+              <div class="card-info-strip-3col">
+                <!-- Col 1: LIMITS -->
+                <div class="info-col">
+                  <div class="info-col-title">LIMITS</div>
+                  <div class="info-row">
+                    <span class="info-k">BASE</span>
+                    <span class="info-v" id="card_base_${p.id}">₹${Number(baseP).toFixed(0)}</span>
+                    <span class="info-k" style="margin-left: auto;">FLR</span>
+                    <span class="info-v" id="card_floor_${p.id}">₹${Number(p.minCupPrice != null ? p.minCupPrice : 20).toFixed(0)}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-k">CEIL</span>
+                    <span class="info-v" id="card_ceiling_${p.id}">₹${Number(p.maxCupPrice != null ? p.maxCupPrice : 30).toFixed(0)}</span>
                   </div>
                 </div>
 
-                <!-- Unified Single-Line Telemetry Spec Strip (BASE | FLR | CEIL | TGT) -->
-                <div class="product-stats-strip">
-                  <div class="stat-cell">
-                    <span class="stat-k">BASE</span>
-                    <span class="stat-v" id="card_base_${p.id}">₹${baseP}</span>
+                <!-- Col 2: DWMA -->
+                <div class="info-col">
+                  <div class="info-col-title">DWMA</div>
+                  <div class="info-row">
+                    <span class="info-k">TGT</span>
+                    <span class="info-v" id="card_target_${p.id}">${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)}</span>
                   </div>
-                  <span class="stat-div">|</span>
-                  <div class="stat-cell">
-                    <span class="stat-k">FLR</span>
-                    <span class="stat-v" id="card_floor_${p.id}">₹${Number(p.minCupPrice != null ? p.minCupPrice : 20).toFixed(2)}</span>
+                  <div class="info-row">
+                    <span class="info-k">MODE</span>
+                    <span class="info-v" style="font-size: 8.5px; color: ${isMarketCrashActive ? 'var(--accent-rose)' : 'var(--accent-emerald)'}; font-weight: 900;">${isMarketCrashActive ? 'CRASH' : 'BAL'}</span>
                   </div>
-                  <span class="stat-div">|</span>
-                  <div class="stat-cell">
-                    <span class="stat-k">CEIL</span>
-                    <span class="stat-v" id="card_ceiling_${p.id}">₹${Number(p.maxCupPrice != null ? p.maxCupPrice : 30).toFixed(2)}</span>
+                </div>
+
+                <!-- Col 3: SETTLED -->
+                <div class="info-col" style="border-right: none;">
+                  <div class="info-col-title">
+                    <span>SETTLED</span>
+                    <span class="live-tag">LIVE</span>
                   </div>
-                  <span class="stat-div">|</span>
-                  <div class="stat-cell">
-                    <span class="stat-k">TGT</span>
-                    <span class="stat-v" id="card_target_${p.id}">${targetDisplay}</span>
+                  <div class="settled-mini-rows" id="card_settled_rows_${p.id}">
+                    ${buildSettledRowsHtml(p.id)}
                   </div>
                 </div>
               </div>
 
-              <!-- Mid-section: Mini Recent Activity Feed (fills dead-space with real settlement data) -->
-              <div class="card-mid-section">
-                <div class="card-activity-feed" id="card_activity_${p.id}">
-                  <div class="activity-feed-header">
-                    <span>⚡ RECENT SETTLEMENTS</span>
-                    <span id="card_activity_count_${p.id}" style="color: var(--accent-cyan);">LIVE</span>
-                  </div>
-                  <div class="activity-feed-rows" id="card_activity_rows_${p.id}">
-                    ${buildActivityFeedHtml(p.id)}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Card Footer Actions (always pinned at bottom) -->
-              <div class="card-bottom-section" style="margin-top: 0;">
-                <div class="card-footer-actions">
-                  <button class="btn-card-action" onclick="openProductModal(${p.id})">
-                    🔍 Details
-                  </button>
-                  <a href="${CONFIG.POS_URL || 'index.html'}" target="_blank" class="btn-card-action btn-card-action-pos">
-                    🛒 Buy POS
-                  </a>
-                </div>
+              <!-- Themed Pill Action Buttons (Image 1 Spec) -->
+              <div class="card-footer-actions">
+                <button class="btn-card-details" style="color: ${theme.accent}; border-color: ${theme.accent};" onclick="openProductModal(${p.id})">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  DETAILS
+                </button>
+                <a href="${CONFIG.POS_URL || 'index.html'}" target="_blank" class="btn-card-buy" style="background: ${theme.accent};">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                  BUY POS
+                </a>
               </div>
             </div>
           `;
@@ -4006,12 +4006,6 @@
           const nameEl = document.getElementById(`card_name_${p.id}`);
           if (nameEl && prodName && nameEl.textContent !== prodName) {
             nameEl.textContent = prodName;
-          }
-          const fruitBadgeEl = document.getElementById(`card_badge_fruit_${p.id}`);
-          if (fruitBadgeEl) {
-            const icon = getFruitIcon(p);
-            const cleanFlavour = getCleanFlavourName(p);
-            fruitBadgeEl.innerHTML = `${icon} ${cleanFlavour}`;
           }
 
           const baseP = Number(p.basePrice !== undefined ? p.basePrice : (p.defaultCupPrice !== undefined ? p.defaultCupPrice : 25)).toFixed(2);
@@ -4033,24 +4027,38 @@
             priceEl.style.color = isMarketCrashActive ? 'var(--accent-rose)' : (lastChange > 0 ? 'var(--accent-emerald)' : (lastChange < 0 ? 'var(--accent-rose)' : 'var(--text-primary)'));
           }
           if (badgeEl) {
-            let badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (${movementReason})</span>`;
+            let deltaPillClass = 'delta-stable';
+            let deltaPillText = '— ₹0.00';
             if (isMarketCrashActive) {
-              badgeHtml = `<span class="delta-badge delta-decay">🚨 CRASH ₹${activePrice}</span>`;
+              deltaPillClass = 'delta-decay';
+              deltaPillText = `🚨 CRASH ₹${activePrice}`;
             } else if (lastChange > 0) {
-              badgeHtml = `<span class="delta-badge delta-surge">▲ +₹${lastChange.toFixed(2)} (${movementReason})</span>`;
+              deltaPillClass = 'delta-surge';
+              deltaPillText = `+ ₹${lastChange.toFixed(2)}`;
             } else if (lastChange < 0) {
-              badgeHtml = `<span class="delta-badge delta-decay">▼ -₹${Math.abs(lastChange).toFixed(2)} (${movementReason})</span>`;
+              deltaPillClass = 'delta-decay';
+              deltaPillText = `- ₹${Math.abs(lastChange).toFixed(2)}`;
             }
-            badgeEl.innerHTML = badgeHtml;
+            badgeEl.innerHTML = `<span class="card-delta-pill ${deltaPillClass}">${deltaPillText}</span>`;
           }
           const baseEl = document.getElementById(`card_base_${p.id}`);
-          if (baseEl) baseEl.textContent = `₹${baseP}`;
+          if (baseEl) baseEl.textContent = `₹${Number(baseP).toFixed(0)}`;
           const floorEl = document.getElementById(`card_floor_${p.id}`);
-          if (floorEl) floorEl.textContent = `₹${Number(p.minCupPrice != null ? p.minCupPrice : 20).toFixed(2)}`;
+          if (floorEl) floorEl.textContent = `₹${Number(p.minCupPrice != null ? p.minCupPrice : 20).toFixed(0)}`;
           const ceilEl = document.getElementById(`card_ceiling_${p.id}`);
-          if (ceilEl) ceilEl.textContent = `₹${Number(p.maxCupPrice != null ? p.maxCupPrice : 30).toFixed(2)}`;
+          if (ceilEl) ceilEl.textContent = `₹${Number(p.maxCupPrice != null ? p.maxCupPrice : 30).toFixed(0)}`;
           const targetEl = document.getElementById(`card_target_${p.id}`);
-          if (targetEl) targetEl.textContent = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
+          if (targetEl) targetEl.textContent = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)}`;
+
+          const cupSize = p.defaultCupSizeMl || 250;
+          const remainingVolMl = p.remainingVolumeMl !== undefined ? p.remainingVolumeMl : (20000 - ((p.id * 1370) % 6000));
+          const tankPct = Math.max(10, Math.min(100, Math.round((remainingVolMl / 20000) * 100)));
+          const remainingLitres = (remainingVolMl / 1000).toFixed(1);
+
+          const tankBadgeEl = document.getElementById(`card_tank_badge_${p.id}`);
+          if (tankBadgeEl) tankBadgeEl.textContent = `Tank ${tankPct}% • ${remainingLitres}L`;
+          const tankFillEl = document.getElementById(`card_tank_fill_${p.id}`);
+          if (tankFillEl) tankFillEl.style.width = `${tankPct}%`;
 
           const demandLabelEl = document.getElementById(`card_demand_label_${p.id}`);
           const demandDotsEl = document.getElementById(`card_demand_dots_${p.id}`);
@@ -4059,29 +4067,76 @@
               demandLabelEl.textContent = '🚨 MARKET CRASH';
               demandDotsEl.innerHTML = '<span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
             } else if (lastChange > 0) {
-              demandLabelEl.textContent = '🔥 SURGE DEMAND (1.75x)';
+              demandLabelEl.textContent = 'SURGE (1.75x)';
               demandDotsEl.innerHTML = '<span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot"></span>';
             } else if (lastChange < 0) {
-              demandLabelEl.textContent = '❄️ LOW DEMAND (0.50x)';
+              demandLabelEl.textContent = 'LOW (0.50x)';
               demandDotsEl.innerHTML = '<span class="demand-dot active-low"></span><span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
             } else {
-              demandLabelEl.textContent = '⚖️ BALANCED (1.0x)';
+              demandLabelEl.textContent = 'BALANCED (1.0x)';
               demandDotsEl.innerHTML = '<span class="demand-dot active-normal"></span><span class="demand-dot active-normal"></span><span class="demand-dot active-normal"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
             }
           }
-          /* In-place update: refresh the activity feed rows without full rebuild */
-          const activityRowsEl = document.getElementById(`card_activity_rows_${p.id}`);
-          const activityCountEl = document.getElementById(`card_activity_count_${p.id}`);
-          if (activityRowsEl) {
-            const html = buildActivityFeedHtml(p.id);
-            activityRowsEl.innerHTML = html;
-          }
-          if (activityCountEl) {
-            const hist = priceHistoryMap[p.id] || [];
-            activityCountEl.textContent = hist.length > 0 ? `${hist.length} pts` : 'LIVE';
+
+          /* In-place update: refresh settled rows */
+          const settledRowsEl = document.getElementById(`card_settled_rows_${p.id}`);
+          if (settledRowsEl) {
+            settledRowsEl.innerHTML = buildSettledRowsHtml(p.id);
           }
         });
       }
+    }
+
+    /* ==========================================================================
+       SETTLED ROWS HTML BUILDER (IMAGE 1 SPEC) — Column 3 of compact card
+       ========================================================================== */
+    function buildSettledRowsHtml(productId) {
+      const hist = priceHistoryMap[productId] || [];
+      const prod = products.find(p => p.id === productId);
+      const fallbackPrice = prod ? Number(prod.currentCupPrice != null ? prod.currentCupPrice : (prod.defaultCupPrice != null ? prod.defaultCupPrice : 20)).toFixed(2) : '20.00';
+
+      if (hist.length === 0) {
+        const now = new Date();
+        const t1 = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        const t2 = new Date(now.getTime() - 60000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        return `
+          <div class="settled-mini-row">
+            <span class="smr-time">${t1}</span>
+            <span class="smr-price">₹${fallbackPrice}</span>
+          </div>
+          <div class="settled-mini-row">
+            <span class="smr-time">${t2}</span>
+            <span class="smr-price">₹${fallbackPrice}</span>
+          </div>
+        `;
+      }
+
+      // Last 2 settlements, most recent first
+      const recent = hist.slice(-2).reverse();
+      const rows = recent.map(entry => {
+        const ts = new Date(entry.timestamp);
+        const timeStr = isNaN(ts.getTime()) ? '12:00:00' : ts.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        const price = Number(entry.price != null ? entry.price : fallbackPrice).toFixed(2);
+        return `
+          <div class="settled-mini-row">
+            <span class="smr-time">${timeStr}</span>
+            <span class="smr-price">₹${price}</span>
+          </div>
+        `;
+      });
+
+      if (rows.length === 1) {
+        const ts = new Date(recent[0].timestamp);
+        const tPrev = new Date(ts.getTime() - 60000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        rows.push(`
+          <div class="settled-mini-row">
+            <span class="smr-time">${tPrev}</span>
+            <span class="smr-price">₹${fallbackPrice}</span>
+          </div>
+        `);
+      }
+
+      return rows.join('');
     }
 
     /* ==========================================================================
