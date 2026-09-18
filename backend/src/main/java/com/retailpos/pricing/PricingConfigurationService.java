@@ -529,7 +529,7 @@ public class PricingConfigurationService {
         currentConfigVersion.set(newVersion);
         lastConfigUpdate = LocalDateTime.now();
 
-        // Sync Redis & STOMP
+        // Sync Redis
         try {
             if (redisTemplate != null) {
                 redisTemplate.opsForValue().set("pricing:product:" + productId + ":target", String.valueOf(product.getTargetSalesPer1Minute()));
@@ -543,19 +543,49 @@ public class PricingConfigurationService {
                     redisTemplate.opsForValue().set("pricing:product:" + productId + ":max", product.getMaxCupPrice().toString());
                 }
             }
-            if (messagingTemplate != null) {
-                messagingTemplate.convertAndSend("/topic/pricing-config", getFullConfiguration());
-                List<Product> activeProds = productRepository.findByIsActiveTrueOrderByIdAsc();
-                messagingTemplate.convertAndSend("/topic/prices", activeProds);
-                messagingTemplate.convertAndSend("/topic/products", activeProds);
-                messagingTemplate.convertAndSend("/topic/led-display", activeProds);
-                Map<String, Object> settlementMsg = new HashMap<>();
-                settlementMsg.put("type", "PRODUCT_CONFIG_UPDATED");
-                settlementMsg.put("productId", productId);
-                settlementMsg.put("timestamp", java.time.LocalDateTime.now().toString());
-                messagingTemplate.convertAndSend("/topic/settlement", settlementMsg);
+        } catch (Exception e) {
+            log.warn("Failed to sync product config to Redis: {}", e.getMessage());
+        }
+
+        // PHASE 11 FIX: Broadcast to WebSocket only after DB transaction commits.
+        // Previously STOMP fired inside the @Transactional boundary, which could send stale
+        // price data to clients if the commit subsequently failed.
+        final long capturedProductId = productId;
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        if (messagingTemplate != null) {
+                            messagingTemplate.convertAndSend("/topic/pricing-config", getFullConfiguration());
+                            List<Product> activeProds = productRepository.findByIsActiveTrueOrderByIdAsc();
+                            messagingTemplate.convertAndSend("/topic/prices", activeProds);
+                            messagingTemplate.convertAndSend("/topic/products", activeProds);
+                            messagingTemplate.convertAndSend("/topic/led-display", activeProds);
+                            Map<String, Object> settlementMsg = new HashMap<>();
+                            settlementMsg.put("type", "PRODUCT_CONFIG_UPDATED");
+                            settlementMsg.put("productId", capturedProductId);
+                            settlementMsg.put("timestamp", java.time.LocalDateTime.now().toString());
+                            messagingTemplate.convertAndSend("/topic/settlement", settlementMsg);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to broadcast product config update over WebSocket after commit: {}", e.getMessage());
+                    }
+                }
+            });
+        } else {
+            try {
+                if (messagingTemplate != null) {
+                    messagingTemplate.convertAndSend("/topic/pricing-config", getFullConfiguration());
+                    List<Product> activeProds = productRepository.findByIsActiveTrueOrderByIdAsc();
+                    messagingTemplate.convertAndSend("/topic/prices", activeProds);
+                    messagingTemplate.convertAndSend("/topic/products", activeProds);
+                    messagingTemplate.convertAndSend("/topic/led-display", activeProds);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to broadcast product config update over WebSocket: {}", e.getMessage());
             }
-        } catch (Exception e) {}
+        }
 
         return new PricingConfigDTO.ProductConfig(
                 product.getId(),

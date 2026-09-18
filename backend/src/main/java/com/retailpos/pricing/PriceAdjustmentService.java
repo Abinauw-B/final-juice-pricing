@@ -428,11 +428,14 @@ public class PriceAdjustmentService {
             demandLevelCategory = "VERY_LOW";
         }
 
-        // Time-based decay pacing protection (Section 12 & 13):
-        // Decay occurs at most once per minimum decay quantum (60s) to prevent price collapse on micro-windows
+        // Time-based decay pacing protection:
+        // PHASE 9 FIX: Previously Math.max(60, intervalSec) caused an asymmetric upward price bias.
+        // At a 10s interval: prices could surge every 10s but only decay every 60s.
+        // Fix: cooldown matches the active interval (floored at 5s, which is the system minimum interval).
+        // At 60s interval → 60s cooldown (unchanged). At 10s interval → 10s cooldown (symmetric).
         if (movement < 0) {
             LocalDateTime lastChange = product.getLastPriceChangeTimestamp();
-            int minDecayCooldownSeconds = Math.max(60, intervalSec);
+            int minDecayCooldownSeconds = Math.max(5, intervalSec); // symmetric with surge cadence
             if (lastChange != null && now.isBefore(lastChange.plusSeconds(minDecayCooldownSeconds))) {
                 deltaP = BigDecimal.ZERO;
                 movement = 0;

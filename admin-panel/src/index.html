@@ -6717,18 +6717,16 @@
             } else if (diffMs > 0) {
               remainingSec = Math.ceil(diffMs / 1000);
             } else {
-              // Settlement cycle countdown completed -> Trigger dynamic juice pricing evaluation
+              // Settlement cycle countdown completed — reset display for next cycle.
+              // PHASE 10 FIX: Removed automatic triggerPriceEngine() call here.
+              // Previously each open admin tab fired POST /api/pricing/evaluate when its
+              // local countdown hit zero, causing duplicate concurrent force-settlements that
+              // bypassed the backend window idempotency key. The backend DynamicPricingSchedulerConfig
+              // is the single authoritative scheduler. This countdown is now DISPLAY-ONLY.
               const newTarget = new Date(now + intervalSec * 1000).toISOString();
               localStorage.setItem('pubexchange_next_settlement_at', newTarget);
               if (activePricingTiming) activePricingTiming.nextSettlementAt = newTarget;
               remainingSec = intervalSec;
-
-              if (!isSettlingCycle) {
-                isSettlingCycle = true;
-                triggerPriceEngine({ silent: true }).finally(() => {
-                  setTimeout(() => { isSettlingCycle = false; }, 3000);
-                });
-              }
             }
           } else {
             const newTarget = new Date(now + intervalSec * 1000).toISOString();
