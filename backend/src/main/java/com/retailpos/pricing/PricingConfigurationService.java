@@ -9,6 +9,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -391,23 +393,46 @@ public class PricingConfigurationService {
             log.warn("Failed to sync pricing config to Redis: {}", e.getMessage());
         }
 
-        // 5. Broadcast to WebSocket
+        // 5. Broadcast to WebSocket — PHASE 7 FIX:
+        // Previously, STOMP was broadcast inside the @Transactional method before the DB transaction committed.
+        // Clients could receive price updates that were then rolled back if DB commit failed.
+        // Solution: register an afterCommit hook so broadcast only fires once the transaction is durably committed.
         PricingConfigDTO fullDto = getFullConfiguration();
-        try {
-            if (messagingTemplate != null) {
-                messagingTemplate.convertAndSend("/topic/pricing-config", fullDto);
-                List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
-                messagingTemplate.convertAndSend("/topic/prices", activeProducts);
-                messagingTemplate.convertAndSend("/topic/products", activeProducts);
-                messagingTemplate.convertAndSend("/topic/led-display", activeProducts);
-                Map<String, Object> settlementMsg = new HashMap<>();
-                settlementMsg.put("type", "PRICING_CONFIG_UPDATED");
-                settlementMsg.put("version", newVersion);
-                settlementMsg.put("intervalSeconds", getSettlementIntervalSeconds());
-                messagingTemplate.convertAndSend("/topic/settlement", settlementMsg);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        if (messagingTemplate != null) {
+                            messagingTemplate.convertAndSend("/topic/pricing-config", fullDto);
+                            List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+                            messagingTemplate.convertAndSend("/topic/prices", activeProducts);
+                            messagingTemplate.convertAndSend("/topic/products", activeProducts);
+                            messagingTemplate.convertAndSend("/topic/led-display", activeProducts);
+                            Map<String, Object> settlementMsg = new HashMap<>();
+                            settlementMsg.put("type", "PRICING_CONFIG_UPDATED");
+                            settlementMsg.put("version", newVersion);
+                            settlementMsg.put("intervalSeconds", getSettlementIntervalSeconds());
+                            messagingTemplate.convertAndSend("/topic/settlement", settlementMsg);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to broadcast pricing config over WebSocket after commit: {}", e.getMessage());
+                    }
+                }
+            });
+        } else {
+            // Fallback: no active transaction synchronization (e.g. unit tests), broadcast directly
+            try {
+                if (messagingTemplate != null) {
+                    messagingTemplate.convertAndSend("/topic/pricing-config", fullDto);
+                    List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+                    messagingTemplate.convertAndSend("/topic/prices", activeProducts);
+                    messagingTemplate.convertAndSend("/topic/products", activeProducts);
+                    messagingTemplate.convertAndSend("/topic/led-display", activeProducts);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to broadcast pricing config over WebSocket: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("Failed to broadcast pricing config over WebSocket: {}", e.getMessage());
         }
 
         return fullDto;

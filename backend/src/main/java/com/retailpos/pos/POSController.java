@@ -149,6 +149,14 @@ public class POSController {
             if (effectiveMin != null && effectiveMax != null && effectiveMin.compareTo(effectiveMax) >= 0) {
                 throw new IllegalArgumentException("Maximum price must be strictly greater than minimum price");
             }
+            // PHASE 5 FIX: Prevent zero or negative prices via POS product update endpoint.
+            // Previously only min >= max was checked; negative/zero prices could slip through.
+            if (effectiveMin != null && effectiveMin.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Minimum (floor) price must be greater than ₹0.00");
+            }
+            if (effectiveCurrent != null && effectiveCurrent.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Current price must be greater than ₹0.00");
+            }
             if (effectiveBase != null && effectiveMin != null && effectiveBase.compareTo(effectiveMin) < 0) {
                 throw new IllegalArgumentException("Base price cannot be below minimum floor price");
             }

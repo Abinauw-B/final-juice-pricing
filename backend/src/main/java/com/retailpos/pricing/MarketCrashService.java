@@ -230,8 +230,18 @@ public class MarketCrashService {
 
     @Transactional
     public synchronized MarketCrashStatus triggerMarketCrash(int durationMinutes, String triggerType) {
+        // PHASE 3 FIX: Prevent double-crash from overwriting pre-crash price snapshots.
+        // If a crash is already active, return current status rather than resetting snapshots
+        // (which would permanently replace the original prices with the crash floor price).
+        if (crashActive) {
+            log.warn("⚠️ [CRASH GUARD] Market crash already active (code={}). Ignoring duplicate trigger to preserve pre-crash price snapshots.", currentCrashCode);
+            return getStatus();
+        }
+
+        // PHASE 6 FIX: Cap crash duration at 24 hours (1440 minutes) to prevent indefinite market freeze.
+        int cappedDurationMinutes = Math.min(Math.max(1, durationMinutes), 1440);
         int configuredSec = pricingConfigurationService != null ? pricingConfigurationService.getMarketCrashDurationSeconds() : 180;
-        int durationSeconds = (durationMinutes > 0) ? durationMinutes * 60 : configuredSec;
+        int durationSeconds = (cappedDurationMinutes > 0) ? cappedDurationMinutes * 60 : configuredSec;
         this.crashActive = true;
         this.crashStartedTime = LocalDateTime.now();
         this.crashEndTime = crashStartedTime.plusSeconds(durationSeconds);

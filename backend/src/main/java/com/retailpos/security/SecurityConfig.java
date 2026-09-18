@@ -90,7 +90,33 @@ public class SecurityConfig {
 
                 // Admin & Manager role enforcement (Actuator management, internal metrics, and sensitive operations)
                 .requestMatchers("/actuator/**", "/api/metrics").hasAnyRole("ADMIN", "SUPER_ADMIN")
-                .requestMatchers("/api/pricing/**", "/api/pos/**", "/api/admin/pricing/**", "/api/products/**", "/api/batches/**").permitAll()
+
+                // --- PRICING MUTATION ENDPOINTS: ADMIN-only ---
+                // These endpoints can change live prices, trigger crashes, or modify product configuration.
+                // They MUST be protected. A blanket permitAll() was here previously — this is the security fix.
+                .requestMatchers(HttpMethod.POST, "/api/pricing/market-crash/trigger", "/api/pricing/market-crash/stop").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/pricing/crash/trigger", "/api/pricing/crash/stop").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/pricing/evaluate", "/api/pricing/force-settlement").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/pricing/pause", "/api/pricing/resume").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/pricing/simulator/**", "/api/pricing/live-bot/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/pricing/products/*/price").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT,  "/api/pricing/config", "/api/pricing/timing").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT,  "/api/admin/pricing/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.PUT,  "/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // POS product mutation (add/update product records) — admin only
+                .requestMatchers(HttpMethod.POST, "/api/pos/products", "/api/products").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT,  "/api/pos/products/**", "/api/products/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/pos/products/**", "/api/products/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // Batch write operations — admin only
+                .requestMatchers(HttpMethod.POST, "/api/batches", "/api/batches/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PUT,  "/api/batches/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/batches/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+
+                // All remaining /api/admin/** require at minimum MANAGER role
                 .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "MANAGER")
 
                 // --- All other endpoints require authentication ---

@@ -394,6 +394,12 @@ public class POSService {
             Product product = productRepository.findById(itemReq.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + itemReq.getProductId()));
 
+            // PHASE 4 FIX: Reject purchase of disabled/inactive products.
+            // Previously, isActive=false products could still be purchased via checkout.
+            if (Boolean.FALSE.equals(product.getIsActive())) {
+                throw new IllegalArgumentException("Product '" + product.getName() + "' (ID: " + product.getId() + ") is currently unavailable and cannot be purchased.");
+            }
+
             log.info("Product validation successful: ID={}, Name={}", product.getId(), product.getName());
 
             purchasedProductIds.add(product.getId());
@@ -407,7 +413,8 @@ public class POSService {
             int effectiveVersion = product.getPriceVersion() != null ? product.getPriceVersion() : 1;
 
             if (itemReq.getPriceLockToken() != null && !itemReq.getPriceLockToken().isBlank() && priceLockService != null) {
-                com.retailpos.pricing.PriceLockService.LockedPriceVersion lock = priceLockService.validateAndRedeemLock(itemReq.getPriceLockToken());
+                // PHASE 2 FIX: Pass productId to prevent cross-product price quote hijacking.
+                com.retailpos.pricing.PriceLockService.LockedPriceVersion lock = priceLockService.validateAndRedeemLock(itemReq.getPriceLockToken(), product.getId());
                 effectivePrice = lock.getLockedPrice();
                 effectiveVersion = lock.getPriceVersion();
             }

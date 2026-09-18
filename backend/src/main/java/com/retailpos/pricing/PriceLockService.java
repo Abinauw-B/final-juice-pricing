@@ -133,7 +133,14 @@ public class PriceLockService {
     }
 
     public LockedPriceVersion validateAndRedeemLock(String lockToken) {
-        PriceQuote q = validateAndRedeemQuote(lockToken, null);
+        // SECURITY FIX: Legacy path without productId is now rejected to prevent cross-product price hijacking.
+        // Callers must use validateAndRedeemLock(lockToken, productId) instead.
+        throw new IllegalArgumentException("Security: validateAndRedeemLock requires productId to prevent cross-product quote hijacking. Use validateAndRedeemLock(lockToken, productId).");
+    }
+
+    public LockedPriceVersion validateAndRedeemLock(String lockToken, Long productId) {
+        // Enforce productId during redemption — prevents cross-product price token hijacking
+        PriceQuote q = validateAndRedeemQuote(lockToken, productId);
         return LockedPriceVersion.builder()
                 .lockToken(q.getQuoteId())
                 .productId(q.getProductId())
