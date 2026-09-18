@@ -2493,34 +2493,59 @@
     }
 
     /* LIVE EMERGENCY BROADCAST MARQUEE */
+    /* LIVE EMERGENCY BROADCAST MARQUEE */
     .crash-marquee-wrap {
       width: 100%;
-      background: rgba(0, 0, 0, 0.65);
+      background: rgba(8, 12, 24, 0.85);
       border: 1px solid rgba(239, 68, 68, 0.45);
       border-radius: 8px;
-      padding: 5px 0;
+      padding: 4px 10px;
       overflow: hidden;
       white-space: nowrap;
       margin: 3px 0 10px;
       box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .crash-marquee-badge {
+      background: #EF4444;
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+      animation: beaconFlash 1s infinite alternate;
+    }
+    .crash-marquee-track {
+      flex: 1 1 auto;
+      overflow: hidden;
+      display: flex;
     }
     .crash-marquee-content {
-      display: inline-block;
-      animation: marqueeScroll 24s linear infinite;
+      display: inline-flex;
+      align-items: center;
+      animation: marqueeScroll 22s linear infinite;
       font-size: 11.5px;
       font-weight: 800;
       color: #FEE2E2;
       letter-spacing: 0.08em;
       font-family: var(--font-mono);
       text-transform: uppercase;
+      flex-shrink: 0;
     }
     .crash-marquee-separator {
       color: #FACC15;
-      margin: 0 14px;
+      margin: 0 12px;
     }
     @keyframes marqueeScroll {
-      0%   { transform: translateX(100%); }
-      100% { transform: translateX(-100%); }
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
 
     /* ACTION BUTTONS */
@@ -2775,14 +2800,26 @@
 
       <!-- Live Emergency Marquee Ticker -->
       <div class="crash-marquee-wrap">
-        <div class="crash-marquee-content">
-          <span>🚨 VENUE EMERGENCY: ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00</span>
-          <span class="crash-marquee-separator">✦</span>
-          <span>⚡ DWMA DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
-          <span class="crash-marquee-separator">✦</span>
-          <span>🍹 VISIT BAR COUNTER OR SCAN TABLE QR TO CLAIM YOUR DRINKS AT ABSOLUTE FLOOR LIMIT</span>
-          <span class="crash-marquee-separator">✦</span>
-          <span>⏱️ AUTOMATIC RETURN TO DYNAMIC TRADING WHEN TIME RUNS OUT</span>
+        <div class="crash-marquee-badge">🚨 LIQUIDATION STREAM</div>
+        <div class="crash-marquee-track">
+          <div class="crash-marquee-content">
+            <span>⚡ ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+            <span class="crash-marquee-separator">✦</span>
+            <span>🚨 DWMA DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
+            <span class="crash-marquee-separator">✦</span>
+            <span>🍹 VISIT BAR COUNTER OR SCAN TABLE QR TO CLAIM YOUR DRINKS AT FLOOR LIMIT</span>
+            <span class="crash-marquee-separator">✦</span>
+            <span>⏱️ AUTOMATIC RETURN TO DYNAMIC DWMA PRICING WHEN TIME RUNS OUT</span>
+            <span class="crash-marquee-separator">✦</span>
+            <span>⚡ ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+            <span class="crash-marquee-separator">✦</span>
+            <span>🚨 DWMA DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
+            <span class="crash-marquee-separator">✦</span>
+            <span>🍹 VISIT BAR COUNTER OR SCAN TABLE QR TO CLAIM YOUR DRINKS AT FLOOR LIMIT</span>
+            <span class="crash-marquee-separator">✦</span>
+            <span>⏱️ AUTOMATIC RETURN TO DYNAMIC DWMA PRICING WHEN TIME RUNS OUT</span>
+            <span class="crash-marquee-separator">✦</span>
+          </div>
         </div>
       </div>
 
@@ -5288,19 +5325,25 @@
       if (maxDiscountEl) maxDiscountEl.textContent = `UP TO -${maxDiscountPct}%`;
     }
 
+    let _manualCrashOverride = false;
     async function checkMarketCrashStatus() {
       try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/market-crash/status`);
         if (res.ok) {
           const data = await res.json();
-          if (data.active) triggerMarketCrash(data.remainingSeconds || 180);
-          else if (isMarketCrashActive) stopMarketCrash();
+          if (data.active) {
+            _manualCrashOverride = false;
+            triggerMarketCrash(data.remainingSeconds || 180);
+          } else if (isMarketCrashActive && !_manualCrashOverride) {
+            stopMarketCrash();
+          }
         }
       } catch (err) {}
     }
 
     let crashTotalDuration = 180;
-    function triggerMarketCrash(duration = 180) {
+    function triggerMarketCrash(duration = 180, isManual = false) {
+      if (isManual) _manualCrashOverride = true;
       const wasActive = isMarketCrashActive;
       isMarketCrashActive = true;
       crashRemainingSeconds = duration;
@@ -5560,7 +5603,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('crash')) {
         const crashSec = parseInt(urlParams.get('crash'), 10) || 180;
-        setTimeout(() => triggerMarketCrash(crashSec), 350);
+        setTimeout(() => triggerMarketCrash(crashSec, true), 350);
       }
     } catch (e) {}
 
