@@ -327,8 +327,8 @@ public class PriceAdjustmentService {
         try {
             // Section 17 & 28: Server-side crash sales exclusion from demand measurement windows
             int recordedW0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
-            int liveOrderCount = (product.getOrderCount() != null && product.getOrderCount() > 0) ? product.getOrderCount() : 0;
-            w0 = recordedW0 + liveOrderCount;
+            // Real physical orders recorded in database window
+            w0 = recordedW0;
             w1 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
             w2 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
         } catch (Exception dbEx) {
@@ -352,8 +352,6 @@ public class PriceAdjustmentService {
 
         // 2. Weighted sales calculation (DWMA normalized by sum of weights):
         // Sw = (w0*weightW0 + w1*weightW1 + w2*weightW2) / (weightW0 + weightW1 + weightW2)
-        double adminBaseWeightedSales = (product.getWeightedSales() != null && product.getWeightedSales() > 0) ? product.getWeightedSales() : 0.0;
-
         BigDecimal sumWeights = weightW0.add(weightW1).add(weightW2);
         if (sumWeights.compareTo(BigDecimal.ZERO) <= 0) {
             sumWeights = new BigDecimal("1.7500");
@@ -363,11 +361,7 @@ public class PriceAdjustmentService {
                 .add(BigDecimal.valueOf(w1).multiply(weightW1))
                 .add(BigDecimal.valueOf(w2).multiply(weightW2));
 
-        BigDecimal dwmaLiveSales = rawWeightedSum.divide(sumWeights, 4, RoundingMode.HALF_UP);
-
-        BigDecimal sw = (w0 > 0 || w1 > 0 || w2 > 0)
-                ? BigDecimal.valueOf(adminBaseWeightedSales).add(dwmaLiveSales).setScale(2, RoundingMode.HALF_UP)
-                : BigDecimal.valueOf(adminBaseWeightedSales).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal sw = rawWeightedSum.divide(sumWeights, 4, RoundingMode.HALF_UP).setScale(2, RoundingMode.HALF_UP);
         double weightedSales = sw.doubleValue();
 
         // 3. Target sales normalized to intervalSec:
@@ -400,8 +394,8 @@ public class PriceAdjustmentService {
         String demandLevelCategory;
 
         if (rd.compareTo(highThresh) >= 0) {
-            // Low-sample protection: prevent 1 isolated accidental purchase on micro-windows from triggering surge
-            boolean hasSufficientVolume = (w0 + w1 >= 2) || (targetSalesBd.compareTo(BigDecimal.ONE) >= 0 && w0 >= 1);
+            // Low-sample protection: prevent price surge unless real customer orders occurred in current window W0
+            boolean hasSufficientVolume = (w0 >= 1) && ((w0 + w1 >= 2) || (targetSalesBd.compareTo(BigDecimal.ONE) >= 0));
             if (sw.compareTo(BigDecimal.ZERO) > 0 && hasSufficientVolume) {
                 deltaP = new BigDecimal("1.00");
                 movement = 1;
@@ -410,7 +404,7 @@ public class PriceAdjustmentService {
             } else {
                 deltaP = BigDecimal.ZERO;
                 movement = 0;
-                reason = (sw.compareTo(BigDecimal.ZERO) == 0) ? "HIGH_HISTORICAL_ZERO_CURRENT_HOLD" : "LOW_SAMPLE_VOLUME_HOLD";
+                reason = (w0 == 0) ? "ZERO_CURRENT_WINDOW_SALES_HOLD" : "LOW_SAMPLE_VOLUME_HOLD";
                 demandLevelCategory = "NORMAL";
             }
         } else if (rd.compareTo(stableLow) >= 0) {
@@ -1057,8 +1051,7 @@ public class PriceAdjustmentService {
         // DWMA time windows based on configured intervalSec
         LocalDateTime w0Start = now.minusSeconds(intervalSec);
         int recordedW0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
-        int liveOrderCount = (p.getOrderCount() != null && p.getOrderCount() > 0) ? p.getOrderCount() : 0;
-        int w0 = recordedW0 + liveOrderCount;
+        int w0 = recordedW0;
 
         LocalDateTime w1Start = now.minusSeconds(2L * intervalSec);
         LocalDateTime w1End = now.minusSeconds(intervalSec);
@@ -1096,7 +1089,7 @@ public class PriceAdjustmentService {
         int movement;
         String category;
         if (rd.compareTo(highThresh) >= 0) {
-            boolean hasSufficientVolume = (w0 + w1 >= 2) || (targetSalesBd.compareTo(BigDecimal.ONE) >= 0 && w0 >= 1);
+            boolean hasSufficientVolume = (w0 >= 1) && ((w0 + w1 >= 2) || (targetSalesBd.compareTo(BigDecimal.ONE) >= 0));
             if (sw.compareTo(BigDecimal.ZERO) > 0 && hasSufficientVolume) {
                 movement = incStep.intValue();
                 category = "HIGH";
@@ -1118,7 +1111,7 @@ public class PriceAdjustmentService {
         // Decay pacing
         if (movement < 0) {
             LocalDateTime lastChange = p.getLastPriceChangeTimestamp();
-            int minDecayCooldownSeconds = Math.max(60, intervalSec);
+            int minDecayCooldownSeconds = Math.max(5, intervalSec);
             if (lastChange != null && now.isBefore(lastChange.plusSeconds(minDecayCooldownSeconds))) {
                 movement = 0;
             }

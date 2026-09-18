@@ -98,6 +98,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/pricing/crash/trigger", "/api/pricing/crash/stop").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/pricing/evaluate", "/api/pricing/force-settlement").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/pricing/pause", "/api/pricing/resume").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/pricing/reset-all", "/api/pricing/reset", "/api/admin/pricing/reset-all", "/api/admin/pricing/reset").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/pricing/simulator/**", "/api/pricing/live-bot/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/pricing/products/*/price").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers(HttpMethod.PUT,  "/api/pricing/config", "/api/pricing/timing").hasAnyRole("ADMIN", "SUPER_ADMIN")
