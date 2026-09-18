@@ -1893,12 +1893,17 @@
       background: var(--bg-secondary);
     }
 
-    /* Market Crash Overlay — Full-Width High-Visibility Stadium Takeover */
+    /* ==========================================================================
+       MARKET CRASH OVERLAY — HIGH-ENERGY CYBER STADIUM BROADCAST
+       ========================================================================== */
     .crash-overlay {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at center, rgba(220, 38, 38, 0.94) 0%, rgba(15, 5, 5, 0.98) 100%);
-      backdrop-filter: blur(20px);
+      background: 
+        radial-gradient(circle at 50% 15%, rgba(239, 68, 68, 0.42) 0%, transparent 60%),
+        radial-gradient(circle at 50% 85%, rgba(220, 38, 38, 0.32) 0%, transparent 55%),
+        linear-gradient(180deg, rgba(10, 5, 8, 0.96) 0%, rgba(18, 8, 14, 0.98) 50%, rgba(8, 3, 6, 0.99) 100%);
+      backdrop-filter: blur(28px) saturate(180%);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -1906,174 +1911,719 @@
       z-index: 10000;
       color: #FFFFFF;
       text-align: center;
-      padding: clamp(48px, 6vh, 64px) clamp(16px, 2vw, 32px);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: clamp(34px, 4.2vh, 46px) clamp(14px, 1.8vw, 28px);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       overflow-y: auto;
       box-sizing: border-box;
     }
-    .crash-overlay::before,
+
+    /* Cyber grid overlay */
     .crash-overlay::after {
-      content: '🚨 VENUE MARKET CRASH IN PROGRESS ⚡ ALL BEVERAGE PRICES AT ABSOLUTE FLOOR LIMIT ₹20.00 ⚡ ORDER AT POS NOW 🚨';
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(239, 68, 68, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(239, 68, 68, 0.07) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Top and Bottom Animated Industrial Caution Ribbons */
+    .crash-caution-tape {
       position: absolute;
       left: 0;
       right: 0;
-      padding: 12px 0;
-      background: repeating-linear-gradient(45deg, #facc15, #facc15 24px, #000000 24px, #000000 48px);
-      background-size: 68px 100%;
-      animation: cautionMove 18s linear infinite;
+      padding: 7px 0;
+      background: repeating-linear-gradient(45deg, #facc15, #facc15 20px, #0a0a0a 20px, #0a0a0a 40px);
+      background-size: 56.5px 100%;
+      animation: cautionMove 16s linear infinite;
       color: #000000;
       font-weight: 900;
-      font-size: 14.5px;
-      letter-spacing: 0.14em;
+      font-size: 13px;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      box-shadow: 0 0 24px rgba(0,0,0,0.85);
-      z-index: 10001;
-      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+      box-shadow: 0 0 28px rgba(250, 204, 21, 0.65), 0 4px 16px rgba(0,0,0,0.9);
+      z-index: 10002;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      white-space: nowrap;
     }
-    .crash-overlay::before { top: 0; }
-    .crash-overlay::after { bottom: 0; }
+    .crash-caution-top { top: 0; }
+    .crash-caution-bottom { bottom: 0; }
+
+    .crash-caution-text {
+      background: rgba(0, 0, 0, 0.88);
+      color: #FACC15;
+      padding: 2px 18px;
+      border-radius: 4px;
+      border: 1px solid #FACC15;
+      box-shadow: 0 0 14px rgba(250, 204, 21, 0.45);
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-weight: 900;
+      letter-spacing: 0.14em;
+    }
 
     @keyframes cautionMove {
       0%   { background-position: 0 0; }
-      100% { background-position: 816px 0; }
+      100% { background-position: 848px 0; }
     }
 
+    /* Central Command Box */
     .crash-box {
-      background: rgba(15, 23, 42, 0.97);
-      border: 3px solid #EF4444;
-      border-radius: 26px;
-      padding: clamp(20px, 2.8vh, 36px) clamp(24px, 3vw, 48px);
-      max-width: 1620px;
+      background: linear-gradient(180deg, rgba(18, 24, 44, 0.96) 0%, rgba(10, 14, 26, 0.98) 100%);
+      border: 2px solid rgba(239, 68, 68, 0.85);
+      border-radius: 22px;
+      padding: clamp(14px, 1.8vh, 20px) clamp(16px, 2vw, 32px);
+      max-width: 1580px;
       width: 96vw;
-      box-shadow: 0 0 100px rgba(239, 68, 68, 0.7), 0 30px 80px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      box-shadow: 
+        0 0 80px rgba(239, 68, 68, 0.5),
+        0 30px 80px rgba(0, 0, 0, 0.95),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        inset 0 0 40px rgba(239, 68, 68, 0.12);
       position: relative;
       overflow: hidden;
-      animation: crashPulseLed 1.6s infinite ease-in-out;
+      animation: crashPulseLed 1.8s infinite ease-in-out;
       margin: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
       box-sizing: border-box;
+      z-index: 2;
     }
+
     @keyframes crashPulseLed {
-      0%, 100% { box-shadow: 0 0 60px rgba(239, 68, 68, 0.55), 0 0 0 1px rgba(239, 68, 68, 0.4); }
-      50% { box-shadow: 0 0 110px rgba(239, 68, 68, 0.9), 0 0 45px rgba(245, 158, 11, 0.6), 0 0 0 4px rgba(250, 204, 21, 0.75); }
+      0%, 100% {
+        box-shadow: 0 0 60px rgba(239, 68, 68, 0.5), 0 25px 70px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.8);
+      }
+      50% {
+        box-shadow: 0 0 110px rgba(239, 68, 68, 0.85), 0 0 40px rgba(245, 158, 11, 0.5), 0 30px 80px rgba(0, 0, 0, 0.95), inset 0 0 50px rgba(250, 204, 21, 0.2);
+        border-color: #FACC15;
+      }
     }
+
+    /* Ambient shine sweeping across */
     .crash-box::before {
       content: '';
       position: absolute;
-      top: 0; left: -100%; width: 200%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.25), transparent);
-      animation: bannerShine 2.5s infinite linear;
+      top: 0; left: -120%; width: 240%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.18), rgba(250, 204, 21, 0.12), transparent);
+      animation: bannerShine 3.2s infinite linear;
       pointer-events: none;
     }
     @keyframes bannerShine {
       0% { transform: translateX(-50%); }
       100% { transform: translateX(50%); }
     }
-    @keyframes beaconRock {
-      0% { transform: rotate(-6deg) scale(0.96); }
-      100% { transform: rotate(6deg) scale(1.08); }
+
+    /* Header HUD */
+    .crash-header-hud {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      width: 100%;
     }
 
-    /* Crash Showcase Matrix & High-Visibility Product Cards */
-    .crash-juice-matrix {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+    .crash-protocol-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.6);
+      border-radius: 20px;
+      padding: 3px 14px;
+      font-size: 11px;
+      font-weight: 900;
+      color: #FECACA;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.35);
+    }
+    .crash-beacon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #EF4444;
+      box-shadow: 0 0 10px #EF4444;
+      animation: beaconFlash 0.8s infinite alternate;
+    }
+    @keyframes beaconFlash {
+      0% { opacity: 0.3; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 6px #EF4444); }
+    }
+
+    .crash-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       gap: 14px;
-      width: 100%;
-      margin: 18px 0;
+      margin-top: 1px;
+    }
+    .crash-siren-beacon {
+      font-size: clamp(24px, 2.4vw, 36px);
+      animation: beaconRock 0.6s infinite alternate;
+      filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.9));
+    }
+    @keyframes beaconRock {
+      0% { transform: rotate(-8deg) scale(0.94); }
+      100% { transform: rotate(8deg) scale(1.1); }
+    }
+
+    .crash-main-title {
+      font-size: clamp(28px, 2.8vw, 42px);
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #FFFFFF 0%, #FEE2E2 40%, #EF4444 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 28px rgba(239, 68, 68, 0.9));
+      margin: 0;
+      line-height: 1.15;
+    }
+
+    .crash-subtitle-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 1px 0 5px;
+      font-size: clamp(13.5px, 1.15vw, 16.5px);
+      font-weight: 700;
+      color: #E2E8F0;
+    }
+    .crash-floor-pill {
+      background: linear-gradient(90deg, #F59E0B, #FACC15);
+      color: #0A0A0A;
+      font-family: var(--font-mono);
+      font-weight: 900;
+      font-size: clamp(16px, 1.3vw, 21px);
+      padding: 2px 12px;
+      border-radius: 8px;
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.8), 0 2px 6px rgba(0,0,0,0.5);
+      letter-spacing: 0.02em;
+    }
+
+    /* DIGITAL HUD TIMER CHAMBER */
+    .crash-timer-chamber {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(10, 15, 30, 0.85);
+      border: 1.5px solid rgba(250, 204, 21, 0.5);
+      border-radius: 14px;
+      padding: 5px 18px;
+      margin: 2px 0 8px;
+      box-shadow: 0 0 24px rgba(250, 204, 21, 0.25), inset 0 0 16px rgba(0, 0, 0, 0.6);
+      width: min(100%, 460px);
       box-sizing: border-box;
     }
-    @media (max-width: 1200px) {
-      .crash-juice-matrix { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 640px) {
-      .crash-juice-matrix { grid-template-columns: 1fr; }
-    }
-
-    .crash-juice-card {
-      background: rgba(30, 41, 59, 0.92);
-      border: 1.5px solid rgba(239, 68, 68, 0.55);
-      border-radius: 14px;
-      padding: 12px 18px;
-      text-align: left;
+    .timer-hud-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      width: 100%;
+      font-size: 10.5px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      color: #94A3B8;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      padding-bottom: 2px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 2px;
+    }
+    .timer-digits-wrap {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-weight: 900;
+      color: #FACC15;
+      text-shadow: 0 0 30px rgba(250, 204, 21, 0.9), 0 0 10px rgba(239, 68, 68, 0.7);
+      font-feature-settings: 'tnum';
+      line-height: 1;
+      padding: 1px 0;
+    }
+    .timer-unit {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+    }
+    .timer-num {
+      font-size: clamp(34px, 3.4vw, 50px);
+      letter-spacing: 1px;
+    }
+    .timer-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #F87171;
+      letter-spacing: 0.08em;
+    }
+    .timer-colon {
+      font-size: clamp(30px, 3vw, 44px);
+      color: #EF4444;
+      animation: colonBlink 1s infinite;
+      margin: 0 2px;
+    }
+    @keyframes colonBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0.25; }
+    }
+    .timer-progress-track {
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 3px;
+      position: relative;
+    }
+    .timer-progress-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #10B981 0%, #FACC15 65%, #EF4444 100%);
+      border-radius: 4px;
+      transition: width 1s linear;
+      box-shadow: 0 0 10px rgba(250, 204, 21, 0.7);
+    }
+    .timer-urgent .timer-digits-wrap {
+      color: #FF2E2E !important;
+      text-shadow: 0 0 35px rgba(255, 46, 46, 1), 0 0 15px rgba(255, 255, 255, 0.8) !important;
+      animation: urgentStrobe 0.5s infinite alternate;
+    }
+    @keyframes urgentStrobe {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.03); }
+    }
+
+    /* TELEMETRY STRIP */
+    .crash-telemetry-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      width: 100%;
+      max-width: 1200px;
+      margin: 3px 0 10px;
       box-sizing: border-box;
     }
-    .crash-juice-card:hover {
-      transform: translateY(-2px) scale(1.01);
-      border-color: #facc15;
-      box-shadow: 0 8px 24px rgba(250, 204, 21, 0.35);
+    @media (max-width: 900px) {
+      .crash-telemetry-bar { grid-template-columns: repeat(2, 1fr); }
     }
-    .cjc-left {
+    .crash-telem-item {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 9px;
+      padding: 5px 10px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      min-width: 0;
-      flex: 1 1 auto;
+      gap: 8px;
+      text-align: left;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
     }
-    .cjc-icon {
-      font-size: 32px;
+    .crash-telem-icon {
+      font-size: 18px;
       flex-shrink: 0;
-      line-height: 1;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
     }
-    .cjc-info {
+    .crash-telem-label {
+      font-size: 9px;
+      font-weight: 800;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: var(--font-mono);
+    }
+    .crash-telem-val {
+      font-size: 12.5px;
+      font-weight: 900;
+      color: #F8FAFC;
+      letter-spacing: 0.02em;
+    }
+
+    /* CRASH SHOWCASE MATRIX (4x2 on desktop) */
+    .crash-juice-matrix {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+      width: 100%;
+      margin: 4px 0 10px;
+      box-sizing: border-box;
+    }
+    @media (max-width: 1300px) {
+      .crash-juice-matrix { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 680px) {
+      .crash-juice-matrix { grid-template-columns: 1fr; }
+    }
+
+    /* ENHANCED BEVERAGE CARD */
+    .crash-juice-card {
+      background: linear-gradient(145deg, rgba(26, 35, 58, 0.95) 0%, rgba(15, 22, 38, 0.98) 100%);
+      border: 1.5px solid rgba(239, 68, 68, 0.55);
+      border-radius: 13px;
+      padding: 9px 11px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+    }
+    .crash-juice-card:hover {
+      transform: translateY(-2px);
+      border-color: #FACC15;
+      box-shadow: 0 8px 24px rgba(250, 204, 21, 0.35);
+    }
+
+    /* Flavor Accent Indicator on Card Top */
+    .cjc-top-edge {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: #EF4444;
+    }
+
+    .cjc-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 7px;
+    }
+    .cjc-left-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       min-width: 0;
       flex: 1 1 auto;
+    }
+    .cjc-avatar-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      flex-shrink: 0;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    .cjc-titles {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .cjc-tap-tag {
+      font-size: 8.5px;
+      font-weight: 900;
+      color: #94A3B8;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     .cjc-name {
-      font-size: 15.5px;
+      font-size: 13px;
       font-weight: 900;
-      color: #ffffff;
+      color: #FFFFFF;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
       line-height: 1.2;
       text-transform: uppercase;
     }
-    .cjc-strike {
-      font-size: 13.5px;
-      font-weight: 800;
-      color: #f87171;
-      text-decoration: line-through;
-      margin-top: 2px;
+
+    .cjc-discount-badge {
+      font-size: 10.5px;
+      font-weight: 900;
+      color: #10B981;
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      border-radius: 6px;
+      padding: 2px 6px;
+      letter-spacing: 0.2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      flex-shrink: 0;
       font-family: var(--font-mono);
     }
-    .cjc-right {
-      text-align: right;
-      flex-shrink: 0;
+
+    /* Price Transformation Row */
+    .cjc-price-block {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 15, 30, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 5px 9px;
+      margin: 1px 0;
+    }
+    .cjc-price-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5px;
+    }
+    .cjc-strike-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+    .cjc-strike {
+      color: #94A3B8;
+      text-decoration: line-through;
+      font-weight: 700;
+    }
+    .cjc-drop-pill {
+      font-size: 9.5px;
+      font-weight: 800;
+      color: #F87171;
+      background: rgba(239, 68, 68, 0.2);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    .cjc-save-tag {
+      font-size: 9.5px;
+      font-weight: 900;
+      color: #34D399;
+      letter-spacing: 0.04em;
+    }
+
+    .cjc-price-right {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 2px;
+      line-height: 1;
+    }
+    .cjc-floor-label {
+      font-size: 8px;
+      font-weight: 800;
+      color: #FACC15;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      margin-bottom: 2px;
     }
     .cjc-floor-price {
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 900;
-      color: #facc15;
+      color: #FACC15;
       font-family: var(--font-mono);
       letter-spacing: -0.02em;
-      line-height: 1;
-      text-shadow: 0 0 14px rgba(250, 204, 21, 0.7);
+      text-shadow: 0 0 16px rgba(250, 204, 21, 0.75);
     }
-    .cjc-discount-badge {
-      font-size: 11.5px;
+
+    /* Tap Stock & Quick Claim Bar */
+    .cjc-footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 7px;
+      font-size: 10px;
+    }
+    .cjc-tank-gauge {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .cjc-tank-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5px;
+      font-weight: 800;
+      color: #94A3B8;
+      font-family: var(--font-mono);
+    }
+    .cjc-tank-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .cjc-tank-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: #10B981;
+    }
+    .cjc-claim-btn {
+      background: rgba(250, 204, 21, 0.15);
+      border: 1px solid rgba(250, 204, 21, 0.5);
+      color: #FACC15;
+      font-size: 9.5px;
       font-weight: 900;
-      color: #34d399;
-      background: rgba(52, 211, 153, 0.16);
-      border: 1px solid rgba(52, 211, 153, 0.45);
+      padding: 3px 8px;
       border-radius: 6px;
-      padding: 2px 7px;
-      letter-spacing: 0.3px;
+      white-space: nowrap;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      font-family: var(--font-mono);
+    }
+    .cjc-claim-btn:hover {
+      background: #FACC15;
+      color: #000000;
+      box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+    }
+
+    /* LIVE EMERGENCY BROADCAST MARQUEE */
+    .crash-marquee-wrap {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      border-radius: 8px;
+      padding: 5px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      margin: 3px 0 10px;
+      box-sizing: border-box;
+    }
+    .crash-marquee-content {
       display: inline-block;
+      animation: marqueeScroll 24s linear infinite;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #FEE2E2;
+      letter-spacing: 0.08em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+    .crash-marquee-separator {
+      color: #FACC15;
+      margin: 0 14px;
+    }
+    @keyframes marqueeScroll {
+      0%   { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* ACTION BUTTONS */
+    .crash-actions-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .crash-action-btn {
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.02em;
+    }
+    .crash-btn-minimize {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .crash-btn-minimize:hover {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: #FFFFFF;
+      transform: translateY(-1px);
+    }
+    .crash-btn-siren {
+      background: rgba(239, 68, 68, 0.25);
+      border: 1.5px solid #EF4444;
+      color: #FECACA;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+    }
+    .crash-btn-siren:hover {
+      background: rgba(239, 68, 68, 0.45);
+      color: #FFFFFF;
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+    }
+    .crash-btn-qr {
+      background: rgba(250, 204, 21, 0.2);
+      border: 1.5px solid #FACC15;
+      color: #FACC15;
+      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.25);
+    }
+    .crash-btn-qr:hover {
+      background: #FACC15;
+      color: #000000;
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px rgba(250, 204, 21, 0.7);
+    }
+
+    /* Siren Visualizer Wave Bars */
+    .crash-siren-wave {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2.5px;
+      height: 14px;
+    }
+    .siren-bar {
+      width: 3px;
+      background: currentColor;
+      border-radius: 1px;
+      height: 6px;
+      transition: height 0.15s ease;
+    }
+    .siren-active .siren-bar:nth-child(1) { animation: wavePulse 0.35s infinite alternate ease-in-out; }
+    .siren-active .siren-bar:nth-child(2) { animation: wavePulse 0.35s 0.12s infinite alternate ease-in-out; }
+    .siren-active .siren-bar:nth-child(3) { animation: wavePulse 0.35s 0.24s infinite alternate ease-in-out; }
+    @keyframes wavePulse {
+      0% { height: 4px; }
+      100% { height: 14px; }
+    }
+
+    /* Emergency Toast Notification */
+    .crash-order-toast {
+      position: fixed;
+      top: 26px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid #FACC15;
+      color: #FFFFFF;
+      padding: 11px 22px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(250, 204, 21, 0.4);
+      z-index: 100000;
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      backdrop-filter: blur(12px);
+    }
+    .crash-order-toast.toast-show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
 
     /* Minimized Crash Ticker Banner (Displays on trading board when overlay is minimized) */
@@ -2128,37 +2678,137 @@
 
   <!-- Full-Screen Market Crash Alert Overlay (High-Visibility Stadium Takeover) -->
   <div id="crashOverlay" class="crash-overlay">
-    <div class="crash-box">
-      <div style="font-size: clamp(48px, 4vw, 64px); margin-bottom: 6px; animation: beaconRock 0.6s infinite alternate;">🚨 ⚡ 🚨</div>
-      <div style="font-size: clamp(13px, 1.1vw, 16px); font-weight: 900; color: #facc15; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 4px; text-shadow: 0 0 14px rgba(250,204,21,0.6);">
-        MOJITO EXCHANGE EMERGENCY BROADCAST
+    <!-- Top & Bottom Animated Caution Ribbons -->
+    <div class="crash-caution-tape crash-caution-top">
+      <div class="crash-caution-text">
+        <span>⚠️ VENUE MARKET CRASH PROTOCOL ACTIVE</span>
+        <span>⚡ ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+        <span>🚨 ORDER AT POS / TAP COUNTER NOW</span>
       </div>
-      <h1 style="font-size: clamp(32px, 3.2vw, 48px); font-weight: 900; color: #EF4444; letter-spacing: -0.02em; text-shadow: 0 0 32px rgba(239,68,68,0.9), 0 2px 6px rgba(0,0,0,0.8); margin-bottom: 6px; line-height: 1.1;">
-        MARKET CRASH IN PROGRESS
-      </h1>
-      <p style="font-size: clamp(17px, 1.4vw, 22px); margin: 6px 0 14px; color: #F8FAFC; font-weight: 700;">
-        All beverage prices forced to Absolute Floor: <span style="color: #FACC15; font-size: clamp(26px, 2.2vw, 36px); font-weight: 900; text-shadow: 0 0 16px rgba(250,204,21,0.9); margin-left: 6px;">₹20.00</span>
-      </p>
+    </div>
+    <div class="crash-caution-tape crash-caution-bottom">
+      <div class="crash-caution-text">
+        <span>⚠️ VENUE MARKET CRASH PROTOCOL ACTIVE</span>
+        <span>⚡ ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+        <span>🚨 ORDER AT POS / TAP COUNTER NOW</span>
+      </div>
+    </div>
 
-      <div id="crashTimerText" style="font-size: clamp(64px, 5.5vw, 92px); font-family: var(--font-mono); font-weight: 900; color: #FACC15; margin: 8px 0 14px; text-shadow: 0 0 36px rgba(250, 204, 21, 0.95), 0 0 10px rgba(239,68,68,0.7); font-feature-settings: 'tnum'; letter-spacing: 2px;">
-        ⏱️ 03:00
+    <div class="crash-box">
+      <!-- Header HUD -->
+      <div class="crash-header-hud">
+        <div class="crash-protocol-tag">
+          <span class="crash-beacon-dot"></span>
+          <span>CIRCUIT BREAKER ENGAGED • PRIORITY EMERGENCY LIQUIDATION PROTOCOL</span>
+        </div>
+        
+        <div class="crash-title-row">
+          <span class="crash-siren-beacon">🚨</span>
+          <h1 class="crash-main-title">MARKET CRASH IN PROGRESS</h1>
+          <span class="crash-siren-beacon">🚨</span>
+        </div>
+        
+        <div class="crash-subtitle-row">
+          <span>All Beverage Prices Forced to Algorithmic Floor:</span>
+          <span class="crash-floor-pill">₹20.00 ABSOLUTE LIMIT</span>
+        </div>
+      </div>
+
+      <!-- Digital HUD Timer Chamber -->
+      <div id="crashTimerChamber" class="crash-timer-chamber">
+        <div class="timer-hud-header">
+          <span>⏱️ CIRCUIT BREAKER WINDOW</span>
+          <span id="crashTimerText">⏱️ 03:00</span>
+        </div>
+        <div class="timer-digits-wrap">
+          <div class="timer-unit">
+            <span id="crashTimerMins" class="timer-num">03</span>
+            <span class="timer-label">MIN</span>
+          </div>
+          <span class="timer-colon">:</span>
+          <div class="timer-unit">
+            <span id="crashTimerSecs" class="timer-num">00</span>
+            <span class="timer-label">SEC</span>
+          </div>
+        </div>
+        <div class="timer-progress-track">
+          <div id="crashProgressBar" class="timer-progress-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Telemetry Strip (4 Metrics) -->
+      <div class="crash-telemetry-bar">
+        <div class="crash-telem-item">
+          <div class="crash-telem-icon">💥</div>
+          <div>
+            <div class="crash-telem-label">Max Venue Discount</div>
+            <div class="crash-telem-val" id="crashMaxDiscountTelem">UP TO -43%</div>
+          </div>
+        </div>
+        <div class="crash-telem-item">
+          <div class="crash-telem-icon">🛡️</div>
+          <div>
+            <div class="crash-telem-label">Floor Lock Price</div>
+            <div class="crash-telem-val">₹20.00 Flat Cap</div>
+          </div>
+        </div>
+        <div class="crash-telem-item">
+          <div class="crash-telem-icon">⚡</div>
+          <div>
+            <div class="crash-telem-label">Pricing Mode</div>
+            <div class="crash-telem-val">DWMA Freeze Active</div>
+          </div>
+        </div>
+        <div class="crash-telem-item">
+          <div class="crash-telem-icon">🍹</div>
+          <div>
+            <div class="crash-telem-label">Floor Availability</div>
+            <div class="crash-telem-val">8 of 8 Taps Active</div>
+          </div>
+        </div>
       </div>
 
       <!-- Live Beverage Floor Showcase Matrix (Full Width, Fully Visible Cards) -->
       <div id="crashJuiceMatrix" class="crash-juice-matrix">
-        <!-- Populated dynamically with each juice showing discounted floor price -->
+        <!-- Populated dynamically with rich detailed cards -->
       </div>
 
-      <div style="display: flex; justify-content: center; gap: 16px; margin-top: 18px; flex-wrap: wrap;">
-        <button onclick="dismissLedCrashOverlay()" style="background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.45); color: #ffffff; padding: 12px 28px; border-radius: 12px; font-weight: 900; font-size: 15px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(0,0,0,0.4); display: inline-flex; align-items: center; gap: 8px;">
-          👁️ Minimize Overlay &amp; View Live Trading Board
+      <!-- Live Emergency Marquee Ticker -->
+      <div class="crash-marquee-wrap">
+        <div class="crash-marquee-content">
+          <span>🚨 VENUE EMERGENCY: ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00</span>
+          <span class="crash-marquee-separator">✦</span>
+          <span>⚡ DWMA DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
+          <span class="crash-marquee-separator">✦</span>
+          <span>🍹 VISIT BAR COUNTER OR SCAN TABLE QR TO CLAIM YOUR DRINKS AT ABSOLUTE FLOOR LIMIT</span>
+          <span class="crash-marquee-separator">✦</span>
+          <span>⏱️ AUTOMATIC RETURN TO DYNAMIC TRADING WHEN TIME RUNS OUT</span>
+        </div>
+      </div>
+
+      <!-- Action Controls -->
+      <div class="crash-actions-row">
+        <button class="crash-action-btn crash-btn-minimize" onclick="dismissLedCrashOverlay()">
+          <span>👁️</span>
+          <span>Minimize &amp; View Live Trading Board</span>
         </button>
-        <button onclick="playLedCrashSound()" style="background: rgba(239,68,68,0.3); border: 1.5px solid #ef4444; color: #fecaca; padding: 12px 24px; border-radius: 12px; font-weight: 900; font-size: 14.5px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;">
-          🔊 Replay Pub Siren
+        <button id="pubSirenBtn" class="crash-action-btn crash-btn-siren" onclick="playLedCrashSound()">
+          <span class="crash-siren-wave">
+            <span class="siren-bar"></span>
+            <span class="siren-bar"></span>
+            <span class="siren-bar"></span>
+          </span>
+          <span>Replay Pub Siren</span>
+        </button>
+        <button class="crash-action-btn crash-btn-qr" onclick="openCrashQrModal()">
+          <span>📱</span>
+          <span>Order via POS QR</span>
         </button>
       </div>
 
-      <p style="font-size: 13.5px; font-weight: 600; color: #CBD5E1; margin-top: 14px; letter-spacing: 0.2px;">Prices will automatically resume dynamic DWMA recalculation when timer expires.</p>
+      <p style="font-size: 11.5px; font-weight: 600; color: #94A3B8; margin-top: 8px; letter-spacing: 0.2px;">
+        Prices will automatically resume dynamic DWMA recalculation when circuit breaker timer expires.
+      </p>
     </div>
   </div>
 
@@ -4517,6 +5167,25 @@
         osc.start(now);
         osc.stop(now + 1.5);
       } catch (e) {}
+
+      // Animate pub siren equalizer bars
+      const sirenBtn = document.getElementById('pubSirenBtn');
+      if (sirenBtn) {
+        sirenBtn.classList.add('siren-active');
+        setTimeout(() => sirenBtn.classList.remove('siren-active'), 1600);
+      }
+    }
+
+    function openCrashQrModal() {
+      const toast = document.createElement('div');
+      toast.className = 'crash-order-toast';
+      toast.innerHTML = '📱 <b>POS QR READY:</b> Scan the table QR code or order directly at any counter tap at ₹20.00 floor price!';
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.classList.add('toast-show'); }, 10);
+      setTimeout(() => { 
+        toast.classList.remove('toast-show'); 
+        setTimeout(() => toast.remove(), 300); 
+      }, 4000);
     }
 
     function dismissLedCrashOverlay() {
@@ -4539,29 +5208,84 @@
       const container = document.getElementById('crashJuiceMatrix');
       if (!container || !products || products.length === 0) return;
       
-      container.innerHTML = products.map(p => {
+      let maxDiscountPct = 20;
+      
+      container.innerHTML = products.map((p, idx) => {
         const icon = getFruitIcon(p);
         const name = (p.name || p.flavour || 'Juice').toUpperCase();
-        const baseP = Number(p.basePrice || 25.0);
+        const baseP = Number(p.basePrice || (p.currentCupPrice ? Math.max(p.currentCupPrice, 25) : 25.0));
         const floorP = Number(p.minCupPrice || 20.0);
         const discountPct = baseP > 0 ? Math.max(15, Math.round(((baseP - floorP) / baseP) * 100)) : 20;
+        if (discountPct > maxDiscountPct) maxDiscountPct = discountPct;
+        const savingsAmount = Math.max(5, (baseP - floorP)).toFixed(2);
+        const tapNum = String(idx + 1).padStart(2, '0');
+        
+        // Tap volume calculation
+        const remainingVolMl = p.remainingVolumeMl !== undefined ? p.remainingVolumeMl : (20000 - ((p.id * 1370) % 6000));
+        const tankPct = Math.max(15, Math.min(100, Math.round((remainingVolMl / 20000) * 100)));
+        const remainingLiters = (remainingVolMl / 1000).toFixed(1);
+        
+        // Fruit color styling
+        const theme = getJuiceThemeTokens(p);
+        const accentColor = theme.accent || '#F59E0B';
+        const cardBorder = `rgba(${theme.rgb}, 0.65)`;
         
         return `
-          <div class="crash-juice-card">
-            <div class="cjc-left">
-              <span class="cjc-icon">${icon}</span>
-              <div class="cjc-info">
-                <div class="cjc-name" title="${name}">${name}</div>
-                <div class="cjc-strike">₹${baseP.toFixed(2)}</div>
+          <div class="crash-juice-card" style="border-color: ${cardBorder}; box-shadow: 0 4px 18px rgba(${theme.rgb}, 0.22), 0 2px 8px rgba(0,0,0,0.5);">
+            <div class="cjc-top-edge" style="background: ${accentColor};"></div>
+            
+            <div class="cjc-header-row">
+              <div class="cjc-left-group">
+                <div class="cjc-avatar-box" style="border-color: rgba(${theme.rgb}, 0.4); box-shadow: 0 0 12px rgba(${theme.rgb}, 0.3);">
+                  ${icon}
+                </div>
+                <div class="cjc-titles">
+                  <div class="cjc-tap-tag">
+                    <span style="color: ${accentColor};">TAP #${tapNum}</span>
+                    <span>• 250ML CHILLED</span>
+                  </div>
+                  <div class="cjc-name" title="${name}">${name}</div>
+                </div>
+              </div>
+              <div class="cjc-discount-badge">
+                <span>🔥</span> -${discountPct}%
               </div>
             </div>
-            <div class="cjc-right">
-              <div class="cjc-floor-price">₹${floorP.toFixed(2)}</div>
-              <div class="cjc-discount-badge">-${discountPct}% OFF</div>
+            
+            <div class="cjc-price-block">
+              <div class="cjc-price-left">
+                <div class="cjc-strike-row">
+                  <span class="cjc-strike">₹${baseP.toFixed(2)}</span>
+                  <span class="cjc-drop-pill">📉 -₹${savingsAmount}</span>
+                </div>
+                <div class="cjc-save-tag">SAVE ₹${savingsAmount} / CUP</div>
+              </div>
+              <div class="cjc-price-right">
+                <div class="cjc-floor-label">FLOOR PRICE</div>
+                <div class="cjc-floor-price">₹${floorP.toFixed(2)}</div>
+              </div>
+            </div>
+            
+            <div class="cjc-footer-row">
+              <div class="cjc-tank-gauge">
+                <div class="cjc-tank-info">
+                  <span>TAP STOCK: ${remainingLiters}L</span>
+                  <span>${tankPct}%</span>
+                </div>
+                <div class="cjc-tank-bar">
+                  <div class="cjc-tank-fill" style="width: ${tankPct}%; background: ${accentColor};"></div>
+                </div>
+              </div>
+              <button class="cjc-claim-btn" onclick="openCrashQrModal()">
+                <span>CLAIM</span> →
+              </button>
             </div>
           </div>
         `;
       }).join('');
+      
+      const maxDiscountEl = document.getElementById('crashMaxDiscountTelem');
+      if (maxDiscountEl) maxDiscountEl.textContent = `UP TO -${maxDiscountPct}%`;
     }
 
     async function checkMarketCrashStatus() {
@@ -4575,10 +5299,12 @@
       } catch (err) {}
     }
 
+    let crashTotalDuration = 180;
     function triggerMarketCrash(duration = 180) {
       const wasActive = isMarketCrashActive;
       isMarketCrashActive = true;
       crashRemainingSeconds = duration;
+      crashTotalDuration = duration || 180;
       const overlay = document.getElementById('crashOverlay');
       const minBanner = document.getElementById('minimizedCrashBanner');
       
@@ -4616,11 +5342,36 @@
     function updateCrashTimerUI() {
       const mins = Math.floor(Math.max(0, crashRemainingSeconds) / 60);
       const secs = Math.max(0, crashRemainingSeconds) % 60;
-      const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      const minsStr = mins.toString().padStart(2, '0');
+      const secsStr = secs.toString().padStart(2, '0');
+      const timeStr = `${minsStr}:${secsStr}`;
+      
+      const minsEl = document.getElementById('crashTimerMins');
+      if (minsEl) minsEl.textContent = minsStr;
+      const secsEl = document.getElementById('crashTimerSecs');
+      if (secsEl) secsEl.textContent = secsStr;
+
       const timerEl = document.getElementById('crashTimerText');
       if (timerEl) timerEl.textContent = `⏱️ ${timeStr}`;
       const minTimerEl = document.getElementById('minimizedCrashTimerText');
       if (minTimerEl) minTimerEl.textContent = `⏱️ ${timeStr}`;
+
+      const chamberEl = document.getElementById('crashTimerChamber');
+      if (chamberEl) {
+        if (crashRemainingSeconds <= 30) {
+          chamberEl.className = 'crash-timer-chamber timer-urgent';
+        } else if (crashRemainingSeconds <= 60) {
+          chamberEl.className = 'crash-timer-chamber timer-warning';
+        } else {
+          chamberEl.className = 'crash-timer-chamber';
+        }
+      }
+      
+      const progBar = document.getElementById('crashProgressBar');
+      if (progBar && crashTotalDuration > 0) {
+        const pct = Math.max(0, Math.min(100, Math.round((crashRemainingSeconds / crashTotalDuration) * 100)));
+        progBar.style.width = `${pct}%`;
+      }
     }
 
     // Health check periodically
