@@ -1931,13 +1931,19 @@
     .mcb-restore-btn { background: #FACC15; border: none; color: #000000; font-weight: 900; font-size: 13px; padding: 6px 14px; border-radius: 8px; cursor: pointer; transition: transform 0.15s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     .mcb-restore-btn:hover { transform: scale(1.04); background: #FEF08A; }
 
-    /* Responsive Design */
-    @media (max-width: 1360px) {
-      .product-grid { grid-template-columns: repeat(2, 1fr); }
-      .summary-row { grid-template-columns: repeat(2, 1fr); }
-      .main-layout { grid-template-columns: 1fr; }
+    /* Responsive Design for TV / LED / Desktop / Laptops */
+    @media (max-width: 1200px) {
+      .main-layout { grid-template-columns: 1fr 210px; gap: 4px; }
+      .product-grid { gap: 4px; }
+      .sidebar-wrapper { gap: 3px; }
     }
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
+      body { height: auto; max-height: none; overflow: auto; }
+      .main-layout { grid-template-columns: 1fr; overflow: visible; }
+      .product-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; }
+      .summary-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
       .product-grid { grid-template-columns: 1fr; }
       .summary-row { grid-template-columns: 1fr; }
       .top-header { flex-direction: column; align-items: stretch; }
