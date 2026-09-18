@@ -3,7 +3,6 @@ package com.retailpos.pricing;
 import com.retailpos.domain.Product;
 import com.retailpos.domain.ProductRepository;
 import com.retailpos.domain.SalesOrderItemRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -56,9 +55,9 @@ public class ComprehensiveIntervalMatrixAndCycleTest {
                     if (method.getName().contains("count")) {
                         LocalDateTime start = (LocalDateTime) args[1];
                         LocalDateTime end = (LocalDateTime) args[2];
+                        // Use duration to confirm the window is valid (non-zero), then return mock sales
                         long duration = java.time.Duration.between(start, end).toSeconds();
-                        // Assign window sales based on start time offset
-                        return w0;
+                        return duration > 0 ? w0 : 0;
                     }
                     return 0;
                 }
