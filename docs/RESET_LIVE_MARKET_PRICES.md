@@ -1,7 +1,7 @@
 # ↺ Reset Live Market Prices — Architecture & Production Hardening Specification
 
 ## Overview
-The **Reset Live Market Prices** capability enables authorized administrators to instantly restore all active beverage products in the Pub Stock Exchange catalog to their configured default base prices (`product.defaultCupPrice`) stored in PostgreSQL.
+The **Reset Live Market Prices** capability enables authorized administrators to instantly restore all active beverage products in the Mojito Exchange catalog to their configured default base prices (`product.defaultCupPrice`) stored in PostgreSQL.
 
 ---
 
