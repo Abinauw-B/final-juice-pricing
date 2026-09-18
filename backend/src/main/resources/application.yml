@@ -67,7 +67,7 @@ management:
 
 market:
   simulator:
-    enabled: ${MARKET_SIMULATOR_ENABLED:false}
+    enabled: ${MARKET_SIMULATOR_ENABLED:true}
 
 pricing:
   settlement-interval-seconds: 60

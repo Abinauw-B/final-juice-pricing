@@ -326,7 +326,9 @@ public class PriceAdjustmentService {
         int w0, w1, w2;
         try {
             // Section 17 & 28: Server-side crash sales exclusion from demand measurement windows
-            w0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
+            int recordedW0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
+            int liveOrderCount = (product.getOrderCount() != null && product.getOrderCount() > 0) ? product.getOrderCount() : 0;
+            w0 = recordedW0 + liveOrderCount;
             w1 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
             w2 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
         } catch (Exception dbEx) {
@@ -1054,7 +1056,9 @@ public class PriceAdjustmentService {
 
         // DWMA time windows based on configured intervalSec
         LocalDateTime w0Start = now.minusSeconds(intervalSec);
-        int w0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
+        int recordedW0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
+        int liveOrderCount = (p.getOrderCount() != null && p.getOrderCount() > 0) ? p.getOrderCount() : 0;
+        int w0 = recordedW0 + liveOrderCount;
 
         LocalDateTime w1Start = now.minusSeconds(2L * intervalSec);
         LocalDateTime w1End = now.minusSeconds(intervalSec);
