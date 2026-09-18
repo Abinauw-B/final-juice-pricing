@@ -6448,6 +6448,8 @@
       nextSettlementAt: null
     };
     let settlementCountdownInterval = null;
+    let pendingIntervalRevertTimer = null;    // timeout that auto-reverts the dropdown if Apply isn't clicked
+    let pendingIntervalCountdown = null;       // setInterval that ticks the 5-second label on the Apply button
 
     async function loadPricingTiming() {
       try {
@@ -6463,6 +6465,11 @@
     }
 
     let isSettlingCycle = false;
+
+    function _clearPendingIntervalRevert() {
+      if (pendingIntervalRevertTimer) { clearTimeout(pendingIntervalRevertTimer); pendingIntervalRevertTimer = null; }
+      if (pendingIntervalCountdown)  { clearInterval(pendingIntervalCountdown);  pendingIntervalCountdown = null; }
+    }
 
     function onPricingIntervalSelectChanged(val) {
       const sec = parseInt(val, 10) || 60;
@@ -6484,20 +6491,64 @@
       const cycleDisplay = document.getElementById('timingCurrentCycleDisplay');
       const btn = document.getElementById('btnApplyPricingTiming');
 
+      // Cancel any previously pending revert
+      _clearPendingIntervalRevert();
+
       if (sec !== activeSec) {
+        // ── PENDING STATE: Show countdown on Apply button ──
         if (cycleDisplay) {
-          cycleDisplay.innerHTML = `<span style="color: #f59e0b; font-weight: 800;">${shortLabel} (Click Apply)</span>`;
+          cycleDisplay.innerHTML = `<span style="color: #f59e0b; font-weight: 800;">${shortLabel} (pending…)</span>`;
         }
-        if (btn) {
-          btn.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.9)';
-          btn.innerHTML = `⚡ APPLY (${label.toUpperCase()})`;
-        }
+
+        let secsLeft = 5;
+        const updateBtn = () => {
+          if (btn) {
+            btn.style.boxShadow = '0 0 20px rgba(245,158,11,0.9)';
+            btn.style.background = 'linear-gradient(135deg, #d97706, #b45309)';
+            btn.innerHTML = `⚡ APPLY ${label.toUpperCase()} (${secsLeft}s)`;
+          }
+        };
+        updateBtn();
+
+        pendingIntervalCountdown = setInterval(() => {
+          secsLeft--;
+          if (secsLeft <= 0) {
+            _clearPendingIntervalRevert();
+            // Revert dropdown and UI back to active interval
+            const revertSec = activeSec;
+            const revertLabel = labelMap[revertSec] || `${revertSec}s`;
+            const revertShort = revertSec === 10 ? '10-Sec' :
+              (revertSec === 30 ? '30-Sec' :
+                (revertSec % 60 === 0 ? `${revertSec / 60}-Min` : `${revertSec}s`));
+            const sel = document.getElementById('pricingIntervalSelect');
+            if (sel) sel.value = String(revertSec);
+            if (document.getElementById('cfgSettlementInterval'))
+              document.getElementById('cfgSettlementInterval').value = revertSec;
+            if (cycleDisplay) cycleDisplay.textContent = `${revertShort} DWMA`;
+            if (btn) {
+              btn.style.boxShadow = '';
+              btn.style.background = 'linear-gradient(135deg, #2563eb, #1d4ed8)';
+              btn.innerHTML = `⚡ APPLY PRICING TIMING`;
+            }
+            showToast(`⏱️ No change applied — reverted to ${revertLabel}.`, 'info');
+            return;
+          }
+          updateBtn();
+        }, 1000);
+
+        // Safety timeout slightly after countdown finishes
+        pendingIntervalRevertTimer = setTimeout(() => {
+          _clearPendingIntervalRevert();
+        }, 6000);
+
       } else {
+        // Selected same as active — no pending state needed
         if (cycleDisplay) {
           cycleDisplay.textContent = `${shortLabel} DWMA`;
         }
         if (btn) {
           btn.style.boxShadow = '';
+          btn.style.background = 'linear-gradient(135deg, #2563eb, #1d4ed8)';
           btn.innerHTML = `⚡ APPLY PRICING TIMING`;
         }
       }
@@ -6555,8 +6606,14 @@
     }
 
     async function applyPricingTimingDirect() {
+      // Clear any pending 5-second revert — the user clicked Apply in time
+      _clearPendingIntervalRevert();
+
       const btn = document.getElementById('btnApplyPricingTiming');
-      if (btn) setButtonLoading(btn, true, 'Applying Timing...');
+      if (btn) {
+        btn.style.background = 'linear-gradient(135deg, #2563eb, #1d4ed8)';
+        setButtonLoading(btn, true, 'Applying Timing...');
+      }
 
       const sel = document.getElementById('pricingIntervalSelect');
       const selectedSec = parseInt(sel ? sel.value : '60', 10);
