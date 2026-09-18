@@ -5555,6 +5555,15 @@
     fetchProducts();
     connectWebSocket();
 
+    // Allow URL test triggering via ?crash=1 or ?crash=180
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('crash')) {
+        const crashSec = parseInt(urlParams.get('crash'), 10) || 180;
+        setTimeout(() => triggerMarketCrash(crashSec), 350);
+      }
+    } catch (e) {}
+
     // Background continuous sync to guarantee real-time reflection of admin actions
     setInterval(() => {
       fetchProducts();
