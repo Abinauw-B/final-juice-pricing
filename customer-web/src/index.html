@@ -639,20 +639,6 @@
       opacity: 0.6;
     }
 
-    /* ==========================================================================
-       CRASH MODE DESIGN TOKENS — Shared fixed palette
-       ========================================================================== */
-    :root {
-      --crash-bg:           #06080f;
-      --crash-accent-red:   #ef4444;
-      --crash-accent-gold:  #facc15;
-      --crash-accent-green: #34d399;
-      --crash-text-primary: #f8fafc;
-      --crash-text-muted:   #94a3b8;
-      --crash-card-bg:      rgba(15, 23, 42, 0.95);
-      --crash-card-border:  rgba(239, 68, 68, 0.5);
-    }
-
     /* ═══════ 3. MARKET CRASH ALERT BANNER & VIBRANT STYLING ═══════ */
     .pos-crash-strobe-overlay {
       position: fixed;
@@ -675,329 +661,91 @@
     }
 
     .market-crash-banner {
-      background: var(--crash-bg);
-      background-image: radial-gradient(ellipse 80% 120% at 35% 35%, rgba(185, 28, 28, 0.52) 0%, rgba(6, 8, 15, 0.98) 75%);
-      border: 2px solid rgba(239, 68, 68, 0.7);
+      background: linear-gradient(135deg, #b91c1c 0%, #dc2626 40%, #991b1b 100%);
+      border: 2px solid #f87171;
       border-radius: var(--radius-card);
-      padding: 16px 22px;
-      margin-bottom: 20px;
+      padding: 16px 24px;
+      margin-bottom: 18px;
       display: none;
-      flex-direction: column;
-      gap: 12px;
-      color: var(--crash-text-primary);
-      box-shadow: 0 12px 38px rgba(220, 38, 38, 0.45), 0 0 24px rgba(239, 68, 68, 0.25);
+      align-items: center;
+      justify-content: space-between;
+      color: #ffffff;
+      box-shadow: 0 10px 36px rgba(220, 38, 38, 0.5), 0 0 20px rgba(245, 158, 11, 0.35);
+      animation: crashPulse 1.6s infinite ease-in-out;
+      backdrop-filter: blur(14px);
       position: relative;
       overflow: hidden;
-      box-sizing: border-box;
-      animation: posCrashGlowPulse 3.5s ease-in-out infinite;
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    @keyframes posCrashGlowPulse {
-      0%, 100% {
-        box-shadow: 0 10px 32px rgba(220, 38, 38, 0.4), 0 0 16px rgba(239, 68, 68, 0.2);
-        border-color: rgba(239, 68, 68, 0.65);
-      }
-      50% {
-        box-shadow: 0 14px 48px rgba(220, 38, 38, 0.75), 0 0 28px rgba(250, 204, 21, 0.35);
-        border-color: rgba(239, 68, 68, 0.95);
-      }
-    }
-    .market-crash-banner.crash-banner-entering {
-      animation: crashBannerSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    .market-crash-banner.crash-banner-exiting {
-      animation: crashBannerSlideOut 0.4s ease-in forwards;
-      pointer-events: none;
-    }
-    @keyframes crashBannerSlideIn {
-      from { opacity: 0; transform: translateY(-16px) scale(0.98); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes crashBannerSlideOut {
-      from { opacity: 1; transform: translateY(0) scale(1); }
-      to   { opacity: 0; transform: translateY(-12px) scale(0.97); }
-    }
-
-    /* Top & bottom caution stripe edges */
     .market-crash-banner::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0; height: 5px;
-      background: repeating-linear-gradient(45deg, #facc15, #facc15 14px, #000000 14px, #000000 28px);
-      animation: hazardShift 1.2s linear infinite;
-      z-index: 2;
+      background: repeating-linear-gradient(45deg, #facc15, #facc15 15px, #000000 15px, #000000 30px);
+      animation: hazardShift 1s linear infinite;
     }
     .market-crash-banner::after {
       content: '';
       position: absolute;
       bottom: 0; left: 0; right: 0; height: 5px;
-      background: repeating-linear-gradient(45deg, #facc15, #facc15 14px, #000000 14px, #000000 28px);
-      animation: hazardShift 1.2s linear infinite reverse;
-      z-index: 2;
+      background: repeating-linear-gradient(45deg, #facc15, #facc15 15px, #000000 15px, #000000 30px);
+      animation: hazardShift 1s linear infinite reverse;
     }
     @keyframes hazardShift {
       0% { background-position: 0 0; }
-      100% { background-position: 40px 0; }
+      100% { background-position: 42px 0; }
     }
 
-    /* Banner top row: headline + timer */
-    .pos-crash-top-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 14px;
-      position: relative;
-      z-index: 3;
-    }
-    .pos-crash-brand-col {
+    .crash-title {
+      font-size: 16px;
+      font-weight: 900;
       display: flex;
       align-items: center;
       gap: 14px;
+      letter-spacing: 0.02em;
     }
-    /* Animated mini descending bar chart icon */
-    .pos-crash-chart-icon {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 38px;
-      flex-shrink: 0;
-    }
-    .pos-crash-bar {
-      width: 8px;
-      border-radius: 2px 2px 0 0;
-      background: var(--crash-accent-red);
-      box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
-      transform-origin: bottom;
-      animation: posCrashBarPulse var(--dur, 2s) ease-in-out infinite;
-    }
-    .pos-crash-bar:nth-child(1) { height: 60%; --dur: 2.2s; opacity: .9; }
-    .pos-crash-bar:nth-child(2) { height: 90%; --dur: 2.6s; opacity: .95; }
-    .pos-crash-bar:nth-child(3) { height: 45%; --dur: 1.9s; opacity: .85; }
-    .pos-crash-bar:nth-child(4) { height: 28%; --dur: 3s; opacity: .8; }
-    @keyframes posCrashBarPulse {
-      0%, 100% { transform: scaleY(1); }
-      50%      { transform: scaleY(0.82); }
-    }
-    .pos-crash-arrow-down {
-      font-size: 26px;
-      color: var(--crash-accent-red);
-      line-height: 1;
-      animation: crashArrowGlow 3s ease-in-out infinite;
-      align-self: center;
-      margin-left: 2px;
-    }
-    @keyframes crashArrowGlow {
-      0%, 100% { filter: drop-shadow(0 0 4px rgba(239,68,68,0.4)); }
-      50%      { filter: drop-shadow(0 0 14px rgba(239,68,68,0.9)); }
-    }
-
-    .pos-crash-heading-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .pos-crash-title {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 0.04em;
-      line-height: 1.1;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      text-transform: uppercase;
-    }
-    .pos-crash-title .market-word {
-      color: #f8fafc;
-      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 2px 10px rgba(255,255,255,0.15);
-    }
-    .pos-crash-title .crash-word {
-      color: #ef4444;
-      background: linear-gradient(180deg, #fca5a5 0%, #ef4444 50%, #b91c1c 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.7));
-    }
-    .pos-crash-subhead {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--crash-text-muted);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .pos-crash-in-prog {
-      color: #fca5a5;
-    }
-
-    /* Right actions: Pill timer + Siren button */
-    .pos-crash-actions-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .pos-crash-timer-pill {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(10, 14, 26, 0.9);
-      border: 2px solid var(--crash-accent-red);
-      border-radius: 14px;
-      padding: 6px 16px;
-      box-shadow: 0 0 18px rgba(239, 68, 68, 0.45);
-      animation: posTimerGlow 2s ease-in-out infinite;
-    }
-    @keyframes posTimerGlow {
-      0%, 100% { box-shadow: 0 0 14px rgba(239, 68, 68, 0.35); }
-      50%      { box-shadow: 0 0 28px rgba(239, 68, 68, 0.75); }
-    }
-    .pos-crash-timer-pill.urgent {
-      border-color: #fbbf24;
-      animation: posTimerUrgent 0.8s ease-in-out infinite;
-    }
-    @keyframes posTimerUrgent {
-      0%, 100% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.6); border-color: #fbbf24; }
-      50%      { box-shadow: 0 0 32px rgba(251, 191, 36, 1), 0 0 16px rgba(239, 68, 68, 0.8); border-color: #fef08a; }
-    }
-    .pos-crash-timer-digits {
-      font-size: 24px;
-      font-weight: 900;
-      font-family: var(--font-mono);
-      color: var(--crash-accent-gold);
-      letter-spacing: 1px;
-      line-height: 1;
-      text-shadow: 0 0 14px rgba(250, 204, 21, 0.75);
-    }
-    .pos-crash-siren-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.5);
-      color: #fca5a5;
-      padding: 7px 13px;
-      border-radius: 10px;
-      font-size: 11.5px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .pos-crash-siren-btn:hover {
-      background: rgba(239, 68, 68, 0.35);
-      border-color: #ef4444;
-      color: #ffffff;
-      transform: translateY(-1px);
-    }
-
-    /* Banner divider strip with floor pill */
-    .pos-crash-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-      position: relative;
-      z-index: 3;
-    }
-    .pos-crash-divider-line {
-      flex: 1 1 auto;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.5) 40%, rgba(250, 204, 21, 0.5) 60%, transparent);
-    }
-    .pos-crash-divider-text {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #cbd5e1;
-      white-space: nowrap;
-    }
-    .pos-crash-floor-pill {
-      background: var(--crash-accent-gold);
+    .crash-title-badge {
+      background: #facc15;
       color: #000000;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 900;
-      font-family: var(--font-mono);
-      padding: 3px 10px;
-      border-radius: 999px;
-      box-shadow: 0 0 14px rgba(250, 204, 21, 0.6);
-      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      animation: badgeFlash 0.8s infinite alternate;
+    }
+    @keyframes badgeFlash {
+      0% { opacity: 0.85; transform: scale(0.98); }
+      100% { opacity: 1; transform: scale(1.04); }
     }
 
-    /* Live product chips scroll row */
-    .pos-crash-chips-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      position: relative;
-      z-index: 3;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(239, 68, 68, 0.4) transparent;
-    }
-    .pos-crash-chips-row::-webkit-scrollbar {
-      height: 4px;
-    }
-    .pos-crash-chips-row::-webkit-scrollbar-thumb {
-      background: rgba(239, 68, 68, 0.4);
-      border-radius: 2px;
-    }
-    .pos-crash-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(239, 68, 68, 0.45);
-      border-radius: 10px;
-      padding: 6px 10px;
-      white-space: nowrap;
-      flex-shrink: 0;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    .pos-crash-chip.chip-entered {
-      opacity: 1;
-      transform: translateY(0);
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-    .pos-crash-chip:hover {
-      border-color: #ef4444;
-      background: rgba(239, 68, 68, 0.2);
-      transform: translateY(-2px);
-    }
-    .pos-chip-name {
-      font-weight: 700;
-      color: #f8fafc;
-      max-width: 110px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .pos-chip-orig {
-      font-size: 10.5px;
-      color: #ef4444;
-      text-decoration: line-through;
-      opacity: 0.85;
-    }
-    .pos-chip-floor {
-      font-size: 12.5px;
+    .crash-timer {
+      font-size: 22px;
       font-weight: 900;
       font-family: var(--font-mono);
-      color: var(--crash-accent-gold);
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #facc15;
+      padding: 6px 18px;
+      border-radius: 12px;
+      color: #facc15;
+      font-variant-numeric: tabular-nums;
+      box-shadow: 0 0 16px rgba(250, 204, 21, 0.4), inset 0 0 10px rgba(250, 204, 21, 0.2);
+      text-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .pos-chip-pct {
-      background: var(--crash-accent-green);
-      color: #064e3b;
-      font-size: 10px;
-      font-weight: 900;
-      padding: 2px 5px;
-      border-radius: 5px;
+
+    @keyframes crashPulse {
+      0%, 100% {
+        box-shadow: 0 10px 36px rgba(220, 38, 38, 0.45), 0 0 0 1px rgba(239, 68, 68, 0.4);
+      }
+      50% {
+        box-shadow: 0 12px 48px rgba(220, 38, 38, 0.75), 0 0 25px rgba(245, 158, 11, 0.5), 0 0 0 3px rgba(250, 204, 21, 0.6);
+      }
     }
 
     /* Vibrant Product Card Crash Mode */
@@ -1751,63 +1499,21 @@
   <!-- Full-Screen Aurora Strobe Alert Effect -->
   <div id="posCrashStrobeOverlay" class="pos-crash-strobe-overlay"></div>
 
-  <!-- ARIA Live Region for Crash Announcements -->
-  <div id="posCrashAriaRegion" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
-
   <!-- 4. Market Crash Alert Header -->
-  <div class="market-crash-banner" id="marketCrashBanner" role="region" aria-label="Market Crash Emergency Event">
-    <!-- Top Row: Title + Bar Chart + Countdown Timer + Siren Button -->
-    <div class="pos-crash-top-row">
-      <div class="pos-crash-brand-col">
-        <!-- Mini animated descending bar chart icon -->
-        <div class="pos-crash-chart-icon" aria-hidden="true">
-          <div class="pos-crash-bar"></div>
-          <div class="pos-crash-bar"></div>
-          <div class="pos-crash-bar"></div>
-          <div class="pos-crash-bar"></div>
-          <span class="pos-crash-arrow-down">📉</span>
-        </div>
-        <div class="pos-crash-heading-wrap">
-          <div class="pos-crash-title">
-            <span class="market-word">MARKET</span>
-            <span class="crash-word">CRASH</span>
-          </div>
-          <div class="pos-crash-subhead">
-            <span class="pos-crash-in-prog">⚡ IN PROGRESS</span>
-            <span>&bull;</span>
-            <span>ALL BEVERAGES FORCED TO ABSOLUTE FLOOR</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="pos-crash-actions-wrap">
-        <!-- Countdown Pill -->
-        <div class="pos-crash-timer-pill" id="posCrashTimerPill" aria-label="Remaining crash time">
-          <span style="font-size: 16px;" aria-hidden="true">🚨</span>
-          <div style="display: flex; flex-direction: column; align-items: center;">
-            <div class="pos-crash-timer-digits" id="crashTimerDisplay">03:00</div>
-            <span style="font-size: 8px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--crash-text-muted);">REMAINING TIME</span>
-          </div>
-        </div>
-        <!-- Replay Siren Button -->
-        <button class="pos-crash-siren-btn" onclick="playMarketCrashSiren()" title="Replay venue acoustic siren">
-          <span aria-hidden="true">🔊</span>
-          <span>Replay Siren</span>
-        </button>
-      </div>
+  <div class="market-crash-banner" id="marketCrashBanner">
+    <div class="crash-title">
+      <span class="crash-title-badge">⚡ EMERGENCY EVENT</span>
+      <span style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">🚨</span>
+        <span style="font-size: 16px; font-weight: 900; letter-spacing: 0.02em;">MARKET CRASH IN PROGRESS!</span>
+      </span>
+      <span style="font-size: 13.5px; font-weight: 700; color: #fef08a; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(254,240,138,0.3);" id="marketCrashBannerMsg">
+        ALL DRINK PRICES DROPPED TO ABSOLUTE FLOOR LIMIT ₹20.00!
+      </span>
     </div>
-
-    <!-- Divider line with floor pill -->
-    <div class="pos-crash-divider">
-      <div class="pos-crash-divider-line"></div>
-      <span class="pos-crash-divider-text">All Beverage Prices Forced To Absolute Floor</span>
-      <div class="pos-crash-floor-pill" id="posCrashFloorPill">₹20.00</div>
-      <div class="pos-crash-divider-line"></div>
-    </div>
-
-    <!-- Live dynamic product deals chips -->
-    <div class="pos-crash-chips-row" id="posCrashChipsRow" aria-label="Live crash beverage deals">
-      <!-- Dynamically populated by renderCrashPosChips() -->
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="font-size: 12px; font-weight: 800; color: #facc15; text-transform: uppercase; letter-spacing: 0.05em; display: none;" id="crashHurryNotice">🔥 HURRY, ORDER NOW:</span>
+      <div class="crash-timer" id="crashTimerDisplay">⏱️ 03:00</div>
     </div>
   </div>
 
@@ -2570,56 +2276,12 @@
       }
     }
 
-    function _announcePosCrash(msg) {
-      const el = document.getElementById('posCrashAriaRegion');
-      if (el) {
-        el.textContent = '';
-        setTimeout(() => { el.textContent = msg; }, 50);
-      }
-    }
-
-    function renderCrashPosChips() {
-      const container = document.getElementById('posCrashChipsRow');
-      if (!container || !products || products.length === 0) return;
-
-      const lowestFloor = products.reduce((min, p) => Math.min(min, Number(p.minCupPrice || 20)), 20);
-      const floorPill = document.getElementById('posCrashFloorPill');
-      if (floorPill) floorPill.textContent = `₹${lowestFloor.toFixed(2)}`;
-
-      container.innerHTML = products.map((p, idx) => {
-        const icon = getFruitIcon(p);
-        const name = (p.name || p.flavour || 'Juice').toUpperCase();
-        const origP = Number(p.currentCupPrice || p.basePrice || 25.0);
-        const floorP = Number(p.minCupPrice || 20.0);
-        const baseP  = Number(p.basePrice || origP || 25.0);
-        const discountPct = baseP > 0 ? Math.round(((baseP - floorP) / baseP) * 100) : 20;
-
-        return `
-          <div class="pos-crash-chip" id="posChip-${p.id || idx}" style="transition-delay: ${idx * 40}ms;" onclick="addToCart(${p.id || idx})" title="Click to add ${name} at crash floor rate ₹${floorP.toFixed(2)}">
-            <span aria-hidden="true">${icon}</span>
-            <span class="pos-chip-name">${name}</span>
-            <span class="pos-chip-orig" aria-label="Original ₹${origP.toFixed(2)}">₹${origP.toFixed(2)}</span>
-            <span class="pos-chip-floor" aria-label="Crash price ₹${floorP.toFixed(2)}">₹${floorP.toFixed(2)}</span>
-            <span class="pos-chip-pct" aria-label="${discountPct}% discount">-${discountPct}%</span>
-          </div>
-        `;
-      }).join('');
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          container.querySelectorAll('.pos-crash-chip').forEach(chip => {
-            chip.classList.add('chip-entered');
-          });
-        });
-      });
-    }
-
     function triggerLocalMarketCrash(seconds = 180) {
       const wasActive = isMarketCrashActive;
       isMarketCrashActive = true;
       crashRemainingSeconds = seconds;
 
-      // 1. Dynamic Aurora Screen Strobe Flash (safe 1-cycle alert)
+      // 1. Dynamic Aurora Screen Strobe Flash
       const strobe = document.getElementById('posCrashStrobeOverlay');
       if (strobe) {
         strobe.classList.remove('active');
@@ -2628,28 +2290,26 @@
         setTimeout(() => strobe.classList.remove('active'), 1000);
       }
 
-      // 2. Play Venue Acoustic Alarm Tone (single play, no looping)
-      if (!wasActive) {
-        playMarketCrashSiren();
-        _announcePosCrash('Emergency alert: Market Crash is in progress. All beverage prices dropped to absolute floor.');
-      }
+      // 2. Play Venue Acoustic Alarm Tone
+      if (!wasActive) playMarketCrashSiren();
 
-      // 3. Immediately override all beverage prices to floor price
+      // 3. Immediately override all beverage prices to floor price (₹20.00)
       products.forEach(p => {
         p.currentCupPrice = (p.minCupPrice !== undefined && p.minCupPrice !== null) ? Number(p.minCupPrice) : 20.0;
         p.trendDirection = 'DOWN';
         p.trend = 'CRASH FLOOR';
       });
 
-      const crashBanner = document.getElementById('marketCrashBanner');
-      if (crashBanner) {
-        crashBanner.style.display = 'flex';
-        crashBanner.classList.remove('crash-banner-exiting');
-        crashBanner.classList.add('crash-banner-entering');
-        setTimeout(() => crashBanner.classList.remove('crash-banner-entering'), 500);
+      const bannerMsg = document.getElementById('marketCrashBannerMsg');
+      if (bannerMsg) {
+        bannerMsg.textContent = `ALL BEVERAGE PRICES COLLAPSED TO FLOOR LIMIT ₹20.00!`;
       }
 
-      renderCrashPosChips();
+      const hurryNotice = document.getElementById('crashHurryNotice');
+      if (hurryNotice) hurryNotice.style.display = 'inline-block';
+
+      const crashBanner = document.getElementById('marketCrashBanner');
+      if (crashBanner) crashBanner.style.display = 'flex';
 
       const healthBadge = document.getElementById('backendHealthBadge');
 
@@ -2659,21 +2319,7 @@
         const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
         const timerDisp = document.getElementById('crashTimerDisplay');
-        if (timerDisp) timerDisp.textContent = timeStr;
-
-        // Urgency state at <= 30 seconds
-        const timerPill = document.getElementById('posCrashTimerPill');
-        if (timerPill) {
-          if (crashRemainingSeconds <= 30 && crashRemainingSeconds > 0) {
-            timerPill.classList.add('urgent');
-          } else {
-            timerPill.classList.remove('urgent');
-          }
-        }
-
-        // Meaningful ARIA threshold announcements
-        if (crashRemainingSeconds === 60) _announcePosCrash('Market crash: 60 seconds remaining.');
-        if (crashRemainingSeconds === 30) _announcePosCrash('Market crash ending soon: 30 seconds remaining. Prices will resume.');
+        if (timerDisp) timerDisp.textContent = `⏱️ ${timeStr}`;
 
         if (healthBadge) {
           healthBadge.className = 'status-badge-offline';
@@ -2704,20 +2350,11 @@
       isMarketCrashActive = false;
       if (crashTimerInterval) clearInterval(crashTimerInterval);
 
-      const timerPill = document.getElementById('posCrashTimerPill');
-      if (timerPill) timerPill.classList.remove('urgent');
-
       const crashBanner = document.getElementById('marketCrashBanner');
-      if (crashBanner && crashBanner.style.display !== 'none') {
-        crashBanner.classList.remove('crash-banner-entering');
-        crashBanner.classList.add('crash-banner-exiting');
-        setTimeout(() => {
-          crashBanner.style.display = 'none';
-          crashBanner.classList.remove('crash-banner-exiting');
-        }, 420);
-      }
+      if (crashBanner) crashBanner.style.display = 'none';
 
-      _announcePosCrash('Market crash has ended. Dynamic pricing has resumed.');
+      const hurryNotice = document.getElementById('crashHurryNotice');
+      if (hurryNotice) hurryNotice.style.display = 'none';
 
       const healthBadge = document.getElementById('backendHealthBadge');
       if (healthBadge) {
