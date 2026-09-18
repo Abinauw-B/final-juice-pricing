@@ -325,10 +325,9 @@ public class PriceAdjustmentService {
 
         int w0, w1, w2;
         try {
-            // Section 17 & 28: Server-side crash sales exclusion from demand measurement windows
             int recordedW0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
-            // Real physical orders recorded in database window
-            w0 = recordedW0;
+            int unconsumedW0 = product.getOrderCount() != null ? product.getOrderCount() : 0;
+            w0 = recordedW0 + unconsumedW0;
             w1 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
             w2 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
         } catch (Exception dbEx) {
