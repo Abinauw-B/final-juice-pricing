@@ -516,312 +516,285 @@
       min-height: 0;
     }
 
-    /* PRODUCT CARD — Zero Whitespace & Full Height Flex Expansion */
+    /* ==========================================================================
+       PRODUCT CARD — ELEGANT COMPACT FINTECH COCKPIT (IMAGE 1 SPEC)
+       ========================================================================== */
     .product-card {
-      background: var(--bg-surface);
-      border: 1.5px solid var(--border-color);
+      background: var(--card-tint-bg, var(--bg-surface));
+      border: 1.5px solid var(--card-tint-border, var(--border-color));
       border-radius: 12px;
       padding: 7px 9px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: space-between;
       align-items: stretch;
       transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-      box-shadow: var(--shadow-card);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
       position: relative;
       min-height: 0;
       height: 100%;
       overflow: hidden;
       box-sizing: border-box;
-      gap: 4px;
+      gap: 3.5px;
     }
     .product-card:hover {
-      border-color: var(--border-strong);
-      box-shadow: var(--shadow-hover);
+      border-color: var(--card-accent, var(--border-strong));
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+      transform: translateY(-1px);
     }
 
-    .card-top-section {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    /* Mid-section: activity feed — grows to fill remaining card space */
-    .card-mid-section {
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-    .card-bottom-section {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      margin-top: 0;
-    }
-
-    /* ==========================================================================
-       MINI RECENT ACTIVITY FEED STRIP (Option A — fills dead space)
-       ========================================================================== */
-    .card-activity-feed {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 4px 6px;
-      margin: 2px 0;
-      flex: 1 1 auto;
-      overflow: hidden;
-      min-height: 0;
-    }
-    .activity-feed-header {
+    /* COMPACT CARD HEADER: THUMBNAIL + TITLE (LEFT) & PRICE + DELTA (RIGHT) */
+    .card-header-compact {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 10px;
-      font-weight: 900;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-family: var(--font-mono);
-      padding-bottom: 3px;
-      border-bottom: 1px solid var(--border-subtle);
-      margin-bottom: 3px;
-      flex-shrink: 0;
-    }
-    .activity-feed-rows {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      flex: 1 1 auto;
-      overflow: hidden;
-      justify-content: flex-start;
-    }
-    .activity-feed-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10.5px;
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums;
-      min-height: 0;
-      flex-shrink: 0;
-    }
-    .afr-time {
-      color: var(--text-muted);
-      font-size: 9.5px;
-      font-weight: 700;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .afr-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .afr-dot-surge  { background: var(--accent-emerald); box-shadow: 0 0 5px var(--accent-emerald-glow); }
-    .afr-dot-decay  { background: var(--accent-rose);    box-shadow: 0 0 5px var(--accent-rose-glow);    }
-    .afr-dot-stable { background: var(--text-muted); }
-    .afr-event {
-      font-weight: 800;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1 1 auto;
-    }
-    .afr-event-surge  { color: var(--accent-emerald); }
-    .afr-event-decay  { color: var(--accent-rose); }
-    .afr-event-stable { color: var(--text-secondary); }
-    .afr-price-tag {
-      font-size: 10.5px;
-      font-weight: 900;
-      font-family: var(--font-mono);
-      color: var(--text-primary);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .activity-feed-empty {
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      color: var(--text-muted);
-      font-size: 10.5px;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      text-align: center;
-      padding: 6px;
-    }
-    .afe-radar {
-      font-size: 16px;
-      opacity: 0.6;
-      animation: afeRadarSpin 3s linear infinite;
-    }
-    @keyframes afeRadarSpin {
-      0%   { opacity: 0.35; transform: scale(0.9); }
-      50%  { opacity: 0.7;  transform: scale(1.05); }
-      100% { opacity: 0.35; transform: scale(0.9); }
-    }
-
-    /* Product Image Banner — High Impact & Prominent */
-    .product-img-wrapper {
-      position: relative;
+      gap: 7px;
       width: 100%;
-      height: 82px;
+      flex-shrink: 0;
+    }
+    .card-header-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .card-thumbnail {
+      width: 36px;
+      height: 36px;
       border-radius: 8px;
-      overflow: hidden;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-subtle);
-      margin-bottom: 3px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      flex-shrink: 0;
-    }
-    .product-img {
-      width: 100%;
-      height: 100%;
       object-fit: cover;
-      transition: transform 0.3s ease;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: var(--bg-secondary);
     }
-    .product-card:hover .product-img {
-      transform: scale(1.04);
-    }
-    .product-img-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.75) 100%);
+    .card-header-titles {
+      min-width: 0;
+      flex: 1 1 auto;
       display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      padding: 4px 8px;
-      pointer-events: none;
-    }
-    .fruit-badge {
-      background: rgba(15, 23, 42, 0.94);
-      border: 1.5px solid rgba(255, 255, 255, 0.45);
-      color: #FFFFFF;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 11.5px;
-      font-weight: 900;
-      letter-spacing: 0.2px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    }
-    .live-indicator-badge {
-      background: #10B981;
-      color: #FFFFFF;
-      padding: 2px 7px;
-      border-radius: 5px;
-      font-size: 9px;
-      font-weight: 900;
-      font-family: var(--font-mono);
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.7);
-    }
-
-    /* Card Details Header */
-    .product-title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0px;
+      flex-direction: column;
+      gap: 1px;
     }
     .product-name {
-      font-size: 22px;
-      font-weight: 900;
+      font-size: 12.5px;
+      font-weight: 800;
       color: var(--text-primary);
-      line-height: 1.1;
-      letter-spacing: -0.02em;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       text-transform: uppercase;
     }
     .product-size {
-      font-size: 10px;
+      font-size: 9px;
       color: var(--text-muted);
       font-weight: 700;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
     }
 
-    /* ==========================================================================
-       PRODUCT CARD CORE: PRICE ROW, TELEMETRY STRIP & CHART COCKPIT
-       ========================================================================== */
-
-    /* Price Row — Monumental Bloomberg / NASDAQ Metric */
-    .product-price-row {
+    /* RIGHT SIDE: PRICE & DELTA */
+    .card-header-right {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 1px 0 2px 0;
-      padding: 0;
-      gap: 6px;
+      flex-direction: column;
+      align-items: flex-end;
+      flex-shrink: 0;
+      gap: 1px;
+      line-height: 1;
     }
     .product-price {
-      font-size: 46px;
+      font-size: 21px;
       font-weight: 900;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1, 'ss01' 1;
-      letter-spacing: -0.04em;
+      letter-spacing: -0.02em;
       color: var(--text-primary);
       line-height: 1;
       display: inline-flex;
       align-items: baseline;
-      transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: color 0.2s ease;
     }
-    html[data-theme="dark"] .product-price,
-    body.dark-theme-mode .product-price {
-      text-shadow: 0 0 16px currentColor;
+    .card-delta-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
     }
-    html[data-theme="light"] .product-price,
-    body:not(.dark-theme-mode) .product-price {
-      text-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
-    }
-
-    /* Directional Delta Badges */
-    .delta-badge {
-      font-size: 11px;
-      font-weight: 900;
-      padding: 3.5px 7.5px;
-      border-radius: 6px;
+    .card-delta-pill {
+      font-size: 9.5px;
+      font-weight: 800;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
+      letter-spacing: 0.2px;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       white-space: nowrap;
-      letter-spacing: 0.2px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-      transition: all 0.2s ease;
+      padding: 1px 4px;
+      border-radius: 4px;
     }
     .delta-surge {
-      background: var(--accent-emerald-bg);
       color: var(--accent-emerald);
-      border: 1.5px solid var(--accent-emerald-border);
-      box-shadow: 0 0 10px var(--accent-emerald-glow);
+      background: var(--accent-emerald-bg);
+      border: 1px solid var(--accent-emerald-border);
     }
     .delta-decay {
-      background: var(--accent-rose-bg);
       color: var(--accent-rose);
-      border: 1.5px solid var(--accent-rose-border);
-      box-shadow: 0 0 10px var(--accent-rose-glow);
+      background: var(--accent-rose-bg);
+      border: 1px solid var(--accent-rose-border);
     }
     .delta-stable {
-      background: var(--bg-subtle);
-      color: var(--text-secondary);
-      border: 1.5px solid var(--border-color);
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* 3-COLUMN METRICS & SETTLEMENTS STRIP (LIMITS | DWMA | SETTLED) */
+    .card-info-strip-3col {
+      display: grid;
+      grid-template-columns: 1fr 0.85fr 1.15fr;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 3.5px 5px;
+      font-family: var(--font-mono);
+      min-height: 38px;
+      box-sizing: border-box;
+    }
+    html[data-theme="dark"] .card-info-strip-3col,
+    body.dark-theme-mode .card-info-strip-3col {
+      background: rgba(15, 23, 42, 0.65);
+    }
+    .info-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 1.5px;
+      min-width: 0;
+    }
+    .info-col:not(:last-child) {
+      border-right: 1px solid var(--border-subtle);
+      padding-right: 4px;
+    }
+    .info-col-title {
+      font-size: 8px;
+      font-weight: 900;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1px;
+    }
+    .live-tag {
+      font-size: 7px;
+      font-weight: 900;
+      color: #10B981;
+      background: rgba(16, 185, 129, 0.15);
+      border: 0.5px solid rgba(16, 185, 129, 0.4);
+      padding: 0.5px 3px;
+      border-radius: 3px;
+      letter-spacing: 0.2px;
+    }
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 2.5px;
+      font-size: 9px;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .info-k {
+      color: var(--text-muted);
+      font-size: 8px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .info-v {
+      color: var(--text-primary);
+      font-size: 9.5px;
+      font-weight: 900;
+    }
+    .settled-mini-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .settled-mini-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9px;
+      line-height: 1.15;
+    }
+    .smr-time {
+      color: var(--text-muted);
+      font-size: 8px;
+      font-weight: 700;
+    }
+    .smr-price {
+      color: var(--text-primary);
+      font-weight: 900;
+      font-size: 9.5px;
+    }
+
+    /* THEMED PILL ACTION BUTTONS (IMAGE 1 SPEC) */
+    .card-footer-actions {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 5px;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+    .btn-card-details {
+      padding: 3.5px 6px;
+      border-radius: 20px;
+      font-size: 9.5px;
+      font-weight: 900;
+      cursor: pointer;
+      text-align: center;
+      background: transparent;
+      border: 1.5px solid currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      transition: all 0.15s ease;
+      letter-spacing: 0.3px;
+      font-family: var(--font-mono);
+      outline: none;
+    }
+    .btn-card-details:hover {
+      background: rgba(0, 0, 0, 0.05);
+      transform: translateY(-1px);
+    }
+    .btn-card-buy {
+      padding: 3.5px 8px;
+      border-radius: 20px;
+      font-size: 9.5px;
+      font-weight: 900;
+      color: #FFFFFF !important;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      transition: all 0.15s ease;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      font-family: var(--font-mono);
+    }
+    .btn-card-buy:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
     }
 
     /* REAL PRICE HISTORY GRAPH CONTAINER — Technical Cockpit Chamber */
