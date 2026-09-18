@@ -167,7 +167,7 @@
     }
 
     html {
-      min-height: 100%;
+      height: 100%;
       background-color: var(--bg-page);
       transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -175,14 +175,13 @@
     body {
       background-color: var(--bg-page);
       color: var(--text-primary);
-      min-height: 100vh;
-      min-height: 100dvh;
+      height: 100vh;
+      max-height: 100vh;
       width: 100vw;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
-      overflow-y: auto;
-      padding: 8px 14px;
+      overflow: hidden; /* STRICT SINGLE SCREEN: ZERO VERTICAL SCROLL */
+      padding: 4px 8px;
       -webkit-font-smoothing: antialiased;
       box-sizing: border-box;
       transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -206,7 +205,7 @@
       width: 100vw !important;
       height: 100vh !important;
       max-height: 100vh !important;
-      padding: 6px 12px !important;
+      padding: 4px 8px !important;
       margin: 0 !important;
       overflow: hidden !important;
       background-color: var(--bg-page) !important;
@@ -215,8 +214,8 @@
     :fullscreen .main-layout,
     :-webkit-full-screen .main-layout,
     body.is-fullscreen .main-layout {
-      height: calc(100vh - 100px) !important;
-      flex: 1 1 auto !important;
+      height: 100% !important;
+      flex: 1 1 0 !important;
       min-height: 0 !important;
     }
 
@@ -233,7 +232,7 @@
     :-webkit-full-screen .product-grid,
     body.is-fullscreen .product-grid {
       height: 100% !important;
-      flex: 1 1 auto !important;
+      flex: 1 1 0 !important;
       min-height: 0 !important;
     }
 
@@ -244,7 +243,7 @@
       display: flex !important;
       flex-direction: column !important;
       justify-content: flex-start !important;
-      gap: 6px !important;
+      gap: 4px !important;
     }
 
     /* ==========================================================================
@@ -253,64 +252,65 @@
     .top-header {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 6px 14px;
+      border-radius: 8px;
+      padding: 3px 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 3px;
       box-shadow: var(--shadow-card);
-      gap: 10px;
+      gap: 6px;
       flex-shrink: 0;
+      height: 34px;
     }
 
     .brand-section {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
     }
 
     .brand-logo-icon {
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: 8px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 14px;
     }
 
     .brand-title {
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 800;
       color: var(--text-primary);
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
       line-height: 1.1;
     }
 
     .brand-subtitle {
-      font-size: 10px;
+      font-size: 8.5px;
       color: var(--text-muted);
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
     }
 
     .header-center-status {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
+      gap: 4px;
+      padding: 2.5px 7px;
       border-radius: var(--radius-pill);
-      font-size: 11px;
+      font-size: 9.5px;
       font-weight: 700;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
@@ -333,8 +333,8 @@
     }
 
     .status-dot {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       background: currentColor;
     }
@@ -342,30 +342,30 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 5px;
     }
 
     .market-time-card {
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-btn);
-      padding: 3px 10px;
+      padding: 2px 7px;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
     }
     .clock-label {
-      font-size: 8.5px;
+      font-size: 7.5px;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
     }
     .clock-val {
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
-      font-size: 12.5px;
+      font-size: 10.5px;
       font-weight: 700;
       color: var(--text-primary);
     }
@@ -374,15 +374,15 @@
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
       color: var(--text-primary);
-      padding: 5px 10px;
+      padding: 3px 7px;
       border-radius: var(--radius-btn);
-      font-size: 11px;
+      font-size: 9.5px;
       font-weight: 700;
       text-decoration: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       transition: all 0.15s ease;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
     }
@@ -407,30 +407,31 @@
     .summary-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 6px;
+      gap: 5px;
+      margin-bottom: 3px;
       flex-shrink: 0;
+      height: 34px;
     }
     .summary-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 6px 12px;
+      border-radius: 6px;
+      padding: 2px 8px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: space-between;
       box-shadow: var(--shadow-card);
     }
     .summary-label {
-      font-size: 9.5px;
+      font-size: 8px;
       font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 2px;
+      letter-spacing: 0.4px;
+      margin-bottom: 0px;
     }
     .summary-value {
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 800;
       color: var(--text-primary);
       font-family: var(--font-mono);
@@ -439,10 +440,10 @@
       line-height: 1.1;
     }
     .summary-subtext {
-      font-size: 9.5px;
+      font-size: 8px;
       color: var(--text-muted);
       font-weight: 600;
-      margin-top: 1px;
+      text-align: right;
     }
 
     /* ==========================================================================
@@ -450,81 +451,88 @@
        ========================================================================== */
     .main-layout {
       display: grid;
-      grid-template-columns: 1fr 280px;
-      gap: 8px;
-      flex: 1 1 auto;
+      grid-template-columns: 1fr 245px;
+      gap: 5px;
+      flex: 1 1 0;
       min-height: 0;
+      overflow: hidden;
     }
 
     .main-section-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 8px 12px;
+      border-radius: 8px;
+      padding: 4px 6px;
       display: flex;
       flex-direction: column;
       box-shadow: var(--shadow-card);
       min-height: 0;
+      height: 100%;
+      overflow: hidden;
     }
 
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
-      padding-bottom: 4px;
+      margin-bottom: 3px;
+      padding-bottom: 2px;
       border-bottom: 1px solid var(--border-subtle);
-      flex-wrap: wrap;
-      gap: 6px;
+      flex-wrap: nowrap;
+      gap: 4px;
       flex-shrink: 0;
+      height: 20px;
     }
 
     .section-title {
-      font-size: 13.5px;
+      font-size: 11px;
       font-weight: 800;
       color: var(--text-primary);
       text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
+      white-space: nowrap;
     }
 
     .section-meta-badges {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 10.5px;
+      gap: 3px;
+      font-size: 8.5px;
       font-weight: 700;
       font-family: var(--font-mono);
       color: var(--text-secondary);
+      white-space: nowrap;
     }
     .meta-tag {
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      padding: 2px 6px;
-      border-radius: 4px;
+      padding: 1px 4px;
+      border-radius: 3px;
     }
 
     /* 4x2 GRID */
     .product-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: auto;
-      gap: 7px;
-      flex: 1 1 auto;
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+      flex: 1 1 0;
       min-height: 0;
+      height: 100%;
     }
 
     /* PRODUCT CARD — Zero Whitespace & Full Height Flex Expansion */
     .product-card {
       background: var(--bg-surface);
-      border: 1.5px solid var(--border-color);
-      border-radius: 12px;
-      padding: 7px 9px;
+      border: 1.2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 4px 6px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: space-between;
       align-items: stretch;
       transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
       box-shadow: var(--shadow-card);
@@ -533,7 +541,7 @@
       height: 100%;
       overflow: hidden;
       box-sizing: border-box;
-      gap: 4px;
+      gap: 2px;
     }
     .product-card:hover {
       border-color: var(--border-strong);
@@ -544,88 +552,61 @@
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1.5px;
     }
-    /* Mid-section: activity feed — grows to fill remaining card space */
     .card-mid-section {
-      flex: 1 1 auto;
+      flex-shrink: 0;
       display: flex;
       flex-direction: column;
       min-height: 0;
-      overflow: hidden;
     }
     .card-bottom-section {
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 1.5px;
       margin-top: 0;
     }
 
     /* ==========================================================================
-       MINI RECENT ACTIVITY FEED STRIP (Option A — fills dead space)
+       MINI RECENT ACTIVITY FEED STRIP (Sleek Single-Line Latest Settlement)
        ========================================================================== */
     .card-activity-feed {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      justify-content: center;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 4px 6px;
-      margin: 2px 0;
-      flex: 1 1 auto;
-      overflow: hidden;
+      border-radius: 4px;
+      padding: 1px 4px;
+      margin: 0;
       min-height: 0;
-    }
-    .activity-feed-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 10px;
-      font-weight: 900;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-family: var(--font-mono);
-      padding-bottom: 3px;
-      border-bottom: 1px solid var(--border-subtle);
-      margin-bottom: 3px;
-      flex-shrink: 0;
-    }
-    .activity-feed-rows {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      flex: 1 1 auto;
       overflow: hidden;
-      justify-content: flex-start;
     }
-    .activity-feed-row {
+    .activity-feed-single {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 10.5px;
+      gap: 4px;
+      font-size: 8px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
-      min-height: 0;
-      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
     }
     .afr-time {
       color: var(--text-muted);
-      font-size: 9.5px;
+      font-size: 7.5px;
       font-weight: 700;
-      white-space: nowrap;
       flex-shrink: 0;
     }
     .afr-dot {
-      width: 6px;
-      height: 6px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .afr-dot-surge  { background: var(--accent-emerald); box-shadow: 0 0 5px var(--accent-emerald-glow); }
-    .afr-dot-decay  { background: var(--accent-rose);    box-shadow: 0 0 5px var(--accent-rose-glow);    }
+    .afr-dot-surge  { background: var(--accent-emerald); }
+    .afr-dot-decay  { background: var(--accent-rose); }
     .afr-dot-stable { background: var(--text-muted); }
     .afr-event {
       font-weight: 800;
@@ -633,54 +614,30 @@
       overflow: hidden;
       text-overflow: ellipsis;
       flex: 1 1 auto;
+      font-size: 8px;
     }
     .afr-event-surge  { color: var(--accent-emerald); }
     .afr-event-decay  { color: var(--accent-rose); }
     .afr-event-stable { color: var(--text-secondary); }
     .afr-price-tag {
-      font-size: 10.5px;
+      font-size: 8.5px;
       font-weight: 900;
       font-family: var(--font-mono);
       color: var(--text-primary);
-      white-space: nowrap;
       flex-shrink: 0;
-    }
-    .activity-feed-empty {
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      color: var(--text-muted);
-      font-size: 10.5px;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      text-align: center;
-      padding: 6px;
-    }
-    .afe-radar {
-      font-size: 16px;
-      opacity: 0.6;
-      animation: afeRadarSpin 3s linear infinite;
-    }
-    @keyframes afeRadarSpin {
-      0%   { opacity: 0.35; transform: scale(0.9); }
-      50%  { opacity: 0.7;  transform: scale(1.05); }
-      100% { opacity: 0.35; transform: scale(0.9); }
     }
 
     /* Product Image Banner — High Impact & Prominent */
     .product-img-wrapper {
       position: relative;
       width: 100%;
-      height: 82px;
-      border-radius: 8px;
+      height: 40px;
+      border-radius: 5px;
       overflow: hidden;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      margin-bottom: 3px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      margin-bottom: 0px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
       flex-shrink: 0;
     }
     .product-img {
@@ -695,39 +652,39 @@
     .product-img-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.75) 100%);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.70) 100%);
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      padding: 4px 8px;
+      padding: 2px 5px;
       pointer-events: none;
     }
     .fruit-badge {
       background: rgba(15, 23, 42, 0.94);
-      border: 1.5px solid rgba(255, 255, 255, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.45);
       color: #FFFFFF;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 11.5px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 9px;
       font-weight: 900;
       letter-spacing: 0.2px;
       display: flex;
       align-items: center;
-      gap: 4px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      gap: 3px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     }
     .live-indicator-badge {
       background: #10B981;
       color: #FFFFFF;
-      padding: 2px 7px;
-      border-radius: 5px;
-      font-size: 9px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 7.5px;
       font-weight: 900;
       font-family: var(--font-mono);
       display: flex;
       align-items: center;
-      gap: 3px;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.7);
+      gap: 2px;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
     }
 
     /* Card Details Header */
@@ -736,45 +693,45 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 0px;
+      gap: 4px;
     }
     .product-name {
-      font-size: 22px;
-      font-weight: 900;
+      font-size: 12.5px;
+      font-weight: 800;
       color: var(--text-primary);
       line-height: 1.1;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       text-transform: uppercase;
+      flex: 1;
     }
     .product-size {
-      font-size: 10px;
+      font-size: 8.5px;
       color: var(--text-muted);
       font-weight: 700;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    /* ==========================================================================
-       PRODUCT CARD CORE: PRICE ROW, TELEMETRY STRIP & CHART COCKPIT
-       ========================================================================== */
-
-    /* Price Row — Monumental Bloomberg / NASDAQ Metric */
+    /* Price Row */
     .product-price-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: 1px 0 2px 0;
+      margin: 0;
       padding: 0;
-      gap: 6px;
+      gap: 4px;
     }
     .product-price {
-      font-size: 46px;
+      font-size: 19px;
       font-weight: 900;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1, 'ss01' 1;
-      letter-spacing: -0.04em;
+      letter-spacing: -0.03em;
       color: var(--text-primary);
       line-height: 1;
       display: inline-flex;
@@ -783,7 +740,7 @@
     }
     html[data-theme="dark"] .product-price,
     body.dark-theme-mode .product-price {
-      text-shadow: 0 0 16px currentColor;
+      text-shadow: 0 0 10px currentColor;
     }
     html[data-theme="light"] .product-price,
     body:not(.dark-theme-mode) .product-price {
@@ -792,97 +749,73 @@
 
     /* Directional Delta Badges */
     .delta-badge {
-      font-size: 11px;
-      font-weight: 900;
-      padding: 3.5px 7.5px;
-      border-radius: 6px;
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 1.5px 5px;
+      border-radius: 4px;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       white-space: nowrap;
-      letter-spacing: 0.2px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      letter-spacing: 0.1px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
       transition: all 0.2s ease;
     }
     .delta-surge {
       background: var(--accent-emerald-bg);
       color: var(--accent-emerald);
-      border: 1.5px solid var(--accent-emerald-border);
-      box-shadow: 0 0 10px var(--accent-emerald-glow);
+      border: 1px solid var(--accent-emerald-border);
     }
     .delta-decay {
       background: var(--accent-rose-bg);
       color: var(--accent-rose);
-      border: 1.5px solid var(--accent-rose-border);
-      box-shadow: 0 0 10px var(--accent-rose-glow);
+      border: 1px solid var(--accent-rose-border);
     }
     .delta-stable {
       background: var(--bg-subtle);
       color: var(--text-secondary);
-      border: 1.5px solid var(--border-color);
+      border: 1px solid var(--border-color);
     }
 
     /* REAL PRICE HISTORY GRAPH CONTAINER — Technical Cockpit Chamber */
     .chart-container-wrapper {
       position: relative;
       width: 100%;
-      flex: 0 0 auto;
-      min-height: 74px;
-      height: 78px;
-      max-height: 82px;
+      flex: 1 1 36px;
+      min-height: 34px;
+      max-height: 48px;
       background: var(--chart-bg, #F8FAFC) !important;
-      border: 1.5px solid var(--chart-border, #CBD5E1);
-      border-radius: 8px;
+      border: 1px solid var(--chart-border, #CBD5E1);
+      border-radius: 5px;
       padding: 0;
-      margin: 2px 0 1px 0;
+      margin: 1px 0;
       overflow: hidden;
       transition: border-color 0.25s ease, box-shadow 0.25s ease;
-      box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
       display: flex;
       flex-direction: column;
     }
     html[data-theme="dark"] .chart-container-wrapper,
     body.dark-theme-mode .chart-container-wrapper {
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.7);
     }
     .chart-container-wrapper:hover {
       border-color: var(--accent-cyan);
-      box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.1), 0 0 12px var(--accent-cyan-glow);
-    }
-    html[data-theme="dark"] .chart-container-wrapper:hover,
-    body.dark-theme-mode .chart-container-wrapper:hover {
-      box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.65), 0 0 14px var(--accent-cyan-glow);
-    }
-    /* Ambient Scanline Sheen in Dark mode only */
-    html[data-theme="dark"] .chart-container-wrapper::after,
-    body.dark-theme-mode .chart-container-wrapper::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, transparent 0%, rgba(56, 189, 248, 0.04) 50%, transparent 100%);
-      background-size: 100% 200%;
-      animation: chartScanline 8s linear infinite;
-      pointer-events: none;
-      z-index: 3;
-    }
-    @keyframes chartScanline {
-      0% { background-position: 0% 0%; }
-      100% { background-position: 0% 200%; }
+      box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.1), 0 0 8px var(--accent-cyan-glow);
     }
     .chart-header-row {
       position: absolute;
-      top: 3px; left: 7px; right: 7px;
+      top: 1px; left: 4px; right: 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 10px;
+      font-size: 7px;
       font-weight: 800;
       color: var(--chart-header-color, #64748B);
       text-transform: uppercase;
       font-family: var(--font-mono);
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
       pointer-events: none;
       z-index: 2;
     }
@@ -899,31 +832,31 @@
     .tank-volume-row {
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      border-radius: 6px;
-      padding: 3px 6px;
-      margin: 1px 0 2px 0;
+      border-radius: 4px;
+      padding: 1.5px 4px;
+      margin: 0;
     }
     .tank-label {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 10px;
+      font-size: 8px;
       font-weight: 800;
       color: var(--text-muted);
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
     .tank-percent-badge {
       font-family: var(--font-mono);
-      font-size: 10.5px;
+      font-size: 8px;
       font-weight: 900;
-      padding: 1px 4px;
-      border-radius: 3px;
+      padding: 0.5px 3px;
+      border-radius: 2px;
       background: rgba(56, 189, 248, 0.12);
       color: var(--accent-cyan);
     }
     .tank-bar-track {
       width: 100%;
-      height: 5px;
+      height: 3px;
       background: var(--bg-subtle);
       border-radius: 999px;
       overflow: hidden;
@@ -934,77 +867,53 @@
       border-radius: 999px;
       transition: width 0.4s ease;
       background: linear-gradient(90deg, #0284c7, #38bdf8);
-      box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
     }
 
     /* Compact Demand Signal Container */
     .demand-pill-compact {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 3px;
     }
     .demand-label-text {
-      font-size: 10px;
+      font-size: 7.5px;
       font-weight: 800;
       font-family: var(--font-mono);
       color: var(--text-secondary);
     }
-    .demand-intensity-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 2px 6px;
-      background: var(--bg-subtle);
-      border: 1px solid var(--border-subtle);
-      border-radius: 4px;
-      margin-bottom: 2px;
-      font-size: 10.5px;
-      font-weight: 800;
-      color: var(--text-secondary);
-    }
     .demand-dots {
       display: flex;
-      gap: 3px;
+      gap: 2px;
       align-items: center;
     }
     .demand-dot {
-      width: 6px;
-      height: 6px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
       background: var(--border-color);
       transition: all 0.2s ease;
     }
-    .demand-dot.active-high {
-      background: var(--accent-emerald);
-      box-shadow: 0 0 6px var(--accent-emerald-glow);
-    }
-    .demand-dot.active-normal {
-      background: var(--accent-cyan);
-      box-shadow: 0 0 6px var(--accent-cyan-glow);
-    }
-    .demand-dot.active-low {
-      background: var(--accent-rose);
-      box-shadow: 0 0 6px var(--accent-rose-glow);
-    }
+    .demand-dot.active-high { background: var(--accent-emerald); }
+    .demand-dot.active-normal { background: var(--accent-cyan); }
+    .demand-dot.active-low { background: var(--accent-rose); }
 
     /* Chart Hover Tooltip Overlay */
     .chart-tooltip {
       position: fixed;
       background: rgba(10, 15, 28, 0.96);
       color: #FFFFFF;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 10.5px;
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-size: 9px;
       font-weight: 600;
       pointer-events: none;
       display: none;
       z-index: 9999;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
       border: 1px solid rgba(56, 189, 248, 0.25);
-      line-height: 1.4;
+      line-height: 1.3;
       font-family: var(--font-mono);
       white-space: nowrap;
-      backdrop-filter: blur(8px);
     }
 
     /* Empty Chart State */
@@ -1016,9 +925,9 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 6px;
+      padding: 4px;
       color: var(--text-muted);
-      font-size: 10px;
+      font-size: 8px;
       font-weight: 600;
       background: var(--bg-secondary);
       z-index: 1;
@@ -1031,78 +940,36 @@
       justify-content: space-between;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
-      border-radius: 5px;
-      padding: 3.5px 6px;
-      margin: 1px 0 2px 0;
-      font-size: 10px;
+      border-radius: 4px;
+      padding: 1.5px 4px;
+      margin: 0;
+      font-size: 7.5px;
       font-family: var(--font-mono);
     }
     .stat-cell {
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       white-space: nowrap;
     }
     .stat-k {
       color: var(--text-muted);
-      font-size: 9.5px;
+      font-size: 7px;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
     }
     .stat-v {
       color: var(--text-primary);
-      font-size: 11px;
+      font-size: 8px;
       font-weight: 800;
       font-variant-numeric: tabular-nums;
     }
     .stat-div {
       color: var(--border-color);
-      font-size: 10px;
-      opacity: 0.6;
-      user-select: none;
-    }
-
-    /* Legacy Product Specs Mini-Table Grid (Preserved for compatibility) */
-    .product-specs-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 3px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-subtle);
-      border-radius: 5px;
-      padding: 2px 4px;
-      margin-bottom: 2px;
-      font-size: 8.5px;
-    }
-    .spec-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2px 1px;
-      border-radius: 4px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-    }
-    .spec-label {
-      color: var(--text-muted);
       font-size: 7.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-    .spec-val {
-      color: var(--text-primary);
-      font-weight: 900;
-      font-size: 10px;
-      font-family: var(--font-mono);
-      margin-top: 1px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
+      opacity: 0.5;
+      user-select: none;
     }
 
     /* WEBSOCKET REAL-TIME PRICE FLASH STROBE ANIMATIONS */
@@ -1115,44 +982,32 @@
     @keyframes pxSurgePulse {
       0% {
         border-color: var(--accent-emerald) !important;
-        box-shadow: 0 0 0 2px var(--accent-emerald), 0 0 26px var(--accent-emerald-glow), var(--shadow-hover);
-        transform: translateY(-2px) scale(1.012);
+        box-shadow: 0 0 0 1.5px var(--accent-emerald), 0 0 14px var(--accent-emerald-glow);
+        transform: scale(1.01);
       }
-      50% {
-        border-color: var(--accent-emerald);
-        box-shadow: 0 0 0 1px var(--accent-emerald), 0 0 16px var(--accent-emerald-glow);
-      }
-      100% {
-        transform: translateY(0) scale(1);
-      }
+      100% { transform: scale(1); }
     }
     @keyframes pxDecayPulse {
       0% {
         border-color: var(--accent-rose) !important;
-        box-shadow: 0 0 0 2px var(--accent-rose), 0 0 26px var(--accent-rose-glow), var(--shadow-hover);
-        transform: translateY(-2px) scale(1.012);
+        box-shadow: 0 0 0 1.5px var(--accent-rose), 0 0 14px var(--accent-rose-glow);
+        transform: scale(1.01);
       }
-      50% {
-        border-color: var(--accent-rose);
-        box-shadow: 0 0 0 1px var(--accent-rose), 0 0 16px var(--accent-rose-glow);
-      }
-      100% {
-        transform: translateY(0) scale(1);
-      }
+      100% { transform: scale(1); }
     }
 
     /* Card Actions Footer */
     .card-footer-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 4px;
-      margin-top: 2px;
+      gap: 3px;
+      margin-top: 0;
     }
     .btn-card-action {
-      padding: 4px 6px;
-      border-radius: 5px;
-      font-size: 9.5px;
-      font-weight: 900;
+      padding: 1.5px 4px;
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: 800;
       text-align: center;
       cursor: pointer;
       text-decoration: none;
@@ -1163,27 +1018,23 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 3px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+      gap: 2px;
+      height: 19px;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
     }
     .btn-card-action:hover {
       background: var(--bg-hover);
       border-color: var(--border-strong);
-      transform: translateY(-1px);
     }
     .btn-card-action-pos {
       background: linear-gradient(135deg, #0284c7, #2563eb);
       color: #FFFFFF;
       border-color: transparent;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
     }
     .btn-card-action-pos:hover {
       background: linear-gradient(135deg, #0369a1, #1d4ed8);
       color: #FFFFFF;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
     }
 
     /* ==========================================================================
@@ -1192,54 +1043,63 @@
     .sidebar-wrapper {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       min-height: 0;
       height: 100%;
       overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-strong) transparent;
+    }
+    .sidebar-wrapper::-webkit-scrollbar {
+      width: 3px;
+    }
+    .sidebar-wrapper::-webkit-scrollbar-thumb {
+      background: var(--border-strong);
+      border-radius: 3px;
     }
 
     .sidebar-card {
       background: var(--bg-surface);
-      border: 1.5px solid var(--border-color);
-      border-radius: 10px;
-      padding: 9px 11px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 3.5px 6px;
       box-shadow: var(--shadow-card);
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      flex-shrink: 0;
     }
     .sidebar-card:hover {
       border-color: var(--border-strong);
-      box-shadow: var(--shadow-hover);
     }
 
     .sidebar-title {
-      font-size: 11px;
+      font-size: 8.5px;
       font-weight: 900;
       color: var(--text-primary);
       text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 7px;
+      letter-spacing: 0.4px;
+      margin-bottom: 2px;
       display: flex;
       align-items: center;
-      gap: 5px;
-      padding-bottom: 4px;
+      gap: 3px;
+      padding-bottom: 2px;
       border-bottom: 1px solid var(--border-subtle);
     }
 
     .info-list-group {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 1.5px;
     }
     .info-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 10px;
+      font-size: 8px;
     }
     .info-row-label {
       color: var(--text-muted);
       font-weight: 700;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.1px;
     }
     .info-row-val {
       font-weight: 800;
@@ -1250,21 +1110,20 @@
 
     /* Market Sentiment Progress Bar */
     .sentiment-meter-box {
-      margin: 6px 0 4px 0;
+      margin: 2px 0;
     }
     .sentiment-bar-track {
       width: 100%;
-      height: 6px;
+      height: 4px;
       background: var(--bg-subtle);
-      border-radius: 6px;
+      border-radius: 4px;
       overflow: hidden;
       display: flex;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .sentiment-fill-bull {
       height: 100%;
       background: var(--accent-emerald);
-      box-shadow: 0 0 6px var(--accent-emerald-glow);
       transition: width 0.4s ease;
     }
     .sentiment-fill-stable {
@@ -1275,39 +1134,38 @@
     .sentiment-fill-bear {
       height: 100%;
       background: var(--accent-rose);
-      box-shadow: 0 0 6px var(--accent-rose-glow);
       transition: width 0.4s ease;
     }
     .sentiment-legend {
       display: flex;
       justify-content: space-between;
-      font-size: 9px;
+      font-size: 7.5px;
       font-weight: 800;
       font-family: var(--font-mono);
     }
 
-    /* QR Order Box — Big, High Contrast & Prominent */
+    /* QR Order Box */
     .qr-card-center {
       text-align: center;
       background: var(--bg-surface);
-      border: 1.5px solid var(--border-color);
-      border-radius: 10px;
-      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 3px 5px;
       box-shadow: var(--shadow-card);
       flex-shrink: 0;
     }
     .qr-img-box {
-      width: 145px;
-      height: 145px;
-      margin: 6px auto;
+      width: 72px;
+      height: 72px;
+      margin: 2px auto;
       background: #FFFFFF;
-      border: 1.5px solid var(--border-color);
-      border-radius: 10px;
-      padding: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 2px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
     .qr-img-box img {
       width: 100%;
@@ -1316,13 +1174,13 @@
       image-rendering: pixelated;
     }
 
-    /* Mojito Exchange Mascot Card — Extended Zero-Whitespace Edition */
+    /* Mascot Card */
     .naruto-mascot-card {
       background: var(--bg-surface);
-      border: 1.5px solid rgba(245, 158, 11, 0.45);
-      border-radius: 12px;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 6px;
       padding: 0;
-      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15), var(--shadow-card);
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
       text-align: center;
       display: flex;
       flex-direction: column;
@@ -1330,30 +1188,28 @@
       justify-content: stretch;
       overflow: hidden;
       position: relative;
-      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      transition: transform 0.25s ease, border-color 0.25s ease;
       cursor: pointer;
       flex: 1 1 auto;
-      min-height: 180px;
+      min-height: 50px;
+      max-height: 75px;
     }
     .naruto-mascot-card:hover {
       border-color: #f59e0b;
-      box-shadow: 0 8px 30px rgba(245, 158, 11, 0.35), 0 0 15px rgba(245, 158, 11, 0.2);
-      transform: translateY(-2px);
     }
     .naruto-img-wrapper {
       position: relative;
       width: 100%;
       height: 100%;
       flex: 1 1 auto;
-      min-height: 160px;
+      min-height: 50px;
+      max-height: 75px;
       border-radius: 0;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
       background: radial-gradient(circle at 50% 25%, rgba(245, 158, 11, 0.2) 0%, rgba(139, 92, 246, 0.15) 50%, rgba(15, 23, 42, 0.98) 100%);
-      border: none;
-      padding: 0;
     }
     .naruto-img-wrapper img {
       width: 100%;
@@ -1361,50 +1217,37 @@
       object-fit: cover;
       object-position: center 20%;
       display: block;
-      image-rendering: auto;
-      image-rendering: smooth;
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-      transform: translateZ(0);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
-    }
-    .naruto-mascot-card:hover .naruto-img-wrapper img {
-      transform: scale(1.03) translateZ(0);
-      filter: drop-shadow(0 12px 26px rgba(245, 158, 11, 0.4));
     }
     .mascot-expand-hint {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: 3px;
+      right: 3px;
       background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(4px);
       color: #f59e0b;
-      font-size: 9.5px;
+      font-size: 7.5px;
       font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 10px;
+      padding: 1.5px 4px;
+      border-radius: 4px;
       border: 1px solid rgba(245, 158, 11, 0.45);
       opacity: 0;
-      transition: opacity 0.2s ease, transform 0.2s ease;
+      transition: opacity 0.2s ease;
       pointer-events: none;
       z-index: 2;
     }
     .naruto-mascot-card:hover .mascot-expand-hint {
       opacity: 1;
-      transform: scale(1.05);
     }
     .naruto-overlay-bottom {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.75) 30%, rgba(15, 23, 42, 0.96) 100%);
-      padding: 28px 10px 10px 10px;
+      background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.80) 30%, rgba(15, 23, 42, 0.96) 100%);
+      padding: 6px 3px 2px 3px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 1px;
       text-align: center;
       pointer-events: none;
       z-index: 2;
@@ -1412,24 +1255,21 @@
     .naruto-badge {
       background: rgba(15, 23, 42, 0.92);
       color: #f59e0b;
-      font-size: 9.5px;
+      font-size: 7px;
       font-weight: 800;
-      padding: 3px 11px;
-      border-radius: 14px;
-      border: 1.5px solid rgba(245, 158, 11, 0.6);
+      padding: 1px 5px;
+      border-radius: 8px;
+      border: 1px solid rgba(245, 158, 11, 0.6);
       white-space: nowrap;
-      backdrop-filter: blur(8px);
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+      letter-spacing: 0.3px;
     }
     .naruto-quote {
-      font-size: 10.5px;
+      font-size: 7px;
       font-weight: 700;
       color: #F1F5F9;
       font-style: italic;
-      line-height: 1.25;
+      line-height: 1.1;
       letter-spacing: -0.1px;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
     }
 
     /* Fullscreen Mascot Lightbox */
@@ -1511,30 +1351,28 @@
     }
 
     /* ==========================================================================
-       BOTTOM DYNAMIC TICKER BAR (ANTICLOCKWISE / RIGHT-TO-LEFT INFINITE MARQUEE)
+       BOTTOM DYNAMIC TICKER BAR
        ========================================================================== */
     .bottom-ticker-bar {
-      height: 52px;
+      height: 26px;
       background: var(--bg-surface);
-      border-radius: 12px;
-      margin-top: 10px;
+      border-radius: 6px;
+      margin-top: 3px;
       display: flex;
       align-items: center;
-      padding: 0 14px;
+      padding: 0 8px;
       overflow: hidden;
       flex-shrink: 0;
       position: relative;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    /* Top Animated Neon Beam */
     .bottom-ticker-bar::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      height: 2.5px;
+      height: 1.5px;
       background: linear-gradient(90deg, #10b981, #06b6d4, #8b5cf6, #f59e0b, #ec4899, #10b981);
       background-size: 300% 100%;
       animation: ledBeamSweep 8s linear infinite;
@@ -1548,51 +1386,50 @@
     /* Light Theme Styling */
     html[data-theme="light"] .bottom-ticker-bar {
       background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 50%, #F1F5F9 100%);
-      border: 1.5px solid #94A3B8;
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      border: 1px solid #94A3B8;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
     }
 
-    /* Dark Theme Styling — Deep Obsidian Glass */
+    /* Dark Theme Styling */
     html[data-theme="dark"] .bottom-ticker-bar, body.dark-theme-mode .bottom-ticker-bar {
       background: linear-gradient(90deg, #020408 0%, #060a14 50%, #020408 100%);
-      border: 1.5px solid rgba(56, 189, 248, 0.28);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.85);
     }
 
     .ticker-prefix {
-      font-size: 12px;
+      font-size: 9.5px;
       font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 6px 14px;
-      border-radius: 8px;
+      letter-spacing: 0.6px;
+      padding: 2px 7px;
+      border-radius: 4px;
       white-space: nowrap;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
       flex-shrink: 0;
       z-index: 6;
-      transition: all 0.3s ease;
-      margin-right: 6px;
+      margin-right: 4px;
     }
 
     html[data-theme="light"] .ticker-prefix {
       background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: #ffffff;
-      box-shadow: 0 3px 10px rgba(2, 132, 199, 0.35);
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
       border: 1px solid rgba(2, 132, 199, 0.6);
     }
 
     html[data-theme="dark"] .ticker-prefix, body.dark-theme-mode .ticker-prefix {
       background: linear-gradient(135deg, rgba(2, 132, 199, 0.4) 0%, rgba(56, 189, 248, 0.25) 100%);
       color: #38bdf8;
-      border: 1.5px solid rgba(56, 189, 248, 0.6);
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+      border: 1px solid rgba(56, 189, 248, 0.6);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
     }
 
     .ticker-radar-dot {
-      width: 8px;
-      height: 8px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       background: #10b981;
       display: inline-block;
@@ -1602,7 +1439,7 @@
 
     @keyframes tickerRadarPulse {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      70% { transform: scale(1.2); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
       100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
 
@@ -1613,7 +1450,7 @@
       white-space: nowrap;
       display: flex;
       align-items: center;
-      margin-left: 8px;
+      margin-left: 4px;
       height: 100%;
     }
 
@@ -1639,7 +1476,6 @@
       gap: 0;
     }
 
-    /* Continuous Seamless Anticlockwise (Right to Left) Scrolling Animation */
     @keyframes tickerAntiClockwiseScroll {
       0% {
         transform: translate3d(0, 0, 0);
@@ -1649,80 +1485,69 @@
       }
     }
 
-    /* Distinctive Juice-Themed Electronic Trading Instrument Cards */
     .ticker-tape-item {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 6px 16px;
-      font-size: 13.5px;
+      gap: 5px;
+      padding: 1.5px 7px;
+      font-size: 10.5px;
       font-weight: 700;
       white-space: nowrap;
       cursor: pointer;
       user-select: none;
-      border-radius: 9px;
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 4px;
       position: relative;
     }
 
     html[data-theme="light"] .ticker-tape-item {
       background: var(--juice-bg-light, #FFFFFF);
-      border: 1.5px solid var(--juice-border-light, #CBD5E1);
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05), 0 0 10px var(--juice-shadow-light, transparent);
+      border: 1px solid var(--juice-border-light, #CBD5E1);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
     }
 
     html[data-theme="light"] .ticker-tape-item:hover {
-      transform: translateY(-2px) scale(1.03);
+      transform: scale(1.02);
       border-color: var(--juice-accent, #0284C7);
-      box-shadow: 0 6px 20px var(--juice-glow, rgba(2, 132, 199, 0.25));
       z-index: 10;
     }
 
     html[data-theme="dark"] .ticker-tape-item, body.dark-theme-mode .ticker-tape-item {
       background: var(--juice-bg-dark, #04070e);
-      border: 1.5px solid var(--juice-border-dark, rgba(56, 189, 248, 0.35));
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65), 0 0 12px var(--juice-shadow-dark, transparent);
-      backdrop-filter: blur(12px);
+      border: 1px solid var(--juice-border-dark, rgba(56, 189, 248, 0.35));
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
     }
 
     html[data-theme="dark"] .ticker-tape-item:hover, body.dark-theme-mode .ticker-tape-item:hover {
-      transform: translateY(-2px) scale(1.03);
+      transform: scale(1.02);
       border-color: var(--juice-accent, #38BDF8);
-      box-shadow: 0 8px 24px var(--juice-glow, rgba(56, 189, 248, 0.4));
       z-index: 10;
     }
 
-    /* Fruit Aura Capsule */
     .ticker-fruit-aura {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      font-size: 16px;
+      font-size: 10px;
       line-height: 1;
       flex-shrink: 0;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      transition: transform 0.2s ease;
-    }
-    .ticker-tape-item:hover .ticker-fruit-aura {
-      transform: scale(1.15) rotate(6deg);
     }
 
     .ticker-tape-name {
       font-family: var(--font-main);
       font-weight: 800;
-      letter-spacing: 0.5px;
-      font-size: 13px;
+      letter-spacing: 0.3px;
+      font-size: 9.5px;
       text-transform: uppercase;
     }
 
     .ticker-tape-price {
       font-family: var(--font-mono);
       font-weight: 900;
-      font-size: 15px;
-      letter-spacing: 0.5px;
+      font-size: 10.5px;
+      letter-spacing: 0.3px;
     }
 
     html[data-theme="light"] .ticker-tape-price {
@@ -1731,39 +1556,38 @@
 
     html[data-theme="dark"] .ticker-tape-price, body.dark-theme-mode .ticker-tape-price {
       color: #FFFFFF;
-      text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
     }
 
     .ticker-tape-badge {
       font-family: var(--font-mono);
-      font-size: 11.5px;
+      font-size: 8.5px;
       font-weight: 900;
-      padding: 3px 8px;
-      border-radius: 6px;
-      letter-spacing: 0.3px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      letter-spacing: 0.2px;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
     }
 
     html[data-theme="light"] .ticker-tape-badge.is-up {
       background: var(--accent-emerald-bg);
       color: var(--accent-emerald);
-      border: 1.5px solid var(--accent-emerald-border);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--accent-emerald-border);
     }
 
     html[data-theme="light"] .ticker-tape-badge.is-down {
       background: var(--accent-rose-bg);
       color: var(--accent-rose);
-      border: 1.5px solid var(--accent-rose-border);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--accent-rose-border);
     }
 
     html[data-theme="light"] .ticker-tape-badge.is-flat {
       background: var(--bg-subtle);
       color: var(--text-secondary);
-      border: 1.5px solid var(--border-color);
+      border: 1px solid var(--border-color);
+    } var(--border-color);
     }
 
     html[data-theme="dark"] .ticker-tape-badge.is-up, body.dark-theme-mode .ticker-tape-badge.is-up {
@@ -2294,7 +2118,7 @@
         <div class="summary-label">Active Beverages</div>
         <div class="summary-value" id="sumActiveBeverages">8 Products</div>
       </div>
-      <div class="summary-subtext">Tradable securities on floor</div>
+      <div class="summary-subtext">Tradable on floor</div>
     </div>
 
     <div class="summary-card">
@@ -2302,7 +2126,7 @@
         <div class="summary-label">Market Base Rate</div>
         <div class="summary-value" id="sumMarketBaseRate" style="color: var(--accent-cyan);">₹25.00</div>
       </div>
-      <div class="summary-subtext" id="sumMarketBaseRateSubtext">Floor: ₹20.00 &bull; Ceiling: ₹30.00</div>
+      <div class="summary-subtext" id="sumMarketBaseRateSubtext">Flr: ₹20 &bull; Ceil: ₹30</div>
     </div>
 
     <div class="summary-card">
@@ -2310,15 +2134,15 @@
         <div class="summary-label">Market Engine</div>
         <div class="summary-value" id="sumEngineMode" style="color: var(--accent-emerald);">1-Min DWMA</div>
       </div>
-      <div class="summary-subtext" id="sumEngineSubtext">W0=1.00 &bull; W1=0.50 &bull; W2=0.25 &bull; Normal Movement: &plusmn;₹1</div>
+      <div class="summary-subtext" id="sumEngineSubtext">W0=1 &bull; W1=0.5 &bull; W2=0.25</div>
     </div>
 
     <div class="summary-card">
       <div>
         <div class="summary-label">Market Sentiment</div>
-        <div class="summary-value" id="sumSentimentText" style="font-size: 17px;">Calculating...</div>
+        <div class="summary-value" id="sumSentimentText">Calculating...</div>
       </div>
-      <div class="summary-subtext" id="sumSentimentBreakdown">Real product delta index</div>
+      <div class="summary-subtext" id="sumSentimentBreakdown">Real delta index</div>
     </div>
   </div>
 
@@ -2330,8 +2154,8 @@
       <div class="section-header">
         <div>
           <div class="section-title">📊 Live Beverage Market</div>
-          <div id="sectionSubtitle" style="font-size: 11.5px; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
-            REAL-TIME 1-MINUTE DWMA PRICING &bull; INDEPENDENT PRODUCT HISTORIES
+          <div id="sectionSubtitle" style="font-size: 8px; color: var(--text-muted); font-weight: 600;">
+            REAL-TIME DWMA PRICING &bull; INDEPENDENT HISTORIES
           </div>
         </div>
         <div class="section-meta-badges">
@@ -2449,12 +2273,12 @@
 
       <!-- QR Order Card -->
       <div class="qr-card-center">
-        <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">ORDER FROM TABLE</div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Scan with mobile to open POS</div>
+        <div style="font-size: 9.5px; font-weight: 800; color: var(--text-primary);">ORDER FROM TABLE</div>
+        <div style="font-size: 8px; color: var(--text-muted); margin-top: 1px;">Scan with mobile to open POS</div>
         <div class="qr-img-box">
-          <img id="qrPosImg" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Ffinal-juice-pricing.vercel.app" alt="Scan to Order POS" />
+          <img id="qrPosImg" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Ffinal-juice-pricing.vercel.app" alt="Scan to Order POS" />
         </div>
-        <div id="qrPosUrlText" style="font-size: 11.5px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan);">
+        <div id="qrPosUrlText" style="font-size: 8.5px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan);">
           https://final-juice-pricing.vercel.app
         </div>
       </div>
@@ -3243,11 +3067,11 @@
                   </div>
                 </div>
 
-                <!-- Title & Size -->
+                <!-- Title & Size in one row -->
                 <div class="product-title-row">
                   <div class="product-name" id="card_name_${p.id}">${name}</div>
+                  <div class="product-size">${cupSize}ml</div>
                 </div>
-                <div class="product-size">${cupSize} ml standard cup</div>
 
                 <!-- Current Price & Delta -->
                 <div class="product-price-row">
@@ -3259,13 +3083,12 @@
               <!-- REAL PRICE HISTORY GRAPH -->
               <div class="chart-container-wrapper" id="chart_wrapper_${p.id}">
                 <div class="chart-header-row">
-                  <span>PRICE TREND</span>
-                  <span id="chart_pts_count_${p.id}">REAL-TIME DWMA</span>
+                  <span>TREND</span>
+                  <span id="chart_pts_count_${p.id}">DWMA</span>
                 </div>
                 <canvas id="chart_canvas_${p.id}" class="product-chart-canvas"></canvas>
                 <div id="chart_empty_${p.id}" class="chart-empty-state" style="display: none;">
                   <div>Waiting for price history...</div>
-                  <div style="font-size: 9.5px; margin-top: 2px; color: var(--text-muted);">Next 1-min settlement will log here</div>
                 </div>
               </div>
 
@@ -3274,8 +3097,8 @@
                 <!-- 20L Tank Batch Volume & Demand Flow Gauge -->
                 <div class="tank-volume-row">
                   <div class="tank-label">
-                    <div style="display: inline-flex; align-items: center; gap: 4px;">
-                      <span>🛢️ Tank</span>
+                    <div style="display: inline-flex; align-items: center; gap: 3px;">
+                      <span>🛢️</span>
                       <span class="tank-percent-badge" id="card_tank_badge_${p.id}">${tankPct}% • ${remainingLitres}L</span>
                     </div>
                     <div class="demand-pill-compact" title="${demandLabel}">
@@ -3312,13 +3135,9 @@
                 </div>
               </div>
 
-              <!-- Mid-section: Mini Recent Activity Feed (fills dead-space with real settlement data) -->
+              <!-- Mid-section: Sleek 1-Line Latest Settlement Strip -->
               <div class="card-mid-section">
                 <div class="card-activity-feed" id="card_activity_${p.id}">
-                  <div class="activity-feed-header">
-                    <span>⚡ RECENT SETTLEMENTS</span>
-                    <span id="card_activity_count_${p.id}" style="color: var(--accent-cyan);">LIVE</span>
-                  </div>
                   <div class="activity-feed-rows" id="card_activity_rows_${p.id}">
                     ${buildActivityFeedHtml(p.id)}
                   </div>
@@ -3430,38 +3249,37 @@
     function buildActivityFeedHtml(productId) {
       const hist = priceHistoryMap[productId] || [];
       if (hist.length === 0) {
-        return `<div class="activity-feed-empty">
-          <span class="afeRadar">📡</span>
-          <span>Awaiting first settlement...</span>
-          <span style="font-size:8px; opacity:0.7;">Updates every DWMA cycle</span>
+        return `<div class="activity-feed-single">
+          <span class="afr-time">DWMA</span>
+          <span class="afr-dot afr-dot-stable"></span>
+          <span class="afr-event afr-event-stable">— STABLE</span>
+          <span class="afr-price-tag">LIVE</span>
         </div>`;
       }
-      // Show the last 4 entries, most-recent first
-      const recent = hist.slice(-4).reverse();
-      return recent.map(entry => {
-        const ts = new Date(entry.timestamp);
-        const timeStr = ts.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        const chg = Number(entry.priceChange || 0);
-        const price = Number(entry.price || 0).toFixed(2);
-        let dotClass = 'afr-dot-stable';
-        let eventClass = 'afr-event-stable';
-        let eventText = '— STABLE';
-        if (chg > 0) {
-          dotClass = 'afr-dot-surge';
-          eventClass = 'afr-event-surge';
-          eventText = `▲ +₹${chg.toFixed(2)} SURGE`;
-        } else if (chg < 0) {
-          dotClass = 'afr-dot-decay';
-          eventClass = 'afr-event-decay';
-          eventText = `▼ -₹${Math.abs(chg).toFixed(2)} DECAY`;
-        }
-        return `<div class="activity-feed-row">
-          <span class="afr-time">${timeStr}</span>
-          <span class="afr-dot ${dotClass}"></span>
-          <span class="afr-event ${eventClass}">${eventText}</span>
-          <span class="afr-price-tag">₹${price}</span>
-        </div>`;
-      }).join('');
+      // Show the latest settlement entry cleanly on 1 line
+      const entry = hist[hist.length - 1];
+      const ts = new Date(entry.timestamp);
+      const timeStr = ts.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      const chg = Number(entry.priceChange || 0);
+      const price = Number(entry.price || 0).toFixed(2);
+      let dotClass = 'afr-dot-stable';
+      let eventClass = 'afr-event-stable';
+      let eventText = '— STABLE';
+      if (chg > 0) {
+        dotClass = 'afr-dot-surge';
+        eventClass = 'afr-event-surge';
+        eventText = `▲ +₹${chg.toFixed(2)} SURGE`;
+      } else if (chg < 0) {
+        dotClass = 'afr-dot-decay';
+        eventClass = 'afr-event-decay';
+        eventText = `▼ -₹${Math.abs(chg).toFixed(2)} DECAY`;
+      }
+      return `<div class="activity-feed-single">
+        <span class="afr-time">${timeStr}</span>
+        <span class="afr-dot ${dotClass}"></span>
+        <span class="afr-event ${eventClass}">${eventText}</span>
+        <span class="afr-price-tag">₹${price}</span>
+      </div>`;
     }
 
     /* ==========================================================================
@@ -3491,7 +3309,7 @@
       // Make sure canvas display buffer accurately matches container dimensions
       const parent = canvas.parentElement;
       const width = parent && parent.clientWidth > 0 ? parent.clientWidth : (canvas.clientWidth > 0 ? canvas.clientWidth : 240);
-      const height = parent && parent.clientHeight > 0 ? parent.clientHeight : (canvas.clientHeight > 0 ? canvas.clientHeight : 78);
+      const height = parent && parent.clientHeight > 0 ? parent.clientHeight : (canvas.clientHeight > 0 ? canvas.clientHeight : 42);
       
       const dpr = Math.min(window.devicePixelRatio || 2, 3);
       canvas.width = Math.round(width * dpr);
@@ -3543,11 +3361,11 @@
         ptsCountEl.innerHTML = `${dataPoints.length} PTS &bull; DWMA &bull; ${currentPricingTiming.shortLabel.toUpperCase()}`;
       }
 
-      // Chart Padding — tailored for compact 78px height
-      const padLeft = 34;
-      const padRight = 8;
-      const padTop = 13;
-      const padBottom = 12;
+      // Chart Padding — tailored for compact 38px-48px height
+      const padLeft = 24;
+      const padRight = 6;
+      const padTop = 9;
+      const padBottom = 6;
       const plotWidth = Math.max(10, width - padLeft - padRight);
       const plotHeight = Math.max(10, height - padTop - padBottom);
 
@@ -3600,18 +3418,18 @@
       ctx.fillRect(padLeft, yBase, plotWidth, Math.max(0, yFloor - yBase));
 
       // 1. Draw Grid Lines & Distinctive Y-Axis Labels
-      ctx.font = 'bold 8px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = 'bold 7px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.textAlign = 'right';
 
       // Horizontal grid lines at Base, Floor, Ceiling
       const gridLevels = isLight ? [
-        { price: ceilingPrice, label: `₹${ceilingPrice.toFixed(0)} MAX`, color: '#059669', stroke: 'rgba(5, 150, 105, 0.35)', dash: [3, 3] },
-        { price: basePrice, label: `₹${basePrice.toFixed(0)} BASE`, color: '#0284C7', stroke: 'rgba(2, 132, 199, 0.40)', dash: [4, 3], width: 1.1 },
-        { price: floorPrice, label: `₹${floorPrice.toFixed(0)} MIN`, color: '#E11D48', stroke: 'rgba(225, 29, 72, 0.35)', dash: [3, 3] }
+        { price: ceilingPrice, label: `₹${ceilingPrice.toFixed(0)}`, color: '#059669', stroke: 'rgba(5, 150, 105, 0.30)', dash: [2, 2] },
+        { price: basePrice, label: `₹${basePrice.toFixed(0)}`, color: '#0284C7', stroke: 'rgba(2, 132, 199, 0.35)', dash: [3, 2], width: 1 },
+        { price: floorPrice, label: `₹${floorPrice.toFixed(0)}`, color: '#E11D48', stroke: 'rgba(225, 29, 72, 0.30)', dash: [2, 2] }
       ] : [
-        { price: ceilingPrice, label: `₹${ceilingPrice.toFixed(0)} MAX`, color: '#34D399', stroke: 'rgba(52, 211, 153, 0.4)', dash: [3, 4] },
-        { price: basePrice, label: `₹${basePrice.toFixed(0)} BASE`, color: '#38BDF8', stroke: 'rgba(56, 189, 248, 0.5)', dash: [4, 4], width: 1.2 },
-        { price: floorPrice, label: `₹${floorPrice.toFixed(0)} MIN`, color: '#FB7185', stroke: 'rgba(251, 113, 133, 0.4)', dash: [3, 4] }
+        { price: ceilingPrice, label: `₹${ceilingPrice.toFixed(0)}`, color: '#34D399', stroke: 'rgba(52, 211, 153, 0.35)', dash: [2, 3] },
+        { price: basePrice, label: `₹${basePrice.toFixed(0)}`, color: '#38BDF8', stroke: 'rgba(56, 189, 248, 0.45)', dash: [3, 3], width: 1.1 },
+        { price: floorPrice, label: `₹${floorPrice.toFixed(0)}`, color: '#FB7185', stroke: 'rgba(251, 113, 133, 0.35)', dash: [2, 3] }
       ];
 
       gridLevels.forEach(lvl => {
@@ -3627,10 +3445,10 @@
         ctx.setLineDash([]);
         
         ctx.fillStyle = lvl.color;
-        ctx.fillText(lvl.label, padLeft - 3, y + 3);
+        ctx.fillText(lvl.label, padLeft - 2, y + 2.5);
       });
 
-      // 2. Draw Area Gradient Fill — rich multi-stop lush tint
+      // 2. Draw Area Gradient Fill
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
@@ -3645,22 +3463,21 @@
 
       const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
       if (isLight) {
-        areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.28)`);
-        areaGrad.addColorStop(0.5, `rgba(${strokeColorRgb}, 0.10)`);
+        areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.25)`);
+        areaGrad.addColorStop(0.5, `rgba(${strokeColorRgb}, 0.08)`);
         areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.01)`);
       } else {
-        areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.24)`);
-        areaGrad.addColorStop(0.4, `rgba(${strokeColorRgb}, 0.08)`);
-        areaGrad.addColorStop(0.8, `rgba(${strokeColorRgb}, 0.02)`);
+        areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.22)`);
+        areaGrad.addColorStop(0.5, `rgba(${strokeColorRgb}, 0.06)`);
         areaGrad.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
       }
       ctx.fillStyle = areaGrad;
       ctx.fill();
 
-      // 3. Draw Smooth Line Stroke with double glowing aura
+      // 3. Draw Smooth Line Stroke
       ctx.save();
-      ctx.shadowColor = isLight ? `rgba(${strokeColorRgb}, 0.35)` : strokeColor;
-      ctx.shadowBlur = isLight ? 6 : 14;
+      ctx.shadowColor = isLight ? `rgba(${strokeColorRgb}, 0.3)` : strokeColor;
+      ctx.shadowBlur = isLight ? 4 : 8;
       ctx.beginPath();
       ctx.moveTo(getX(0), getY(dataPoints[0].price));
       for (let i = 1; i < dataPoints.length; i++) {
@@ -3670,53 +3487,45 @@
         ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
       }
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.8;
+      ctx.lineWidth = 2.2;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
       ctx.restore();
 
-      // 4. Micro data point nodes — historical trade markers
+      // 4. Micro data point nodes
       if (dataPoints.length <= 25) {
         dataPoints.forEach((pt, i) => {
           const x = getX(i), y = getY(pt.price);
-          if (i === dataPoints.length - 1) return; // drawn as live beacon below
+          if (i === dataPoints.length - 1) return;
           ctx.beginPath();
-          ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.arc(x, y, 1.5, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(${strokeColorRgb}, 0.85)`;
-          ctx.fill();
-          ctx.beginPath();
-          ctx.arc(x, y, 0.8, 0, Math.PI * 2);
-          ctx.fillStyle = '#FFFFFF';
           ctx.fill();
         });
       }
 
-      // 5. Beacon Dot at latest price — glowing concentric radar pulse
-      // Outer ripple ring
+      // 5. Beacon Dot at latest price
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 9, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${strokeColorRgb}, ${isLight ? 0.20 : 0.25})`;
+      ctx.arc(lastX, lastY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, ${isLight ? 0.18 : 0.22})`;
       ctx.fill();
 
-      // Mid pulsing ring
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 5.5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(${strokeColorRgb}, 0.65)`;
-      ctx.lineWidth = 1.4;
+      ctx.lineWidth = 1.2;
       ctx.stroke();
 
-      // Core dot with glow
       ctx.save();
       ctx.shadowColor = strokeColor;
-      ctx.shadowBlur = isLight ? 6 : 10;
+      ctx.shadowBlur = isLight ? 4 : 8;
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 3.5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 2.5, 0, Math.PI * 2);
       ctx.fillStyle = strokeColor;
       ctx.fill();
-      // White center
       ctx.beginPath();
-      ctx.arc(lastX, lastY, 1.5, 0, Math.PI * 2);
+      ctx.arc(lastX, lastY, 1, 0, Math.PI * 2);
       ctx.fillStyle = '#FFFFFF';
       ctx.fill();
       ctx.restore();
@@ -3724,41 +3533,41 @@
       // 6. Floating Glass Price Pill next to beacon
       ctx.save();
       const labelText = `₹${latestPrice.toFixed(2)}`;
-      ctx.font = 'bold 9.5px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
-      const labelW = ctx.measureText(labelText).width + 8;
-      const pillH = 15;
-      const labelX = Math.min(lastX + 6, width - padRight - labelW);
+      ctx.font = 'bold 8px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
+      const labelW = ctx.measureText(labelText).width + 6;
+      const pillH = 12;
+      const labelX = Math.min(lastX + 4, width - padRight - labelW);
       const labelY = Math.max(padTop + 1, Math.min(lastY - pillH / 2, padTop + plotHeight - pillH));
       
       // Pill rounded backdrop
       ctx.beginPath();
       if (typeof ctx.roundRect === 'function') {
-        ctx.roundRect(labelX, labelY, labelW, pillH, 4);
+        ctx.roundRect(labelX, labelY, labelW, pillH, 3);
       } else {
         ctx.rect(labelX, labelY, labelW, pillH);
       }
       ctx.fillStyle = isLight ? '#0F172A' : '#0B1120';
       ctx.fill();
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       // Pill text
       ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'left';
-      ctx.fillText(labelText, labelX + 4, labelY + 10.5);
+      ctx.fillText(labelText, labelX + 3, labelY + 8.5);
       ctx.restore();
 
       // 7. X-Axis Time Labels
       if (dataPoints.length > 1) {
-        ctx.font = 'bold 7.5px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.font = 'bold 6.5px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
         ctx.fillStyle = isLight ? '#64748B' : '#94A3B8';
         ctx.textAlign = 'left';
         const firstTime = dataPoints[0].time.toTimeString().split(' ')[0].slice(0, 5);
-        ctx.fillText(firstTime, padLeft + 2, height - 2);
+        ctx.fillText(firstTime, padLeft + 1, height - 1.5);
         ctx.textAlign = 'right';
         const lastTime = dataPoints[dataPoints.length - 1].time.toTimeString().split(' ')[0].slice(0, 5);
-        ctx.fillText(`NOW ${lastTime}`, width - padRight, height - 2);
+        ctx.fillText(`${lastTime}`, width - padRight, height - 1.5);
       }
 
       // Attach Interactive Mouse Hover & Touch Events
