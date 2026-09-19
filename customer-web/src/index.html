@@ -1061,6 +1061,13 @@
       border: 1px solid var(--border-color);
     }
 
+    .badge-static-hold {
+      color: #60a5fa;
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      font-weight: 800;
+    }
+
     /* 4. Mini Price Trend Chart */
     .card-chart-wrap {
       width: 100%;
@@ -1908,6 +1915,13 @@
           badgeText: `🔥 -${discountPct}% FLOOR`
         };
       }
+      if (p.isStaticHold || (p.staticHoldCyclesRemaining && p.staticHoldCyclesRemaining > 0) || p.demandLevelCategory === 'PURCHASE_STATIC_HOLD') {
+        const remaining = p.staticHoldCyclesRemaining || 2;
+        return {
+          badgeClass: 'badge-static-hold',
+          badgeText: `🔒 STATIC (${remaining}/2)`
+        };
+      }
       if (diff > 0.05) {
         return {
           badgeClass: 'badge-up',
@@ -2438,7 +2452,9 @@
         name,
         flavour,
         description,
-        flashEffect
+        flashEffect,
+        staticHoldCyclesRemaining: p.staticHoldCyclesRemaining !== undefined ? p.staticHoldCyclesRemaining : (existingProd ? existingProd.staticHoldCyclesRemaining : 0),
+        isStaticHold: p.isStaticHold !== undefined ? p.isStaticHold : (existingProd ? existingProd.isStaticHold : false)
       };
     }
 
@@ -2690,7 +2706,10 @@
           let demandCategory = '⚡ ACTIVE FLOW';
           let demandColor = 'var(--accent-emerald)';
 
-          if (diff > 0.05) {
+          if (p.isStaticHold || (p.staticHoldCyclesRemaining && p.staticHoldCyclesRemaining > 0) || p.demandLevelCategory === 'PURCHASE_STATIC_HOLD') {
+            demandCategory = `🔒 PURCHASE STATIC (${p.staticHoldCyclesRemaining || 2}/2 CYCLES)`;
+            demandColor = '#60a5fa';
+          } else if (diff > 0.05) {
             demandCategory = '🔥 HIGH DEMAND';
             demandColor = 'var(--warning)';
           } else if (diff < -0.05) {
@@ -2814,6 +2833,9 @@
             if (isMarketCrashActive) {
               demandCatEl.textContent = '⚡ CRASH FLOOR LIMIT';
               demandCatEl.style.color = 'var(--accent-rose)';
+            } else if (p.isStaticHold || (p.staticHoldCyclesRemaining && p.staticHoldCyclesRemaining > 0) || p.demandLevelCategory === 'PURCHASE_STATIC_HOLD') {
+              demandCatEl.textContent = `🔒 PURCHASE STATIC (${p.staticHoldCyclesRemaining || 2}/2 CYCLES)`;
+              demandCatEl.style.color = '#60a5fa';
             } else if (diff > 0.05) {
               demandCatEl.textContent = '🔥 HIGH DEMAND';
               demandCatEl.style.color = 'var(--warning)';
@@ -3013,12 +3035,25 @@
       if (!isBackendOnline) return;
       const product = products.find(p => p.id === productId);
       if (!product) return;
+      const currentActivePrice = isMarketCrashActive
+        ? (product.minCupPrice != null ? product.minCupPrice : 20.0)
+        : (product.currentCupPrice != null ? product.currentCupPrice : (product.defaultCupPrice || 25.0));
+      const currentVersion = product.priceVersion || 1;
+
       const existing = cart.find(item => item.product.id === productId);
       if (existing) {
         existing.quantity += 1;
         existing.product = product;
+        // Retain original purchase lockedPrice so settlement timer does not alter cart price!
       } else {
-        cart.push({ product, quantity: 1, cupSizeMl: product.defaultCupSizeMl || 250 });
+        cart.push({
+          product,
+          quantity: 1,
+          cupSizeMl: product.defaultCupSizeMl || 250,
+          lockedPrice: currentActivePrice,
+          lockedPriceVersion: currentVersion,
+          addedAt: Date.now()
+        });
       }
       renderCart();
     }
@@ -3041,7 +3076,10 @@
       const totalVolume = cart.reduce((sum, i) => sum + (i.cupSizeMl * i.quantity), 0);
       const totalPayable = Math.round(cart.reduce((sum, i) => {
         const liveProduct = products.find(p => p.id === i.product.id) || i.product;
-        const itemPrice = isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : 25.0);
+        // If lockedPrice was set at purchase selection, hold static even if settlement occurs during purchase!
+        const itemPrice = (i.lockedPrice !== undefined && i.lockedPrice !== null)
+          ? i.lockedPrice
+          : (isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : 25.0));
         return sum + (itemPrice * i.quantity);
       }, 0));
 
@@ -3061,18 +3099,21 @@
       } else {
         container.innerHTML = cart.map((item, idx) => {
           const liveProduct = products.find(p => p.id === item.product.id) || item.product;
-          const itemPrice = isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : 25.0);
+          const itemPrice = (item.lockedPrice !== undefined && item.lockedPrice !== null)
+            ? item.lockedPrice
+            : (isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : 25.0));
           const icon = getFruitIcon(liveProduct);
           const imgUrl = getBeverageImage(liveProduct);
           const itemTotal = (itemPrice * item.quantity).toFixed(2);
+          const isPriceStaticLocked = (item.lockedPrice !== undefined && liveProduct.currentCupPrice !== undefined && Math.abs(Number(item.lockedPrice) - Number(liveProduct.currentCupPrice)) > 0.01);
           return `
             <div class="cart-item">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <img src="${imgUrl}" alt="${liveProduct.name}" style="width: 36px; height: 36px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;" />
                 <div>
-                  <div class="item-title">${icon} ${liveProduct.name}</div>
+                  <div class="item-title">${icon} ${liveProduct.name} ${isPriceStaticLocked ? '<span style="font-size: 9.5px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 1px 4px; border-radius: 4px; margin-left: 4px;">🔒 STATIC HELD</span>' : ''}</div>
                   <div class="item-sub">
-                    ₹${itemPrice.toFixed(2)} &bull; ${item.cupSizeMl}ml &bull; Sub: ₹${itemTotal}
+                    ₹${Number(itemPrice).toFixed(2)} &bull; ${item.cupSizeMl}ml &bull; Sub: ₹${itemTotal}
                   </div>
                 </div>
               </div>
@@ -3120,12 +3161,15 @@
         idempotencyKey,
         items: completedCart.map(i => {
           const liveProduct = products.find(p => p.id === i.product.id) || i.product;
+          const lockedEffectivePrice = (i.lockedPrice !== undefined && i.lockedPrice !== null)
+            ? i.lockedPrice
+            : (isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : liveProduct.defaultCupPrice));
           return {
             productId: liveProduct.id,
             quantity: i.quantity,
             cupSizeMl: i.cupSizeMl,
-            priceVersion: liveProduct.priceVersion || 1,
-            lockedPrice: liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : (liveProduct.currentPrice != null ? liveProduct.currentPrice : liveProduct.defaultCupPrice)
+            priceVersion: i.lockedPriceVersion || liveProduct.priceVersion || 1,
+            lockedPrice: lockedEffectivePrice
           };
         }),
         paymentMethod

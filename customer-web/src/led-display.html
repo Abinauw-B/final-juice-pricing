@@ -4098,7 +4098,9 @@
         name,
         flavour,
         targetSalesPer1Minute,
-        pricingMode
+        pricingMode,
+        staticHoldCyclesRemaining: p.staticHoldCyclesRemaining !== undefined ? p.staticHoldCyclesRemaining : 0,
+        isStaticHold: p.isStaticHold !== undefined ? p.isStaticHold : false
       };
     }
 
@@ -4221,9 +4223,15 @@
           let badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (STABLE)</span>`;
           let priceColor = 'var(--text-primary)';
 
+          const isStaticHold = p.isStaticHold || (p.staticHoldCyclesRemaining && p.staticHoldCyclesRemaining > 0) || movementReason === 'PURCHASE_STATIC_HOLD';
+
           if (isMarketCrashActive) {
             badgeHtml = `<span class="delta-badge delta-decay">🚨 CRASH ₹${activePrice}</span>`;
             priceColor = 'var(--accent-rose)';
+          } else if (isStaticHold) {
+            const cyclesRemaining = p.staticHoldCyclesRemaining ? `${p.staticHoldCyclesRemaining}/2` : '2/2';
+            badgeHtml = `<span class="delta-badge delta-stable" style="background: rgba(59, 130, 246, 0.16); border-color: rgba(59, 130, 246, 0.45); color: #60a5fa; font-weight: 800;">🔒 STATIC (HOLD ${cyclesRemaining})</span>`;
+            priceColor = '#60a5fa';
           } else if (lastChange > 0) {
             badgeHtml = `<span class="delta-badge delta-surge">▲ +₹${lastChange.toFixed(2)} (${movementReason})</span>`;
             priceColor = 'var(--accent-emerald)';
@@ -4246,6 +4254,9 @@
           if (isMarketCrashActive) {
             demandDotsHtml = '<span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
             demandLabel = '🚨 MARKET CRASH';
+          } else if (isStaticHold) {
+            demandDotsHtml = '<span class="demand-dot active-normal" style="background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);"></span><span class="demand-dot active-normal" style="background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
+            demandLabel = `🔒 PURCHASE STATIC (${p.staticHoldCyclesRemaining || 2}/2 CYCLES)`;
           } else if (lastChange > 0) {
             demandDotsHtml = '<span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot"></span>';
             demandLabel = '🔥 SURGE DEMAND (1.75x)';
@@ -4386,6 +4397,8 @@
           const lastChange = (p.deltaPrice !== undefined ? Number(p.deltaPrice) : (p.priceDelta !== undefined ? Number(p.priceDelta) : (p.priceChange !== undefined ? Number(p.priceChange) : 0)));
           const movementReason = p.movementReason || p.movement || p.demandLevelCategory || (lastChange > 0 ? 'HIGH_DEMAND' : (lastChange < 0 ? 'LOW_DEMAND' : 'NORMAL_DEMAND'));
 
+          const isStaticHoldInPlace = p.isStaticHold || (p.staticHoldCyclesRemaining && p.staticHoldCyclesRemaining > 0) || movementReason === 'PURCHASE_STATIC_HOLD';
+
           const priceEl = document.getElementById(`card_price_${p.id}`);
           const badgeEl = document.getElementById(`card_badge_${p.id}`);
           if (priceEl) {
@@ -4397,12 +4410,15 @@
             }
             previousLedPriceMap[p.id] = numActive;
             animateLedNumber(priceEl, activePrice);
-            priceEl.style.color = isMarketCrashActive ? 'var(--accent-rose)' : (lastChange > 0 ? 'var(--accent-emerald)' : (lastChange < 0 ? 'var(--accent-rose)' : 'var(--text-primary)'));
+            priceEl.style.color = isMarketCrashActive ? 'var(--accent-rose)' : (isStaticHoldInPlace ? '#60a5fa' : (lastChange > 0 ? 'var(--accent-emerald)' : (lastChange < 0 ? 'var(--accent-rose)' : 'var(--text-primary)')));
           }
           if (badgeEl) {
             let badgeHtml = `<span class="delta-badge delta-stable">— ₹0.00 (${movementReason})</span>`;
             if (isMarketCrashActive) {
               badgeHtml = `<span class="delta-badge delta-decay">🚨 CRASH ₹${activePrice}</span>`;
+            } else if (isStaticHoldInPlace) {
+              const cyclesRemaining = p.staticHoldCyclesRemaining ? `${p.staticHoldCyclesRemaining}/2` : '2/2';
+              badgeHtml = `<span class="delta-badge delta-stable" style="background: rgba(59, 130, 246, 0.16); border-color: rgba(59, 130, 246, 0.45); color: #60a5fa; font-weight: 800;">🔒 STATIC (HOLD ${cyclesRemaining})</span>`;
             } else if (lastChange > 0) {
               badgeHtml = `<span class="delta-badge delta-surge">▲ +₹${lastChange.toFixed(2)} (${movementReason})</span>`;
             } else if (lastChange < 0) {
@@ -4425,6 +4441,9 @@
             if (isMarketCrashActive) {
               demandLabelEl.textContent = '🚨 MARKET CRASH';
               demandDotsEl.innerHTML = '<span class="demand-dot active-low"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
+            } else if (isStaticHoldInPlace) {
+              demandLabelEl.textContent = `🔒 PURCHASE STATIC (${p.staticHoldCyclesRemaining || 2}/2 CYCLES)`;
+              demandDotsEl.innerHTML = '<span class="demand-dot active-normal" style="background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);"></span><span class="demand-dot active-normal" style="background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);"></span><span class="demand-dot"></span><span class="demand-dot"></span><span class="demand-dot"></span>';
             } else if (lastChange > 0) {
               demandLabelEl.textContent = '🔥 SURGE DEMAND (1.75x)';
               demandDotsEl.innerHTML = '<span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot active-high"></span><span class="demand-dot"></span>';
