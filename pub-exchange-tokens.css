@@ -13,22 +13,7 @@
 /* ─── GLOBAL TYPOGRAPHY: BL MELODY ─── */
 @font-face {
   font-family: 'BL Melody';
-  src: url('fonts/BL-Melody.woff2') format('woff2'),
-       url('/fonts/BL-Melody.woff2') format('woff2'),
-       url('../fonts/BL-Melody.woff2') format('woff2'),
-       url('fonts/BLMelody.woff2') format('woff2'),
-       url('/fonts/BLMelody.woff2') format('woff2'),
-       url('fonts/BL-Melody.woff') format('woff'),
-       url('/fonts/BL-Melody.woff') format('woff'),
-       url('../fonts/BL-Melody.woff') format('woff'),
-       url('fonts/BL-Melody.ttf') format('truetype'),
-       url('/fonts/BL-Melody.ttf') format('truetype'),
-       url('../fonts/BL-Melody.ttf') format('truetype'),
-       url('fonts/BLMelody.ttf') format('truetype'),
-       url('/fonts/BLMelody.ttf') format('truetype'),
-       url('fonts/BL-Melody.otf') format('opentype'),
-       url('/fonts/BL-Melody.otf') format('opentype'),
-       local('BL Melody'),
+  src: local('BL Melody'),
        local('BL-Melody'),
        local('BLMelody');
   font-weight: 100 900;
