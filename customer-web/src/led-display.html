@@ -4587,6 +4587,17 @@
             const cleanFlavour = getCleanFlavourName(p);
             fruitBadgeEl.innerHTML = `${icon} ${cleanFlavour}`;
           }
+          const cardEl = document.getElementById(`card_prod_${p.id}`);
+          if (cardEl) {
+            const imgEl = cardEl.querySelector('.product-img');
+            if (imgEl) {
+              const expectedImg = getBeverageImage(p);
+              if (!imgEl.src.endsWith(expectedImg)) {
+                imgEl.src = expectedImg;
+              }
+              if (prodName) imgEl.setAttribute('alt', prodName);
+            }
+          }
 
           const baseP = Number(p.basePrice !== undefined ? p.basePrice : (p.defaultCupPrice !== undefined ? p.defaultCupPrice : 25)).toFixed(2);
           const activePrice = Number(isMarketCrashActive ? (p.minCupPrice != null ? p.minCupPrice : 20) : (p.currentCupPrice != null ? p.currentCupPrice : 25)).toFixed(2);

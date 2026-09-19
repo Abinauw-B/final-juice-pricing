@@ -3047,7 +3047,7 @@
 
       if (needsFullRebuild) {
         lastRenderedPosCardIds = currentIds;
-        grid.innerHTML = products.map(p => {
+        grid.innerHTML = products.map((p, _cardIndex) => {
           const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
           const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
           const minP = Number(p.minCupPrice !== undefined ? p.minCupPrice : 18.0);
@@ -3079,7 +3079,7 @@
           const strikeHtml = isMarketCrashActive ? `<span class="crash-original-strikethrough">₹${baseP.toFixed(2)}</span>` : '';
 
           return `
-            <div class="flavour-card ${themeClass} ${crashCardClass} ${p.flashEffect || ''}" id="flavourCard-${p.id}">
+            <div class="flavour-card ${themeClass} ${crashCardClass} ${p.flashEffect || ''}" id="flavourCard-${p.id}" style="animation-delay: ${_cardIndex * 0.04}s">
               <div>
                 <!-- 1. Product Visual Area -->
                 <div class="card-img-banner">
@@ -3268,8 +3268,8 @@
 
       const padLeft = 24;
       const padRight = 8;
-      const padTop = 8;
-      const padBottom = 8;
+      const padTop = 4;
+      const padBottom = 4;
       const plotWidth = width - padLeft - padRight;
       const plotHeight = height - padTop - padBottom;
 
@@ -3410,6 +3410,15 @@
         });
       }
       renderCart();
+
+      // Cart badge pulse micro-interaction
+      const cartBadgeEl = document.getElementById('cartItemCount');
+      if (cartBadgeEl) {
+        cartBadgeEl.classList.remove('cart-badge-pulse');
+        void cartBadgeEl.offsetWidth;
+        cartBadgeEl.classList.add('cart-badge-pulse');
+        setTimeout(() => cartBadgeEl.classList.remove('cart-badge-pulse'), 450);
+      }
     }
 
     function updateQty(index, change) {
@@ -3440,11 +3449,87 @@
       countLabel.textContent = `${totalItems} ${totalItems === 1 ? 'item' : 'items'}`;
 
       if (cart.length === 0) {
+        // Compute trending products (top 3 by price delta from base — highest demand)
+        let trendingProducts = [];
+        if (products && products.length > 0) {
+          trendingProducts = products
+            .map(p => {
+              const price = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+              const base = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+              const orderCount = Number(p.orderCount || p.order_count || 0);
+              const demandScore = orderCount > 0 ? orderCount : Math.abs(price - base);
+              return { ...p, demandScore, price };
+            })
+            .sort((a, b) => b.demandScore - a.demandScore)
+            .slice(0, 3);
+        }
+
+        // Compute market snapshot
+        let rising = 0, falling = 0, stable = 0;
+        let avgPrice = 0;
+        products.forEach(p => {
+          const price = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+          const base = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+          avgPrice += price;
+          if (price - base > 0.05) rising++;
+          else if (price - base < -0.05) falling++;
+          else stable++;
+        });
+        avgPrice = products.length > 0 ? (avgPrice / products.length).toFixed(2) : '25.00';
+        let sentiment = 'BALANCED ⇄';
+        let sentimentColor = 'var(--accent-cyan)';
+        if (rising > falling) { sentiment = 'BULLISH ▲'; sentimentColor = 'var(--accent-emerald)'; }
+        else if (falling > rising) { sentiment = 'BEARISH ▼'; sentimentColor = 'var(--accent-rose)'; }
+
+        const quickAddHtml = trendingProducts.length > 0 ? `
+          <div class="cart-quick-add">
+            <div class="cart-quick-add-title">🔥 Quick Add — Popular Right Now</div>
+            ${trendingProducts.map(tp => {
+              const icon = getFruitIcon(tp);
+              const shortName = getShortFlavourLabel(tp);
+              return `
+                <div class="cart-quick-add-item" onclick="addToCart(${tp.id})">
+                  <div class="cart-quick-add-item-info">
+                    <span class="cart-quick-add-item-icon">${icon}</span>
+                    <span class="cart-quick-add-item-name">${shortName}</span>
+                    <span class="cart-quick-add-item-price">₹${tp.price.toFixed(2)}</span>
+                  </div>
+                  <button class="cart-quick-add-btn" onclick="event.stopPropagation(); addToCart(${tp.id})">+ ADD</button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : '';
+
+        const snapshotHtml = products.length > 0 ? `
+          <div class="cart-empty-snapshot">
+            <div class="cart-snapshot-title">📊 Today's Market Snapshot</div>
+            <div class="cart-snapshot-row">
+              <span>Sentiment</span>
+              <span class="cart-snapshot-value" style="color: ${sentimentColor};">${sentiment}</span>
+            </div>
+            <div class="cart-snapshot-row">
+              <span>Rising / Falling</span>
+              <span class="cart-snapshot-value" style="color: var(--text-primary);">${rising} ▲ / ${falling} ▼</span>
+            </div>
+            <div class="cart-snapshot-row">
+              <span>Avg. Price</span>
+              <span class="cart-snapshot-value">₹${avgPrice}</span>
+            </div>
+            <div class="cart-snapshot-row">
+              <span>Active Products</span>
+              <span class="cart-snapshot-value">${products.length}</span>
+            </div>
+          </div>
+        ` : '';
+
         container.innerHTML = `
-          <div style="text-align: center; color: var(--text-muted); padding: 40px 10px; font-size: 13px;">
-            <div style="font-size: 32px; margin-bottom: 8px; opacity: 0.8;">🛒</div>
-            <div style="font-weight: 800; color: var(--text-primary); margin-bottom: 4px; font-size: 13.5px; letter-spacing: 0.3px;">YOUR MARKET ORDER IS EMPTY</div>
-            <div style="font-size: 11.5px; opacity: 0.8;">Select a beverage to begin.</div>
+          <div class="cart-empty-state">
+            <div class="cart-empty-icon">🛒</div>
+            <div class="cart-empty-title">YOUR MARKET ORDER IS EMPTY</div>
+            <div class="cart-empty-subtitle">Select a beverage to begin.</div>
+            ${quickAddHtml}
+            ${snapshotHtml}
           </div>
         `;
         summaryBox.style.display = 'none';
@@ -3461,7 +3546,7 @@
           const itemTotal = (itemPrice * item.quantity).toFixed(2);
           const isPriceStaticLocked = (item.lockedPrice !== undefined && liveProduct.currentCupPrice !== undefined && Math.abs(Number(item.lockedPrice) - Number(liveProduct.currentCupPrice)) > 0.01);
           return `
-            <div class="cart-item">
+            <div class="cart-item cart-item-enter" style="animation-delay: ${idx * 0.05}s">
               <div style="display: flex; align-items: center; gap: 10px;">
                 <img src="${imgUrl}" alt="${liveProduct.name}" style="width: 44px; height: 44px; border-radius: var(--radius-sm); object-fit: cover; border: 1.5px solid rgba(255, 255, 255, 0.15); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); flex-shrink: 0;" />
                 <div>
