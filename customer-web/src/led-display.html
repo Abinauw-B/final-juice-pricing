@@ -1885,6 +1885,8 @@
     .modal-table th, .modal-table td {
       padding: 6px 10px;
       border-bottom: 1px solid var(--border-subtle);
+      text-align: left;
+    }
     .modal-table th {
       color: var(--text-muted);
       font-weight: 700;
@@ -1977,6 +1979,9 @@
       gap: 32px;
       animation: cautionTapeScroll 30s linear infinite;
       padding-left: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: max-content;
     }
     @keyframes cautionTapeScroll {
       0%   { transform: translateX(0); }
@@ -1993,6 +1998,8 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: #FEE2E2;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .cct-badge {
       display: inline-flex;
