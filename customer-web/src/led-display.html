@@ -674,32 +674,33 @@
     .product-img-wrapper {
       position: relative;
       width: 100%;
-      height: 82px;
+      height: 115px;
       border-radius: 8px;
       overflow: hidden;
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       margin-bottom: 3px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
       flex-shrink: 0;
     }
     .product-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s ease;
+      object-position: center;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .product-card:hover .product-img {
-      transform: scale(1.04);
+      transform: scale(1.08);
     }
     .product-img-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.75) 100%);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0) 45%, rgba(15, 23, 42, 0.5) 100%);
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      padding: 4px 8px;
+      padding: 6px 8px;
       pointer-events: none;
     }
     .fruit-badge {
@@ -2564,17 +2565,36 @@
       flex: 1 1 auto;
     }
     .cjc-avatar-box {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
       background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
       flex-shrink: 0;
-      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    }
+    .cjc-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+    .cjc-avatar-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      font-size: 11px;
+      background: rgba(15, 23, 42, 0.88);
+      border-radius: 4px;
+      padding: 1px 3px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+      line-height: 1;
     }
     .cjc-titles {
       min-width: 0;
@@ -3384,8 +3404,9 @@
   <div id="productDetailModal" class="modal-overlay" onclick="closeProductModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span id="modalFruitIcon" style="font-size: 24px;">🍹</span>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img id="modalProductImage" src="" alt="Beverage" style="width: 52px; height: 52px; border-radius: 10px; object-fit: cover; border: 1.5px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); display: none;" />
+          <span id="modalFruitIcon" style="font-size: 24px; display: none;">🍹</span>
           <div>
             <div id="modalProductName" style="font-size: 18px; font-weight: 900; color: var(--text-primary); text-transform: uppercase;">Product Details</div>
             <div id="modalProductFlavour" style="font-size: 11.5px; color: var(--text-muted); font-weight: 700;">250 ml standard cup</div>
@@ -3779,19 +3800,20 @@
     };
 
     const beverageImages = {
-      1: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=600&auto=format&fit=crop&q=80', // Mango
-      2: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600&auto=format&fit=crop&q=80', // Lemon
-      3: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop&q=80', // Mint
-      4: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=600&auto=format&fit=crop&q=80', // Orange
-      5: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=600&auto=format&fit=crop&q=80', // Strawberry
-      6: 'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=600&auto=format&fit=crop&q=80', // Grape
-      7: 'https://images.unsplash.com/photo-1560512823-829485b8bf24?w=600&auto=format&fit=crop&q=80', // Lychee
-      23: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&auto=format&fit=crop&q=80' // Thunder
+      1: 'assets/juices/mango.jpg',       // Fresh Alphonso Mango Juice
+      2: 'assets/juices/lemon.jpg',       // Crisp Zesty Lemon Juice
+      3: 'assets/juices/mint.jpg',        // Chilled Cool Mint Cooler
+      4: 'assets/juices/orange.jpg',      // Valencia Orange Juice
+      5: 'assets/juices/strawberry.jpg',  // Fresh Strawberry Delight Crush
+      6: 'assets/juices/grape.jpg',       // Royal Concord Grape Juice
+      7: 'assets/juices/lychee.jpg',      // Exotic Lychee Mist Mocktail
+      23: 'assets/juices/thunder.jpg'     // Thunder Power Sapphire Energy Punch
     };
 
     function getBeverageImage(p) {
       if (!p) return beverageImages[1];
-      if (beverageImages[p.id]) return beverageImages[p.id];
+      const pid = p.id || p.productId;
+      if (beverageImages[pid]) return beverageImages[pid];
       const f = (p.flavour || p.name || '').toUpperCase();
       if (f.includes('MANGO')) return beverageImages[1];
       if (f.includes('LEMON')) return beverageImages[2];
@@ -3800,7 +3822,7 @@
       if (f.includes('STRAWBERRY')) return beverageImages[5];
       if (f.includes('GRAPE')) return beverageImages[6];
       if (f.includes('LYCHEE')) return beverageImages[7];
-      if (f.includes('THUNDER') || f.includes('ENERGY')) return beverageImages[23];
+      if (f.includes('THUNDER') || f.includes('ENERGY') || f.includes('POWER') || f.includes('BLUE')) return beverageImages[23];
       return beverageImages[1];
     }
 
@@ -5174,7 +5196,14 @@
       const cleanFlavour = getCleanFlavourName(prod);
       const activePrice = Number(isMarketCrashActive ? (prod.minCupPrice != null ? prod.minCupPrice : 20) : (prod.currentCupPrice != null ? prod.currentCupPrice : 25)).toFixed(2);
 
-      document.getElementById('modalFruitIcon').textContent = icon;
+      const modalFruitIcon = document.getElementById('modalFruitIcon');
+      if (modalFruitIcon) modalFruitIcon.textContent = icon;
+      const modalProductImage = document.getElementById('modalProductImage');
+      if (modalProductImage) {
+        modalProductImage.src = getBeverageImage(prod);
+        modalProductImage.alt = name;
+        modalProductImage.style.display = 'block';
+      }
       document.getElementById('modalProductName').textContent = name;
       document.getElementById('modalProductFlavour').textContent = `${prod.defaultCupSizeMl || 250} ml standard cup &bull; Flavour: ${cleanFlavour}`;
       document.getElementById('modalCurrentPrice').textContent = `₹${activePrice}`;
@@ -5868,6 +5897,7 @@
       
       container.innerHTML = products.map((p, idx) => {
         const icon = getFruitIcon(p);
+        const imgUrl = getBeverageImage(p);
         const name = (p.name || p.flavour || 'Juice').toUpperCase();
         const baseP = Number(p.basePrice || (p.defaultCupPrice ? p.defaultCupPrice : (p.currentCupPrice ? Math.max(p.currentCupPrice, 25) : 25.0)));
         const floorP = Number(p.minCupPrice != null ? p.minCupPrice : 20.0);
@@ -5894,8 +5924,9 @@
             
             <div class="cjc-header-row">
               <div class="cjc-left-group">
-                <div class="cjc-avatar-box" style="border-color: rgba(${theme.rgb}, 0.45); background: radial-gradient(circle, rgba(${theme.rgb}, 0.22) 0%, rgba(0,0,0,0.45) 100%); box-shadow: 0 0 14px rgba(${theme.rgb}, 0.3);">
-                  ${icon}
+                <div class="cjc-avatar-box" style="border-color: rgba(${theme.rgb}, 0.6); box-shadow: 0 0 16px rgba(${theme.rgb}, 0.35);">
+                  <img src="${imgUrl}" alt="${name}" class="cjc-avatar-img" />
+                  <span class="cjc-avatar-badge">${icon}</span>
                 </div>
                 <div class="cjc-titles">
                   <div class="cjc-tap-tag">
