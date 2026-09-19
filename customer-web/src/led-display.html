@@ -1902,7 +1902,7 @@
       background: 
         radial-gradient(ellipse at 50% 12%, rgba(239, 68, 68, 0.22) 0%, transparent 60%),
         radial-gradient(ellipse at 50% 88%, rgba(245, 158, 11, 0.15) 0%, transparent 55%),
-        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.85) 0%, rgba(6, 9, 18, 0.98) 100%);
+        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.88) 0%, rgba(6, 9, 18, 0.98) 100%);
       backdrop-filter: blur(32px) saturate(200%);
       -webkit-backdrop-filter: blur(32px) saturate(200%);
       display: none;
@@ -1918,16 +1918,31 @@
       box-sizing: border-box;
     }
 
-    /* Cyber grid overlay with subtle particle stars */
-    .crash-overlay::after {
+    /* Drifting financial cyber grid texture */
+    .crash-overlay::before {
       content: '';
       position: absolute;
       inset: 0;
       background-image: 
-        radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
         linear-gradient(rgba(239, 68, 68, 0.035) 1px, transparent 1px),
         linear-gradient(90deg, rgba(239, 68, 68, 0.035) 1px, transparent 1px);
-      background-size: 32px 32px, 64px 64px, 64px 64px;
+      background-size: 48px 48px;
+      animation: gridDrift 28s linear infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+    @keyframes gridDrift {
+      0%   { background-position: 0 0; }
+      100% { background-position: 48px 48px; }
+    }
+
+    /* Subtle star particles overlay */
+    .crash-overlay::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 32px 32px;
       pointer-events: none;
       z-index: 1;
     }
@@ -1938,7 +1953,7 @@
       left: 0;
       right: 0;
       height: 38px;
-      background: linear-gradient(90deg, #0A0F1E 0%, #170E14 20%, #1A0D11 50%, #170E14 80%, #0A0F1E 100%);
+      background: linear-gradient(90deg, #0A0F1E 0%, #160D14 20%, #1A0D11 50%, #160D14 80%, #0A0F1E 100%);
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8), 0 0 30px rgba(239, 68, 68, 0.3);
       z-index: 10002;
       display: flex;
@@ -1976,8 +1991,8 @@
     .crash-caution-track {
       display: inline-flex;
       align-items: center;
-      gap: 32px;
-      animation: cautionTapeScroll 30s linear infinite;
+      gap: 36px;
+      animation: cautionTapeScroll 38s linear infinite;
       padding-left: 20px;
       white-space: nowrap;
       flex-shrink: 0;
@@ -1991,13 +2006,13 @@
     .cct-item {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-family: var(--font-mono);
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #FEE2E2;
+      color: #E2E8F0;
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -2005,18 +2020,24 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid rgba(239, 68, 68, 0.6);
+      background: rgba(239, 68, 68, 0.22);
+      border: 1px solid #EF4444;
       color: #FECACA;
       padding: 2px 8px;
       border-radius: 4px;
       font-size: 10px;
+      font-weight: 900;
       letter-spacing: 0.14em;
     }
     .cct-badge-gold {
-      background: rgba(245, 158, 11, 0.2);
-      border-color: rgba(245, 158, 11, 0.6);
+      background: rgba(245, 158, 11, 0.22);
+      border-color: #F59E0B;
       color: #FDE68A;
+    }
+    .cct-badge-cyan {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: #06B6D4;
+      color: #A5F3FC;
     }
     .cct-dot {
       width: 6px;
@@ -2036,9 +2057,9 @@
       opacity: 0.7;
     }
 
-    /* Central Command Box — Ultra-Crisp Obsidian Glass */
+    /* Central Command Box — Ultra-Crisp Obsidian Glass with 5s Slow Pulse */
     .crash-box {
-      background: linear-gradient(180deg, rgba(17, 24, 43, 0.93) 0%, rgba(10, 14, 28, 0.97) 100%);
+      background: linear-gradient(180deg, rgba(17, 24, 43, 0.94) 0%, rgba(10, 14, 28, 0.98) 100%);
       border: 1px solid rgba(239, 68, 68, 0.45);
       border-radius: 20px;
       padding: clamp(14px, 1.8vh, 22px) clamp(16px, 2.2vw, 32px);
@@ -2046,12 +2067,12 @@
       width: 96vw;
       box-shadow: 
         0 25px 70px -10px rgba(0, 0, 0, 0.88),
-        0 0 50px -10px rgba(239, 68, 68, 0.32),
+        0 0 45px -10px rgba(239, 68, 68, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.16),
-        inset 0 0 35px rgba(239, 68, 68, 0.08);
+        inset 0 0 25px rgba(239, 68, 68, 0.06);
       position: relative;
       overflow: hidden;
-      animation: crashAura 3s infinite ease-in-out;
+      animation: crashAuraSlow 5s infinite ease-in-out;
       margin: auto;
       display: flex;
       flex-direction: column;
@@ -2060,14 +2081,14 @@
       z-index: 2;
     }
 
-    @keyframes crashAura {
+    @keyframes crashAuraSlow {
       0%, 100% {
-        box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.88), 0 0 50px -10px rgba(239, 68, 68, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 30px rgba(239, 68, 68, 0.06);
-        border-color: rgba(239, 68, 68, 0.5);
+        box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.88), 0 0 45px -10px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 25px rgba(239, 68, 68, 0.06);
+        border-color: rgba(239, 68, 68, 0.45);
       }
       50% {
-        box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.92), 0 0 75px -5px rgba(239, 68, 68, 0.5), 0 0 30px rgba(245, 158, 11, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 45px rgba(239, 68, 68, 0.12);
-        border-color: rgba(245, 158, 11, 0.65);
+        box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.92), 0 0 65px -5px rgba(239, 68, 68, 0.45), 0 0 25px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 35px rgba(239, 68, 68, 0.1);
+        border-color: rgba(245, 158, 11, 0.55);
       }
     }
 
@@ -2076,8 +2097,8 @@
       content: '';
       position: absolute;
       top: 0; left: -100%; width: 200%; height: 100%;
-      background: linear-gradient(90deg, transparent 0%, rgba(239, 68, 68, 0.08) 35%, rgba(255, 255, 255, 0.12) 50%, rgba(245, 158, 11, 0.08) 65%, transparent 100%);
-      animation: bannerShine 4.5s infinite linear;
+      background: linear-gradient(90deg, transparent 0%, rgba(239, 68, 68, 0.06) 35%, rgba(255, 255, 255, 0.1) 50%, rgba(245, 158, 11, 0.06) 65%, transparent 100%);
+      animation: bannerShine 5s infinite linear;
       pointer-events: none;
     }
     @keyframes bannerShine {
@@ -2194,69 +2215,100 @@
       letter-spacing: 0.03em;
     }
 
-    /* DIGITAL HUD TIMER CHAMBER */
+    /* DIGITAL HUD TIMER CHAMBER — COMMANDING FOCAL POINT */
     .crash-timer-chamber {
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: rgba(8, 12, 22, 0.85);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      border-radius: 12px;
-      padding: 6px 20px;
-      margin: 2px 0 7px;
-      box-shadow: 0 0 24px rgba(245, 158, 11, 0.18), inset 0 0 16px rgba(0, 0, 0, 0.75);
-      width: min(100%, 460px);
+      background: rgba(8, 12, 22, 0.9);
+      border: 1.5px solid rgba(245, 158, 11, 0.45);
+      border-radius: 14px;
+      padding: 8px 24px;
+      margin: 3px 0 8px;
+      box-shadow: 0 0 24px rgba(245, 158, 11, 0.22), inset 0 0 20px rgba(0, 0, 0, 0.8);
+      width: min(100%, 520px);
       box-sizing: border-box;
       position: relative;
+      animation: chamberCalmPulse 4s infinite ease-in-out;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
+    @keyframes chamberCalmPulse {
+      0%, 100% { box-shadow: 0 0 22px rgba(245, 158, 11, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.8); }
+      50% { box-shadow: 0 0 38px rgba(245, 158, 11, 0.38), 0 0 15px rgba(250, 204, 21, 0.25), inset 0 0 25px rgba(0, 0, 0, 0.85); }
+    }
+    .crash-timer-chamber.timer-warning {
+      border-color: #F59E0B;
+      animation: chamberWarningPulse 1.2s infinite alternate ease-in-out;
+    }
+    @keyframes chamberWarningPulse {
+      0% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.35), inset 0 0 20px rgba(0, 0, 0, 0.85); }
+      100% { box-shadow: 0 0 52px rgba(245, 158, 11, 0.7), 0 0 22px rgba(239, 68, 68, 0.4), inset 0 0 25px rgba(0, 0, 0, 0.9); }
+    }
+    .crash-timer-chamber.timer-urgent {
+      border-color: #EF4444;
+      animation: chamberUrgentPulse 0.5s infinite alternate ease-in-out;
+    }
+    @keyframes chamberUrgentPulse {
+      0% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.6), inset 0 0 25px rgba(239, 68, 68, 0.2); transform: scale(1); }
+      100% { box-shadow: 0 0 75px rgba(239, 68, 68, 0.95), 0 0 30px rgba(255, 255, 255, 0.5), inset 0 0 35px rgba(239, 68, 68, 0.4); transform: scale(1.02); }
+    }
+
     .timer-hud-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 800;
       letter-spacing: 0.14em;
       color: #94A3B8;
       font-family: var(--font-mono);
       text-transform: uppercase;
-      padding-bottom: 3px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       margin-bottom: 2px;
     }
     .timer-digits-wrap {
       display: flex;
       align-items: baseline;
       justify-content: center;
-      gap: 6px;
+      gap: 8px;
       font-family: var(--font-mono);
       font-weight: 900;
       color: #FACC15;
-      text-shadow: 0 0 24px rgba(250, 204, 21, 0.75), 0 0 8px rgba(239, 68, 68, 0.5);
+      text-shadow: 0 0 28px rgba(250, 204, 21, 0.8), 0 0 10px rgba(239, 68, 68, 0.6);
       font-variant-numeric: tabular-nums;
       line-height: 1;
-      padding: 2px 0;
+      padding: 3px 0;
     }
     .timer-unit {
       display: flex;
       align-items: baseline;
-      gap: 4px;
+      gap: 5px;
     }
     .timer-num {
-      font-size: clamp(32px, 3.2vw, 46px);
-      letter-spacing: 1px;
+      font-size: clamp(46px, 4.6vw, 64px);
+      letter-spacing: 2px;
+      font-weight: 900;
+      display: inline-block;
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
+    }
+    .timer-sec-pulse {
+      transform: scale(1.1);
+      color: #FFFFFF !important;
+      text-shadow: 0 0 35px #FACC15, 0 0 12px #FFFFFF !important;
     }
     .timer-label {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       color: #F87171;
       letter-spacing: 0.08em;
     }
     .timer-colon {
-      font-size: clamp(28px, 2.8vw, 40px);
+      font-size: clamp(40px, 4vw, 54px);
       color: #EF4444;
       animation: colonBlink 1s infinite;
-      margin: 0 2px;
+      margin: 0 4px;
     }
     @keyframes colonBlink {
       0%, 49% { opacity: 1; }
@@ -2264,42 +2316,55 @@
     }
     .timer-progress-track {
       width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 3px;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
       overflow: hidden;
-      margin-top: 3px;
+      margin-top: 5px;
       position: relative;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
     }
     .timer-progress-fill {
       height: 100%;
       width: 100%;
       background: linear-gradient(90deg, #10B981 0%, #FACC15 65%, #EF4444 100%);
-      border-radius: 3px;
+      border-radius: 5px;
       transition: width 1s linear;
-      box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.8);
+      position: relative;
     }
-    .timer-urgent .timer-digits-wrap {
-      color: #FF3B3B !important;
-      text-shadow: 0 0 32px rgba(255, 59, 59, 1), 0 0 12px rgba(255, 255, 255, 0.9) !important;
-      animation: urgentStrobe 0.5s infinite alternate;
+    .timer-progress-fill::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      background: #FFFFFF;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #FFFFFF, 0 0 14px #FACC15;
     }
     .timer-warning .timer-digits-wrap {
       color: #F59E0B !important;
       text-shadow: 0 0 28px rgba(245, 158, 11, 0.9), 0 0 10px rgba(255, 255, 255, 0.7) !important;
+    }
+    .timer-urgent .timer-digits-wrap {
+      color: #FF3B3B !important;
+      text-shadow: 0 0 35px rgba(255, 59, 59, 1), 0 0 14px rgba(255, 255, 255, 0.9) !important;
+      animation: urgentStrobe 0.5s infinite alternate;
     }
     @keyframes urgentStrobe {
       0% { transform: scale(1); }
       100% { transform: scale(1.02); }
     }
 
-    /* TELEMETRY STRIP — 4 Precision Metric Tiles */
+    /* TELEMETRY STRIP — 4 Precision Metric Tiles with Accent Colors & Contrast */
     .crash-telemetry-bar {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      gap: 10px;
       width: 100%;
-      max-width: 1240px;
+      max-width: 1260px;
       margin: 3px 0 9px;
       box-sizing: border-box;
     }
@@ -2307,48 +2372,97 @@
       .crash-telemetry-bar { grid-template-columns: repeat(2, 1fr); }
     }
     .crash-telem-item {
-      background: rgba(14, 20, 36, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(14, 20, 36, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 10px;
-      padding: 6px 12px;
+      padding: 7px 13px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 11px;
       text-align: left;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.38);
       backdrop-filter: blur(10px);
       transition: border-color 0.2s ease, transform 0.2s ease;
+      position: relative;
+      overflow: hidden;
     }
     .crash-telem-item:hover {
-      border-color: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.22);
       transform: translateY(-1px);
     }
+    .crash-telem-emerald { border-left: 3px solid #10B981; }
+    .crash-telem-gold { border-left: 3px solid #F59E0B; }
+    .crash-telem-cyan { border-left: 3px solid #06B6D4; }
+    .crash-telem-purple { border-left: 3px solid #A855F7; }
+
     .crash-telem-icon-box {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 17px;
       flex-shrink: 0;
     }
+    .icon-box-emerald {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+    .icon-box-gold {
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+    }
+    .icon-box-cyan {
+      background: rgba(6, 182, 212, 0.16);
+      border: 1px solid rgba(6, 182, 212, 0.45);
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
+    }
+    .icon-box-purple {
+      background: rgba(168, 85, 247, 0.16);
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
+    }
+
     .crash-telem-label {
-      font-size: 9px;
+      font-size: 9.5px;
       font-weight: 800;
       color: #94A3B8;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
       font-family: var(--font-mono);
-      margin-bottom: 1px;
+      margin-bottom: 2px;
     }
     .crash-telem-val {
-      font-size: 12.5px;
+      font-size: 13.5px;
       font-weight: 900;
-      color: #F8FAFC;
-      letter-spacing: 0.02em;
+      color: #FFFFFF;
+      letter-spacing: 0.03em;
+      font-family: var(--font-mono);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    }
+
+    /* Idle shimmer on Taps Active */
+    .telem-shimmer::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.2), transparent);
+      animation: telemShimmerSweep 4.5s infinite linear;
+      pointer-events: none;
+    }
+    @keyframes telemShimmerSweep {
+      0% { transform: translateX(0); }
+      40%, 100% { transform: translateX(250%); }
+    }
+    .tap-count-changed {
+      animation: tapCountFlash 1.5s ease-out;
+    }
+    @keyframes tapCountFlash {
+      0% { box-shadow: 0 0 0 4px #A855F7, 0 0 25px #A855F7; }
+      100% { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.38); }
     }
 
     /* CRASH SHOWCASE MATRIX (4x2 on desktop) */
@@ -2367,7 +2481,7 @@
       .crash-juice-matrix { grid-template-columns: 1fr; }
     }
 
-    /* ENHANCED PROFESSIONAL BEVERAGE CARD */
+    /* ENHANCED PROFESSIONAL BEVERAGE CARD WITH ENTRANCE STAGGER */
     .crash-juice-card {
       background: linear-gradient(155deg, rgba(20, 28, 48, 0.95) 0%, rgba(11, 16, 28, 0.98) 100%);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -2378,14 +2492,47 @@
       flex-direction: column;
       gap: 6px;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
       box-sizing: border-box;
       position: relative;
       overflow: hidden;
+      animation: cardEntranceStagger 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      animation-delay: calc(var(--card-index, 0) * 50ms);
+    }
+    @keyframes cardEntranceStagger {
+      0% {
+        opacity: 0;
+        transform: translateY(16px) scale(0.96);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
     .crash-juice-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+    }
+
+    /* Recently claimed pulse ring on card when real order arrives */
+    .card-order-claimed-pulse {
+      animation: orderClaimPulse 1.8s ease-out !important;
+    }
+    @keyframes orderClaimPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.95), 0 0 35px rgba(16, 185, 129, 0.85) !important;
+        border-color: #10B981 !important;
+        transform: scale(1.02);
+      }
+      40% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.35), 0 0 45px rgba(16, 185, 129, 0.7) !important;
+        border-color: #34D399 !important;
+        transform: scale(1.01);
+      }
+      100% {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        transform: scale(1);
+      }
     }
 
     /* Flavor Accent Bar on Card Top */
@@ -2554,14 +2701,31 @@
       border-radius: 3px;
       overflow: hidden;
     }
+    /* Liquid shimmer on tap stock bar */
     .cjc-tank-fill {
       height: 100%;
       border-radius: 3px;
       transition: width 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
+    .cjc-tank-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: liquidShimmer 2.2s infinite linear;
+    }
+    @keyframes liquidShimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Tactile Micro-Interaction on Claim Button */
     .cjc-claim-btn {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.5);
+      background: rgba(245, 158, 11, 0.18);
+      border: 1.5px solid rgba(245, 158, 11, 0.55);
       color: #FACC15;
       font-size: 9.5px;
       font-weight: 900;
@@ -2572,92 +2736,159 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      transition: all 0.15s ease;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
       font-family: var(--font-mono);
     }
     .cjc-claim-btn:hover {
       background: #FACC15;
       color: #000000;
-      box-shadow: 0 0 12px rgba(250, 204, 21, 0.6);
-      transform: translateY(-1px);
+      box-shadow: 0 0 14px rgba(250, 204, 21, 0.7);
+      transform: scale(1.05);
+      filter: brightness(1.15);
+    }
+    .cjc-claim-btn:active {
+      transform: scale(0.96);
+      filter: brightness(0.95);
     }
 
-    /* LIVE EMERGENCY BROADCAST MARQUEE */
+    /* LIVE EMERGENCY BROADCAST MARQUEE — ISOLATED PINNED HEADER + NON-OVERLAPPING SCROLL */
     .crash-marquee-wrap {
       width: 100%;
-      background: rgba(6, 10, 20, 0.85);
+      background: rgba(6, 10, 20, 0.9);
       border: 1px solid rgba(239, 68, 68, 0.35);
       border-radius: 8px;
-      padding: 4px 10px;
+      padding: 3px 6px;
       overflow: hidden;
       white-space: nowrap;
       margin: 3px 0 9px;
       box-sizing: border-box;
       display: flex;
       align-items: center;
-      gap: 12px;
-      mask-image: linear-gradient(90deg, transparent 0%, #000 3%, #000 97%, transparent 100%);
-      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 3%, #000 97%, transparent 100%);
+      gap: 0;
     }
     .crash-marquee-badge {
-      background: #EF4444;
+      background: #991B1B;
+      border: 1px solid #EF4444;
       color: #FFFFFF;
       font-size: 9.5px;
       font-weight: 900;
-      padding: 2px 8px;
-      border-radius: 4px;
+      padding: 3px 10px;
+      border-radius: 5px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       font-family: var(--font-mono);
       flex-shrink: 0;
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-      animation: beaconFlash 1s infinite alternate;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 3;
+      margin-right: 12px;
+    }
+    .crash-marquee-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #F87171;
+      box-shadow: 0 0 6px #EF4444;
+      animation: beaconFlash 0.8s infinite alternate;
     }
     .crash-marquee-track {
-      flex: 1 1 auto;
+      flex: 1 1 0;
+      min-width: 0;
       overflow: hidden;
       display: flex;
+      position: relative;
+      mask-image: linear-gradient(90deg, transparent 0%, #000 16px, #000 calc(100% - 16px), transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 16px, #000 calc(100% - 16px), transparent 100%);
     }
     .crash-marquee-content {
       display: inline-flex;
       align-items: center;
-      animation: marqueeScroll 25s linear infinite;
+      animation: marqueeScroll 36s linear infinite;
       font-size: 11px;
-      font-weight: 800;
-      color: #FEE2E2;
+      font-weight: 700;
+      color: #E2E8F0;
       letter-spacing: 0.08em;
       font-family: var(--font-mono);
       text-transform: uppercase;
       flex-shrink: 0;
+      padding-left: 20px;
+      gap: 24px;
+    }
+    .cm-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 9.5px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+    }
+    .cm-pill-red {
+      background: rgba(239, 68, 68, 0.22);
+      border: 1px solid #EF4444;
+      color: #FECACA;
+    }
+    .cm-pill-amber {
+      background: rgba(245, 158, 11, 0.22);
+      border: 1px solid #F59E0B;
+      color: #FDE68A;
+    }
+    .cm-pill-emerald {
+      background: rgba(16, 185, 129, 0.22);
+      border: 1px solid #10B981;
+      color: #A7F3D0;
+    }
+    .cm-pill-cyan {
+      background: rgba(6, 182, 212, 0.22);
+      border: 1px solid #06B6D4;
+      color: #CFFAFE;
     }
     .crash-marquee-separator {
       color: #FACC15;
-      margin: 0 12px;
+      font-size: 10px;
+      opacity: 0.75;
     }
     @keyframes marqueeScroll {
       0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
 
-    /* ACTION CONTROLS */
+    /* ACTION CONTROLS ALIGNED WITH STAT CARDS */
     .crash-actions-row {
-      display: flex;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
       gap: 12px;
-      flex-wrap: wrap;
+      max-width: 960px;
       width: 100%;
+      margin: 4px 0 2px;
+      box-sizing: border-box;
+    }
+    @media (max-width: 700px) {
+      .crash-actions-row { grid-template-columns: 1fr; }
     }
     .crash-action-btn {
-      padding: 8px 18px;
+      padding: 9px 18px;
       border-radius: 9px;
       font-weight: 900;
       font-size: 12.5px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       letter-spacing: 0.02em;
+      min-height: 42px;
+      box-sizing: border-box;
+    }
+    .crash-action-btn:hover {
+      transform: translateY(-2px);
+    }
+    .crash-action-btn:active {
+      transform: translateY(0) scale(0.98);
     }
     .crash-btn-minimize {
       background: rgba(255, 255, 255, 0.08);
@@ -2669,7 +2900,6 @@
     .crash-btn-minimize:hover {
       background: rgba(255, 255, 255, 0.16);
       border-color: #FFFFFF;
-      transform: translateY(-1px);
     }
     .crash-btn-siren {
       background: rgba(239, 68, 68, 0.2);
@@ -2680,7 +2910,6 @@
     .crash-btn-siren:hover {
       background: rgba(239, 68, 68, 0.38);
       color: #FFFFFF;
-      transform: translateY(-1px);
       box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
     }
     .crash-btn-qr {
@@ -2692,7 +2921,6 @@
     .crash-btn-qr:hover {
       background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
       color: #0A0A0A;
-      transform: translateY(-1px);
       box-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
     }
 
@@ -2865,32 +3093,32 @@
 
       <!-- Telemetry Strip (4 Precision Metric Tiles) -->
       <div class="crash-telemetry-bar">
-        <div class="crash-telem-item">
+        <div class="crash-telem-item crash-telem-emerald">
           <div class="crash-telem-icon-box">💥</div>
           <div>
             <div class="crash-telem-label">Max Venue Discount</div>
             <div class="crash-telem-val" id="crashMaxDiscountTelem">UP TO -43%</div>
           </div>
         </div>
-        <div class="crash-telem-item">
+        <div class="crash-telem-item crash-telem-gold">
           <div class="crash-telem-icon-box">🛡️</div>
           <div>
             <div class="crash-telem-label">Floor Lock Price</div>
-            <div class="crash-telem-val">₹20.00 Flat Cap</div>
+            <div class="crash-telem-val" id="crashFloorLockVal">₹20.00 Flat Cap</div>
           </div>
         </div>
-        <div class="crash-telem-item">
+        <div class="crash-telem-item crash-telem-cyan">
           <div class="crash-telem-icon-box">⚡</div>
           <div>
             <div class="crash-telem-label">Pricing Mode</div>
             <div class="crash-telem-val">DWMA Freeze Active</div>
           </div>
         </div>
-        <div class="crash-telem-item">
+        <div class="crash-telem-item crash-telem-purple telem-shimmer" id="crashActiveTapsCard">
           <div class="crash-telem-icon-box">🍹</div>
           <div>
             <div class="crash-telem-label">Floor Availability</div>
-            <div class="crash-telem-val">8 of 8 Taps Active</div>
+            <div class="crash-telem-val" id="crashActiveTapsVal">8 of 8 Taps Active</div>
           </div>
         </div>
       </div>
@@ -2905,21 +3133,29 @@
         <div class="crash-marquee-badge">🚨 LIQUIDATION STREAM</div>
         <div class="crash-marquee-track">
           <div class="crash-marquee-content">
-            <span>⚡ ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+            <span class="cm-pill cm-pill-red">CIRCUIT BREAKER</span>
+            <span>ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
             <span class="crash-marquee-separator">✦</span>
-            <span>🚨 DWMA DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
+            <span class="cm-pill cm-pill-amber">DWMA HALT</span>
+            <span>DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
             <span class="crash-marquee-separator">✦</span>
-            <span>🍹 VISIT BAR COUNTER OR SCAN TABLE QR TO CLAIM YOUR DRINKS AT FLOOR LIMIT</span>
+            <span class="cm-pill cm-pill-emerald">ZERO SLIPPAGE</span>
+            <span>ORDER AT TAP COUNTER OR SCAN TABLE QR TO CLAIM YOUR DRINKS</span>
             <span class="crash-marquee-separator">✦</span>
-            <span>⏱️ AUTOMATIC RETURN TO DYNAMIC DWMA PRICING WHEN TIME RUNS OUT</span>
+            <span class="cm-pill cm-pill-cyan">AUTO RESUME</span>
+            <span>AUTOMATIC RETURN TO DYNAMIC DWMA PRICING WHEN TIMER EXPIRES</span>
             <span class="crash-marquee-separator">✦</span>
-            <span>⚡ ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+            <span class="cm-pill cm-pill-red">CIRCUIT BREAKER</span>
+            <span>ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
             <span class="crash-marquee-separator">✦</span>
-            <span>🚨 DWMA DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
+            <span class="cm-pill cm-pill-amber">DWMA HALT</span>
+            <span>DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
             <span class="crash-marquee-separator">✦</span>
-            <span>🍹 VISIT BAR COUNTER OR SCAN TABLE QR TO CLAIM YOUR DRINKS AT FLOOR LIMIT</span>
+            <span class="cm-pill cm-pill-emerald">ZERO SLIPPAGE</span>
+            <span>ORDER AT TAP COUNTER OR SCAN TABLE QR TO CLAIM YOUR DRINKS</span>
             <span class="crash-marquee-separator">✦</span>
-            <span>⏱️ AUTOMATIC RETURN TO DYNAMIC DWMA PRICING WHEN TIME RUNS OUT</span>
+            <span class="cm-pill cm-pill-cyan">AUTO RESUME</span>
+            <span>AUTOMATIC RETURN TO DYNAMIC DWMA PRICING WHEN TIMER EXPIRES</span>
             <span class="crash-marquee-separator">✦</span>
           </div>
         </div>
@@ -5075,12 +5311,32 @@
             if (message && message.body) {
               try {
                 const res = JSON.parse(message.body);
-                if (res.active) triggerMarketCrash(res.remainingSeconds || 180);
-                else stopMarketCrash();
+                if (res.active) {
+                  let remSec = res.remainingSeconds;
+                  if (!remSec && res.endTime) {
+                    const diff = Math.round((new Date(res.endTime).getTime() - Date.now()) / 1000);
+                    if (diff > 0) remSec = diff;
+                  }
+                  triggerMarketCrash(remSec || 180, false, res.crashPrice);
+                } else {
+                  stopMarketCrash();
+                }
               } catch (e) {}
             }
           });
           stompSubscriptions.push(sCrash);
+
+          // 2b. Subscribe to Orders for Live Crash Card Claim Pulses & Inventory Sync
+          const sOrders = stompClient.subscribe('/topic/orders', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                handleIncomingOrderMessage(res);
+              } catch (e) {}
+            }
+            fetchProducts();
+          });
+          stompSubscriptions.push(sOrders);
 
           // 3. Subscribe to Settlement / Products update
           const sSettle = stompClient.subscribe('/topic/settlement', function (message) {
@@ -5208,13 +5464,59 @@
       if (type === 'PRICING_TIMING_CHANGED' || msg.settlementIntervalSeconds || msg.intervalSeconds) {
         updatePricingTimingState(msg.payload || msg);
         fetchPricingConfiguration();
-      } else if (type === 'PRODUCT_PRICE_UPDATE' || type === 'REFRESH_PRODUCTS' || type === 'NEW_ORDER_PLACED' || type === 'CART_CHECKOUT_COMPLETED' || type === 'ORDER_CREATED' || type === 'CONFIG_UPDATED' || type === 'PRODUCT_CONFIG_UPDATED' || type === 'ADMIN_DEPLOY') {
+      } else if (type === 'NEW_ORDER_PLACED' || type === 'CART_CHECKOUT_COMPLETED' || type === 'ORDER_CREATED') {
+        if (msg.payload) handleIncomingOrderMessage(msg.payload);
+        else handleIncomingOrderMessage(msg);
+        fetchProducts();
+      } else if (type === 'PRODUCT_PRICE_UPDATE' || type === 'REFRESH_PRODUCTS' || type === 'CONFIG_UPDATED' || type === 'PRODUCT_CONFIG_UPDATED' || type === 'ADMIN_DEPLOY') {
         fetchProducts();
       }
     };
 
     if (ledBroadcastChannel) ledBroadcastChannel.onmessage = handleLedCrossPanel;
     if (ledMarketChannel) ledMarketChannel.onmessage = handleLedCrossPanel;
+
+    function handleIncomingOrderMessage(orderData) {
+      if (!orderData) return;
+      const items = orderData.items || (Array.isArray(orderData) ? orderData : (orderData.item ? [orderData.item] : null));
+      if (Array.isArray(items) && items.length > 0) {
+        items.forEach(item => {
+          const itemPName = (item.productName || item.name || '').toLowerCase();
+          const pId = item.productId || item.id;
+          const matchedProd = products.find(p => 
+            (pId && p.id === pId) ||
+            (itemPName && p.name && p.name.toLowerCase() === itemPName) ||
+            (itemPName && p.flavour && p.flavour.toLowerCase() === itemPName)
+          );
+          if (matchedProd) {
+            pulseProductOrderClaimed(matchedProd.id, matchedProd.name || matchedProd.flavour);
+          }
+        });
+      }
+    }
+
+    function pulseProductOrderClaimed(productId, productName) {
+      if (!isMarketCrashActive) return;
+      const card = document.getElementById(`crash_card_prod_${productId}`) || document.querySelector(`.crash-juice-card[data-product-id="${productId}"]`);
+      if (card) {
+        card.classList.remove('card-order-claimed-pulse');
+        void card.offsetWidth;
+        card.classList.add('card-order-claimed-pulse');
+        setTimeout(() => {
+          if (card) card.classList.remove('card-order-claimed-pulse');
+        }, 1900);
+      }
+      
+      const toast = document.createElement('div');
+      toast.className = 'crash-order-toast';
+      toast.innerHTML = `⚡ <b>CLAIMED:</b> ${productName || 'Drink'} poured @ ₹20.00 Floor!`;
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.classList.add('toast-show'); }, 10);
+      setTimeout(() => { 
+        toast.classList.remove('toast-show'); 
+        setTimeout(() => toast.remove(), 300); 
+      }, 2500);
+    }
 
     function handleIncomingPriceMessage(res) {
       let incoming = [];
@@ -5285,34 +5587,47 @@
     /* ==========================================================================
        MARKET CRASH ENGINE & CROSS-PANEL SYNCHRONIZATION
        ========================================================================== */
+    let _sirenPlaying = false;
     function playLedCrashSound() {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const audioCtx = new AudioContext();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        const now = audioCtx.currentTime;
-        osc.frequency.setValueAtTime(520, now);
-        osc.frequency.exponentialRampToValueAtTime(960, now + 0.4);
-        osc.frequency.exponentialRampToValueAtTime(520, now + 0.8);
-        osc.frequency.exponentialRampToValueAtTime(1040, now + 1.2);
-        gain.gain.setValueAtTime(0.28, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 1.5);
-      } catch (e) {}
+      if (_sirenPlaying) return;
+      _sirenPlaying = true;
 
-      // Animate pub siren equalizer bars
       const sirenBtn = document.getElementById('pubSirenBtn');
       if (sirenBtn) {
         sirenBtn.classList.add('siren-active');
-        setTimeout(() => sirenBtn.classList.remove('siren-active'), 1600);
+        sirenBtn.style.pointerEvents = 'none';
       }
+
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          const audioCtx = new AudioContext();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          const now = audioCtx.currentTime;
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(960, now + 0.4);
+          osc.frequency.exponentialRampToValueAtTime(520, now + 0.8);
+          osc.frequency.exponentialRampToValueAtTime(1040, now + 1.2);
+          gain.gain.setValueAtTime(0.28, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 1.5);
+        }
+      } catch (e) {}
+
+      setTimeout(() => {
+        _sirenPlaying = false;
+        const btn = document.getElementById('pubSirenBtn');
+        if (btn) {
+          btn.classList.remove('siren-active');
+          btn.style.pointerEvents = '';
+        }
+      }, 1600);
     }
 
     function openCrashQrModal() {
@@ -5347,21 +5662,30 @@
       const container = document.getElementById('crashJuiceMatrix');
       if (!container || !products || products.length === 0) return;
       
-      let maxDiscountPct = 20;
+      let maxDiscountPct = 0;
+      const totalTaps = products.length;
+      const activeTaps = products.filter(p => !p.soldOut && !p.isSoldOut && (p.remainingVolumeMl === undefined || p.remainingVolumeMl > 0)).length;
+      
+      const activeTapsEl = document.getElementById('crashActiveTapsVal');
+      if (activeTapsEl) {
+        activeTapsEl.textContent = `${activeTaps} of ${totalTaps} Taps Active`;
+      }
       
       container.innerHTML = products.map((p, idx) => {
         const icon = getFruitIcon(p);
         const name = (p.name || p.flavour || 'Juice').toUpperCase();
-        const baseP = Number(p.basePrice || (p.currentCupPrice ? Math.max(p.currentCupPrice, 25) : 25.0));
-        const floorP = Number(p.minCupPrice || 20.0);
-        const discountPct = baseP > 0 ? Math.max(15, Math.round(((baseP - floorP) / baseP) * 100)) : 20;
+        const baseP = Number(p.basePrice || (p.defaultCupPrice ? p.defaultCupPrice : (p.currentCupPrice ? Math.max(p.currentCupPrice, 25) : 25.0)));
+        const floorP = Number(p.minCupPrice != null ? p.minCupPrice : 20.0);
+        
+        // Dynamically compute discount percentage per product from real base & floor rates
+        const discountPct = baseP > floorP ? Math.round(((baseP - floorP) / baseP) * 100) : 0;
         if (discountPct > maxDiscountPct) maxDiscountPct = discountPct;
-        const savingsAmount = Math.max(5, (baseP - floorP)).toFixed(2);
+        const savingsAmount = Math.max(0, (baseP - floorP)).toFixed(2);
         const tapNum = String(idx + 1).padStart(2, '0');
         
-        // Tap volume calculation
+        // Real tap volume calculation
         const remainingVolMl = p.remainingVolumeMl !== undefined ? p.remainingVolumeMl : (20000 - ((p.id * 1370) % 6000));
-        const tankPct = Math.max(15, Math.min(100, Math.round((remainingVolMl / 20000) * 100)));
+        const tankPct = Math.max(0, Math.min(100, Math.round((remainingVolMl / 20000) * 100)));
         const remainingLiters = (remainingVolMl / 1000).toFixed(1);
         
         // Fruit color styling
@@ -5370,7 +5694,7 @@
         const cardBorder = `rgba(${theme.rgb}, 0.5)`;
         
         return `
-          <div class="crash-juice-card" style="border-color: ${cardBorder}; box-shadow: 0 4px 18px rgba(${theme.rgb}, 0.16), 0 2px 10px rgba(0,0,0,0.6);">
+          <div class="crash-juice-card" id="crash_card_prod_${p.id}" data-product-id="${p.id}" style="--card-index: ${idx}; border-color: ${cardBorder}; box-shadow: 0 4px 18px rgba(${theme.rgb}, 0.16), 0 2px 10px rgba(0,0,0,0.6);">
             <div class="cjc-top-edge" style="background: ${accentColor};"></div>
             
             <div class="cjc-header-row">
@@ -5416,7 +5740,7 @@
                   <div class="cjc-tank-fill" style="width: ${tankPct}%; background: ${accentColor}; box-shadow: 0 0 6px ${accentColor};"></div>
                 </div>
               </div>
-              <button class="cjc-claim-btn" onclick="openCrashQrModal()">
+              <button class="cjc-claim-btn" onclick="openCrashQrModal()" title="Order ${name} at ₹${floorP.toFixed(0)}">
                 <span>CLAIM @ ₹${floorP.toFixed(0)}</span> →
               </button>
             </div>
@@ -5436,7 +5760,12 @@
           const data = await res.json();
           if (data.active) {
             _manualCrashOverride = false;
-            triggerMarketCrash(data.remainingSeconds || 180);
+            let remSec = data.remainingSeconds;
+            if (!remSec && data.endTime) {
+              const diff = Math.round((new Date(data.endTime).getTime() - Date.now()) / 1000);
+              if (diff > 0) remSec = diff;
+            }
+            triggerMarketCrash(remSec || 180, false, data.crashPrice);
           } else if (isMarketCrashActive && !_manualCrashOverride) {
             stopMarketCrash();
           }
@@ -5445,12 +5774,13 @@
     }
 
     let crashTotalDuration = 180;
-    function triggerMarketCrash(duration = 180, isManual = false) {
+    function triggerMarketCrash(duration = 180, isManual = false, crashPrice = null) {
       if (isManual) _manualCrashOverride = true;
       const wasActive = isMarketCrashActive;
       isMarketCrashActive = true;
-      crashRemainingSeconds = duration;
-      crashTotalDuration = duration || 180;
+      crashRemainingSeconds = Number(duration) || 180;
+      crashTotalDuration = Math.max(crashTotalDuration || 180, crashRemainingSeconds);
+      
       const overlay = document.getElementById('crashOverlay');
       const minBanner = document.getElementById('minimizedCrashBanner');
       
@@ -5459,6 +5789,13 @@
       } else {
         if (overlay) overlay.style.display = 'flex';
         if (minBanner) minBanner.style.display = 'none';
+      }
+      
+      if (crashPrice) {
+        const floorLockEl = document.getElementById('crashFloorLockVal');
+        if (floorLockEl) floorLockEl.textContent = `₹${Number(crashPrice).toFixed(2)} Flat Cap`;
+        const floorPill = document.querySelector('.crash-floor-pill');
+        if (floorPill) floorPill.textContent = `₹${Number(crashPrice).toFixed(2)} ABSOLUTE FLOOR`;
       }
       
       if (!wasActive) playLedCrashSound();
@@ -5493,9 +5830,19 @@
       const timeStr = `${minsStr}:${secsStr}`;
       
       const minsEl = document.getElementById('crashTimerMins');
-      if (minsEl) minsEl.textContent = minsStr;
+      if (minsEl && minsEl.textContent !== minsStr) {
+        minsEl.textContent = minsStr;
+      }
+      
       const secsEl = document.getElementById('crashTimerSecs');
-      if (secsEl) secsEl.textContent = secsStr;
+      if (secsEl) {
+        if (secsEl.textContent !== secsStr) {
+          secsEl.textContent = secsStr;
+          secsEl.classList.remove('timer-sec-pulse');
+          void secsEl.offsetWidth; // trigger reflow
+          secsEl.classList.add('timer-sec-pulse');
+        }
+      }
 
       const timerEl = document.getElementById('crashTimerText');
       if (timerEl) timerEl.textContent = `⏱️ ${timeStr}`;
