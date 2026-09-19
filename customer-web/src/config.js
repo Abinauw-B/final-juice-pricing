@@ -36,7 +36,7 @@
     if (isLocalhost) {
       rawBaseUrl = 'http://localhost:8088';
     } else {
-      rawBaseUrl = (global.__ENV__ && global.__ENV__.PROD_BACKEND_URL) || global.location.origin;
+      rawBaseUrl = (global.__ENV__ && (global.__ENV__.PROD_BACKEND_URL || global.__ENV__.API_BASE_URL)) || 'https://juice-pricing-backend.onrender.com';
     }
   }
 
