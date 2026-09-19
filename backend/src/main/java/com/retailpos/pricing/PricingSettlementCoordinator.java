@@ -219,6 +219,9 @@ public class PricingSettlementCoordinator {
                             : 0.0;
                     String trendDirection = priceDelta.compareTo(BigDecimal.ZERO) > 0 ? "UP" : (priceDelta.compareTo(BigDecimal.ZERO) < 0 ? "DOWN" : "FLAT");
 
+                    int staticCycles = priceAdjustmentService != null ? priceAdjustmentService.getPurchaseStaticCyclesRemaining(reloaded.getId()) : 0;
+                    boolean isStaticHold = staticCycles > 0 || "PURCHASE_STATIC_HOLD".equals(evalResult.getDemandLevelCategory());
+
                     PricingEngineService.ProductPriceDTO dto = PricingEngineService.ProductPriceDTO.builder()
                             .beverageId(reloaded.getId())
                             .name(reloaded.getName())
@@ -244,6 +247,8 @@ public class PricingSettlementCoordinator {
                             .isCrashed(marketCrashService != null && marketCrashService.isProductCrashed(reloaded.getId()))
                             .minCupPrice(reloaded.getMinCupPrice())
                             .maxCupPrice(reloaded.getMaxCupPrice())
+                            .staticHoldCyclesRemaining(staticCycles)
+                            .isStaticHold(isStaticHold)
                             .build();
 
                     dtos.add(dto);
@@ -368,6 +373,8 @@ public class PricingSettlementCoordinator {
             double changePct = (base.compareTo(BigDecimal.ZERO) > 0)
                     ? ((current.subtract(base)).doubleValue() / base.doubleValue()) * 100.0
                     : 0.0;
+            int staticCycles = priceAdjustmentService != null ? priceAdjustmentService.getPurchaseStaticCyclesRemaining(p.getId()) : 0;
+            boolean isStaticHold = staticCycles > 0;
 
             dtos.add(PricingEngineService.ProductPriceDTO.builder()
                     .beverageId(p.getId())
@@ -392,6 +399,8 @@ public class PricingSettlementCoordinator {
                     .isCrashed(marketCrashService != null && marketCrashService.isProductCrashed(p.getId()))
                     .minCupPrice(p.getMinCupPrice())
                     .maxCupPrice(p.getMaxCupPrice())
+                    .staticHoldCyclesRemaining(staticCycles)
+                    .isStaticHold(isStaticHold)
                     .build());
         }
 

@@ -131,6 +131,8 @@ public class PricingEngineService {
         private Integer targetOrders;
         private BigDecimal volatility;
         private String pricingMode;
+        private Integer staticHoldCyclesRemaining;
+        private Boolean isStaticHold;
 
         public ProductPriceDTO() {}
 
@@ -221,6 +223,10 @@ public class PricingEngineService {
         public String getMovement() { return demandLevelCategory != null ? demandLevelCategory : (priceDelta != null && priceDelta.compareTo(BigDecimal.ZERO) > 0 ? "HIGH_DEMAND" : (priceDelta != null && priceDelta.compareTo(BigDecimal.ZERO) < 0 ? "LOW_DEMAND" : "NORMAL_DEMAND")); }
         public boolean isMarketCrashActive() { return isCrashed; }
         public BigDecimal getDefaultCupPrice() { return previousPrice != null ? previousPrice : currentPrice; }
+        public Integer getStaticHoldCyclesRemaining() { return staticHoldCyclesRemaining; }
+        public void setStaticHoldCyclesRemaining(Integer staticHoldCyclesRemaining) { this.staticHoldCyclesRemaining = staticHoldCyclesRemaining; }
+        public Boolean getIsStaticHold() { return isStaticHold; }
+        public void setIsStaticHold(Boolean isStaticHold) { this.isStaticHold = isStaticHold; }
 
         public static ProductPriceDTOBuilder builder() { return new ProductPriceDTOBuilder(); }
 
@@ -251,6 +257,8 @@ public class PricingEngineService {
             private Integer targetOrders;
             private BigDecimal volatility;
             private String pricingMode;
+            private Integer staticHoldCyclesRemaining;
+            private Boolean isStaticHold;
 
             public ProductPriceDTOBuilder beverageId(Long beverageId) { this.beverageId = beverageId; return this; }
             public ProductPriceDTOBuilder name(String name) { this.name = name; return this; }
@@ -278,6 +286,8 @@ public class PricingEngineService {
             public ProductPriceDTOBuilder orderCount(Integer orderCount) { this.orderCount = orderCount; return this; }
             public ProductPriceDTOBuilder targetOrders(Integer targetOrders) { this.targetOrders = targetOrders; return this; }
             public ProductPriceDTOBuilder volatility(BigDecimal volatility) { this.volatility = volatility; return this; }
+            public ProductPriceDTOBuilder staticHoldCyclesRemaining(Integer staticHoldCyclesRemaining) { this.staticHoldCyclesRemaining = staticHoldCyclesRemaining; return this; }
+            public ProductPriceDTOBuilder isStaticHold(Boolean isStaticHold) { this.isStaticHold = isStaticHold; return this; }
 
             public ProductPriceDTO build() {
                 ProductPriceDTO dto = new ProductPriceDTO(beverageId, name, flavour, currentPrice, effectivePrice, previousPrice, priceDelta, priceChange, priceVersion, priceChangePct, trendDirection, demandRatio, weightedSales, targetSales, demandLevelCategory, isCrashed, minCupPrice, maxCupPrice);
@@ -289,6 +299,8 @@ public class PricingEngineService {
                 dto.setOrderCount(orderCount);
                 dto.setTargetOrders(targetOrders);
                 dto.setVolatility(volatility);
+                dto.setStaticHoldCyclesRemaining(staticHoldCyclesRemaining);
+                dto.setIsStaticHold(isStaticHold != null ? isStaticHold : (staticHoldCyclesRemaining != null && staticHoldCyclesRemaining > 0));
                 return dto;
             }
         }

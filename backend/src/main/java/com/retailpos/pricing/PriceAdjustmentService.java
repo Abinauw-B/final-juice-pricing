@@ -28,6 +28,13 @@ public class PriceAdjustmentService {
     private static LocalDateTime marketStartTime = LocalDateTime.now();
     private static boolean marketPaused = false;
 
+    /**
+     * Map of productId -> remaining settlement cycles under purchase static hold.
+     * When a product is purchased, it is registered with 2 cycles.
+     * Over the next 2 settlement cycles, its pricing remains static (no refresh / deltaP = 0).
+     */
+    private final Map<Long, Integer> purchaseStaticCyclesRemaining = new java.util.concurrent.ConcurrentHashMap<>();
+
     public PriceAdjustmentService(ProductRepository productRepository,
                                   PriceHistoryRepository priceHistoryRepository,
                                   SalesOrderItemRepository salesOrderItemRepository,
@@ -42,6 +49,39 @@ public class PriceAdjustmentService {
         this.pricingProcessedSaleRepository = pricingProcessedSaleRepository;
         this.redisRepository = redisRepository;
         this.pricingConfigurationService = pricingConfigurationService;
+    }
+
+    public void registerProductPurchase(Long productId) {
+        if (productId != null) {
+            purchaseStaticCyclesRemaining.put(productId, 2);
+            log.info("[PURCHASE_PRICE_LOCK] ProductId={} registered purchase. Pricing retained static for next 2 settlement cycles.", productId);
+        }
+    }
+
+    public void registerProductPurchases(Collection<Long> productIds) {
+        if (productIds != null) {
+            for (Long id : productIds) {
+                registerProductPurchase(id);
+            }
+        }
+    }
+
+    public int getPurchaseStaticCyclesRemaining(Long productId) {
+        return productId != null ? purchaseStaticCyclesRemaining.getOrDefault(productId, 0) : 0;
+    }
+
+    public boolean isProductUnderPurchaseStaticHold(Long productId) {
+        return getPurchaseStaticCyclesRemaining(productId) > 0;
+    }
+
+    public void clearPurchaseStaticHold(Long productId) {
+        if (productId != null) {
+            purchaseStaticCyclesRemaining.remove(productId);
+        }
+    }
+
+    public void clearAllPurchaseStaticHolds() {
+        purchaseStaticCyclesRemaining.clear();
     }
 
     public static boolean isMarketPaused() {
@@ -299,6 +339,59 @@ public class PriceAdjustmentService {
                     .demandLevelCategory("MANUAL_LOCK")
                     .explanation("Product is in " + product.getPricingMode() + " mode. Price held constant at ₹" + oldPrice + " by Admin.")
                     .statusReason("MANUAL_LOCK_HOLD")
+                    .build();
+        }
+
+        // Check Purchase Static Hold (Product pricing retained static for 2 settlement cycles after purchase)
+        Integer staticCyclesRemaining = purchaseStaticCyclesRemaining.get(productId);
+        if (staticCyclesRemaining != null && staticCyclesRemaining > 0) {
+            int currentCycleNum = 3 - staticCyclesRemaining;
+            int nextCyclesRemaining = staticCyclesRemaining - 1;
+            if (nextCyclesRemaining <= 0) {
+                purchaseStaticCyclesRemaining.remove(productId);
+            } else {
+                purchaseStaticCyclesRemaining.put(productId, nextCyclesRemaining);
+            }
+
+            log.info("[PURCHASE_STATIC_HOLD] ProductId={} ({}) undergoing settlement cycle {}/2 under purchase static guarantee. Price held constant at ₹{}.",
+                    productId, product.getName(), currentCycleNum, oldPrice);
+
+            // Save authoritative audit record in PriceHistory to show this settlement cycle held price static
+            PriceHistory history = PriceHistory.builder()
+                    .productId(productId)
+                    .oldPrice(oldPrice)
+                    .newPrice(oldPrice)
+                    .priceChange(BigDecimal.ZERO)
+                    .demandRatio(1.0)
+                    .orderCount(orderCount)
+                    .rawPriceChangePercent(BigDecimal.ZERO)
+                    .appliedPriceChangePercent(BigDecimal.ZERO)
+                    .volatility(volatility)
+                    .floorPrice(floor)
+                    .ceilingPrice(ceiling)
+                    .priceVersion(product.getPriceVersion())
+                    .cycleId(cycleId)
+                    .triggerType("PURCHASE_STATIC_HOLD")
+                    .reason("PURCHASE_STATIC_CYCLE_" + currentCycleNum)
+                    .explanation("Price retained static after purchase (Settlement cycle " + currentCycleNum + "/2). Price held at ₹" + oldPrice)
+                    .createdAt(now)
+                    .build();
+            priceHistoryRepository.save(history);
+
+            return PriceEvaluationResult.builder()
+                    .productId(productId)
+                    .flavour(product.getFlavour())
+                    .oldPrice(oldPrice)
+                    .newPrice(oldPrice)
+                    .priceChange(BigDecimal.ZERO)
+                    .priceChanged(false)
+                    .demandRatio(1.0)
+                    .weightedSales((double) orderCount)
+                    .targetSales((double) targetOrders)
+                    .rawW0(orderCount)
+                    .demandLevelCategory("PURCHASE_STATIC_HOLD")
+                    .explanation("Price retained static after purchase (Settlement cycle " + currentCycleNum + "/2). Price held at ₹" + oldPrice)
+                    .statusReason("PURCHASE_STATIC_CYCLE_" + currentCycleNum)
                     .build();
         }
 

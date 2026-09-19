@@ -28,8 +28,14 @@ public class POSService {
     private final com.retailpos.pricing.PricingEngineService pricingEngineService;
     private final com.retailpos.pricing.PriceLockService priceLockService;
     private final TransactionTemplate transactionTemplate;
+    private com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService;
 
     public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PricingEngineService pricingEngineService, com.retailpos.pricing.PriceLockService priceLockService, PlatformTransactionManager transactionManager) {
+        this(productRepository, salesOrderRepository, juiceBatchService, marketCrashService, pricingEngineService, priceLockService, transactionManager, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public POSService(ProductRepository productRepository, SalesOrderRepository salesOrderRepository, JuiceBatchService juiceBatchService, MarketCrashService marketCrashService, com.retailpos.pricing.PricingEngineService pricingEngineService, com.retailpos.pricing.PriceLockService priceLockService, PlatformTransactionManager transactionManager, @org.springframework.beans.factory.annotation.Autowired(required = false) com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService) {
         this.productRepository = productRepository;
         this.salesOrderRepository = salesOrderRepository;
         this.juiceBatchService = juiceBatchService;
@@ -37,6 +43,11 @@ public class POSService {
         this.pricingEngineService = pricingEngineService;
         this.priceLockService = priceLockService;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
+        this.priceAdjustmentService = priceAdjustmentService;
+    }
+
+    public void setPriceAdjustmentService(com.retailpos.pricing.PriceAdjustmentService priceAdjustmentService) {
+        this.priceAdjustmentService = priceAdjustmentService;
     }
 
     public static class CartItemRequest {
@@ -353,6 +364,9 @@ public class POSService {
         if (res == null || !res.isSuccess() || purchasedProductIds == null || purchasedProductIds.isEmpty()) return;
         try {
             log.info("[POST-CHECKOUT] Order #{} committed to DB for productIds={}. Sales recorded as demand input for DWMA settlement windows.", res.getOrderNumber(), purchasedProductIds);
+            if (priceAdjustmentService != null) {
+                priceAdjustmentService.registerProductPurchases(purchasedProductIds);
+            }
             if (pricingEngineService != null) {
                 pricingEngineService.broadcastCurrentState();
             }
@@ -403,6 +417,9 @@ public class POSService {
             log.info("Product validation successful: ID={}, Name={}", product.getId(), product.getName());
 
             purchasedProductIds.add(product.getId());
+            if (priceAdjustmentService != null) {
+                priceAdjustmentService.registerProductPurchase(product.getId());
+            }
 
             int cupSize = (itemReq.getCupSizeMl() != null && itemReq.getCupSizeMl() > 0) ? itemReq.getCupSizeMl() : product.getDefaultCupSizeMl();
             int qty = (itemReq.getQuantity() != null && itemReq.getQuantity() > 0) ? itemReq.getQuantity() : 1;
@@ -417,6 +434,15 @@ public class POSService {
                 com.retailpos.pricing.PriceLockService.LockedPriceVersion lock = priceLockService.validateAndRedeemLock(itemReq.getPriceLockToken(), product.getId());
                 effectivePrice = lock.getLockedPrice();
                 effectiveVersion = lock.getPriceVersion();
+            } else if (itemReq.getLockedPrice() != null && itemReq.getLockedPrice().compareTo(BigDecimal.ZERO) > 0) {
+                // If settlement timer occurred during purchase/checkout, retain locked price within allowable bounds
+                if (priceAdjustmentService != null && priceAdjustmentService.isProductUnderPurchaseStaticHold(product.getId())) {
+                    effectivePrice = product.getCurrentCupPrice();
+                } else if (itemReq.getLockedPrice().compareTo(product.getMinCupPrice()) >= 0 && itemReq.getLockedPrice().compareTo(product.getMaxCupPrice()) <= 0) {
+                    effectivePrice = itemReq.getLockedPrice();
+                    log.info("[PURCHASE_LOCK_HONORED] Settlement timer occurred during purchase for product {}. Retaining locked price ₹{} (current ₹{})",
+                            product.getId(), itemReq.getLockedPrice(), product.getCurrentCupPrice());
+                }
             }
 
             BigDecimal itemTotal = effectivePrice.multiply(BigDecimal.valueOf(qty));
