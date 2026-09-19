@@ -1671,7 +1671,7 @@
 
       <div
         style="margin-top: auto; font-size: 12px; color: var(--text-muted); padding-top: 16px; border-top: 1px solid var(--border-color);">
-        Spring Boot Backend @ Port 8088<br>Pub Exchange Enterprise Terminal
+        Spring Boot Production Backend<br>Pub Exchange Enterprise Terminal
       </div>
     </nav>
 
@@ -1819,7 +1819,7 @@
               <div
                 style="background: #f8fafc; border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px;">
                 <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Spring REST API</div>
-                <div style="font-size: 13px; font-weight: 800; color: #059669; margin-top: 2px;">🟢 Port 8088</div>
+                <div style="font-size: 13px; font-weight: 800; color: #059669; margin-top: 2px;" id="panelStatusBackend">🟢 Online</div>
               </div>
               <div
                 style="background: #f8fafc; border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px;">
@@ -4461,7 +4461,7 @@
       } catch (err) {
         console.error('[DASHBOARD] Refresh failed:', err);
         if (isManual) {
-          showToast('⚠️ Could not connect to backend server on port 8088', 'danger');
+          showToast('⚠️ Could not connect to backend server', 'danger');
         }
       } finally {
         if (isManual) {
@@ -9102,7 +9102,7 @@
         // 1. Fetch live product list from backend to match product ID in PostgreSQL
         const prodsRes = await apiFetch('/pos/products');
         if (!prodsRes.ok) {
-          throw new Error(`Could not connect to backend server on port 8088 (HTTP ${prodsRes.status})`);
+          throw new Error(`Could not connect to backend server (HTTP ${prodsRes.status})`);
         }
 
         const products = await prodsRes.json();
@@ -9189,7 +9189,7 @@
         // 1. Fetch live product list from backend
         const prodsRes = await apiFetch('/pos/products');
         if (!prodsRes.ok) {
-          throw new Error(`Could not connect to backend server on port 8088 (HTTP ${prodsRes.status})`);
+          throw new Error(`Could not connect to backend server (HTTP ${prodsRes.status})`);
         }
 
         const products = await prodsRes.json();
@@ -9410,7 +9410,7 @@
         console.error('[RESET] Failed to reset market prices:', err);
         const errMsg = (err && err.message) ? err.message : 'Unknown network error';
         if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError') || errMsg.includes('connect') || errMsg.includes('Load failed')) {
-          showToast('🔴 Backend unavailable on port 8088. Reset was NOT completed.', 'danger');
+          showToast('🔴 Backend unavailable. Reset was NOT completed.', 'danger');
         } else if (errMsg.includes('401')) {
           showToast('🔴 Authentication expired. Please log in again.', 'danger');
         } else if (errMsg.includes('403')) {
@@ -9435,7 +9435,7 @@
         const res = await apiFetch('/health');
         if (res.ok) {
           if (badge) {
-            badge.innerHTML = '🟢 ALL MICROSERVICES ONLINE &amp; POSTGRESQL CONNECTED (8088)';
+            badge.innerHTML = '🟢 ALL MICROSERVICES ONLINE &amp; POSTGRESQL CONNECTED';
             badge.style.color = '#059669';
           }
           if (headerPill && headerText && !isAdminCrashActive) {
@@ -9449,7 +9449,7 @@
         }
       } catch (err) {
         if (badge) {
-          badge.innerHTML = '🔴 BACKEND OFFLINE (Port 8088 Unreachable)';
+          badge.innerHTML = '🔴 BACKEND OFFLINE';
           badge.style.color = '#dc2626';
         }
         if (headerPill && headerText && !isAdminCrashActive) {
@@ -9578,8 +9578,8 @@
       // Backend API check
       try {
         const res = await fetch(`${API_BASE_URL}/health`, { method: 'GET', signal: AbortSignal.timeout(3000) });
-        setStatusEl('hubStatusAPI', res.ok, 'Port 8088');
-        setStatusEl('panelStatusBackend', res.ok, 'Port 8088');
+        setStatusEl('hubStatusAPI', res.ok, res.ok ? 'Online' : 'Offline');
+        setStatusEl('panelStatusBackend', res.ok, res.ok ? 'Online' : 'Offline');
       } catch (e) {
         setStatusEl('hubStatusAPI', false, 'Offline');
         setStatusEl('panelStatusBackend', false, 'Offline');
@@ -9593,8 +9593,8 @@
       // Customer POS check
       try {
         const res = await fetch(`${posUrl}/config.js`, { method: 'HEAD', mode: 'no-cors', signal: AbortSignal.timeout(3000) });
-        setStatusEl('hubStatusPOS', true, 'Port 8000');
-        setStatusEl('panelStatusPOS', true, 'Port 8000');
+        setStatusEl('hubStatusPOS', true, 'Online');
+        setStatusEl('panelStatusPOS', true, 'Online');
       } catch (e) {
         setStatusEl('hubStatusPOS', false, 'Offline');
         setStatusEl('panelStatusPOS', false, 'Offline');
@@ -9603,7 +9603,7 @@
       // LED Display check (same origin as POS)
       try {
         const res = await fetch(`${posUrl}/led-display.html`, { method: 'HEAD', mode: 'no-cors', signal: AbortSignal.timeout(3000) });
-        setStatusEl('hubStatusLED', true, 'Port 8000');
+        setStatusEl('hubStatusLED', true, 'Online');
       } catch (e) {
         setStatusEl('hubStatusLED', false, 'Offline');
       }

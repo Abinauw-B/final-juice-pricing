@@ -39,7 +39,7 @@ import { PricingSimulatorComponent } from './pricing/pricing-simulator.component
         </div>
 
         <div style="margin-top: auto; font-size: 12px; color: var(--text-muted); padding-top: 16px; border-top: 1px solid var(--border-color);">
-          Spring Boot @ Port 8088<br>Admin Control Center v1.0
+          Spring Boot Production Backend<br>Admin Control Center v1.0
         </div>
       </nav>
 
