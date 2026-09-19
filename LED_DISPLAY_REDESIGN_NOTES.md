@@ -87,3 +87,30 @@ Visual, motion, layout, and live-data refinement pass on the full-screen "Circui
    - **Drifting Candlestick / HUD Grid:** Added subtle 32x32px isometric technical grid background drift via `@keyframes gridDrift` with low opacity.
    - **Outer Border Aura:** Replaced erratic flickers with deliberate, majestic 5-second amber/red breathing glow (`@keyframes crashAuraSlow`).
 
+---
+
+## Crash Panel — Bug Fix & Consistency Pass
+**Date:** 2026-09-19
+
+### 1. Bug Fix: Top & Bottom Hazard-Stripe Marquee Bars (Zero Overlap, 100% Readable)
+- **Root Cause Diagnosis:**
+  1. *Stripe Invisibility / Dropout:* Text was originally rendered directly atop repeating yellow-and-black diagonal hazard stripes (`repeating-linear-gradient(-45deg, #EAB308 0px, #EAB308 16px, #000000 16px, #000000 32px)`). Characters landing on black stripes became completely swallowed/invisible, leaving only fragmented letters visible on yellow stripes (producing the garbled "ENU ARK CRA IN GRE A BEV AGE CES ABS UTE OR UT 00 ORD T P NOV" appearance).
+  2. *Stream Collision:* Marquee items lacked a structured chassis and seamless cloning, resulting in clipping at different viewport widths.
+- **Resolution Architecture:**
+  - **Chassis Isolation Pattern:** Maintained the industrial hazard stripes on the outer container (`.crash-hazard-bar.crash-hazard-top` and `.crash-hazard-bottom`, 40px height) to reinforce emergency visual theme, while embedding an inner chassis (`.crash-hazard-chassis`) with deep obsidian background (`rgba(6, 10, 20, 0.96)`) and crisp gold borders (`1.5px solid #FACC15`). This leaves the caution stripes clearly visible along the top and bottom 4px rims while guaranteeing 100% solid, high-contrast, razor-sharp backing for all text.
+  - **Dual-Stream Infinite Looping:** Built the track (`.hazard-marquee-track`) with two cloned, identically formatted message streams (`.hazard-marquee-stream`), scrolling seamlessly left-to-right via `transform: translateX(-50%)` over 42 seconds.
+  - **Clean Message Separators:** Each message is separated by distinct category badges (`.hp-red`, `.hp-amber`, `.hp-emerald`, `.hp-cyan`) with inline SVG icons and gold star separators (`✦`), preventing any possibility of word overlap or collisions across 1080p, 1440p, and 4K displays.
+
+### 2. Bug Fix: Product Cards Overflow & Text Truncation Resolved
+- **Root Cause Diagnosis:**
+  1. *Right-Edge Clipping:* The product container lacked flexible minimum widths, causing the 8-card grid to exceed screen boundaries on certain 16:9 viewports.
+  2. *Ellipsis Name Truncation:* Single-line `white-space: nowrap; text-overflow: ellipsis;` forced beverage names ("VALENCIA ORANGE SPECIAL", "COOL MINT COOLER", "FRESH MANGO JUICE") to cut off unreadably.
+- **Resolution Architecture:**
+  - **Responsive Grid:** Configured `.crash-juice-matrix` with `grid-template-columns: repeat(4, minmax(0, 1fr))` and a responsive gap (`clamp(8px, 0.85vw, 12px)`). Pinned the central container `.crash-box` to `max-width: min(1680px, 97vw); width: 97vw;`, ensuring all 8 cards fit within the viewport without horizontal overflow.
+  - **Two-Line Graceful Wrapping:** Updated `.cjc-name` to `display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 2.4em; white-space: normal; line-height: 1.2;`. Longer beverage titles now wrap smoothly across 2 lines with complete, untruncated text at all standard resolutions (1080p, 1440p, 4K).
+
+### 3. Tone & Quality Realignment (Circuit Breaker Design Standard)
+- **SVG Icon Uniformity:** Replaced all decorative OS-dependent emojis (`🚨`, `⚡`, `💥`, `🛡️`, `🍹`, `👁️`, `📱`, `🔥`) with bespoke inline SVG vector icons (emergency beacon sirens, algorithmic lightning bolts, precision shields, tap gauges, terminal eye, and POS QR glyphs).
+- **Countdown Focal Dominance:** Scaled countdown digits to `clamp(56px, 6.2vw, 84px)`—more than double the size of the headline title—ensuring the time-critical countdown is the undisputed single largest element on screen.
+- **Telemetry & Live Data Strip:** Preserved 4 high-contrast live metric tiles (Max Venue Discount, Floor Lock Price, Pricing Mode, and Floor Availability with real-time active tap count `products.filter(p => !p.soldOut && (p.remainingVolumeMl === undefined || p.remainingVolumeMl > 0)).length`).
+- **Full Card Detail Model:** Maintained per-card tap indicators, avatar boxes with fruit theme gradients, strikethrough base prices with green savings tags (`SAVE ₹X / CUP`), floor lock tags, live tap stock liters & percentage bars with liquid shimmer, and hover-reactive claim buttons.
