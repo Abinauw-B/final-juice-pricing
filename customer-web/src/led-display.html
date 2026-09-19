@@ -2294,9 +2294,11 @@
       transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
     }
     .timer-sec-pulse {
-      transform: scale(1.1);
-      color: #FFFFFF !important;
-      text-shadow: 0 0 35px #FACC15, 0 0 12px #FFFFFF !important;
+      animation: secPulse 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes secPulse {
+      0% { transform: scale(1.18); color: #FFFFFF; text-shadow: 0 0 35px #FACC15, 0 0 15px #FFFFFF; }
+      100% { transform: scale(1); color: #FACC15; text-shadow: 0 0 28px rgba(250, 204, 21, 0.8), 0 0 10px rgba(239, 68, 68, 0.6); }
     }
     .timer-label {
       font-size: 11px;
