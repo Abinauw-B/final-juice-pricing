@@ -3487,7 +3487,7 @@
     <div class="header-center-status">
       <span id="backendStatusBadge" class="status-badge status-badge-online">
         <span class="status-dot"></span>
-        <span id="backendStatusText">BACKEND ONLINE (8088)</span>
+        <span id="backendStatusText">BACKEND ONLINE</span>
       </span>
       <span class="status-badge status-badge-market">
         <span class="status-dot"></span>
@@ -5528,7 +5528,7 @@
           isWsConnected = true;
           wsReconnectAttempts = 0;
           if (socketBadge) socketBadge.className = 'status-badge status-badge-online';
-          if (socketText) socketText.textContent = 'BACKEND ONLINE (8088)';
+          if (socketText) socketText.textContent = 'BACKEND ONLINE';
 
           cleanupStompSubscriptions();
           fetchProducts();
@@ -6132,7 +6132,7 @@
         clearTimeout(timeoutId);
         if (res.ok) {
           badge.className = 'status-badge status-badge-online';
-          text.textContent = 'BACKEND ONLINE (8088)';
+          text.textContent = 'BACKEND ONLINE';
         } else {
           if (!isWsConnected) {
             badge.className = 'status-badge status-badge-offline';

@@ -134,7 +134,7 @@ export class PricingSimulatorComponent {
   };
 
   simulationResult: any = null;
-  apiBaseUrl: string = (typeof window !== 'undefined' && (window as any).API_BASE_URL) || 'http://localhost:8088/api';
+  apiBaseUrl: string = (typeof window !== 'undefined' && ((window as any).__ENV__?.API_BASE_URL || (window as any).API_BASE_URL || (window as any).CONFIG?.API_BASE_URL)) || 'https://juice-pricing-backend.onrender.com/api';
 
   constructor(private http: HttpClient) {
     this.runSimulation();
