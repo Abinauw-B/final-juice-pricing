@@ -1947,124 +1947,128 @@
       z-index: 1;
     }
 
-    /* Institutional Financial Exchange Circuit Breaker Ribbons (Top & Bottom) */
-    .crash-caution-tape {
-      position: absolute;
+    /* ==========================================================================
+       HAZARD STRIPE MARQUEE BARS (Top & Bottom) — Zero Overlap, 100% Readable
+       ========================================================================== */
+    .crash-hazard-bar {
+      position: fixed;
       left: 0;
       right: 0;
-      height: 38px;
-      background: linear-gradient(90deg, #0A0F1E 0%, #160D14 20%, #1A0D11 50%, #160D14 80%, #0A0F1E 100%);
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8), 0 0 30px rgba(239, 68, 68, 0.3);
-      z-index: 10002;
+      height: 40px;
+      background: repeating-linear-gradient(
+        -45deg,
+        #EAB308 0px,
+        #EAB308 14px,
+        #000000 14px,
+        #000000 28px
+      );
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 0 25px rgba(234, 179, 8, 0.35);
+      z-index: 10005;
       display: flex;
       align-items: center;
       overflow: hidden;
-      white-space: nowrap;
+      box-sizing: border-box;
     }
-    .crash-caution-top {
+    .crash-hazard-top {
       top: 0;
-      border-bottom: 1px solid rgba(239, 68, 68, 0.45);
+      border-bottom: 2px solid #000000;
     }
-    .crash-caution-bottom {
+    .crash-hazard-bottom {
       bottom: 0;
-      border-top: 1px solid rgba(239, 68, 68, 0.45);
+      border-top: 2px solid #000000;
     }
-
-    /* Laser edge line across caution ribbon */
-    .crash-caution-tape::before {
-      content: '';
+    .crash-hazard-chassis {
       position: absolute;
+      top: 4px;
+      bottom: 4px;
       left: 0;
       right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #EF4444, #F59E0B, #EF4444, transparent);
-      animation: laserSweep 3.5s ease-in-out infinite alternate;
-    }
-    .crash-caution-top::before { bottom: 0; }
-    .crash-caution-bottom::before { top: 0; }
-
-    @keyframes laserSweep {
-      0%   { opacity: 0.4; transform: scaleX(0.7); }
-      100% { opacity: 1; transform: scaleX(1); }
-    }
-
-    .crash-caution-track {
-      display: inline-flex;
+      background: rgba(6, 10, 20, 0.96);
+      border-top: 1.5px solid #FACC15;
+      border-bottom: 1.5px solid #FACC15;
+      display: flex;
       align-items: center;
-      gap: 36px;
-      animation: cautionTapeScroll 38s linear infinite;
-      padding-left: 20px;
-      white-space: nowrap;
-      flex-shrink: 0;
-      min-width: max-content;
+      overflow: hidden;
+      box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.9);
     }
-    @keyframes cautionTapeScroll {
+    .hazard-marquee-track {
+      display: flex;
+      width: max-content;
+      animation: hazardScroll 42s linear infinite;
+      white-space: nowrap;
+      will-change: transform;
+    }
+    @keyframes hazardScroll {
       0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
-
-    .cct-item {
+    .hazard-marquee-stream {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #E2E8F0;
-      white-space: nowrap;
+      gap: 28px;
+      padding: 0 14px;
       flex-shrink: 0;
     }
-    .cct-badge {
+    .hazard-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #F8FAFC;
+      white-space: nowrap;
+    }
+    .hazard-pill {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      background: rgba(239, 68, 68, 0.22);
-      border: 1px solid #EF4444;
-      color: #FECACA;
       padding: 2px 8px;
       border-radius: 4px;
       font-size: 10px;
       font-weight: 900;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
-    .cct-badge-gold {
-      background: rgba(245, 158, 11, 0.22);
-      border-color: #F59E0B;
-      color: #FDE68A;
-    }
-    .cct-badge-cyan {
-      background: rgba(6, 182, 212, 0.2);
-      border-color: #06B6D4;
-      color: #A5F3FC;
-    }
-    .cct-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #EF4444;
-      box-shadow: 0 0 8px #EF4444;
-      animation: dotBeaconPulse 0.9s infinite alternate;
-    }
-    @keyframes dotBeaconPulse {
-      0% { opacity: 0.35; transform: scale(0.85); }
-      100% { opacity: 1; transform: scale(1.3); }
-    }
-    .cct-sep {
-      color: #F59E0B;
+    .hp-red { background: rgba(239, 68, 68, 0.28); border: 1px solid #EF4444; color: #FECACA; }
+    .hp-amber { background: rgba(245, 158, 11, 0.28); border: 1px solid #F59E0B; color: #FDE68A; }
+    .hp-emerald { background: rgba(16, 185, 129, 0.28); border: 1px solid #10B981; color: #A7F3D0; }
+    .hp-cyan { background: rgba(6, 182, 212, 0.28); border: 1px solid #06B6D4; color: #CFFAFE; }
+    .hazard-sep {
+      color: #EAB308;
       font-size: 12px;
-      opacity: 0.7;
+      opacity: 0.85;
+    }
+    .crash-svg-icon {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .crash-svg-sm {
+      width: 14px;
+      height: 14px;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .crash-svg-btn {
+      width: 17px;
+      height: 17px;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
     }
 
     /* Central Command Box — Ultra-Crisp Obsidian Glass with 5s Slow Pulse */
     .crash-box {
-      background: linear-gradient(180deg, rgba(17, 24, 43, 0.94) 0%, rgba(10, 14, 28, 0.98) 100%);
-      border: 1px solid rgba(239, 68, 68, 0.45);
+      background: linear-gradient(180deg, rgba(17, 24, 43, 0.96) 0%, rgba(10, 14, 28, 0.99) 100%);
+      border: 1.5px solid rgba(239, 68, 68, 0.5);
       border-radius: 20px;
-      padding: clamp(14px, 1.8vh, 22px) clamp(16px, 2.2vw, 32px);
-      max-width: 1560px;
-      width: 96vw;
+      padding: clamp(12px, 1.6vh, 20px) clamp(16px, 2vw, 30px);
+      max-width: min(1680px, 97vw);
+      width: 97vw;
       box-shadow: 
         0 25px 70px -10px rgba(0, 0, 0, 0.88),
         0 0 45px -10px rgba(239, 68, 68, 0.3),
@@ -2180,14 +2184,14 @@
     }
 
     .crash-main-title {
-      font-size: clamp(26px, 2.7vw, 40px);
+      font-size: clamp(20px, 2.0vw, 30px);
       font-weight: 900;
       letter-spacing: -0.015em;
       text-transform: uppercase;
       background: linear-gradient(180deg, #FFFFFF 15%, #FEE2E2 50%, #EF4444 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 24px rgba(239, 68, 68, 0.7));
+      filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.65));
       margin: 0;
       line-height: 1.15;
     }
@@ -2215,18 +2219,18 @@
       letter-spacing: 0.03em;
     }
 
-    /* DIGITAL HUD TIMER CHAMBER — COMMANDING FOCAL POINT */
+    /* DIGITAL HUD TIMER CHAMBER — COMMANDING FOCAL POINT (Largest Element) */
     .crash-timer-chamber {
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: rgba(8, 12, 22, 0.9);
-      border: 1.5px solid rgba(245, 158, 11, 0.45);
+      background: rgba(8, 12, 22, 0.94);
+      border: 1.5px solid rgba(245, 158, 11, 0.5);
       border-radius: 14px;
-      padding: 8px 24px;
+      padding: 8px clamp(16px, 2.5vw, 32px);
       margin: 3px 0 8px;
-      box-shadow: 0 0 24px rgba(245, 158, 11, 0.22), inset 0 0 20px rgba(0, 0, 0, 0.8);
-      width: min(100%, 520px);
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.25), inset 0 0 24px rgba(0, 0, 0, 0.85);
+      width: min(100%, 620px);
       box-sizing: border-box;
       position: relative;
       animation: chamberCalmPulse 4s infinite ease-in-out;
@@ -2287,17 +2291,18 @@
       gap: 5px;
     }
     .timer-num {
-      font-size: clamp(46px, 4.6vw, 64px);
+      font-size: clamp(56px, 6.2vw, 84px);
       letter-spacing: 2px;
       font-weight: 900;
       display: inline-block;
+      line-height: 1;
       transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
     }
     .timer-sec-pulse {
       animation: secPulse 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     @keyframes secPulse {
-      0% { transform: scale(1.18); color: #FFFFFF; text-shadow: 0 0 35px #FACC15, 0 0 15px #FFFFFF; }
+      0% { transform: scale(1.15); color: #FFFFFF; text-shadow: 0 0 35px #FACC15, 0 0 15px #FFFFFF; }
       100% { transform: scale(1); color: #FACC15; text-shadow: 0 0 28px rgba(250, 204, 21, 0.8), 0 0 10px rgba(239, 68, 68, 0.6); }
     }
     .timer-label {
@@ -2307,10 +2312,11 @@
       letter-spacing: 0.08em;
     }
     .timer-colon {
-      font-size: clamp(40px, 4vw, 54px);
+      font-size: clamp(48px, 5.2vw, 70px);
       color: #EF4444;
       animation: colonBlink 1s infinite;
       margin: 0 4px;
+      line-height: 1;
     }
     @keyframes colonBlink {
       0%, 49% { opacity: 1; }
@@ -2467,20 +2473,20 @@
       100% { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.38); }
     }
 
-    /* CRASH SHOWCASE MATRIX (4x2 on desktop) */
+    /* CRASH SHOWCASE MATRIX (4x2 on desktop) — Responsive minmax guarantees zero right-edge overflow */
     .crash-juice-matrix {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: clamp(8px, 0.85vw, 12px);
       width: 100%;
       margin: 4px 0 9px;
       box-sizing: border-box;
     }
-    @media (max-width: 1300px) {
-      .crash-juice-matrix { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 1200px) {
+      .crash-juice-matrix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-    @media (max-width: 680px) {
-      .crash-juice-matrix { grid-template-columns: 1fr; }
+    @media (max-width: 640px) {
+      .crash-juice-matrix { grid-template-columns: minmax(0, 1fr); }
     }
 
     /* ENHANCED PROFESSIONAL BEVERAGE CARD WITH ENTRANCE STAGGER */
@@ -2586,15 +2592,20 @@
       gap: 5px;
     }
     .cjc-name {
-      font-size: 13px;
+      font-size: clamp(11.5px, 0.82vw, 13px);
       font-weight: 900;
       color: #FFFFFF;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      letter-spacing: 0.2px;
+      white-space: normal;
+      word-break: normal;
+      overflow-wrap: break-word;
       line-height: 1.2;
       text-transform: uppercase;
+      letter-spacing: 0.02em;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.4em;
       margin-top: 1px;
     }
 
