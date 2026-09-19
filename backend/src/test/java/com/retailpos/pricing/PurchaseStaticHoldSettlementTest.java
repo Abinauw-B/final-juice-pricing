@@ -1,6 +1,5 @@
 package com.retailpos.pricing;
 
-import com.retailpos.domain.PriceHistory;
 import com.retailpos.domain.PriceHistoryRepository;
 import com.retailpos.domain.Product;
 import com.retailpos.domain.ProductRepository;
