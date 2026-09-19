@@ -9434,15 +9434,26 @@
       try {
         const res = await apiFetch('/health');
         if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          const isUp = (data.status === 'UP' || data.status === 'HEALTHY' || data.status === 'OK');
+          const isDbConnected = (data.database === 'CONNECTED' || (data.services && data.services.postgresDb && data.services.postgresDb.status === 'UP'));
+          const isFullyHealthy = isUp && isDbConnected;
+          const wsStatus = data.services && data.services.websocket ? data.services.websocket.status : null;
+
           if (badge) {
-            badge.innerHTML = '🟢 ALL MICROSERVICES ONLINE &amp; POSTGRESQL CONNECTED';
-            badge.style.color = '#059669';
+            if (isFullyHealthy) {
+              badge.innerHTML = data.summaryText || '🟢 ALL BACKEND MICROSERVICES ONLINE &amp; POSTGRESQL CONNECTED';
+              badge.style.color = '#059669';
+            } else {
+              badge.innerHTML = '🟡 BACKEND DEGRADED';
+              badge.style.color = '#d97706';
+            }
           }
           if (headerPill && headerText && !isAdminCrashActive) {
-            headerPill.style.background = 'rgba(16, 185, 129, 0.15)';
-            headerPill.style.color = '#10b981';
-            headerPill.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-            headerText.textContent = '● MARKET ONLINE';
+            headerPill.style.background = isFullyHealthy ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)';
+            headerPill.style.color = isFullyHealthy ? '#10b981' : '#f59e0b';
+            headerPill.style.borderColor = isFullyHealthy ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)';
+            headerText.textContent = isFullyHealthy ? '● MARKET ONLINE' : '🟡 DEGRADED';
           }
         } else {
           throw new Error(`HTTP ${res.status}`);
