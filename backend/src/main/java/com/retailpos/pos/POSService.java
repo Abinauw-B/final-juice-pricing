@@ -369,9 +369,6 @@ public class POSService {
         if (res == null || !res.isSuccess() || purchasedProductIds == null || purchasedProductIds.isEmpty()) return;
         try {
             log.info("[POST-CHECKOUT] Order #{} committed to DB for productIds={}. Sales recorded as demand input for DWMA settlement windows.", res.getOrderNumber(), purchasedProductIds);
-            if (priceAdjustmentService != null) {
-                priceAdjustmentService.registerProductPurchases(purchasedProductIds);
-            }
             if (pricingEngineService != null) {
                 pricingEngineService.broadcastCurrentState();
             }
@@ -423,9 +420,6 @@ public class POSService {
             log.info("Product validation successful: ID={}, Name={}", product.getId(), product.getName());
 
             purchasedProductIds.add(product.getId());
-            if (priceAdjustmentService != null) {
-                priceAdjustmentService.registerProductPurchase(product.getId());
-            }
 
             int cupSize = (itemReq.getCupSizeMl() != null && itemReq.getCupSizeMl() > 0) ? itemReq.getCupSizeMl() : product.getDefaultCupSizeMl();
             int qty = (itemReq.getQuantity() != null && itemReq.getQuantity() > 0) ? itemReq.getQuantity() : 1;

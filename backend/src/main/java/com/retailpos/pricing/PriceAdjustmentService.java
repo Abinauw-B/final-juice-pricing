@@ -420,7 +420,7 @@ public class PriceAdjustmentService {
         try {
             int recordedW0 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w0Start, now);
             int unconsumedW0 = product.getOrderCount() != null ? product.getOrderCount() : 0;
-            w0 = recordedW0 + unconsumedW0;
+            w0 = Math.max(recordedW0, unconsumedW0);
             w1 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w1Start, w1End);
             w2 = salesOrderItemRepository.countNonCrashQuantitySoldForProductBetweenExclusiveEnd(productId, w2Start, w2End);
         } catch (Exception dbEx) {
@@ -577,6 +577,7 @@ public class PriceAdjustmentService {
             product.setLastPriceChangeTimestamp(now);
         }
         productRepository.saveAndFlush(product);
+        productRepository.resetOrderCount(productId);
         log.info("[PRICE_PERSISTED] product='{}' newPrice=₹{} priceVersion={}", product.getName(), newPrice, product.getPriceVersion());
 
         if (redisRepository != null) {

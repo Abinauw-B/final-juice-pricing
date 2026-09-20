@@ -541,23 +541,29 @@ public class PricingConfigurationService {
         currentConfigVersion.set(newVersion);
         lastConfigUpdate = LocalDateTime.now();
 
-        // Sync Redis
-        try {
-            if (redisTemplate != null) {
-                redisTemplate.opsForValue().set("pricing:product:" + productId + ":target", String.valueOf(product.getTargetSalesPer1Minute()));
-                if (product.getCurrentCupPrice() != null) {
-                    redisTemplate.opsForValue().set("pricing:product:" + productId + ":price", product.getCurrentCupPrice().toString());
+        // Sync Redis (ASYNCHRONOUS & NON-BLOCKING)
+        final double targetSales = product.getTargetSalesPer1Minute() != null ? product.getTargetSalesPer1Minute() : 0.55;
+        final String priceStr = product.getCurrentCupPrice() != null ? product.getCurrentCupPrice().toString() : null;
+        final String minStr = product.getMinCupPrice() != null ? product.getMinCupPrice().toString() : null;
+        final String maxStr = product.getMaxCupPrice() != null ? product.getMaxCupPrice().toString() : null;
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                if (redisTemplate != null) {
+                    redisTemplate.opsForValue().set("pricing:product:" + productId + ":target", String.valueOf(targetSales));
+                    if (priceStr != null) {
+                        redisTemplate.opsForValue().set("pricing:product:" + productId + ":price", priceStr);
+                    }
+                    if (minStr != null) {
+                        redisTemplate.opsForValue().set("pricing:product:" + productId + ":min", minStr);
+                    }
+                    if (maxStr != null) {
+                        redisTemplate.opsForValue().set("pricing:product:" + productId + ":max", maxStr);
+                    }
                 }
-                if (product.getMinCupPrice() != null) {
-                    redisTemplate.opsForValue().set("pricing:product:" + productId + ":min", product.getMinCupPrice().toString());
-                }
-                if (product.getMaxCupPrice() != null) {
-                    redisTemplate.opsForValue().set("pricing:product:" + productId + ":max", product.getMaxCupPrice().toString());
-                }
+            } catch (Exception e) {
+                log.warn("Failed to sync product config to Redis: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("Failed to sync product config to Redis: {}", e.getMessage());
-        }
+        });
 
         // PHASE 11 FIX: Broadcast to WebSocket only after DB transaction commits.
         // Previously STOMP fired inside the @Transactional boundary, which could send stale

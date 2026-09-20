@@ -44,6 +44,9 @@ public class ComprehensiveIntervalMatrixAndCycleTest {
                     if (method.getName().equals("saveAndFlush") || method.getName().equals("save")) {
                         return product;
                     }
+                    if (method.getReturnType().equals(int.class)) {
+                        return 0;
+                    }
                     return null;
                 }
         );
