@@ -7,7 +7,7 @@ echo ================================================================
 set "INTERVAL=10"
 if not "%~1"=="" set "INTERVAL=%~1"
 
-wscript.exe "%~dp0scripts\run-hidden.vbs" %INTERVAL%
+wscript.exe "%~dp0..\run-hidden.vbs" %INTERVAL%
 
 echo [SUCCESS] Auto-push background daemon initiated!
 echo    Sync Interval : Every %INTERVAL% minute(s)

@@ -10,8 +10,10 @@ if not "%~1"=="" set "INTERVAL=%~1"
 powershell.exe -NoLogo -ExecutionPolicy Bypass -Command ^
   "$startupFolder = [System.IO.Path]::Combine($env:APPDATA, 'Microsoft\Windows\Start Menu\Programs\Startup');" ^
   "$shortcutPath = [System.IO.Path]::Combine($startupFolder, 'JuiceAutoGitPush.lnk');" ^
-  "$projectDir = '%~dp0'.TrimEnd('\');" ^
-  "$vbsPath = Join-Path $projectDir 'scripts\run-hidden.vbs';" ^
+  "$autopushDir = '%~dp0'.TrimEnd('\');" ^
+  "$scriptsDir = [System.IO.Path]::GetFullPath((Join-Path $autopushDir '..'));" ^
+  "$projectDir = [System.IO.Path]::GetFullPath((Join-Path $scriptsDir '..'));" ^
+  "$vbsPath = Join-Path $scriptsDir 'run-hidden.vbs';" ^
   "$wshell = New-Object -ComObject WScript.Shell;" ^
   "$shortcut = $wshell.CreateShortcut($shortcutPath);" ^
   "$shortcut.TargetPath = 'wscript.exe';" ^

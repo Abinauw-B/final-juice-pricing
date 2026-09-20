@@ -18,6 +18,6 @@ echo.
 set "INTERVAL=10"
 if not "%~1"=="" set "INTERVAL=%~1"
 
-powershell.exe -NoLogo -ExecutionPolicy Bypass -File "%~dp0scripts\auto-git-push.ps1" -IntervalMinutes %INTERVAL%
+powershell.exe -NoLogo -ExecutionPolicy Bypass -File "%~dp0..\auto-git-push.ps1" -IntervalMinutes %INTERVAL%
 
 pause
