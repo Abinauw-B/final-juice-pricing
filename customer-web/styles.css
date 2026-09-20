@@ -298,6 +298,64 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 20px;
   width: 440px;
+  max-width: 92vw;
   padding: 32px;
   box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+/* ═══════ COMPREHENSIVE RESPONSIVE DEVICE RATIO & MOBILE ENGINE ═══════ */
+@media (max-width: 1024px) {
+  .pos-container {
+    grid-template-columns: 1fr 300px;
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pos-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 12px;
+  }
+  .header-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+  .cart-panel {
+    position: relative;
+    top: 0;
+    height: auto;
+    max-height: none;
+    width: 100%;
+  }
+  .receipt-modal {
+    width: 95%;
+    max-width: 420px;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 8px 6px;
+  }
+  .flavour-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .brand-name {
+    font-size: 18px;
+  }
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+  .add-btn, .checkout-btn {
+    min-height: 46px;
+    font-size: 14.5px;
+  }
 }

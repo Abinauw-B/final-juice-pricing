@@ -1499,6 +1499,25 @@
       }
     }
 
+    /* ═══════ COMPREHENSIVE RESPONSIVE DEVICE RATIO & MOBILE ENGINE ═══════ */
+    @media (min-width: 1600px) {
+      .flavour-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+      }
+      .pos-container {
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+      }
+    }
+
+    @media (max-width: 1440px) {
+      .flavour-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+    }
+
     @media (max-width: 1050px) {
       .flavour-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1506,42 +1525,113 @@
       }
       .pos-container {
         grid-template-columns: 1fr 290px;
+        gap: 12px;
+      }
+      .card-img-banner {
+        height: 110px;
       }
     }
 
     @media (max-width: 768px) {
+      body {
+        padding: 8px 10px;
+      }
       .pos-container {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 14px;
       }
       .flavour-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 10px;
       }
       .header-banner {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px 14px;
       }
       .header-actions {
         width: 100%;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .status-group {
+        border-right: none;
+        padding-right: 0;
       }
       .cart-panel {
         position: static;
         max-height: none;
+        width: 100%;
+        margin-top: 8px;
       }
       .cart-empty-snapshot {
         display: none !important;
       }
+      .market-status-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 12px;
+      }
+      .ticker-wrap {
+        height: 44px;
+        padding: 0 8px;
+      }
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 540px) {
+      body {
+        padding: 6px 6px;
+      }
       .flavour-grid {
         grid-template-columns: 1fr;
+        gap: 10px;
       }
+      .card-img-banner {
+        height: 120px;
+      }
+      .brand-name {
+        font-size: 15px;
+      }
+      .brand-badge {
+        display: none;
+      }
+      .brand-subtitle {
+        font-size: 10px;
+      }
+      .btn-action-nav {
+        height: 36px;
+        font-size: 11px;
+        padding: 0 10px;
+      }
+      .price-value-primary {
+        font-size: 19px;
+      }
+      .btn-add-cart-juice {
+        height: 44px;
+        font-size: 13.5px;
+      }
+      .receipt-modal {
+        width: 95%;
+        max-width: 420px;
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 360px) {
       body {
-        padding: 10px 12px;
+        padding: 4px;
+      }
+      .brand-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+      .btn-action-nav {
+        font-size: 10.5px;
+        padding: 0 6px;
       }
     }
 
