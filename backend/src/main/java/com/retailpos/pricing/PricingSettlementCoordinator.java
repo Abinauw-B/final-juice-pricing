@@ -119,7 +119,8 @@ public class PricingSettlementCoordinator {
         int intervalSeconds = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
         if (intervalSeconds <= 0) intervalSeconds = 60;
 
-        log.info("[SETTLEMENT_STARTED] executionId={} trigger={} force={} interval={}s timestamp={}",
+        long settlementStartTime = System.currentTimeMillis();
+        log.info("[PERF_TIMING] PRICING_SETTLEMENT_START executionId={} trigger={} force={} interval={}s timestamp={}",
                 executionId, triggerSource, force, intervalSeconds, now);
 
         // 1. Acquire Local Lock
@@ -275,29 +276,10 @@ public class PricingSettlementCoordinator {
                 throw new IllegalStateException("Settlement transaction returned null result for execution " + executionId);
             }
 
-            log.info("[SETTLEMENT_COMMITTED] executionId={} Database transaction committed. Updated: {}, Unchanged: {}.",
-                    executionId, txResult.updatedCount, txResult.unchangedCount);
+            log.info("[PERF_TIMING] PRICING_DB_COMMIT executionId={} Database transaction committed in {} ms. Updated: {}, Unchanged: {}.",
+                    executionId, (System.currentTimeMillis() - settlementStartTime), txResult.updatedCount, txResult.unchangedCount);
 
-            // 6. Post-Commit Cache & Market Version Updates
-            try {
-                if (pricingRedisRepository != null) {
-                    for (PricingEngineService.ProductPriceDTO dto : txResult.dtos) {
-                        pricingRedisRepository.setProductPrice(dto.getBeverageId(), dto.getCurrentPrice());
-                    }
-                    int newVersion = pricingRedisRepository.incrementMarketVersion();
-                    log.info("[REDIS_UPDATED] executionId={} Synchronized {} product prices to Redis. Market Version: {}.",
-                            executionId, txResult.dtos.size(), newVersion);
-                }
-                if (redisTemplate != null) {
-                    for (PricingEngineService.ProductPriceDTO dto : txResult.dtos) {
-                        redisTemplate.opsForValue().set("live_price:" + dto.getBeverageId(), dto);
-                    }
-                }
-            } catch (Exception e) {
-                log.warn("[REDIS_SYNC_WARNING] executionId={} Redis sync non-fatal bypass: {}", executionId, e.getMessage());
-            }
-
-            // 7. Post-Commit STOMP WebSocket Broadcast
+            // 6. Post-Commit STOMP WebSocket Broadcast (IMMEDIATE & PRIORITIZED)
             PricingEngineService.PriceEvaluationCycleResult cycleResult = PricingEngineService.PriceEvaluationCycleResult.builder()
                     .timestamp(now.toString())
                     .nextUpdateAt(nextSettlementTime.toString())
@@ -306,23 +288,53 @@ public class PricingSettlementCoordinator {
                     .marketStatus(marketCrashService != null && marketCrashService.isCrashActive() ? "CRASH" : (PriceAdjustmentService.isMarketPaused() ? "PAUSED" : "OPEN"))
                     .build();
 
+            long broadcastStartTime = System.currentTimeMillis();
             try {
                 if (messagingTemplate != null) {
                     messagingTemplate.convertAndSend("/topic/prices", cycleResult);
                     messagingTemplate.convertAndSend("/topic/settlement", cycleResult);
                     messagingTemplate.convertAndSend("/topic/products", productRepository.findByIsActiveTrueOrderByIdAsc());
                     messagingTemplate.convertAndSend("/topic/led-display", cycleResult);
-                    log.info("[WEBSOCKET_BROADCAST] executionId={} Broadcasted updated prices to /topic/prices, /topic/settlement, /topic/products, /topic/led-display.", executionId);
+                    log.info("[PERF_TIMING] WEBSOCKET_BROADCAST executionId={} Sent STOMP updates in {} ms to /topic/prices, /topic/settlement, /topic/products, /topic/led-display.",
+                            executionId, (System.currentTimeMillis() - broadcastStartTime));
                 }
             } catch (Exception e) {
                 log.warn("[WEBSOCKET_BROADCAST_WARNING] executionId={} WebSocket broadcast non-fatal error: {}", executionId, e.getMessage());
             }
 
-            log.info("[SETTLEMENT_COMPLETED] executionId={} Cycle finished successfully at {}.", executionId, now);
+            // 7. Post-Commit Cache & Market Version Updates (ASYNCHRONOUS & NON-BLOCKING)
+            final SettlementTransactionResult asyncTxResult = txResult;
+            java.util.concurrent.CompletableFuture.runAsync(() -> {
+                long redisStartTime = System.currentTimeMillis();
+                log.info("[PERF_TIMING] REDIS_SYNC_START executionId={}", executionId);
+                try {
+                    if (pricingRedisRepository != null) {
+                        for (PricingEngineService.ProductPriceDTO dto : asyncTxResult.dtos) {
+                            pricingRedisRepository.setProductPrice(dto.getBeverageId(), dto.getCurrentPrice());
+                        }
+                        int newVersion = pricingRedisRepository.incrementMarketVersion();
+                        log.info("[REDIS_UPDATED] executionId={} Synchronized {} product prices to Redis. Market Version: {}.",
+                                executionId, asyncTxResult.dtos.size(), newVersion);
+                    }
+                    if (redisTemplate != null) {
+                        for (PricingEngineService.ProductPriceDTO dto : asyncTxResult.dtos) {
+                            redisTemplate.opsForValue().set("live_price:" + dto.getBeverageId(), dto);
+                        }
+                    }
+                    log.info("[PERF_TIMING] REDIS_SYNC_COMPLETE executionId={} Synchronized cache in {} ms.",
+                            executionId, (System.currentTimeMillis() - redisStartTime));
+                } catch (Exception e) {
+                    log.warn("[REDIS_SYNC_WARNING] executionId={} Redis sync non-fatal bypass: {}", executionId, e.getMessage());
+                }
+            });
+
+            log.info("[SETTLEMENT_COMPLETED] executionId={} Cycle finished successfully in {} ms at {}.",
+                    executionId, (System.currentTimeMillis() - settlementStartTime), now);
             return cycleResult;
 
         } catch (Exception e) {
             log.error("[SETTLEMENT_FAILED] executionId={} Error executing settlement: {}", executionId, e.getMessage(), e);
+
             throw e;
         } finally {
             if (pgConnection != null && pgLockAcquired) {

@@ -253,11 +253,16 @@ public class POSController {
         }
         try {
             POSService.CheckoutResponse response = posService.processCheckout(request);
-            try {
-                messagingTemplate.convertAndSend("/topic/batches", juiceBatchService.getAllBatches());
-                messagingTemplate.convertAndSend("/topic/orders", response);
-            } catch (Exception ignored) {}
+            java.util.concurrent.CompletableFuture.runAsync(() -> {
+                try {
+                    if (messagingTemplate != null) {
+                        messagingTemplate.convertAndSend("/topic/batches", juiceBatchService.getAllBatches());
+                        messagingTemplate.convertAndSend("/topic/orders", response);
+                    }
+                } catch (Exception ignored) {}
+            });
             return ResponseEntity.ok(response);
+
         } catch (org.springframework.dao.DataIntegrityViolationException dive) {
             if (request != null && request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
                 for (int attempt = 0; attempt < 30; attempt++) {

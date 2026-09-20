@@ -378,65 +378,77 @@ public class PricingConfigurationService {
         // 3. Update in-memory snapshot
         globalConfigCache.putAll(newSettings);
 
+        long adminUpdateStartTime = System.currentTimeMillis();
+        log.info("[PERF_TIMING] ADMIN_UPDATE_START user={} version={}", user, newVersion);
+
         currentConfigVersion.set(newVersion);
         lastConfigUpdate = LocalDateTime.now();
 
-        log.info("[ADMIN PRICING CONFIG] Global pricing settings updated to version {} by user {}", newVersion, user);
+        log.info("[PERF_TIMING] ADMIN_DB_COMPLETE updated to version {} by user {} in {} ms", newVersion, user, (System.currentTimeMillis() - adminUpdateStartTime));
 
-        // 4. Update Redis Cache
-        try {
-            if (redisTemplate != null) {
-                redisTemplate.opsForValue().set("pricing:config:global:version", String.valueOf(newVersion));
-                redisTemplate.opsForValue().set("pricing:config:global", globalConfigCache);
+        // 4. Update Redis Cache (ASYNCHRONOUS & NON-BLOCKING)
+        final long asyncVersion = newVersion;
+        final Map<String, String> asyncCacheCopy = new HashMap<>(globalConfigCache);
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            long rStart = System.currentTimeMillis();
+            try {
+                if (redisTemplate != null) {
+                    redisTemplate.opsForValue().set("pricing:config:global:version", String.valueOf(asyncVersion));
+                    redisTemplate.opsForValue().set("pricing:config:global", asyncCacheCopy);
+                    log.info("[PERF_TIMING] ADMIN_REDIS_SYNC completed in {} ms", (System.currentTimeMillis() - rStart));
+                }
+            } catch (Exception e) {
+                log.warn("Failed to sync pricing config to Redis: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("Failed to sync pricing config to Redis: {}", e.getMessage());
-        }
+        });
 
-        // 5. Broadcast to WebSocket — PHASE 7 FIX:
-        // Previously, STOMP was broadcast inside the @Transactional method before the DB transaction committed.
-        // Clients could receive price updates that were then rolled back if DB commit failed.
-        // Solution: register an afterCommit hook so broadcast only fires once the transaction is durably committed.
+        // 5. Broadcast to WebSocket — afterCommit hook so broadcast fires once transaction is committed
         PricingConfigDTO fullDto = getFullConfiguration();
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    try {
-                        if (messagingTemplate != null) {
-                            messagingTemplate.convertAndSend("/topic/pricing-config", fullDto);
-                            List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
-                            messagingTemplate.convertAndSend("/topic/prices", activeProducts);
-                            messagingTemplate.convertAndSend("/topic/products", activeProducts);
-                            messagingTemplate.convertAndSend("/topic/led-display", activeProducts);
-                            Map<String, Object> settlementMsg = new HashMap<>();
-                            settlementMsg.put("type", "PRICING_CONFIG_UPDATED");
-                            settlementMsg.put("version", newVersion);
-                            settlementMsg.put("intervalSeconds", getSettlementIntervalSeconds());
-                            messagingTemplate.convertAndSend("/topic/settlement", settlementMsg);
+                    java.util.concurrent.CompletableFuture.runAsync(() -> {
+                        try {
+                            if (messagingTemplate != null) {
+                                messagingTemplate.convertAndSend("/topic/pricing-config", fullDto);
+                                List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+                                messagingTemplate.convertAndSend("/topic/prices", activeProducts);
+                                messagingTemplate.convertAndSend("/topic/products", activeProducts);
+                                messagingTemplate.convertAndSend("/topic/led-display", activeProducts);
+                                Map<String, Object> settlementMsg = new HashMap<>();
+                                settlementMsg.put("type", "PRICING_CONFIG_UPDATED");
+                                settlementMsg.put("version", newVersion);
+                                settlementMsg.put("intervalSeconds", getSettlementIntervalSeconds());
+                                messagingTemplate.convertAndSend("/topic/settlement", settlementMsg);
+                            }
+                        } catch (Exception e) {
+                            log.warn("Failed to broadcast pricing config over WebSocket after commit: {}", e.getMessage());
                         }
-                    } catch (Exception e) {
-                        log.warn("Failed to broadcast pricing config over WebSocket after commit: {}", e.getMessage());
-                    }
+                    });
                 }
             });
         } else {
             // Fallback: no active transaction synchronization (e.g. unit tests), broadcast directly
-            try {
-                if (messagingTemplate != null) {
-                    messagingTemplate.convertAndSend("/topic/pricing-config", fullDto);
-                    List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
-                    messagingTemplate.convertAndSend("/topic/prices", activeProducts);
-                    messagingTemplate.convertAndSend("/topic/products", activeProducts);
-                    messagingTemplate.convertAndSend("/topic/led-display", activeProducts);
+            java.util.concurrent.CompletableFuture.runAsync(() -> {
+                try {
+                    if (messagingTemplate != null) {
+                        messagingTemplate.convertAndSend("/topic/pricing-config", fullDto);
+                        List<Product> activeProducts = productRepository.findByIsActiveTrueOrderByIdAsc();
+                        messagingTemplate.convertAndSend("/topic/prices", activeProducts);
+                        messagingTemplate.convertAndSend("/topic/products", activeProducts);
+                        messagingTemplate.convertAndSend("/topic/led-display", activeProducts);
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to broadcast pricing config over WebSocket: {}", e.getMessage());
                 }
-            } catch (Exception e) {
-                log.warn("Failed to broadcast pricing config over WebSocket: {}", e.getMessage());
-            }
+            });
         }
 
+        log.info("[PERF_TIMING] ADMIN_RESPONSE returned in {} ms", (System.currentTimeMillis() - adminUpdateStartTime));
         return fullDto;
     }
+
 
     @Transactional
     public PricingConfigDTO.ProductConfig updateProductConfiguration(Long productId, PricingConfigDTO.ProductConfig update, String adminUser, String reason) {

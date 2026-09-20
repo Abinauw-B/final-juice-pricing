@@ -236,7 +236,8 @@ public class POSService {
     private final Map<String, java.util.concurrent.CompletableFuture<CheckoutResponse>> pendingIdempotencyRequests = new java.util.concurrent.ConcurrentHashMap<>();
 
     public CheckoutResponse processCheckout(CheckoutRequest request) {
-        log.info("POS checkout request received with {} items", request != null && request.getItems() != null ? request.getItems().size() : 0);
+        long startTime = System.currentTimeMillis();
+        log.info("[PERF_TIMING] CHECKOUT_START items={}", request != null && request.getItems() != null ? request.getItems().size() : 0);
 
         if (request == null || request.getItems() == null || request.getItems().isEmpty()) {
             log.error("POS checkout failed: Cart cannot be empty");
@@ -249,7 +250,7 @@ public class POSService {
             Optional<SalesOrder> existingOrder = salesOrderRepository.findByIdempotencyKey(key);
             if (existingOrder.isPresent()) {
                 SalesOrder existing = existingOrder.get();
-                log.info("Idempotent checkout request detected for key {}. Returning existing order #{}", key, existing.getOrderNumber());
+                log.info("[PERF_TIMING] CHECKOUT_IDEMPOTENT_HIT key={} order={}", key, existing.getOrderNumber());
                 List<OrderItemResponse> existingItems = existing.getItems().stream().map(i ->
                         OrderItemResponse.builder()
                                 .productName(i.getProductName())
@@ -319,8 +320,10 @@ public class POSService {
 
             try {
                 CheckoutResponse res = transactionTemplate.execute(status -> doProcessCheckout(request));
+                log.info("[PERF_TIMING] CHECKOUT_DB_COMPLETE orderNumber={} in {} ms", res != null ? res.getOrderNumber() : "N/A", (System.currentTimeMillis() - startTime));
                 future.complete(res);
-                triggerPostCheckoutSettlement(res, purchasedProductIds, request);
+                java.util.concurrent.CompletableFuture.runAsync(() -> triggerPostCheckoutSettlement(res, purchasedProductIds, request));
+                log.info("[PERF_TIMING] CHECKOUT_RESPONSE orderNumber={} in {} ms", res != null ? res.getOrderNumber() : "N/A", (System.currentTimeMillis() - startTime));
                 return res;
             } catch (Exception ex) {
                 future.completeExceptionally(ex);
@@ -342,7 +345,9 @@ public class POSService {
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 CheckoutResponse res = transactionTemplate.execute(status -> doProcessCheckout(request));
-                triggerPostCheckoutSettlement(res, purchasedProductIds, request);
+                log.info("[PERF_TIMING] CHECKOUT_DB_COMPLETE orderNumber={} in {} ms", res != null ? res.getOrderNumber() : "N/A", (System.currentTimeMillis() - startTime));
+                java.util.concurrent.CompletableFuture.runAsync(() -> triggerPostCheckoutSettlement(res, purchasedProductIds, request));
+                log.info("[PERF_TIMING] CHECKOUT_RESPONSE orderNumber={} in {} ms", res != null ? res.getOrderNumber() : "N/A", (System.currentTimeMillis() - startTime));
                 return res;
             } catch (Exception ex) {
                 lastException = ex;
@@ -374,6 +379,7 @@ public class POSService {
             log.warn("[POST-CHECKOUT] Post-checkout state broadcast failed gracefully: {}", e.getMessage());
         }
     }
+
 
     private CheckoutResponse doProcessCheckout(CheckoutRequest request) {
 

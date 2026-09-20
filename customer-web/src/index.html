@@ -3896,6 +3896,8 @@
         const socket = new SockJS(CONFIG.WS_URL);
         stompClient = Stomp.over(socket);
         stompClient.debug = null;
+        stompClient.heartbeat.outgoing = 10000;
+        stompClient.heartbeat.incoming = 10000;
 
         stompClient.connect({}, function () {
           isConnectingWS = false;

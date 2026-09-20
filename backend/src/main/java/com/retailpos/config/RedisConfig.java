@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -17,8 +20,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
+@EnableAsync
 @SuppressWarnings("null")
 public class RedisConfig {
 
@@ -58,11 +63,11 @@ public class RedisConfig {
 
                 LettuceClientConfiguration.LettuceClientConfigurationBuilder clientConfig = LettuceClientConfiguration
                         .builder()
-                        .commandTimeout(Duration.ofSeconds(3));
+                        .commandTimeout(Duration.ofMillis(500));
                 if ("rediss".equalsIgnoreCase(uri.getScheme())) {
                     clientConfig.useSsl();
                 }
-                log.info("Redis configured via REDIS_URL -> host: {}, port: {}, ssl: {}", host, port,
+                log.info("Redis configured via REDIS_URL -> host: {}, port: {}, ssl: {}, timeout: 500ms", host, port,
                         "rediss".equalsIgnoreCase(uri.getScheme()));
                 return new LettuceConnectionFactory(config, clientConfig.build());
             }
@@ -74,16 +79,16 @@ public class RedisConfig {
             }
 
             LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-                    .commandTimeout(Duration.ofSeconds(3))
+                    .commandTimeout(Duration.ofMillis(500))
                     .build();
 
-            log.info("Redis configured via host/port -> host: {}, port: {}", redisHost, redisPort);
+            log.info("Redis configured via host/port -> host: {}, port: {}, timeout: 500ms", redisHost, redisPort);
             return new LettuceConnectionFactory(config, clientConfig);
         } catch (Exception e) {
-            log.warn("⚠️ Failed to initialize RedisConnectionFactory: {}. Fallback to default localhost:6379. " +
+            log.warn("⚠️ Failed to initialize RedisConnectionFactory: {}. Fallback to default localhost:6379 (500ms timeout). " +
                     "Redis features will degrade gracefully if unavailable.", e.getMessage());
             LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-                    .commandTimeout(Duration.ofSeconds(2))
+                    .commandTimeout(Duration.ofMillis(500))
                     .build();
             return new LettuceConnectionFactory(
                     new RedisStandaloneConfiguration("localhost", 6379), clientConfig);
@@ -100,4 +105,29 @@ public class RedisConfig {
         template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
+
+    @Bean(name = "asyncTaskExecutor")
+    public TaskExecutor asyncTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(12);
+        executor.setQueueCapacity(500);
+        executor.setThreadNamePrefix("async-redis-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean(name = "wsBroadcastExecutor")
+    public TaskExecutor wsBroadcastExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(16);
+        executor.setQueueCapacity(1000);
+        executor.setThreadNamePrefix("ws-broadcast-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
+        executor.initialize();
+        return executor;
+    }
 }
+
