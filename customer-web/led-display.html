@@ -3042,17 +3042,39 @@
     .mcb-restore-btn { background: #FACC15; border: none; color: #000000; font-weight: 900; font-size: 12px; padding: 5px 13px; border-radius: 7px; cursor: pointer; transition: transform 0.15s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     .mcb-restore-btn:hover { transform: scale(1.04); background: #FEF08A; }
 
-    /* Responsive Design */
-    @media (max-width: 1360px) {
-      .product-grid { grid-template-columns: repeat(2, 1fr); }
-      .summary-row { grid-template-columns: repeat(2, 1fr); }
+    /* Responsive & Dynamic Device Ratio Optimization */
+    @media (min-width: 1440px) {
+      .product-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .summary-row { grid-template-columns: repeat(4, 1fr); }
+      .main-layout { grid-template-columns: 1fr 280px; }
+    }
+    @media (max-width: 1439px) and (min-width: 1025px) {
+      .product-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+      .summary-row { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+      .main-layout { grid-template-columns: 1fr 250px; }
+    }
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .product-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .summary-row { grid-template-columns: repeat(2, 1fr); gap: 6px; }
       .main-layout { grid-template-columns: 1fr; }
+      .sidebar-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
     }
     @media (max-width: 768px) {
-      .product-grid { grid-template-columns: 1fr; }
+      .product-grid { grid-template-columns: repeat(1, 1fr); gap: 8px; }
+      .summary-row { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .main-layout { grid-template-columns: 1fr; }
+      .sidebar-wrapper { display: flex; flex-direction: column; gap: 8px; }
+      .top-header { flex-direction: column; align-items: stretch; text-align: center; gap: 8px; padding: 8px; }
+      .brand-section { justify-content: center; }
+      .header-actions { justify-content: center; flex-wrap: wrap; }
+      .market-time-card { align-items: center; }
+    }
+    @media (max-width: 480px) {
       .summary-row { grid-template-columns: 1fr; }
-      .top-header { flex-direction: column; align-items: stretch; }
-      .header-actions { justify-content: space-between; flex-wrap: wrap; }
+      .product-card { padding: 8px; }
+      .card-activity-feed { display: none; }
+      .naruto-mascot-card { min-height: 140px; }
+      .qr-img-box { width: 110px; height: 110px; }
     }
   </style>
 </head>
