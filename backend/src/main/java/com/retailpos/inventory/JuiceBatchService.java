@@ -150,17 +150,13 @@ public class JuiceBatchService {
 
                     remainingToDeduct -= deductFromThisBatch;
                     if (remainingToDeduct <= 0) {
-                        break;
+                        return lastUpdatedBatch;
                     }
                 }
-
-                return lastUpdatedBatch;
-            } catch (org.springframework.dao.PessimisticLockingFailureException e) {
-                if (attempt == maxAttempts) throw e;
-                try { Thread.sleep(25L * attempt); } catch (InterruptedException ignored) {}
-            }
-        }
-        throw new IllegalStateException("Failed to deduct volume after retries");
+                if (lastUpdatedBatch != null) {
+                    return lastUpdatedBatch;
+                }
+        throw new IllegalStateException("Insufficient inventory for product ID " + productId + ": Unable to deduct remaining volume");
     }
 
     @Transactional
