@@ -43,6 +43,9 @@ public class PurchaseStaticHoldSettlementTest {
                     if (method.getName().equals("saveAndFlush") || method.getName().equals("save")) {
                         return product;
                     }
+                    if (method.getReturnType().equals(int.class)) {
+                        return 0;
+                    }
                     return null;
                 }
         );
