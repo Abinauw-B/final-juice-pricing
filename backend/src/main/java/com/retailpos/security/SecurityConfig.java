@@ -143,17 +143,22 @@ public class SecurityConfig {
     }
 
     private List<String> parseAllowedOrigins() {
-        if (allowedOrigins == null || allowedOrigins.trim().isEmpty()) {
-            return List.of("https://final-juice-pricing-admin.vercel.app", "https://final-juice-pricing.vercel.app");
+        List<String> defaultOrigins = new java.util.ArrayList<>(List.of(
+            "https://final-juice-pricing.vercel.app",
+            "https://final-juice-pricing-admin.vercel.app",
+            "https://*.vercel.app",
+            "http://localhost:*",
+            "http://127.0.0.1:*"
+        ));
+        if (allowedOrigins != null && !allowedOrigins.trim().isEmpty()) {
+            for (String origin : allowedOrigins.split(",")) {
+                String trimmed = origin.trim();
+                if (!trimmed.isEmpty() && !trimmed.equals("*") && !defaultOrigins.contains(trimmed)) {
+                    defaultOrigins.add(trimmed);
+                }
+            }
         }
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty() && !s.equals("*"))
-            .collect(Collectors.toList());
-        if (origins.isEmpty()) {
-            return List.of("https://final-juice-pricing-admin.vercel.app", "https://final-juice-pricing.vercel.app");
-        }
-        return origins;
+        return defaultOrigins;
     }
 
     @Bean

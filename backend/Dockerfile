@@ -11,7 +11,7 @@ WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 
 ENV PORT=8088
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
+ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:+UseG1GC -XX:MaxMetaspaceSize=128m"
 EXPOSE 8088
 
 # Cloud container entrypoint honoring dynamic provider PORT and JVM arguments
