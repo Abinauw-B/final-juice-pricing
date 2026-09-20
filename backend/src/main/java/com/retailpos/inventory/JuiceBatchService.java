@@ -76,31 +76,22 @@ public class JuiceBatchService {
 
     @Transactional
     public JuiceBatch deductBatchVolume(Long productId, int mlToDeduct) {
-        int maxAttempts = 3;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            try {
-                List<JuiceBatch> activeBatches = batchRepository.findActiveBatchesForProductWithLock(productId);
-                if (activeBatches.isEmpty()) {
-                    throw new IllegalStateException("Insufficient inventory for product ID " + productId + ": No active juice batch available");
-                }
+        List<JuiceBatch> activeBatches = batchRepository.findByProductIdAndStatus(productId, JuiceBatch.BatchStatus.ACTIVE);
+        if (activeBatches.isEmpty()) {
+            throw new IllegalStateException("Insufficient inventory for product ID " + productId + ": No active juice batch available");
+        }
 
-                // 1. Single batch fast path: Check if any active batch can satisfy the full request
-                JuiceBatch activeBatch = null;
-                for (JuiceBatch b : activeBatches) {
-                    if (b.getRemainingVolumeMl() >= mlToDeduct) {
-                        activeBatch = b;
-                        break;
-                    } else if (b.getRemainingVolumeMl() == 0) {
-                        b.setStatus(JuiceBatch.BatchStatus.DEPLETED);
-                        batchRepository.save(b);
+        // 1. Single batch non-blocking atomic fast path
+        for (JuiceBatch b : activeBatches) {
+            if (b.getRemainingVolumeMl() >= mlToDeduct) {
+                int updatedRows = batchRepository.deductVolumeAtomic(b.getId(), mlToDeduct);
+                if (updatedRows > 0) {
+                    JuiceBatch updatedBatch = batchRepository.findById(b.getId()).orElse(b);
+                    if (updatedBatch.getRemainingVolumeMl() <= 0) {
+                        updatedBatch.setStatus(JuiceBatch.BatchStatus.DEPLETED);
+                        batchRepository.save(updatedBatch);
                     }
-                }
 
-                if (activeBatch != null) {
-                    activeBatch.deductVolume(mlToDeduct);
-                    JuiceBatch updatedBatch = batchRepository.save(activeBatch);
-
-                    // Log transaction
                     InventoryTransaction tx = InventoryTransaction.builder()
                             .productId(productId)
                             .batchId(updatedBatch.getId())
@@ -113,6 +104,11 @@ public class JuiceBatchService {
 
                     return updatedBatch;
                 }
+            } else if (b.getRemainingVolumeMl() == 0) {
+                b.setStatus(JuiceBatch.BatchStatus.DEPLETED);
+                batchRepository.save(b);
+            }
+        }
 
                 // 2. Multi-batch transactional split deduction (Phase 14)
                 int totalAvailableMl = activeBatches.stream()

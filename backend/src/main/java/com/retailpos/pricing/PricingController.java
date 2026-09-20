@@ -467,13 +467,22 @@ public class PricingController {
     public ResponseEntity<Map<String, Object>> getPricingTiming() {
         int interval = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
         if (interval <= 0) interval = 60;
+
+        LocalDateTime nextAt = pricingSettlementCoordinator != null ? pricingSettlementCoordinator.getNextSettlementTime() : (pricingEngineService != null && pricingEngineService.getNextSettlementTime() != null ? pricingEngineService.getNextSettlementTime() : LocalDateTime.now().plusSeconds(interval));
+        long serverNowMs = System.currentTimeMillis();
+        long nextEpochMs = nextAt.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long remainingSec = Math.max(0, (nextEpochMs - serverNowMs) / 1000);
+
         Map<String, Object> res = new HashMap<>();
         res.put("intervalSeconds", interval);
         res.put("intervalMinutes", (double) interval / 60.0);
         res.put("label", PricingConfigurationService.getIntervalLabel(interval));
         res.put("active", true);
         res.put("pricingModel", "DWMA");
-        res.put("nextSettlementAt", pricingEngineService != null && pricingEngineService.getNextSettlementTime() != null ? pricingEngineService.getNextSettlementTime().toString() : LocalDateTime.now().plusSeconds(interval).toString());
+        res.put("serverTimeMs", serverNowMs);
+        res.put("nextSettlementEpochMs", nextEpochMs);
+        res.put("remainingSeconds", remainingSec);
+        res.put("nextSettlementAt", nextAt.toString());
         res.put("allowedIntervals", PricingConfigurationService.STANDARD_INTERVALS.stream().sorted().toList());
         return ResponseEntity.ok(res);
     }

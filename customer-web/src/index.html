@@ -3000,7 +3000,7 @@
     async function fetchProducts() {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
         const res = await fetch(`${CONFIG.API_BASE_URL}/pos/products`, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (res.ok) {
@@ -3009,17 +3009,22 @@
             isBackendOnline = true;
             products = normalizeProductsList(data);
             updateBackendStatusUI(true);
-          } else {
-            isBackendOnline = false;
-            updateBackendStatusUI(false);
+          } else if (products && products.length > 0) {
+            isBackendOnline = true;
+            updateBackendStatusUI(true);
           }
-        } else {
-          isBackendOnline = false;
-          updateBackendStatusUI(false);
+        } else if (products && products.length > 0) {
+          isBackendOnline = true;
+          updateBackendStatusUI(true);
         }
       } catch (err) {
-        isBackendOnline = false;
-        updateBackendStatusUI(false);
+        if (!products || products.length === 0) {
+          isBackendOnline = false;
+          updateBackendStatusUI(false);
+        } else {
+          isBackendOnline = true;
+          updateBackendStatusUI(true);
+        }
       }
 
       if (isMarketCrashActive && products && products.length > 0) {
@@ -3880,6 +3885,8 @@
       } catch (e) { }
     }
 
+    let serverTimeOffsetMs = 0;
+
     function updatePricingTimingState(timing) {
       if (!timing) return;
       const sec = timing.intervalSeconds || timing.settlementIntervalSeconds || (currentPricingTiming ? currentPricingTiming.intervalSeconds : 60) || 60;
@@ -3889,24 +3896,28 @@
       const label = timing.label || (sec === 10 ? '10 Seconds' : (sec === 30 ? '30 Seconds' : (sec % 60 === 0 ? `${sec / 60} Minute${sec > 60 ? 's' : ''}` : `${sec} Seconds`)));
       const shortLabel = sec === 10 ? '10-Sec' : (sec === 30 ? '30-Sec' : (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`));
 
-      let targetNextSettlementAt = timing.nextSettlementAt;
-      if (!targetNextSettlementAt) {
-        if (!intervalChanged && currentPricingTiming && currentPricingTiming.nextSettlementAt) {
-          const existingTarget = new Date(currentPricingTiming.nextSettlementAt).getTime();
-          if (!isNaN(existingTarget) && existingTarget > Date.now()) {
-            targetNextSettlementAt = currentPricingTiming.nextSettlementAt;
-          }
-        }
-        if (!targetNextSettlementAt) {
-          targetNextSettlementAt = new Date(Date.now() + sec * 1000).toISOString();
-        }
+      if (timing.serverTimeMs) {
+        serverTimeOffsetMs = Number(timing.serverTimeMs) - Date.now();
+      }
+
+      let targetEpochMs = null;
+      if (timing.nextSettlementEpochMs) {
+        targetEpochMs = Number(timing.nextSettlementEpochMs);
+      } else if (timing.nextSettlementAt) {
+        const parsed = new Date(timing.nextSettlementAt).getTime();
+        if (!isNaN(parsed)) targetEpochMs = parsed;
+      }
+
+      if (!targetEpochMs || targetEpochMs <= (Date.now() + serverTimeOffsetMs)) {
+        targetEpochMs = Date.now() + serverTimeOffsetMs + (sec * 1000);
       }
 
       currentPricingTiming = {
         intervalSeconds: sec,
         label: label,
         shortLabel: shortLabel,
-        nextSettlementAt: targetNextSettlementAt
+        nextSettlementEpochMs: targetEpochMs,
+        nextSettlementAt: new Date(targetEpochMs).toISOString()
       };
 
       const openStateEl = document.getElementById('marketOpenStateText');
@@ -3926,33 +3937,22 @@
 
       const updateTicker = () => {
         const intervalSec = currentPricingTiming.intervalSeconds || 60;
-        const now = Date.now();
+        const currentServerNow = Date.now() + serverTimeOffsetMs;
         let remaining = intervalSec;
 
-        if (currentPricingTiming.nextSettlementAt) {
-          const targetTime = new Date(currentPricingTiming.nextSettlementAt).getTime();
-          if (!isNaN(targetTime)) {
-            const diffMs = targetTime - now;
-            if (diffMs > 0) {
-              remaining = Math.min(intervalSec, Math.ceil(diffMs / 1000));
-            } else {
-              currentPricingTiming.nextSettlementAt = new Date(now + intervalSec * 1000).toISOString();
-              remaining = intervalSec;
-              if (diffMs < -2000 && diffMs > -5000) {
-                fetchPricingTiming();
-              }
-            }
+        if (currentPricingTiming.nextSettlementEpochMs) {
+          const diffMs = currentPricingTiming.nextSettlementEpochMs - currentServerNow;
+          if (diffMs > 0) {
+            remaining = Math.min(intervalSec, Math.ceil(diffMs / 1000));
           } else {
-            currentPricingTiming.nextSettlementAt = new Date(now + intervalSec * 1000).toISOString();
+            currentPricingTiming.nextSettlementEpochMs = currentServerNow + (intervalSec * 1000);
             remaining = intervalSec;
+            fetchPricingTiming();
           }
-        } else {
-          currentPricingTiming.nextSettlementAt = new Date(now + intervalSec * 1000).toISOString();
-          remaining = intervalSec;
         }
 
-        const mins = Math.floor(remaining / 60);
-        const secs = remaining % 60;
+        const mins = Math.floor(Math.max(0, remaining) / 60);
+        const secs = Math.max(0, remaining) % 60;
         const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
         const countdownEl = document.getElementById('summarySettlementCountdown');
