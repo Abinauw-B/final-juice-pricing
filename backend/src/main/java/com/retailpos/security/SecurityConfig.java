@@ -144,7 +144,6 @@ public class SecurityConfig {
         List<String> defaultOrigins = new java.util.ArrayList<>(List.of(
             "https://final-juice-pricing.vercel.app",
             "https://final-juice-pricing-admin.vercel.app",
-            "https://*.vercel.app",
             "http://localhost:*",
             "http://127.0.0.1:*"
         ));
