@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radiant Market Crash Takeover - Standalone Preview</title>
+  <link rel="stylesheet" href="pub-exchange-tokens.css">
+  <style>
+    :root {
+      --bg-dark: #0B0F19;
+      --font-main: 'BL Melody', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'BL Melody', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #F8FAFC;
+      font-family: var(--font-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ==========================================================================
+       RADIANT MARKET CRASH TAKEOVER SCREEN - DESIGN TOKENS & STYLES
+       ========================================================================== */
+
+    /* 1. Multi-Layer Shifting Background Mesh */
+    .radiant-crash-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: radial-gradient(ellipse at 50% 15%, rgba(225, 29, 72, 0.38) 0%, rgba(124, 58, 237, 0.28) 45%, rgba(11, 15, 25, 0.97) 85%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Living background mesh movement */
+    .radiant-crash-overlay::before {
+      content: "";
+      position: absolute;
+      inset: -50%;
+      background: radial-gradient(circle at 30% 30%, rgba(249, 115, 22, 0.22) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 60%, rgba(236, 72, 153, 0.20) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 80%, rgba(6, 182, 212, 0.18) 0%, transparent 50%);
+      animation: meshShift 20s infinite alternate ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes meshShift {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.15) rotate(3deg); }
+      100% { transform: scale(1.05) rotate(-3deg); }
+    }
+
+    /* 2. Top & Bottom Hazard Strip Tickers */
+    .radiant-hazard-bar {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 42px;
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(239, 68, 68, 0.85),
+        rgba(239, 68, 68, 0.85) 16px,
+        #111827 16px,
+        #111827 32px
+      );
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+
+    .radiant-hazard-chassis {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.92);
+      height: 34px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .radiant-marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marqueeScroll 25s linear infinite;
+    }
+
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .radiant-marquee-stream {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding-right: 24px;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+    }
+
+    .hazard-pill {
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+    }
+
+    .hp-red { background: rgba(225, 29, 72, 0.25); color: #FF4D4D; border: 1px solid rgba(255, 77, 77, 0.5); box-shadow: 0 0 10px rgba(255, 77, 77, 0.3); }
+    .hp-amber { background: rgba(245, 158, 11, 0.25); color: #FACC15; border: 1px solid rgba(250, 204, 21, 0.5); box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); }
+    .hp-emerald { background: rgba(16, 185, 129, 0.25); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.5); box-shadow: 0 0 10px rgba(52, 211, 153, 0.3); }
+    .hp-cyan { background: rgba(6, 182, 212, 0.25); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.5); box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+
+    /* 3. Main Glass Chassis Container */
+    .radiant-crash-container {
+      position: relative;
+      z-index: 5;
+      width: 96%;
+      max-width: 1720px;
+      margin: 12px auto;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(16px);
+      padding: 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 4. Hero Section */
+    .radiant-hero-row {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .radiant-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 16px;
+      border-radius: 9999px;
+      background: rgba(225, 29, 72, 0.18);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #FB7185;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      box-shadow: 0 0 15px rgba(244, 63, 94, 0.3);
+    }
+
+    .radiant-beacon-dot {
+      width: 8px;
+      height: 8px;
+      background: #F43F5E;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #F43F5E;
+      animation: beaconPulse 1.2s infinite alternate;
+    }
+
+    @keyframes beaconPulse {
+      0% { transform: scale(0.8); opacity: 0.6; }
+      100% { transform: scale(1.4); opacity: 1; box-shadow: 0 0 16px #F43F5E; }
+    }
+
+    .radiant-title {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #FF4D4D 0%, #FF8800 45%, #FFD700 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 25px rgba(255, 136, 0, 0.55));
+      text-transform: uppercase;
+      line-height: 1.1;
+      position: relative;
+    }
+
+    .radiant-subtitle {
+      font-size: 14px;
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+
+    .radiant-floor-badge {
+      background: linear-gradient(135deg, #EF4444, #DC2626);
+      color: #FFFFFF;
+      padding: 3px 12px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+    }
+
+    /* 5. Countdown Halo & Chamber Anchor */
+    .radiant-timer-chamber {
+      position: relative;
+      background: rgba(11, 15, 25, 0.85);
+      border-radius: 20px;
+      padding: 16px 24px;
+      border: 1.5px solid rgba(250, 204, 21, 0.4);
+      box-shadow: 0 0 35px rgba(250, 204, 21, 0.25), inset 0 0 20px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.5s ease;
+    }
+
+    .radiant-timer-chamber.warning {
+      border-color: rgba(249, 115, 22, 0.7);
+      box-shadow: 0 0 45px rgba(249, 115, 22, 0.4);
+    }
+
+    .radiant-timer-chamber.critical {
+      border-color: rgba(255, 0, 85, 0.9);
+      box-shadow: 0 0 60px rgba(255, 0, 85, 0.6);
+      animation: chamberUrgentPulse 1s infinite alternate;
+    }
+
+    @keyframes chamberUrgentPulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.01); box-shadow: 0 0 75px rgba(255, 0, 85, 0.85); }
+    }
+
+    .timer-ring-wrap {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timer-svg-ring {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .timer-ring-bg {
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 8;
+    }
+
+    .timer-ring-fill {
+      stroke: url(#ringGrad);
+      stroke-width: 8;
+      stroke-dasharray: 408;
+      stroke-dashoffset: 0;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+    }
+
+    .timer-digits-inner {
+      text-align: center;
+      z-index: 2;
+    }
+
+    .timer-num-display {
+      font-family: var(--font-mono);
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      color: #FACC15;
+      text-shadow: 0 0 20px rgba(250, 204, 21, 0.7);
+    }
+
+    .timer-label-sub {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #94A3B8;
+      text-transform: uppercase;
+    }
+
+    .radiant-linear-track {
+      width: 100%;
+      max-width: 600px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .radiant-linear-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #FACC15 0%, #F97316 60%, #EF4444 100%);
+      box-shadow: 0 0 15px rgba(249, 115, 22, 0.8);
+      border-radius: 9999px;
+      transition: width 1s linear;
+    }
+
+    /* 6. Telemetry Stat Strip */
+    .radiant-telemetry-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .radiant-telem-card {
+      background: rgba(30, 41, 59, 0.65);
+      border-radius: 14px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .radiant-telem-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .telem-border-emerald { border-left: 4px solid #10B981; }
+    .telem-border-gold { border-left: 4px solid #FACC15; }
+    .telem-border-cyan { border-left: 4px solid #06B6D4; }
+    .telem-border-purple { border-left: 4px solid #C084FC; }
+
+    .radiant-telem-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .ic-emerald { background: rgba(16, 185, 129, 0.18); color: #34D399; }
+    .ic-gold { background: rgba(250, 204, 21, 0.18); color: #FACC15; }
+    .ic-cyan { background: rgba(6, 182, 212, 0.18); color: #38BDF8; }
+    .ic-purple { background: rgba(192, 132, 252, 0.18); color: #C084FC; }
+
+    .radiant-telem-lbl {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .radiant-telem-val {
+      font-size: 16px;
+      font-weight: 900;
+      color: #F8FAFC;
+    }
+
+    /* 7. Product Showcase Grid (8 Beverage Cards) */
+    .radiant-product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .radiant-product-card {
+      position: relative;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--card-border-color, rgba(255, 255, 255, 0.15));
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .radiant-product-card:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 15px 35px var(--card-glow-color, rgba(239, 68, 68, 0.35));
+    }
+
+    /* Shimmer animation loop */
+    .radiant-product-card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 45%,
+        rgba(255, 255, 255, 0.08) 50%,
+        transparent 55%
+      );
+      transform: rotate(30deg);
+      animation: cardShimmer 6s infinite linear;
+      animation-delay: var(--shimmer-delay, 0s);
+      pointer-events: none;
+    }
+
+    @keyframes cardShimmer {
+      0% { transform: translateY(-100%) rotate(30deg); }
+      100% { transform: translateY(100%) rotate(30deg); }
+    }
+
+    /* Juice Fill Bottom Wave Decoration */
+    .card-liquid-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--card-accent-grad);
+      box-shadow: 0 0 12px var(--card-glow-color);
+    }
+
+    .card-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-fruit-icon {
+      font-size: 22px;
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+    }
+
+    .card-title-text {
+      font-size: 15px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.2;
+    }
+
+    .card-discount-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 900;
+      background: rgba(239, 68, 68, 0.25);
+      color: #FF4D4D;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      white-space: nowrap;
+    }
+
+    .card-pricing-block {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .card-floor-price {
+      font-size: 26px;
+      font-weight: 900;
+      background: var(--card-accent-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 10px var(--card-glow-color));
+    }
+
+    .card-orig-price {
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748B;
+      text-decoration: line-through;
+    }
+
+    .card-stock-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .card-stock-fill {
+      height: 100%;
+      background: var(--card-accent-grad);
+      border-radius: 9999px;
+      box-shadow: 0 0 8px var(--card-glow-color);
+    }
+
+    .card-stock-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: #94A3B8;
+    }
+
+    .card-action-btn {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--card-accent-grad);
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 15px var(--card-glow-color);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .card-action-btn:hover {
+      transform: scale(1.02);
+      filter: brightness(1.15);
+      box-shadow: 0 6px 20px var(--card-glow-color);
+    }
+
+    /* Per-Product Theme Custom Properties */
+    .theme-mango {
+      --card-accent-grad: linear-gradient(135deg, #FF6B00 0%, #FFA800 50%, #FFD600 100%);
+      --card-border-color: rgba(255, 168, 0, 0.4);
+      --card-glow-color: rgba(255, 140, 0, 0.45);
+      --shimmer-delay: 0s;
+    }
+    .theme-lemon {
+      --card-accent-grad: linear-gradient(135deg, #EAB308 0%, #FACC15 50%, #84CC16 100%);
+      --card-border-color: rgba(250, 204, 21, 0.4);
+      --card-glow-color: rgba(250, 204, 21, 0.45);
+      --shimmer-delay: 0.75s;
+    }
+    .theme-mint {
+      --card-accent-grad: linear-gradient(135deg, #059669 0%, #10B981 50%, #06B6D4 100%);
+      --card-border-color: rgba(16, 185, 129, 0.4);
+      --card-glow-color: rgba(16, 185, 129, 0.45);
+      --shimmer-delay: 1.5s;
+    }
+    .theme-orange {
+      --card-accent-grad: linear-gradient(135deg, #EA580C 0%, #F97316 50%, #FB923C 100%);
+      --card-border-color: rgba(249, 115, 22, 0.4);
+      --card-glow-color: rgba(249, 115, 22, 0.45);
+      --shimmer-delay: 2.25s;
+    }
+    .theme-strawberry {
+      --card-accent-grad: linear-gradient(135deg, #E11D48 0%, #F43F5E 50%, #FB7185 100%);
+      --card-border-color: rgba(244, 63, 94, 0.4);
+      --card-glow-color: rgba(244, 63, 94, 0.45);
+      --shimmer-delay: 3.0s;
+    }
+    .theme-grape {
+      --card-accent-grad: linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #C084FC 100%);
+      --card-border-color: rgba(168, 85, 247, 0.4);
+      --card-glow-color: rgba(168, 85, 247, 0.45);
+      --shimmer-delay: 3.75s;
+    }
+    .theme-lychee {
+      --card-accent-grad: linear-gradient(135deg, #DB2777 0%, #EC4899 50%, #F472B6 100%);
+      --card-border-color: rgba(236, 72, 153, 0.4);
+      --card-glow-color: rgba(236, 72, 153, 0.45);
+      --shimmer-delay: 4.5s;
+    }
+    .theme-thunder {
+      --card-accent-grad: linear-gradient(135deg, #0284C7 0%, #06B6D4 50%, #38BDF8 100%);
+      --card-border-color: rgba(6, 182, 212, 0.4);
+      --card-glow-color: rgba(6, 182, 212, 0.45);
+      --shimmer-delay: 5.25s;
+    }
+
+    /* 8. Footer Controls */
+    .radiant-footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 4px;
+    }
+
+    .radiant-btn-action {
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(30, 41, 59, 0.8);
+      color: #F8FAFC;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .radiant-btn-action:hover {
+      transform: translateY(-2px);
+      background: rgba(51, 65, 85, 0.9);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .btn-minimize { background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9)); }
+    .btn-siren { background: linear-gradient(135deg, rgba(225, 29, 72, 0.8), rgba(159, 18, 57, 0.9)); border-color: rgba(244, 63, 94, 0.6); box-shadow: 0 0 20px rgba(244, 63, 94, 0.4); }
+    .btn-qr { background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.9)); border-color: rgba(52, 211, 153, 0.6); box-shadow: 0 0 20px rgba(52, 211, 153, 0.4); }
+
+    /* SVG Gradient Definitions */
+    svg.defs-only {
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden SVG Gradient Definitions -->
+  <svg class="defs-only">
+    <defs>
+      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FACC15" />
+        <stop offset="50%" stop-color="#F97316" />
+        <stop offset="100%" stop-color="#EF4444" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- Radiant Market Crash Takeover Overlay -->
+  <div class="radiant-crash-overlay">
+    
+    <!-- Top Hazard Ticker -->
+    <div class="radiant-hazard-bar">
+      <div class="radiant-hazard-chassis">
+        <div class="radiant-marquee-track">
+          <div class="radiant-marquee-stream">
+            <span class="hazard-pill hp-red">CIRCUIT BREAKER ENGAGED</span>
+            <span>ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-amber">DWMA HALTED</span>
+            <span>DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-emerald">ZERO SLIPPAGE</span>
+            <span>ORDER AT POS / TAP COUNTER NOW • ALL DISCOUNTS GUARANTEED</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-cyan">AUTO-RESUME</span>
+            <span>PRICING STABILIZES AUTOMATICALLY ON TIMER EXPIRATION</span>
+            <span>✦</span>
+          </div>
+          <div class="radiant-marquee-stream" aria-hidden="true">
+            <span class="hazard-pill hp-red">CIRCUIT BREAKER ENGAGED</span>
+            <span>ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-amber">DWMA HALTED</span>
+            <span>DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-emerald">ZERO SLIPPAGE</span>
+            <span>ORDER AT POS / TAP COUNTER NOW • ALL DISCOUNTS GUARANTEED</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-cyan">AUTO-RESUME</span>
+            <span>PRICING STABILIZES AUTOMATICALLY ON TIMER EXPIRATION</span>
+            <span>✦</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Glass Chassis -->
+    <div class="radiant-crash-container">
+      
+      <!-- Hero Header -->
+      <div class="radiant-hero-row">
+        <div class="radiant-eyebrow">
+          <span class="radiant-beacon-dot"></span>
+          CRITICAL MARKET EVENT // ALGORITHMIC CIRCUIT BREAKER
+        </div>
+        <h1 class="radiant-title">MARKET CRASH IN PROGRESS</h1>
+        <div class="radiant-subtitle">
+          <span>All Craft Beverage Prices Locked to Absolute Floor:</span>
+          <span class="radiant-floor-badge">₹20.00 ABSOLUTE FLOOR</span>
+        </div>
+      </div>
+
+      <!-- Focal Countdown Halo Chamber -->
+      <div id="demoChamber" class="radiant-timer-chamber">
+        <div class="timer-ring-wrap">
+          <svg class="timer-svg-ring" viewBox="0 0 140 140">
+            <circle class="timer-ring-bg" cx="70" cy="70" r="65" fill="none" />
+            <circle id="demoRingFill" class="timer-ring-fill" cx="70" cy="70" r="65" fill="none" />
+          </svg>
+          <div class="timer-digits-inner">
+            <div id="demoTimerDigits" class="timer-num-display">03:00</div>
+            <div class="timer-label-sub">REMAINING</div>
+          </div>
+        </div>
+        <div class="radiant-linear-track">
+          <div id="demoLinearFill" class="radiant-linear-fill"></div>
+        </div>
+      </div>
+
+      <!-- Telemetry Stat Row -->
+      <div class="radiant-telemetry-row">
+        <div class="radiant-telem-card telem-border-emerald">
+          <div class="radiant-telem-icon ic-emerald">🔥</div>
+          <div>
+            <div class="radiant-telem-lbl">Max Venue Discount</div>
+            <div class="radiant-telem-val">UP TO -43%</div>
+          </div>
+        </div>
+        <div class="radiant-telem-card telem-border-gold">
+          <div class="radiant-telem-icon ic-gold">🛡️</div>
+          <div>
+            <div class="radiant-telem-lbl">Floor Lock Price</div>
+            <div class="radiant-telem-val">₹20.00 Flat Cap</div>
+          </div>
+        </div>
+        <div class="radiant-telem-card telem-border-cyan">
+          <div class="radiant-telem-icon ic-cyan">⚡</div>
+          <div>
+            <div class="radiant-telem-lbl">Pricing Mode</div>
+            <div class="radiant-telem-val">DWMA Freeze Active</div>
+          </div>
+        </div>
+        <div class="radiant-telem-card telem-border-purple">
+          <div class="radiant-telem-icon ic-purple">🍹</div>
+          <div>
+            <div class="radiant-telem-lbl">Floor Availability</div>
+            <div class="radiant-telem-val">8 of 8 Taps Active</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Beverage Grid Showcase (8 Vivid Flavor Themes) -->
+      <div class="radiant-product-grid">
+        
+        <!-- 1. Mango -->
+        <div class="radiant-product-card theme-mango">
+          <div class="card-liquid-fill"></div>
+          <div class="card-top-row">
+            <div class="card-name-wrap">
+              <span class="card-fruit-icon">🥭</span>
+              <span class="card-title-text">Fresh Mango Juice</span>
+            </div>
+            <span class="card-discount-badge">-20% OFF</span>
+          </div>
+          <div class="card-pricing-block">
+            <span class="card-floor-price">₹20.00</span>
+            <span class="card-orig-price">₹25.00</span>
+          </div>
+          <div class="card-stock-track">
+            <div class="card-stock-fill" style="width: 85%;"></div>
+          </div>
+          <div class="card-stock-info">
+            <span>Tap Stock: 17.0L / 20L</span>
+            <span>85%</span>
+          </div>
+          <button class="card-action-btn">CLAIM @ ₹20.00</button>
+        </div>
+
+        <!-- 2. Lemon -->
+        <div class="radiant-product-card theme-lemon">
+          <div class="card-liquid-fill"></div>
+          <div class="card-top-row">
+            <div class="card-name-wrap">
+              <span class="card-fruit-icon">🍋</span>
+              <span class="card-title-text">Zesty Lemon Juice</span>
+            </div>
+            <span class="card-discount-badge">-20% OFF</span>
+          </div>
+          <div class="card-pricing-block">
+            <span class="card-floor-price">₹20.00</span>
+            <span class="card-orig-price">₹25.00</span>
+          </div>
+          <div class="card-stock-track">
+            <div class="card-stock-fill" style="width: 70%;"></div>
+          </div>
+          <div class="card-stock-info">
+            <span>Tap Stock: 14.0L / 20L</span>
+            <span>70%</span>
+          </div>
+          <button class="card-action-btn">CLAIM @ ₹20.00</button>
+        </div>
+
+        <!-- 3. Mint -->
+        <div class="radiant-product-card theme-mint">
+          <div class="card-liquid-fill"></div>
+          <div class="card-top-row">
+            <div class="card-name-wrap">
+              <span class="card-fruit-icon">🌿</span>
+              <span class="card-title-text">Cool Mint Cooler</span>
+            </div>
+            <span class="card-discount-badge">-17% OFF</span>
+          </div>
+          <div class="card-pricing-block">
+            <span class="card-floor-price">₹20.00</span>
+            <span class="card-orig-price">₹24.00</span>
+          </div>
+          <div class="card-stock-track">
+            <div class="card-stock-fill" style="width: 90%;"></div>
+          </div>
+          <div class="card-stock-info">
+            <span>Tap Stock: 18.0L / 20L</span>
+            <span>90%</span>
+          </div>
+          <button class="card-action-btn">CLAIM @ ₹20.00</button>
+        </div>
+
+        <!-- 4. Orange -->
+        <div class="radiant-product-card theme-orange">
+          <div class="card-liquid-fill"></div>
+          <div class="card-top-row">
+            <div class="card-name-wrap">
+              <span class="card-fruit-icon">🍊</span>
+              <span class="card-title-text">Valencia Orange</span>
+            </div>
+            <span class="card-discount-badge">-9% OFF</span>
+          </div>
+          <div class="card-pricing-block">
+            <span class="card-floor-price">₹20.00</span>
+            <span class="card-orig-price">₹22.00</span>
+          </div>
+          <div class="card-stock-track">
+            <div class="card-stock-fill" style="width: 60%;"></div>
+          </div>
+          <div class="card-stock-info">
+            <span>Tap Stock: 12.0L / 20L</span>
+            <span>60%</span>
+          </div>
+          <button class="card-action-btn">CLAIM @ ₹20.00</button>
+        </div>
+
+        <!-- 5. Strawberry -->
+        <div class="radiant-product-card theme-strawberry">
+          <div class="card-liquid-fill"></div>
+          <div class="card-top-row">
+            <div class="card-name-wrap">
+              <span class="card-fruit-icon">🍓</span>
+              <span class="card-title-text">Strawberry Delight</span>
+            </div>
+            <span class="card-discount-badge">-9% OFF</span>
+          </div>
+          <div class="card-pricing-block">
+            <span class="card-floor-price">₹20.00</span>
+            <span class="card-orig-price">₹22.00</span>
+          </div>
+          <div class="card-stock-track">
+            <div class="card-stock-fill" style="width: 75%;"></div>
+          </div>
+          <div class="card-stock-info">
+            <span>Tap Stock: 15.0L / 20L</span>
+            <span>75%</span>
+          </div>
+          <button class="card-action-btn">CLAIM @ ₹20.00</button>
+        </div>
+
+        <!-- 6. Grape -->
+        <div class="radiant-product-card theme-grape">
+          <div class="card-liquid-fill"></div>
+          <div class="card-top-row">
+            <div class="card-name-wrap">
+              <span class="card-fruit-icon">🍇</span>
+              <span class="card-title-text">Royal Grape Juice</span>
+            </div>
+            <span class="card-discount-badge">-20% OFF</span>
+          </div>
+          <div class="card-pricing-block">
+            <span class="card-floor-price">₹20.00</span>
+            <span class="card-orig-price">₹25.00</span>
+          </div>
+          <div class="card-stock-track">
+            <div class="card-stock-fill" style="width: 65%;"></div>
+          </div>
+          <div class="card-stock-info">
+            <span>Tap Stock: 13.0L / 20L</span>
+            <span>65%</span>
+          </div>
+          <button class="card-action-btn">CLAIM @ ₹20.00</button>
+        </div>
+
+        <!-- 7. Lychee -->
+        <div class="radiant-product-card theme-lychee">
+          <div class="card-liquid-fill"></div>
+          <div class="card-top-row">
+            <div class="card-name-wrap">
+              <span class="card-fruit-icon">🌸</span>
+              <span class="card-title-text">Lychee Mist</span>
+            </div>
+            <span class="card-discount-badge">-20% OFF</span>
+          </div>
+          <div class="card-pricing-block">
+            <span class="card-floor-price">₹20.00</span>
+            <span class="card-orig-price">₹25.00</span>
+          </div>
+          <div class="card-stock-track">
+            <div class="card-stock-fill" style="width: 80%;"></div>
+          </div>
+          <div class="card-stock-info">
+            <span>Tap Stock: 16.0L / 20L</span>
+            <span>80%</span>
+          </div>
+          <button class="card-action-btn">CLAIM @ ₹20.00</button>
+        </div>
+
+        <!-- 8. Thunder -->
+        <div class="radiant-product-card theme-thunder">
+          <div class="card-liquid-fill"></div>
+          <div class="card-top-row">
+            <div class="card-name-wrap">
+              <span class="card-fruit-icon">⚡</span>
+              <span class="card-title-text">Thunder Power</span>
+            </div>
+            <span class="card-discount-badge">-43% MAX</span>
+          </div>
+          <div class="card-pricing-block">
+            <span class="card-floor-price">₹20.00</span>
+            <span class="card-orig-price">₹35.00</span>
+          </div>
+          <div class="card-stock-track">
+            <div class="card-stock-fill" style="width: 50%;"></div>
+          </div>
+          <div class="card-stock-info">
+            <span>Tap Stock: 10.0L / 20L</span>
+            <span>50%</span>
+          </div>
+          <button class="card-action-btn">CLAIM @ ₹20.00</button>
+        </div>
+
+      </div>
+
+      <!-- Action Footer Buttons -->
+      <div class="radiant-footer-row">
+        <button class="radiant-btn-action btn-minimize">
+          👁️ <span>Minimize &amp; View Live Trading Board</span>
+        </button>
+        <button class="radiant-btn-action btn-siren">
+          🚨 <span>Replay Pub Siren</span>
+        </button>
+        <button class="radiant-btn-action btn-qr">
+          📱 <span>Order via POS QR</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Bottom Hazard Ticker -->
+    <div class="radiant-hazard-bar">
+      <div class="radiant-hazard-chassis">
+        <div class="radiant-marquee-track">
+          <div class="radiant-marquee-stream">
+            <span class="hazard-pill hp-red">CIRCUIT BREAKER ENGAGED</span>
+            <span>ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-amber">DWMA HALTED</span>
+            <span>DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-emerald">ZERO SLIPPAGE</span>
+            <span>ORDER AT POS / TAP COUNTER NOW • ALL DISCOUNTS GUARANTEED</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-cyan">AUTO-RESUME</span>
+            <span>PRICING STABILIZES AUTOMATICALLY ON TIMER EXPIRATION</span>
+            <span>✦</span>
+          </div>
+          <div class="radiant-marquee-stream" aria-hidden="true">
+            <span class="hazard-pill hp-red">CIRCUIT BREAKER ENGAGED</span>
+            <span>ALL 8 BEVERAGES PRICE-CAPPED AT ₹20.00 ABSOLUTE FLOOR</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-amber">DWMA HALTED</span>
+            <span>DYNAMIC VOLATILITY RECALCULATION SUSPENDED DURING OVERRIDE</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-emerald">ZERO SLIPPAGE</span>
+            <span>ORDER AT POS / TAP COUNTER NOW • ALL DISCOUNTS GUARANTEED</span>
+            <span>✦</span>
+            <span class="hazard-pill hp-cyan">AUTO-RESUME</span>
+            <span>PRICING STABILIZES AUTOMATICALLY ON TIMER EXPIRATION</span>
+            <span>✦</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Realtime Countdown Timer Animation Script -->
+  <script>
+    (function () {
+      let totalSeconds = 180; // 3 mins mock crash
+      const ringFill = document.getElementById('demoRingFill');
+      const linearFill = document.getElementById('demoLinearFill');
+      const timerDigits = document.getElementById('demoTimerDigits');
+      const chamber = document.getElementById('demoChamber');
+
+      const totalDash = 408;
+
+      setInterval(() => {
+        if (totalSeconds > 0) {
+          totalSeconds--;
+        } else {
+          totalSeconds = 180; // Loop preview
+        }
+
+        const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const secs = String(totalSeconds % 60).padStart(2, '0');
+        timerDigits.textContent = `${mins}:${secs}`;
+
+        const pct = totalSeconds / 180;
+        const offset = totalDash * (1 - pct);
+        if (ringFill) ringFill.style.strokeDashoffset = offset;
+        if (linearFill) linearFill.style.width = `${pct * 100}%`;
+
+        // Urgency color transition
+        if (totalSeconds <= 30) {
+          chamber.className = 'radiant-timer-chamber critical';
+          timerDigits.style.color = '#FF0055';
+        } else if (totalSeconds <= 60) {
+          chamber.className = 'radiant-timer-chamber warning';
+          timerDigits.style.color = '#F97316';
+        } else {
+          chamber.className = 'radiant-timer-chamber';
+          timerDigits.style.color = '#FACC15';
+        }
+      }, 1000);
+    })();
+  </script>
+</body>
+</html>
