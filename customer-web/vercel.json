@@ -2,10 +2,12 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/", "destination": "/src/index.html" },
-    { "source": "/led-display", "destination": "/led-display.html" },
-    { "source": "/led-display.html", "destination": "/led-display.html" },
+    { "source": "/led-display", "destination": "/src/led-display.html" },
+    { "source": "/led-display.html", "destination": "/src/led-display.html" },
+    { "source": "/led_display", "destination": "/src/led-display.html" },
+    { "source": "/led_display.html", "destination": "/src/led-display.html" },
     { "source": "/bridge.html", "destination": "/src/bridge.html" },
-    { "source": "/config.js", "destination": "/config.js" },
+    { "source": "/config.js", "destination": "/src/config.js" },
     { "source": "/pub-exchange-tokens.css", "destination": "/pub-exchange-tokens.css" },
     { "source": "/(.*)", "destination": "/src/$1" }
   ]

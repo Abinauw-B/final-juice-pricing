@@ -1,13 +1,4239 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
+
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=/src/index.html">
-  <title>Customer POS - Dynamic Pricing</title>
-  <script>window.location.replace('/src/index.html');</script>
-  <link rel="stylesheet" href="/src/pub-exchange-tokens.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juice Bar Stock Exchange — Live Beverage Trading Terminal</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
+  <script>
+    // Suppress legacy unload permission violation warnings from SockJS
+    (function () {
+      const origAdd = window.addEventListener;
+      window.addEventListener = function (type, listener, options) {
+        if (type === 'unload') return;
+        return origAdd.call(this, type, listener, options);
+      };
+      if (window.attachEvent) {
+        const origAttach = window.attachEvent;
+        window.attachEvent = function (event, listener) {
+          if (event === 'onunload') return;
+          return origAttach.call(this, event, listener);
+        };
+      }
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <script>
+    window.__ENV__ = {
+      API_BASE_URL: "https://juice-pricing-backend.onrender.com",
+      POS_URL: "https://final-juice-pricing.vercel.app",
+      ADMIN_URL: "https://final-juice-pricing-admin.vercel.app"
+    };
+  </script>
+  <script src="config.js"></script>
+  <link rel="stylesheet" href="pub-exchange-tokens.css">
+
+  <style>
+    :root,
+    html[data-theme="dark"],
+    body.dark-theme-mode {
+      --font-main: 'BL Melody', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'BL Melody', monospace;
+
+      /* Dark Theme — "Obsidian Market" Design Tokens */
+      --bg-page: #080B11;
+      --bg-surface: rgba(13, 18, 29, 0.85);
+      --bg-secondary: rgba(22, 30, 48, 0.65);
+      --bg-elevated: rgba(26, 36, 56, 0.85);
+      --bg-card: rgba(15, 22, 35, 0.78);
+      --bg-card-hover: rgba(20, 29, 46, 0.95);
+      --bg-subtle: rgba(255, 255, 255, 0.04);
+      --bg-input: rgba(15, 23, 42, 0.9);
+
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.05);
+      --border-focus: rgba(56, 189, 248, 0.4);
+
+      --text-primary: #F8FAFC;
+      --text-secondary: #CBD5E1;
+      --text-muted: #8E9EB5;
+
+      --accent-cyan: #38BDF8;
+      --accent-emerald: #10B981;
+      --accent-rose: #F43F5E;
+      --accent-amber: #F59E0B;
+      --accent-purple: #C084FC;
+      --accent-blue: #3B82F6;
+
+      --success: #10B981;
+      --danger: #F43F5E;
+      --warning: #F59E0B;
+      --info: #38BDF8;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-card: 14px;
+      --radius-pill: 9999px;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+      --shadow-hover: 0 10px 28px -4px rgba(0, 0, 0, 0.55);
+
+      --bg-mesh: radial-gradient(circle at 15% 10%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+        linear-gradient(180deg, #080B11 0%, #0B101A 100%);
+    }
+
+    html[data-theme="light"],
+    body:not(.dark-theme-mode) {
+      /* Light Theme — "Porcelain Market" Design Tokens */
+      --bg-page: #e4edf3;
+      --bg-surface: rgba(255, 255, 255, 0.92);
+      --bg-secondary: rgba(213, 231, 240, 0.75);
+      --bg-elevated: rgba(255, 255, 255, 0.98);
+      --bg-card: rgba(255, 255, 255, 0.92);
+      --bg-card-hover: #FFFFFF;
+      --bg-subtle: #c8dfea;
+      --bg-input: #FFFFFF;
+
+      --border-color: rgba(15, 23, 42, 0.09);
+      --border-subtle: rgba(15, 23, 42, 0.05);
+      --border-focus: rgba(2, 132, 199, 0.4);
+
+      --text-primary: #0F172A;
+      --text-secondary: #334155;
+      --text-muted: #64748B;
+
+      --accent-cyan: #0284C7;
+      --accent-emerald: #059669;
+      --accent-rose: #E11D48;
+      --accent-amber: #D97706;
+      --accent-purple: #9333EA;
+      --accent-blue: #2563EB;
+
+      --success: #059669;
+      --danger: #E11D48;
+      --warning: #D97706;
+      --info: #0284C7;
+
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+      --shadow-card: 0 4px 18px -2px rgba(15, 23, 42, 0.06);
+      --shadow-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.12);
+
+      --bg-mesh: radial-gradient(circle at 12% 8%, rgba(245, 158, 11, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 88% 12%, rgba(56, 189, 248, 0.05) 0%, transparent 45%),
+        linear-gradient(180deg, #d5e7f0 0%, #c4dde8 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: var(--font-main);
+      letter-spacing: -0.012em;
+    }
+
+    button,
+    input,
+    textarea,
+    select,
+    option {
+      font-family: inherit;
+    }
+
+    html {
+      overflow-y: scroll;
+      scrollbar-gutter: stable;
+    }
+
+    body {
+      background: var(--bg-mesh);
+      background-color: var(--bg-page);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 16px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════ 1. COMMAND HEADER BAR ═══════ */
+    .header-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      padding: 12px 20px;
+      border-radius: var(--radius-card);
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position: relative;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(56, 189, 248, 0.2) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .brand-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-badge {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 12px;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .status-badge-live {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--success);
+      font-family: var(--font-mono);
+      font-feature-settings: 'tnum' 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-badge-live .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+      animation: liveDotPulse 2s infinite ease-in-out;
+    }
+
+    .status-badge-offline {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(244, 63, 94, 0.1);
+      border: 1px solid rgba(244, 63, 94, 0.25);
+      color: var(--danger);
+      font-family: var(--font-mono);
+      font-feature-settings: 'tnum' 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-badge-offline .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+
+    @keyframes liveDotPulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.35);
+        opacity: 0.55;
+      }
+    }
+
+    .btn-action-nav {
+      height: 34px;
+      padding: 0 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-action-nav:hover {
+      background: var(--bg-secondary);
+      border-color: var(--accent-cyan);
+      transform: translateY(-1px);
+    }
+
+    /* ═══════ 2. MARKET STRIP & TICKER ═══════ */
+    .market-status-bar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 10px 18px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum' 1;
+    }
+
+    .market-status-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .market-metric-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .market-metric-chip strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .countdown-highlight {
+      font-family: var(--font-mono);
+      color: var(--accent-amber);
+      font-weight: 800;
+      background: rgba(245, 158, 11, 0.1);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    /* ═══════ 2. PROFESSIONAL FINANCIAL MARKET TICKER TAPE ═══════ */
+    .ticker-wrap {
+      width: 100%;
+      height: 48px;
+      background: var(--bg-surface);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      margin-bottom: 16px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      position: relative;
+    }
+
+    /* Top Animated Neon Beam */
+    .ticker-wrap::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #10b981, #06b6d4, #8b5cf6, #f59e0b, #ec4899, #10b981);
+      background-size: 300% 100%;
+      animation: ledBeamSweepCust 8s linear infinite;
+      z-index: 5;
+    }
+    @keyframes ledBeamSweepCust {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    html[data-theme="light"] .ticker-wrap, body:not(.dark-theme-mode) .ticker-wrap {
+      background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 50%, #F1F5F9 100%);
+      border: 1.5px solid #94A3B8;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Dark Theme Styling — Deep Obsidian Glass */
+    html[data-theme="dark"] .ticker-wrap, body.dark-theme-mode .ticker-wrap {
+      background: linear-gradient(90deg, #020408 0%, #060a14 50%, #020408 100%);
+      border: 1.5px solid rgba(56, 189, 248, 0.28);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.85), 0 0 16px rgba(56, 189, 248, 0.08);
+    }
+
+    .ticker-title {
+      font-size: 11.5px;
+      font-weight: 900;
+      white-space: nowrap;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      z-index: 6;
+      margin-right: 12px;
+    }
+
+    html[data-theme="light"] .ticker-title, body:not(.dark-theme-mode) .ticker-title {
+      background: #0F172A;
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+    }
+
+    html[data-theme="dark"] .ticker-title, body.dark-theme-mode .ticker-title {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.4) 0%, rgba(56, 189, 248, 0.25) 100%);
+      color: #38BDF8;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+
+    .ticker-radar-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10B981;
+      display: inline-block;
+      animation: tickerRadarPulseCust 1.8s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes tickerRadarPulseCust {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .ticker-viewport-wrap {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+
+    .ticker-content {
+      display: inline-flex;
+      align-items: center;
+      width: max-content;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      will-change: transform;
+      animation: tickerCustomerScroll 32s linear infinite;
+    }
+
+    .ticker-wrap:hover .ticker-content {
+      animation-play-state: paused;
+    }
+
+    .ticker-stream-loop {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 0;
+    }
+
+    @keyframes tickerCustomerScroll {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
+    }
+
+    /* Distinctive Juice-Themed Electronic Trading Instrument Badge */
+    .ticker-tape-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 8px;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    html[data-theme="light"] .ticker-tape-item, body:not(.dark-theme-mode) .ticker-tape-item {
+      background: var(--juice-bg-light, #FFFFFF);
+      border: 1.5px solid var(--juice-border-light, #CBD5E1);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05), 0 0 10px var(--juice-shadow-light, transparent);
+    }
+
+    html[data-theme="light"] .ticker-tape-item:hover, body:not(.dark-theme-mode) .ticker-tape-item:hover {
+      transform: translateY(-2px) scale(1.03);
+      border-color: var(--juice-accent, #0284C7);
+      box-shadow: 0 4px 16px var(--juice-glow, rgba(2, 132, 199, 0.2));
+      z-index: 10;
+    }
+
+    html[data-theme="dark"] .ticker-tape-item, body.dark-theme-mode .ticker-tape-item {
+      background: var(--juice-bg-dark, #04070e);
+      border: 1.5px solid var(--juice-border-dark, rgba(56, 189, 248, 0.3));
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65), 0 0 12px var(--juice-shadow-dark, transparent);
+      backdrop-filter: blur(12px);
+    }
+
+    html[data-theme="dark"] .ticker-tape-item:hover, body.dark-theme-mode .ticker-tape-item:hover {
+      transform: translateY(-2px) scale(1.03);
+      border-color: var(--juice-accent, #38BDF8);
+      box-shadow: 0 6px 20px var(--juice-glow, rgba(56, 189, 248, 0.4));
+      z-index: 10;
+    }
+
+    /* Fruit Aura Capsule */
+    .ticker-fruit-aura {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      font-size: 15px;
+      line-height: 1;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      transition: transform 0.2s ease;
+    }
+    .ticker-tape-item:hover .ticker-fruit-aura {
+      transform: scale(1.15) rotate(6deg);
+    }
+
+    .ticker-tape-name {
+      font-family: var(--font-main);
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      font-size: 12.5px;
+      text-transform: uppercase;
+    }
+
+    .ticker-tape-price {
+      font-family: var(--font-mono);
+      font-weight: 900;
+      font-size: 14.5px;
+      letter-spacing: 0.4px;
+    }
+
+    html[data-theme="light"] .ticker-tape-price, body:not(.dark-theme-mode) .ticker-tape-price {
+      color: #0F172A;
+    }
+
+    html[data-theme="dark"] .ticker-tape-price, body.dark-theme-mode .ticker-tape-price {
+      color: #FFFFFF;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Delta Badges */
+    .ticker-tape-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 900;
+      padding: 2px 7px;
+      border-radius: 5px;
+      line-height: 1.3;
+    }
+
+    /* Light Theme Badges */
+    html[data-theme="light"] .ticker-tape-badge.is-up, body:not(.dark-theme-mode) .ticker-tape-badge.is-up {
+      background: #DCFCE7;
+      color: #15803D;
+      border: 1px solid #86EFAC;
+    }
+
+    html[data-theme="light"] .ticker-tape-badge.is-down, body:not(.dark-theme-mode) .ticker-tape-badge.is-down {
+      background: #FEE2E2;
+      color: #B91C1C;
+      border: 1px solid #FCA5A5;
+    }
+
+    html[data-theme="light"] .ticker-tape-badge.is-flat, body:not(.dark-theme-mode) .ticker-tape-badge.is-flat {
+      background: #F1F5F9;
+      color: #475569;
+      border: 1px solid #CBD5E1;
+    }
+
+    /* Dark Theme Badges */
+    html[data-theme="dark"] .ticker-tape-badge.is-up, body.dark-theme-mode .ticker-tape-badge.is-up {
+      background: rgba(16, 185, 129, 0.22);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      text-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+    }
+
+    html[data-theme="dark"] .ticker-tape-badge.is-down, body.dark-theme-mode .ticker-tape-badge.is-down {
+      background: rgba(244, 63, 94, 0.22);
+      color: #FB7185;
+      border: 1px solid rgba(244, 63, 94, 0.5);
+      text-shadow: 0 0 6px rgba(244, 63, 94, 0.4);
+    }
+
+    html[data-theme="dark"] .ticker-tape-badge.is-flat, body.dark-theme-mode .ticker-tape-badge.is-flat {
+      background: rgba(51, 65, 85, 0.55);
+      color: #CBD5E1;
+      border: 1px solid rgba(71, 85, 105, 0.4);
+    }
+
+    .ticker-neon-divider {
+      font-size: 10px;
+      color: #38BDF8;
+      margin: 0 14px;
+      opacity: 0.8;
+      display: inline-flex;
+      align-items: center;
+      animation: pulseNeonDiamond 3s ease-in-out infinite alternate;
+    }
+    html[data-theme="light"] .ticker-neon-divider, body:not(.dark-theme-mode) .ticker-neon-divider {
+      color: #0284C7;
+      opacity: 0.6;
+    }
+
+    /* ═══════ 3. MARKET CRASH ALERT BANNER & VIBRANT STYLING ═══════ */
+    .pos-crash-strobe-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 99999;
+      background: radial-gradient(circle at center, rgba(239, 68, 68, 0.45) 0%, rgba(245, 158, 11, 0.25) 50%, transparent 80%);
+      opacity: 0;
+      transition: opacity 0.3s ease-out;
+    }
+    .pos-crash-strobe-overlay.active {
+      opacity: 1;
+      animation: crashStrobePulse 0.8s ease-out forwards;
+    }
+    @keyframes crashStrobePulse {
+      0% { opacity: 0; transform: scale(0.95); }
+      30% { opacity: 0.85; transform: scale(1.02); }
+      70% { opacity: 0.5; }
+      100% { opacity: 0; transform: scale(1); }
+    }
+
+    .market-crash-banner {
+      background: linear-gradient(135deg, #b91c1c 0%, #dc2626 40%, #991b1b 100%);
+      border: 2px solid #f87171;
+      border-radius: var(--radius-card);
+      padding: 16px 24px;
+      margin-bottom: 18px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      color: #ffffff;
+      box-shadow: 0 10px 36px rgba(220, 38, 38, 0.5), 0 0 20px rgba(245, 158, 11, 0.35);
+      animation: crashPulse 1.6s infinite ease-in-out;
+      backdrop-filter: blur(14px);
+      position: relative;
+      overflow: hidden;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .market-crash-banner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 5px;
+      background: repeating-linear-gradient(45deg, #facc15, #facc15 15px, #000000 15px, #000000 30px);
+      animation: hazardShift 1s linear infinite;
+    }
+    .market-crash-banner::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 5px;
+      background: repeating-linear-gradient(45deg, #facc15, #facc15 15px, #000000 15px, #000000 30px);
+      animation: hazardShift 1s linear infinite reverse;
+    }
+    @keyframes hazardShift {
+      0% { background-position: 0 0; }
+      100% { background-position: 42px 0; }
+    }
+
+    .crash-title {
+      font-size: 16px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      letter-spacing: 0.02em;
+    }
+    .crash-title-badge {
+      background: #facc15;
+      color: #000000;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      animation: badgeFlash 0.8s infinite alternate;
+    }
+    @keyframes badgeFlash {
+      0% { opacity: 0.85; transform: scale(0.98); }
+      100% { opacity: 1; transform: scale(1.04); }
+    }
+
+    .crash-timer {
+      font-size: 22px;
+      font-weight: 900;
+      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #facc15;
+      padding: 6px 18px;
+      border-radius: 12px;
+      color: #facc15;
+      font-variant-numeric: tabular-nums;
+      box-shadow: 0 0 16px rgba(250, 204, 21, 0.4), inset 0 0 10px rgba(250, 204, 21, 0.2);
+      text-shadow: 0 0 10px rgba(250, 204, 21, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @keyframes crashPulse {
+      0%, 100% {
+        box-shadow: 0 10px 36px rgba(220, 38, 38, 0.45), 0 0 0 1px rgba(239, 68, 68, 0.4);
+      }
+      50% {
+        box-shadow: 0 12px 48px rgba(220, 38, 38, 0.75), 0 0 25px rgba(245, 158, 11, 0.5), 0 0 0 3px rgba(250, 204, 21, 0.6);
+      }
+    }
+
+    /* Vibrant Product Card Crash Mode */
+    .flavour-card.crash-mode-card {
+      border: 2px solid #ef4444 !important;
+      box-shadow: 0 0 24px rgba(239, 68, 68, 0.35), 0 0 45px rgba(245, 158, 11, 0.18) !important;
+      background: linear-gradient(180deg, var(--bg-card) 0%, rgba(239, 68, 68, 0.06) 100%) !important;
+      animation: cardCrashAura 2s infinite ease-in-out;
+    }
+    @keyframes cardCrashAura {
+      0%, 100% { box-shadow: 0 0 18px rgba(239, 68, 68, 0.3), 0 8px 24px rgba(0, 0, 0, 0.2); }
+      50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.6), 0 0 20px rgba(245, 158, 11, 0.35), 0 8px 28px rgba(0, 0, 0, 0.3); }
+    }
+    .flavour-card.crash-mode-card::before {
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #ef4444) !important;
+      height: 4px !important;
+      animation: hazardShift 1.2s linear infinite;
+    }
+
+    .crash-original-strikethrough {
+      font-size: 13px;
+      color: #ef4444;
+      text-decoration: line-through;
+      margin-right: 6px;
+      font-weight: 700;
+      opacity: 0.85;
+    }
+
+    .crash-discount-pill {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    /* Add to cart buttons maintain stable static juice theme colors across all market states */
+
+    /* ═══════ 4. MAIN LAYOUT (GRID + STICKY POS CART) ═══════ */
+    .pos-container {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
+      max-width: 100%;
+      margin: 0 auto;
+      align-items: start;
+    }
+
+    .market-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .market-section-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .market-section-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 1px;
+    }
+
+    .exchange-bounds-pill {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+      background: var(--bg-surface);
+      padding: 5px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Symmetrical 4-Column Product Grid (Responsive) */
+    .flavour-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    /* ═══════ 5. FLAVOR THEMES (SUBTLE ACCENT SYSTEM) ═══════ */
+    .card-theme-mango {
+      --flavour-accent: #F59E0B;
+      --flavour-strip: linear-gradient(90deg, #F59E0B, #D97706);
+      --flavour-rgb: 245, 158, 11;
+    }
+
+    .card-theme-lemon {
+      --flavour-accent: #84CC16;
+      --flavour-strip: linear-gradient(90deg, #84CC16, #65A30D);
+      --flavour-rgb: 132, 204, 22;
+    }
+
+    .card-theme-mint {
+      --flavour-accent: #10B981;
+      --flavour-strip: linear-gradient(90deg, #10B981, #059669);
+      --flavour-rgb: 16, 185, 129;
+    }
+
+    .card-theme-orange {
+      --flavour-accent: #F97316;
+      --flavour-strip: linear-gradient(90deg, #F97316, #EA580C);
+      --flavour-rgb: 249, 115, 22;
+    }
+
+    .card-theme-strawberry {
+      --flavour-accent: #F43F5E;
+      --flavour-strip: linear-gradient(90deg, #F43F5E, #E11D48);
+      --flavour-rgb: 244, 63, 94;
+    }
+
+    .card-theme-grape {
+      --flavour-accent: #A855F7;
+      --flavour-strip: linear-gradient(90deg, #A855F7, #9333EA);
+      --flavour-rgb: 168, 85, 247;
+    }
+
+    .card-theme-lychee {
+      --flavour-accent: #EC4899;
+      --flavour-strip: linear-gradient(90deg, #EC4899, #DB2777);
+      --flavour-rgb: 236, 72, 153;
+    }
+
+    .card-theme-thunder {
+      --flavour-accent: #0284C7;
+      --flavour-strip: linear-gradient(90deg, #0284C7, #0369A1);
+      --flavour-rgb: 2, 132, 199;
+    }
+
+    /* ═══════ 6. REFINED PRODUCT CARD ═══════ */
+    .flavour-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .flavour-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: var(--flavour-strip, linear-gradient(90deg, #0284C7, #38BDF8));
+      z-index: 2;
+    }
+
+    .flavour-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--flavour-accent, var(--border-focus));
+      box-shadow: var(--shadow-hover), 0 0 20px rgba(var(--flavour-rgb, 56, 189, 248), 0.15);
+    }
+
+    /* 1. Visual Banner Area */
+    .card-img-banner {
+      position: relative;
+      width: 100%;
+      height: 128px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 8px;
+      background: var(--bg-secondary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-img-banner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(10, 15, 28, 0.65) 100%);
+      pointer-events: none;
+    }
+
+    .beverage-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: block;
+    }
+
+    .flavour-card:hover .beverage-photo {
+      transform: scale(1.08);
+    }
+
+    .fruit-pill {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      z-index: 2;
+      background: rgba(11, 16, 26, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 800;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 2. Product Identity */
+    .card-header-info {
+      margin-bottom: 6px;
+    }
+
+    .card-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--text-primary);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-size {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* 3. Dominant Live Price Hero Section */
+    .price-hero-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 4px 0 6px 0;
+      margin-bottom: 6px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .price-primary-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .price-main {
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum' 1, 'ss01' 1;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .price-rate-label {
+      font-size: 8.5px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .price-status-badge {
+      font-size: 10.5px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      min-width: 60px;
+      justify-content: center;
+    }
+
+    .badge-up {
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-down {
+      color: var(--danger);
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    .badge-stable {
+      color: var(--text-muted);
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+    }
+
+    .badge-static-hold {
+      color: #60a5fa;
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      font-weight: 800;
+    }
+
+    /* 4. Mini Price Trend Chart */
+    .card-chart-wrap {
+      width: 100%;
+      height: 72px;
+      background: linear-gradient(135deg, rgba(var(--flavour-rgb, 56, 189, 248), 0.06), var(--bg-secondary));
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-chart-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .chart-micro-tag {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 8px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-muted);
+      opacity: 0.8;
+      pointer-events: none;
+      letter-spacing: 0.4px;
+    }
+
+    /* 5. Compact Market Limits & Demand Row */
+    .card-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9.5px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .limits-text {
+      color: var(--text-muted);
+    }
+
+    .demand-pill {
+      font-weight: 800;
+    }
+
+    /* 6. Primary Action: Add to Cart — Stable Static Juice Theme Colors */
+    .add-to-cart-btn {
+      width: 100%;
+      height: 38px;
+      background: var(--flavour-strip, var(--flavour-accent, #0284C7));
+      border: 1.5px solid var(--flavour-accent, #0284C7);
+      border-radius: var(--radius-md);
+      color: #FFFFFF !important;
+      font-weight: 900;
+      font-size: 12.5px;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.18s ease, filter 0.18s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    .add-to-cart-btn:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-1.5px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+    }
+
+    .add-to-cart-btn:active:not(:disabled) {
+      transform: scale(0.98);
+      filter: brightness(0.95);
+    }
+
+    /* Stable Static Juice-Specific Styling per Beverage Theme */
+    .card-theme-mango .add-to-cart-btn {
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+      border: 1px solid #B45309 !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 10px rgba(245, 158, 11, 0.38) !important;
+    }
+    .card-theme-mango .add-to-cart-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%) !important;
+      box-shadow: 0 5px 16px rgba(245, 158, 11, 0.55) !important;
+    }
+
+    .card-theme-lemon .add-to-cart-btn {
+      background: linear-gradient(135deg, #84CC16 0%, #65A30D 100%) !important;
+      border: 1px solid #4D7C0F !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 10px rgba(132, 204, 22, 0.38) !important;
+    }
+    .card-theme-lemon .add-to-cart-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #A3E635 0%, #65A30D 100%) !important;
+      box-shadow: 0 5px 16px rgba(132, 204, 22, 0.55) !important;
+    }
+
+    .card-theme-mint .add-to-cart-btn {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+      border: 1px solid #047857 !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.38) !important;
+    }
+    .card-theme-mint .add-to-cart-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #34D399 0%, #059669 100%) !important;
+      box-shadow: 0 5px 16px rgba(16, 185, 129, 0.55) !important;
+    }
+
+    .card-theme-orange .add-to-cart-btn {
+      background: linear-gradient(135deg, #F97316 0%, #EA580C 100%) !important;
+      border: 1px solid #C2410C !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 10px rgba(249, 115, 22, 0.38) !important;
+    }
+    .card-theme-orange .add-to-cart-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #FB923C 0%, #EA580C 100%) !important;
+      box-shadow: 0 5px 16px rgba(249, 115, 22, 0.55) !important;
+    }
+
+    .card-theme-strawberry .add-to-cart-btn {
+      background: linear-gradient(135deg, #F43F5E 0%, #E11D48 100%) !important;
+      border: 1px solid #BE123C !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 10px rgba(244, 63, 94, 0.38) !important;
+    }
+    .card-theme-strawberry .add-to-cart-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #FB7185 0%, #E11D48 100%) !important;
+      box-shadow: 0 5px 16px rgba(244, 63, 94, 0.55) !important;
+    }
+
+    .card-theme-grape .add-to-cart-btn {
+      background: linear-gradient(135deg, #A855F7 0%, #9333EA 100%) !important;
+      border: 1px solid #7E22CE !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 10px rgba(168, 85, 247, 0.38) !important;
+    }
+    .card-theme-grape .add-to-cart-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #C084FC 0%, #9333EA 100%) !important;
+      box-shadow: 0 5px 16px rgba(168, 85, 247, 0.55) !important;
+    }
+
+    .card-theme-lychee .add-to-cart-btn {
+      background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%) !important;
+      border: 1px solid #BE185D !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 10px rgba(236, 72, 153, 0.38) !important;
+    }
+    .card-theme-lychee .add-to-cart-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #F472B6 0%, #DB2777 100%) !important;
+      box-shadow: 0 5px 16px rgba(236, 72, 153, 0.55) !important;
+    }
+
+    .card-theme-thunder .add-to-cart-btn {
+      background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+      border: 1px solid #075985 !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 3px 10px rgba(2, 132, 199, 0.38) !important;
+    }
+    .card-theme-thunder .add-to-cart-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #38BDF8 0%, #0369A1 100%) !important;
+      box-shadow: 0 5px 16px rgba(2, 132, 199, 0.55) !important;
+    }
+
+    /* Micro-Animations on Price Movement */
+    @keyframes subtleSurge {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        border-color: var(--success);
+      }
+      50% {
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+      }
+      100% {
+        box-shadow: none;
+      }
+    }
+
+    @keyframes subtleDecay {
+      0% {
+        box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4);
+        border-color: var(--danger);
+      }
+      50% {
+        box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.15);
+      }
+      100% {
+        box-shadow: none;
+      }
+    }
+
+    .flash-surge {
+      animation: subtleSurge 1.2s ease-out;
+    }
+
+    .flash-decay {
+      animation: subtleDecay 1.2s ease-out;
+    }
+
+    /* ═══════ 7. STICKY POS ORDER CART ═══════ */
+    .cart-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 16px;
+      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+      max-height: calc(100vh - 32px);
+    }
+
+    html[data-theme="dark"] .cart-panel, body.dark-theme-mode .cart-panel {
+      box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .cart-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #10B981 0%, #06B6D4 50%, #3B82F6 100%);
+      border-radius: var(--radius-card) var(--radius-card) 0 0;
+    }
+
+    .cart-header {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+    }
+
+    .cart-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: #FFFFFF;
+      background: var(--accent-blue);
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 14px;
+      padding-right: 2px;
+      max-height: 280px;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .item-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .item-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-family: var(--font-mono);
+    }
+
+    .qty-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .qty-btn:hover {
+      background: var(--border-color);
+      border-color: var(--accent-cyan);
+    }
+
+    .cart-summary {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .summary-total {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--accent-emerald);
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 8px;
+      margin-top: 6px;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      height: 44px;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-md);
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .checkout-btn:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+    }
+
+    .checkout-btn:active {
+      transform: scale(0.98);
+    }
+
+    .checkout-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* ═══════ 8. RECEIPT MODAL ═══════ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(8, 11, 17, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .receipt-modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 24px;
+      width: 420px;
+      box-shadow: var(--shadow-card);
+      color: var(--text-primary);
+    }
+
+    /* ═══════ 9. RESPONSIVE BREAKPOINTS ═══════ */
+    @media (max-width: 1300px) {
+      .flavour-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .pos-container {
+        grid-template-columns: 1fr 310px;
+        gap: 12px;
+      }
+    }
+
+    /* ═══════ COMPREHENSIVE RESPONSIVE DEVICE RATIO & MOBILE ENGINE ═══════ */
+    @media (min-width: 1600px) {
+      .flavour-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+      }
+      .pos-container {
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+      }
+    }
+
+    @media (max-width: 1440px) {
+      .flavour-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+    }
+
+    @media (max-width: 1050px) {
+      .flavour-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .pos-container {
+        grid-template-columns: 1fr 290px;
+        gap: 12px;
+      }
+      .card-img-banner {
+        height: 110px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 8px 10px;
+      }
+      .pos-container {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .flavour-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .header-banner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px 14px;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .status-group {
+        border-right: none;
+        padding-right: 0;
+      }
+      .cart-panel {
+        position: static;
+        max-height: none;
+        width: 100%;
+        margin-top: 8px;
+      }
+      .cart-empty-snapshot {
+        display: none !important;
+      }
+      .market-status-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 12px;
+      }
+      .ticker-wrap {
+        height: 44px;
+        padding: 0 8px;
+      }
+    }
+
+    @media (max-width: 540px) {
+      body {
+        padding: 6px 6px;
+      }
+      .flavour-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .card-img-banner {
+        height: 120px;
+      }
+      .brand-name {
+        font-size: 15px;
+      }
+      .brand-badge {
+        display: none;
+      }
+      .brand-subtitle {
+        font-size: 10px;
+      }
+      .btn-action-nav {
+        height: 36px;
+        font-size: 11px;
+        padding: 0 10px;
+      }
+      .price-value-primary {
+        font-size: 19px;
+      }
+      .btn-add-cart-juice {
+        height: 44px;
+        font-size: 13.5px;
+      }
+      .receipt-modal {
+        width: 95%;
+        max-width: 420px;
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      body {
+        padding: 4px;
+      }
+      .brand-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+      .btn-action-nav {
+        font-size: 10.5px;
+        padding: 0 6px;
+      }
+    }
+
+    /* ═══════ 10. EMPTY CART STATE ENHANCEMENTS ═══════ */
+    .cart-empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100%;
+      text-align: center;
+      padding: 24px 12px;
+      animation: cartEmptyFadeIn 0.35s ease both;
+    }
+
+    @keyframes cartEmptyFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .cart-empty-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+      opacity: 0.7;
+      animation: cartIconFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes cartIconFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .cart-empty-title {
+      font-weight: 800;
+      color: var(--text-primary);
+      font-size: 13.5px;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+
+    .cart-empty-subtitle {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      opacity: 0.8;
+      margin-bottom: 20px;
+    }
+
+    /* Quick Add — Popular Right Now */
+    .cart-quick-add {
+      width: 100%;
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .cart-quick-add-title {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cart-quick-add-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 6px;
+      transition: all 0.18s ease;
+      cursor: pointer;
+    }
+
+    .cart-quick-add-item:hover {
+      border-color: var(--accent-cyan);
+      background: var(--bg-elevated);
+      transform: translateX(2px);
+    }
+
+    .cart-quick-add-item-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .cart-quick-add-item-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .cart-quick-add-item-name {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cart-quick-add-item-price {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .cart-quick-add-btn {
+      padding: 4px 10px;
+      font-size: 10px;
+      font-weight: 800;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--accent-cyan);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+      letter-spacing: 0.3px;
+    }
+
+    .cart-quick-add-btn:hover {
+      background: rgba(56, 189, 248, 0.18);
+      transform: scale(1.05);
+    }
+
+    /* Today's Market Snapshot */
+    .cart-empty-snapshot {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .cart-snapshot-title {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cart-snapshot-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .cart-snapshot-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .cart-snapshot-value {
+      font-weight: 800;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Cart filled state transition */
+    .cart-item-enter {
+      animation: cartItemSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes cartItemSlideIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ═══════ 11. ENTRANCE & MICRO-INTERACTION ANIMATIONS ═══════ */
+    @keyframes posCardFadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .flavour-card {
+      animation: posCardFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .add-to-cart-btn:active:not(:disabled) {
+      transform: scale(0.94) !important;
+      transition: transform 0.1s ease !important;
+    }
+
+    @keyframes cartBadgePulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+
+    .cart-badge-pulse {
+      animation: cartBadgePulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ═══════ 12. TICKER TAPE ENHANCEMENTS ═══════ */
+    .ticker-title {
+      position: relative;
+      z-index: 6;
+    }
+
+    .ticker-title::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -20px;
+      bottom: 0;
+      width: 20px;
+      background: linear-gradient(90deg, var(--bg-surface), transparent);
+      pointer-events: none;
+    }
+
+    html[data-theme="dark"] .ticker-title::after, body.dark-theme-mode .ticker-title::after {
+      background: linear-gradient(90deg, #060a14, transparent);
+    }
+
+    html[data-theme="light"] .ticker-title::after, body:not(.dark-theme-mode) .ticker-title::after {
+      background: linear-gradient(90deg, #F1F5F9, transparent);
+    }
+
+    .ticker-neon-divider::before {
+      content: '';
+      display: inline-block;
+      width: 1px;
+      height: 18px;
+      margin-right: 6px;
+      vertical-align: middle;
+      opacity: 0.25;
+    }
+
+    html[data-theme="dark"] .ticker-neon-divider::before, body.dark-theme-mode .ticker-neon-divider::before {
+      background: rgba(56, 189, 248, 0.3);
+    }
+
+    html[data-theme="light"] .ticker-neon-divider::before, body:not(.dark-theme-mode) .ticker-neon-divider::before {
+      background: rgba(15, 23, 42, 0.12);
+    }
+  </style>
 </head>
-<body style="font-family:'BL Melody',system-ui,-apple-system,sans-serif;background:#0d1117;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
-  <p>Loading Customer POS... <a href="/src/index.html" style="color:#f59e0b;">Click here if not redirected</a>.</p>
+
+<body>
+
+  <!-- 1. Live Stock Exchange Command Header -->
+  <header class="header-banner">
+    <div class="brand-title">
+      <div class="brand-icon">🍹</div>
+      <div>
+        <div class="brand-name">
+          Juice Bar Stock Exchange
+          <span class="brand-badge">PRO POS</span>
+        </div>
+        <div class="brand-subtitle">LIVE MARKET PRICING SYSTEM &bull; ATOMIC DISPENSING</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-group">
+        <span id="backendHealthBadge" class="status-badge-live">
+          <span class="dot"></span> LIVE &bull; Backend Connected
+        </span>
+      </div>
+      <button id="themeToggleBtnCustomer" onclick="toggleThemeMode()" class="btn-action-nav">
+        ☀️ Theme: Light
+      </button>
+      <a id="navAdminLink" href="http://localhost:8001" target="_blank" class="btn-action-nav">
+        ⚙️ Admin Panel
+      </a>
+      <a id="navLedLink" href="led-display.html" target="_blank" class="btn-action-nav"
+        style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.25); color: var(--accent-cyan);">
+        📺 LED Ticker
+      </a>
+    </div>
+  </header>
+
+  <!-- 2. Market Status Strip -->
+  <div class="market-status-bar" id="marketSummaryBar">
+    <div class="market-status-left">
+      <div class="market-metric-chip">
+        <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success);"></span>
+        <strong id="marketOpenStateText">Market Open (1-Min DWMA)</strong>
+      </div>
+      <div class="market-metric-chip">
+        Securities: <strong id="summaryTotalProds">8 Products</strong>
+      </div>
+      <div class="market-metric-chip">
+        Next Settlement: <span class="countdown-highlight" id="summarySettlementCountdown">00:45</span>
+      </div>
+      <div class="market-metric-chip">
+        Sentiment: <strong id="summarySentimentPill" style="color:var(--accent-emerald);">CALCULATING...</strong>
+      </div>
+    </div>
+    <div class="market-metric-chip" style="margin-left:auto;">
+      Last Sync: <strong id="summaryLastSync" style="font-family:var(--font-mono);">--:--:--</strong>
+    </div>
+  </div>
+
+  <!-- 3. Real-Time Market Ticker -->
+  <div class="ticker-wrap">
+    <div class="ticker-title">
+      <span class="ticker-radar-dot"></span>
+      <span>⚡ LIVE TICKER</span>
+    </div>
+    <div class="ticker-viewport-wrap">
+      <div class="ticker-content" id="stockTickerContent">
+        <!-- Live stock price trends rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-Screen Aurora Strobe Alert Effect -->
+  <div id="posCrashStrobeOverlay" class="pos-crash-strobe-overlay"></div>
+
+  <!-- 4. Market Crash Alert Header -->
+  <div class="market-crash-banner" id="marketCrashBanner">
+    <div class="crash-title">
+      <span class="crash-title-badge">⚡ EMERGENCY EVENT</span>
+      <span style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">🚨</span>
+        <span style="font-size: 16px; font-weight: 900; letter-spacing: 0.02em;">MARKET CRASH IN PROGRESS!</span>
+      </span>
+      <span style="font-size: 13.5px; font-weight: 700; color: #fef08a; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(254,240,138,0.3);" id="marketCrashBannerMsg">
+        ALL DRINK PRICES DROPPED TO ABSOLUTE FLOOR LIMIT ₹20.00!
+      </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="font-size: 12px; font-weight: 800; color: #facc15; text-transform: uppercase; letter-spacing: 0.05em; display: none;" id="crashHurryNotice">🔥 HURRY, ORDER NOW:</span>
+      <div class="crash-timer" id="crashTimerDisplay">⏱️ 03:00</div>
+    </div>
+  </div>
+
+  <!-- 5. Main POS Grid + Sticky Cart Container -->
+  <div class="pos-container">
+    <main>
+      <div class="market-section-header">
+        <div>
+          <h2 class="market-section-title">📊 Live Beverage Market</h2>
+          <div class="market-section-subtitle" id="posMarketSubtext">
+            REAL-TIME DWMA PRICING &bull; DYNAMIC LIVE SETTLEMENTS
+          </div>
+        </div>
+        <div>
+          <span class="exchange-bounds-pill" id="metaExchangeBounds">
+            Base: ₹25.00 &bull; Floor: ₹20.00 &bull; Ceiling: ₹30.00
+          </span>
+        </div>
+      </div>
+
+      <div class="flavour-grid px-stagger-enter" id="productGrid">
+        <!-- Skeleton Loading Cards (replaced by renderProducts) -->
+        <div class="flavour-card px-skeleton" style="opacity: 0.7; pointer-events: none; min-height: 320px;">
+          <div class="px-skeleton" style="height: 120px; border-radius: 12px; margin-bottom: 12px;"></div>
+          <div class="px-skeleton px-skeleton-text long"></div>
+          <div class="px-skeleton px-skeleton-text short"></div>
+          <div class="px-skeleton" style="height: 40px; border-radius: 8px; margin-top: 12px;"></div>
+        </div>
+        <div class="flavour-card px-skeleton" style="opacity: 0.7; pointer-events: none; min-height: 320px; animation-delay: 0.15s;">
+          <div class="px-skeleton" style="height: 120px; border-radius: 12px; margin-bottom: 12px;"></div>
+          <div class="px-skeleton px-skeleton-text long"></div>
+          <div class="px-skeleton px-skeleton-text short"></div>
+          <div class="px-skeleton" style="height: 40px; border-radius: 8px; margin-top: 12px;"></div>
+        </div>
+        <div class="flavour-card px-skeleton" style="opacity: 0.7; pointer-events: none; min-height: 320px; animation-delay: 0.3s;">
+          <div class="px-skeleton" style="height: 120px; border-radius: 12px; margin-bottom: 12px;"></div>
+          <div class="px-skeleton px-skeleton-text long"></div>
+          <div class="px-skeleton px-skeleton-text short"></div>
+          <div class="px-skeleton" style="height: 40px; border-radius: 8px; margin-top: 12px;"></div>
+        </div>
+        <div class="flavour-card px-skeleton" style="opacity: 0.7; pointer-events: none; min-height: 320px; animation-delay: 0.45s;">
+          <div class="px-skeleton" style="height: 120px; border-radius: 12px; margin-bottom: 12px;"></div>
+          <div class="px-skeleton px-skeleton-text long"></div>
+          <div class="px-skeleton px-skeleton-text short"></div>
+          <div class="px-skeleton" style="height: 40px; border-radius: 8px; margin-top: 12px;"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Sticky Order Cart Panel -->
+    <aside class="cart-panel">
+      <div class="cart-header">
+        <span>Order Cart</span>
+        <span class="cart-badge" id="cartItemCount">0 items</span>
+      </div>
+
+      <div class="cart-items" id="cartItemsContainer">
+        <!-- Empty cart or items rendered dynamically -->
+      </div>
+
+      <div class="cart-summary" id="cartSummaryBox" style="display: none;">
+        <div class="summary-row">
+          <span>Total Volume</span>
+          <strong id="totalVolumeText" style="color: var(--text-primary);">0 ml (0 cups)</strong>
+        </div>
+        <div class="summary-row" style="align-items: center;">
+          <span>Payment Method</span>
+          <select id="paymentMethodSelect"
+            style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: var(--radius-sm); font-weight: 600; font-size: 12px;">
+            <option value="CASH">Cash Payment</option>
+            <option value="UPI">UPI / QR Code</option>
+            <option value="CARD">Debit / Credit Card</option>
+          </select>
+        </div>
+        <div class="summary-row summary-total">
+          <span>Total Payable</span>
+          <span style="color: var(--success);" id="totalPayableText">₹0</span>
+        </div>
+      </div>
+
+      <div id="checkoutErrorBanner"
+        style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; padding: 10px 12px; border-radius: var(--radius-md); font-size: 12px; font-weight: 700; margin-bottom: 12px; text-align: center;">
+      </div>
+
+      <button class="checkout-btn" id="checkoutBtn" disabled onclick="processCheckout()">
+        Done / Next POS Order
+      </button>
+    </aside>
+  </div>
+
+  <!-- 6. Receipt Modal -->
+  <div class="modal-overlay" id="receiptModal" style="display: none;">
+    <div class="receipt-modal">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 44px; margin-bottom: 8px;">✅</div>
+        <h2 style="font-size: 22px; font-weight: 900; color: var(--success);">Order Completed</h2>
+        <p style="font-size: 13.5px; color: var(--text-muted); font-weight: 700;" id="modalOrderNumber">Invoice #ORD-1001</p>
+      </div>
+
+      <div
+        style="background: var(--bg-secondary); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;"
+        id="modalItemsContainer">
+        <!-- Rendered items -->
+      </div>
+
+      <div style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 20px; font-weight: 600;">
+        Payment: <strong id="modalPaymentMethod" style="color: var(--text-primary);">CASH</strong> &bull; Status: <span
+          style="color: var(--success); font-weight: 800;">COMPLETED</span><br>
+        <span style="font-size: 11.5px; opacity: 0.85;">Volume deducted atomically from active dispenser container.</span>
+      </div>
+
+      <button onclick="closeReceiptModal()"
+        style="width: 100%; padding: 14px; background: var(--accent-blue); border: none; border-radius: var(--radius-md); color: white; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);">
+        Done / Next POS Order
+      </button>
+    </div>
+  </div>
+
+  <!-- Network Disconnect Banner -->
+  <div class="px-network-banner" id="posNetworkBanner" role="alert">
+    <span>⚠ Connection lost — attempting to reconnect...</span>
+  </div>
+
+  <!-- ARIA Live Region for Price Announcements -->
+  <div class="px-live-region" aria-live="polite" aria-atomic="true" id="posAriaLive"></div>
+
+  <!-- Toast Container -->
+  <div class="px-toast-container" id="posToastContainer"></div>
+
+  <script>
+    const CONFIG = window.CONFIG;
+    let isBackendOnline = true;
+    let isProcessingCheckout = false;
+    let wsReconnectAttempts = 0;
+    let wsReconnectTimer = null;
+    let isWsConnected = false;
+    let isConnectingWS = false;
+    let stompSubscriptions = [];
+
+    let priceHistoryMap = {};
+    let previousPriceMap = {};
+    let flashEffectMap = {};
+    let currentPricingConfig = null;
+
+    // ═══════ UI ENHANCEMENT UTILITIES ═══════
+
+    // Toast Notification System (Professional upgrade)
+    function showPosToast(message, type = 'info', opts = {}) {
+      let container = document.getElementById('posToastContainer');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'posToastContainer';
+        container.className = 'px-toast-container';
+        document.body.appendChild(container);
+      }
+      const icons = { info: 'ℹ️', success: '✅', warning: '⚠️', error: '❌', critical: '🚨' };
+      const toast = document.createElement('div');
+      toast.className = `px-toast px-toast--${type}`;
+      const duration = opts.duration || (type === 'critical' ? 8000 : 4000);
+      let isPaused = false;
+      let remaining = duration;
+      let startTime = Date.now();
+
+      let html = `<span class="px-toast-icon">${icons[type] || icons.info}</span>`;
+      html += `<div class="px-toast-body">`;
+      if (opts.title) html += `<span class="px-toast-title">${opts.title}</span>`;
+      html += `<span class="px-toast-message">${message}</span></div>`;
+      if (opts.undoFn) html += `<button class="px-toast-undo" onclick="event.stopPropagation()">Undo</button>`;
+      html += `<button class="px-toast-close" onclick="this.parentElement.classList.add('exiting'); setTimeout(() => this.parentElement.remove(), 250)">&times;</button>`;
+      html += `<div class="px-toast-progress" style="width: 100%;"></div>`;
+      toast.innerHTML = html;
+
+      if (opts.undoFn) {
+        toast.querySelector('.px-toast-undo').addEventListener('click', () => {
+          opts.undoFn();
+          toast.classList.add('exiting');
+          setTimeout(() => toast.remove(), 250);
+        });
+      }
+
+      // Hover-to-pause
+      toast.addEventListener('mouseenter', () => { isPaused = true; remaining -= (Date.now() - startTime); });
+      toast.addEventListener('mouseleave', () => { isPaused = false; startTime = Date.now(); scheduleRemoval(); });
+
+      container.appendChild(toast);
+      const progressBar = toast.querySelector('.px-toast-progress');
+      if (progressBar) {
+        progressBar.style.transition = `width ${duration}ms linear`;
+        requestAnimationFrame(() => { progressBar.style.width = '0%'; });
+      }
+
+      function scheduleRemoval() {
+        setTimeout(() => {
+          if (isPaused) return;
+          toast.classList.add('exiting');
+          setTimeout(() => toast.remove(), 250);
+        }, remaining);
+      }
+      scheduleRemoval();
+
+      // Cap at 5 visible toasts
+      const toasts = container.querySelectorAll('.px-toast:not(.exiting)');
+      if (toasts.length > 5) {
+        toasts[0].classList.add('exiting');
+        setTimeout(() => toasts[0].remove(), 250);
+      }
+    }
+
+    // Animated Number Transition
+    function animateNumber(element, newValue, prefix = '₹', decimals = 2) {
+      if (!element) return;
+      const currentText = element.textContent.replace(/[^0-9.-]/g, '');
+      const oldValue = parseFloat(currentText) || 0;
+      const target = parseFloat(newValue) || 0;
+      if (Math.abs(oldValue - target) < 0.001) return;
+      const duration = 400;
+      const startTime = performance.now();
+
+      function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+      function update(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOutCubic(progress);
+        const current = oldValue + (target - oldValue) * easedProgress;
+        element.textContent = `${prefix}${current.toFixed(decimals)}`;
+        if (progress < 1) requestAnimationFrame(update);
+        else element.classList.add('changing');
+      }
+      requestAnimationFrame(update);
+      setTimeout(() => element.classList.remove('changing'), 350);
+    }
+
+    // Price Flash Detection — applies green/red glow on card when price changes
+    function applyPriceFlash(productId, oldPrice, newPrice) {
+      const card = document.getElementById(`flavourCard-${productId}`);
+      if (!card || Math.abs(newPrice - oldPrice) < 0.001) return;
+      card.classList.remove('px-price-surge', 'px-price-decay');
+      void card.offsetWidth; // Force reflow to restart animation
+      if (newPrice > oldPrice) {
+        card.classList.add('px-price-surge');
+      } else {
+        card.classList.add('px-price-decay');
+      }
+      setTimeout(() => { card.classList.remove('px-price-surge', 'px-price-decay'); }, 1300);
+    }
+
+    // Network Banner Control
+    function showNetworkBanner(reconnecting = false) {
+      const banner = document.getElementById('posNetworkBanner');
+      if (!banner) return;
+      if (reconnecting) {
+        banner.classList.add('reconnecting');
+        banner.querySelector('span').textContent = '🔄 Reconnecting to market feed...';
+      } else {
+        banner.classList.remove('reconnecting');
+        banner.querySelector('span').textContent = '⚠ Connection lost — attempting to reconnect...';
+      }
+      banner.classList.add('active');
+    }
+    function hideNetworkBanner() {
+      const banner = document.getElementById('posNetworkBanner');
+      if (banner) banner.classList.remove('active', 'reconnecting');
+    }
+
+    // ARIA Price Announcements
+    function announcePrice(productName, price, direction) {
+      const liveRegion = document.getElementById('posAriaLive');
+      if (!liveRegion) return;
+      const dirText = direction === 'up' ? 'increased to' : (direction === 'down' ? 'decreased to' : 'is now');
+      liveRegion.textContent = `${productName} price ${dirText} ₹${price.toFixed(2)}`;
+    }
+
+    // Modal Transition Helpers
+    function openModalAnimated(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+      modal.style.display = 'flex';
+      modal.style.opacity = '0';
+      const content = modal.querySelector('.receipt-modal') || modal.firstElementChild;
+      if (content) {
+        content.style.transform = 'scale(0.92) translateY(12px)';
+        content.style.opacity = '0';
+      }
+      requestAnimationFrame(() => {
+        modal.style.transition = 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+        modal.style.opacity = '1';
+        if (content) {
+          content.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease';
+          content.style.transform = 'scale(1) translateY(0)';
+          content.style.opacity = '1';
+        }
+      });
+    }
+    function closeModalAnimated(modalId, callback) {
+      const modal = document.getElementById(modalId);
+      if (!modal) { if (callback) callback(); return; }
+      const content = modal.querySelector('.receipt-modal') || modal.firstElementChild;
+      modal.style.transition = 'opacity 0.2s ease';
+      modal.style.opacity = '0';
+      if (content) {
+        content.style.transition = 'transform 0.2s ease, opacity 0.15s ease';
+        content.style.transform = 'scale(0.92) translateY(12px)';
+        content.style.opacity = '0';
+      }
+      setTimeout(() => {
+        modal.style.display = 'none';
+        modal.style.opacity = '';
+        modal.style.transition = '';
+        if (content) { content.style.transform = ''; content.style.opacity = ''; content.style.transition = ''; }
+        if (callback) callback();
+      }, 220);
+    }
+
+
+    const fruitIcons = {
+      1: '🥭',
+      2: '🍋',
+      3: '🌿',
+      4: '🍊',
+      5: '🍓',
+      6: '🍇',
+      7: '🍹',
+      23: '⚡'
+    };
+
+    const beverageImages = {
+      1: 'assets/juices/mango.jpg',       // Fresh Alphonso Mango Juice
+      2: 'assets/juices/lemon.jpg',       // Crisp Zesty Lemon Juice
+      3: 'assets/juices/mint.jpg',        // Chilled Cool Mint Cooler
+      4: 'assets/juices/orange.jpg',      // Valencia Orange Juice
+      5: 'assets/juices/strawberry.jpg',  // Fresh Strawberry Delight Crush
+      6: 'assets/juices/grape.jpg',       // Royal Concord Grape Juice
+      7: 'assets/juices/lychee.jpg',      // Exotic Lychee Mist Mocktail
+      23: 'assets/juices/thunder.jpg'     // Thunder Power Sapphire Energy Punch
+    };
+
+    function getBeverageImage(p) {
+      if (!p) return beverageImages[1];
+      const pid = p.id || p.productId;
+      if (beverageImages[pid]) return beverageImages[pid];
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return beverageImages[1];
+      if (f.includes('LEMON')) return beverageImages[2];
+      if (f.includes('MINT')) return beverageImages[3];
+      if (f.includes('ORANGE')) return beverageImages[4];
+      if (f.includes('STRAWBERRY')) return beverageImages[5];
+      if (f.includes('GRAPE')) return beverageImages[6];
+      if (f.includes('LYCHEE')) return beverageImages[7];
+      if (f.includes('THUNDER') || f.includes('ENERGY') || f.includes('POWER') || f.includes('BLUE')) return beverageImages[23];
+      return beverageImages[1];
+    }
+
+    function getFlavourThemeClass(p) {
+      if (!p) return 'card-theme-thunder';
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return 'card-theme-mango';
+      if (f.includes('LEMON')) return 'card-theme-lemon';
+      if (f.includes('MINT')) return 'card-theme-mint';
+      if (f.includes('ORANGE')) return 'card-theme-orange';
+      if (f.includes('STRAWBERRY')) return 'card-theme-strawberry';
+      if (f.includes('GRAPE')) return 'card-theme-grape';
+      if (f.includes('LYCHEE')) return 'card-theme-lychee';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return 'card-theme-thunder';
+      return 'card-theme-thunder';
+    }
+
+    function getShortFlavourLabel(p) {
+      if (!p) return 'Juice';
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('THUNDER_POWER') || (p.name && p.name.toLowerCase().includes('thunder power'))) return 'Thunder Power';
+      if (f.includes('MANGO')) return 'Mango';
+      if (f.includes('LEMON')) return 'Lemon';
+      if (f.includes('MINT')) return 'Cool Mint';
+      if (f.includes('ORANGE')) return 'Orange';
+      if (f.includes('STRAWBERRY')) return 'Strawberry';
+      if (f.includes('GRAPE')) return 'Grape';
+      if (f.includes('LYCHEE')) return 'Lychee';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return 'Thunder Power';
+      return p.name || p.flavour || 'Juice';
+    }
+
+    function getMarketBadgeInfo(p, isCrash) {
+      const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+      const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+      const diff = activePrice - baseP;
+      const pctVal = baseP > 0 ? Math.abs(((diff / baseP) * 100).toFixed(1)) : '0.0';
+
+      if (isCrash) {
+        const discountPct = baseP > 0 ? Math.max(15, Math.round(((baseP - activePrice) / baseP) * 100)) : 40;
+        return {
+          badgeClass: 'badge-down crash-discount-pill',
+          badgeText: `🔥 -${discountPct}% FLOOR`
+        };
+      }
+      if (p.isStaticHold || (p.staticHoldCyclesRemaining && p.staticHoldCyclesRemaining > 0) || p.demandLevelCategory === 'PURCHASE_STATIC_HOLD') {
+        const remaining = p.staticHoldCyclesRemaining || 2;
+        return {
+          badgeClass: 'badge-static-hold',
+          badgeText: `🔒 STATIC (${remaining}/2)`
+        };
+      }
+      if (diff > 0.05) {
+        return {
+          badgeClass: 'badge-up',
+          badgeText: `▲ +${pctVal}%`
+        };
+      }
+      if (diff < -0.05) {
+        return {
+          badgeClass: 'badge-down',
+          badgeText: `▼ -${pctVal}%`
+        };
+      }
+      return {
+        badgeClass: 'badge-stable',
+        badgeText: '— BASE'
+      };
+    }
+
+    function getFruitIcon(p) {
+      if (!p) return '🍹';
+      if (fruitIcons[p.id]) return fruitIcons[p.id];
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return '🥭';
+      if (f.includes('LEMON')) return '🍋';
+      if (f.includes('ORANGE')) return '🍊';
+      if (f.includes('MINT')) return '🌿';
+      if (f.includes('GRAPE')) return '🍇';
+      if (f.includes('STRAWBERRY')) return '🍓';
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return '⚡';
+      if (f.includes('LYCHEE')) return '🍈';
+      return '🍹';
+    }
+
+    function getJuiceThemeTokens(p) {
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) {
+        return {
+          rgb: '245, 158, 11',
+          accent: '#F59E0B',
+          bgDark: 'linear-gradient(145deg, rgba(245, 158, 11, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(245, 158, 11, 0.75)',
+          borderLight: '#F59E0B',
+          shadowDark: 'rgba(245, 158, 11, 0.3)',
+          shadowLight: 'rgba(245, 158, 11, 0.2)',
+          glow: 'rgba(245, 158, 11, 0.55)'
+        };
+      }
+      if (f.includes('STRAWBERRY')) {
+        return {
+          rgb: '244, 63, 94',
+          accent: '#F43F5E',
+          bgDark: 'linear-gradient(145deg, rgba(244, 63, 94, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FFE4E6 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(244, 63, 94, 0.75)',
+          borderLight: '#F43F5E',
+          shadowDark: 'rgba(244, 63, 94, 0.3)',
+          shadowLight: 'rgba(244, 63, 94, 0.2)',
+          glow: 'rgba(244, 63, 94, 0.55)'
+        };
+      }
+      if (f.includes('ORANGE')) {
+        return {
+          rgb: '249, 115, 22',
+          accent: '#F97316',
+          bgDark: 'linear-gradient(145deg, rgba(249, 115, 22, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FFEDD5 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(249, 115, 22, 0.75)',
+          borderLight: '#F97316',
+          shadowDark: 'rgba(249, 115, 22, 0.3)',
+          shadowLight: 'rgba(249, 115, 22, 0.2)',
+          glow: 'rgba(249, 115, 22, 0.55)'
+        };
+      }
+      if (f.includes('GRAPE')) {
+        return {
+          rgb: '168, 85, 247',
+          accent: '#A855F7',
+          bgDark: 'linear-gradient(145deg, rgba(168, 85, 247, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #F3E8FF 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(168, 85, 247, 0.75)',
+          borderLight: '#A855F7',
+          shadowDark: 'rgba(168, 85, 247, 0.3)',
+          shadowLight: 'rgba(168, 85, 247, 0.2)',
+          glow: 'rgba(168, 85, 247, 0.55)'
+        };
+      }
+      if (f.includes('LEMON')) {
+        return {
+          rgb: '234, 179, 8',
+          accent: '#EAB308',
+          bgDark: 'linear-gradient(145deg, rgba(234, 179, 8, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FEF9C3 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(234, 179, 8, 0.75)',
+          borderLight: '#EAB308',
+          shadowDark: 'rgba(234, 179, 8, 0.3)',
+          shadowLight: 'rgba(234, 179, 8, 0.2)',
+          glow: 'rgba(234, 179, 8, 0.55)'
+        };
+      }
+      if (f.includes('MINT')) {
+        return {
+          rgb: '16, 185, 129',
+          accent: '#10B981',
+          bgDark: 'linear-gradient(145deg, rgba(16, 185, 129, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #D1FAE5 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(16, 185, 129, 0.75)',
+          borderLight: '#10B981',
+          shadowDark: 'rgba(16, 185, 129, 0.3)',
+          shadowLight: 'rgba(16, 185, 129, 0.2)',
+          glow: 'rgba(16, 185, 129, 0.55)'
+        };
+      }
+      if (f.includes('LYCHEE') || f.includes('MELON') || f.includes('GUAVA')) {
+        return {
+          rgb: '251, 113, 133',
+          accent: '#FB7185',
+          bgDark: 'linear-gradient(145deg, rgba(251, 113, 133, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #FFE4E6 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(251, 113, 133, 0.75)',
+          borderLight: '#FB7185',
+          shadowDark: 'rgba(251, 113, 133, 0.3)',
+          shadowLight: 'rgba(251, 113, 133, 0.2)',
+          glow: 'rgba(251, 113, 133, 0.55)'
+        };
+      }
+      if (f.includes('THUNDER') || f.includes('ENERGY') || f.includes('MOJITO') || f.includes('BLUE')) {
+        return {
+          rgb: '6, 182, 212',
+          accent: '#06B6D4',
+          bgDark: 'linear-gradient(145deg, rgba(6, 182, 212, 0.20) 0%, #080c14 45%, #020408 100%)',
+          bgLight: 'linear-gradient(135deg, #CFFAFE 0%, #FFFFFF 100%)',
+          borderDark: 'rgba(6, 182, 212, 0.75)',
+          borderLight: '#06B6D4',
+          shadowDark: 'rgba(6, 182, 212, 0.3)',
+          shadowLight: 'rgba(6, 182, 212, 0.2)',
+          glow: 'rgba(6, 182, 212, 0.55)'
+        };
+      }
+      return {
+        rgb: '245, 158, 11',
+        accent: '#F59E0B',
+        bgDark: 'linear-gradient(145deg, rgba(245, 158, 11, 0.20) 0%, #080c14 45%, #020408 100%)',
+        bgLight: 'linear-gradient(135deg, #FEF3C7 0%, #FFFFFF 100%)',
+        borderDark: 'rgba(245, 158, 11, 0.75)',
+        borderLight: '#F59E0B',
+        shadowDark: 'rgba(245, 158, 11, 0.3)',
+        shadowLight: 'rgba(245, 158, 11, 0.2)',
+        glow: 'rgba(245, 158, 11, 0.55)'
+      };
+    }
+
+    const FLAVOUR_COLORS = {
+      MANGO: { stroke: '#F59E0B', rgb: '245, 158, 11', fade: '#D97706' },
+      LEMON: { stroke: '#84CC16', rgb: '132, 204, 22', fade: '#65A30D' },
+      MINT: { stroke: '#10B981', rgb: '16, 185, 129', fade: '#059669' },
+      STRAWBERRY: { stroke: '#F43F5E', rgb: '244, 63, 94', fade: '#E11D48' },
+      GRAPE: { stroke: '#A855F7', rgb: '168, 85, 247', fade: '#9333EA' },
+      LYCHEE: { stroke: '#EC4899', rgb: '236, 72, 153', fade: '#DB2777' },
+      THUNDER: { stroke: '#0284C7', rgb: '2, 132, 199', fade: '#0369A1' },
+      ORANGE: { stroke: '#F97316', rgb: '249, 115, 22', fade: '#EA580C' }
+    };
+
+    function getProductChartColors(p) {
+      if (!p) return FLAVOUR_COLORS.MANGO;
+      const f = (p.flavour || p.name || '').toUpperCase();
+      if (f.includes('MANGO')) return FLAVOUR_COLORS.MANGO;
+      if (f.includes('LEMON')) return FLAVOUR_COLORS.LEMON;
+      if (f.includes('MINT')) return FLAVOUR_COLORS.MINT;
+      if (f.includes('STRAWBERRY')) return FLAVOUR_COLORS.STRAWBERRY;
+      if (f.includes('GRAPE')) return FLAVOUR_COLORS.GRAPE;
+      if (f.includes('LYCHEE') || f.includes('GUAVA') || f.includes('MELON')) return FLAVOUR_COLORS.LYCHEE;
+      if (f.includes('THUNDER') || f.includes('ENERGY')) return FLAVOUR_COLORS.THUNDER;
+      if (f.includes('ORANGE')) return FLAVOUR_COLORS.ORANGE;
+
+      const idMap = {
+        1: FLAVOUR_COLORS.MANGO,
+        2: FLAVOUR_COLORS.LEMON,
+        3: FLAVOUR_COLORS.MINT,
+        4: FLAVOUR_COLORS.ORANGE,
+        5: FLAVOUR_COLORS.STRAWBERRY,
+        6: FLAVOUR_COLORS.GRAPE,
+        7: FLAVOUR_COLORS.LYCHEE,
+        23: FLAVOUR_COLORS.THUNDER
+      };
+      return idMap[p.id] || FLAVOUR_COLORS.MANGO;
+    }
+
+    let defaultSeedProducts = [
+      { id: 1, name: 'Fresh Mango Juice', flavour: 'MANGO', description: 'Sweet fresh Alphonso mango pulp juice', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.125, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 2, name: 'Zesty Lemon Juice', flavour: 'LEMON', description: 'Refreshing squeezed lemonade with mint touch', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.40, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 3, name: 'Cool Mint Cooler', flavour: 'MINT', description: 'Chilled mint and lime mocktail blend', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.35, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 4, name: 'Valencia Orange Juice', flavour: 'ORANGE', description: 'Pure Valencia orange juice loaded with vitamin C', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.50, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 5, name: 'Strawberry Delight', flavour: 'STRAWBERRY', description: 'Fresh strawberry nectar crush', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.30, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 6, name: 'Royal Grape Juice', flavour: 'GRAPE', description: 'Rich black grape extract cooler', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 7, name: 'Lychee Mist', flavour: 'LYCHEE', description: 'Exotic lychee fruit punch', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.20, trend: '+0.0%', trendDirection: 'FLAT' },
+      { id: 23, name: 'Thunder Power', flavour: 'THUNDER_POWER', description: 'Electrifying energy fruit punch juice', defaultCupSizeMl: 250, currentCupPrice: 25.0, minCupPrice: 20.0, maxCupPrice: 30.0, basePrice: 25.0, targetSalesPer1Minute: 0.45, trend: '+0.0%', trendDirection: 'FLAT' }
+    ];
+
+    let products = [...defaultSeedProducts];
+    let cart = [];
+    let isMarketCrashActive = false;
+    let crashRemainingSeconds = 0;
+    let crashTimerInterval = null;
+    let settlementCountdownSeconds = 60;
+    let settlementCountdownInterval = null;
+
+    function playMarketCrashSiren() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        
+        // Multi-frequency alert sweep
+        const now = audioCtx.currentTime;
+        osc.frequency.setValueAtTime(480, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.35);
+        osc.frequency.exponentialRampToValueAtTime(480, now + 0.7);
+        osc.frequency.exponentialRampToValueAtTime(960, now + 1.1);
+        osc.frequency.exponentialRampToValueAtTime(440, now + 1.5);
+        
+        gain.gain.setValueAtTime(0.28, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.6);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 1.6);
+      } catch (e) { }
+    }
+
+    const pubExchangeChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_channel') : null;
+    const marketChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pubexchange_market_channel') : null;
+    if (pubExchangeChannel) pubExchangeChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
+    if (marketChannel) marketChannel.onmessage = (event) => { handleCrossPanelEvent(event.data); };
+
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type) {
+        handleCrossPanelEvent(event.data);
+      }
+    });
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'pubexchange_market_crash_active' || e.key === 'pubexchange_market_crash_end_time') {
+        if (e.newValue === 'true' || localStorage.getItem('pubexchange_market_crash_active') === 'true') {
+          const endTime = Number(localStorage.getItem('pubexchange_market_crash_end_time') || '0');
+          const remaining = endTime > Date.now() ? Math.ceil((endTime - Date.now()) / 1000) : 180;
+          triggerLocalMarketCrash(remaining);
+        } else if (e.newValue === 'false') {
+          stopLocalMarketCrash();
+        }
+      }
+      if ((e.key === 'pubexchange_event' || e.key === 'pubexchange_last_event' || e.key === 'pubexchange_sim_params' || e.key === 'pubexchange_flavours_map') && e.newValue) {
+        try { handleCrossPanelEvent(JSON.parse(e.newValue)); } catch (err) { }
+        fetchProducts();
+      }
+      if (e.key === 'pubexchange_custom_products' || e.key === 'pubexchange_flavours_map') {
+        fetchProducts();
+      }
+    });
+
+    function handleCrossPanelEvent(msg) {
+      if (!msg) return;
+      const type = msg.type || (msg.flavourName ? 'SIMULATION_UPDATED' : null);
+      if (!type) return;
+
+      if (type === 'RESET_ALL' || type === 'RESET_ALL_PRICES' || type === 'PRICES_RESET' || (msg.payload && msg.payload.reset) || msg.reset) {
+        try { localStorage.removeItem('pubexchange_dynamic_products'); } catch (e) {}
+        fetchProducts();
+        fetchPricingConfiguration();
+        return;
+      }
+
+      if (type === 'CONFIG_UPDATED' || type === 'PRODUCT_CONFIG_UPDATED' || type === 'ADMIN_DEPLOY' || (msg.payload && msg.payload.bulkUpdate) || msg.bulkUpdate) {
+        try { localStorage.removeItem('pubexchange_dynamic_products'); } catch (e) {}
+        fetchProducts();
+        fetchPricingConfiguration();
+        return;
+      }
+
+      if (type === 'PRODUCT_PRICE_UPDATE' || type === 'NEW_FLAVOUR_ADDED' || type === 'BATCH_PRODUCT_PRICE_UPDATED' || type === 'PRICE_ENGINE_RUN' || type === 'BATCH_UPDATED' || type === 'PRICES_RECALCULATED' || type === 'REFRESH_PRODUCTS') {
+        const payload = msg.payload || msg;
+        if (payload && (payload.productId || payload.flavourName || payload.name)) {
+          const prodId = payload.productId ? Number(payload.productId) : null;
+          const flavourName = payload.flavourName || payload.name;
+          const matchIdx = products.findIndex(p => (prodId && p.id === prodId) || (flavourName && p.name && p.name.toLowerCase() === flavourName.toLowerCase()) || (p.flavour && flavourName && p.flavour.toLowerCase() === flavourName.toLowerCase()));
+
+          if (matchIdx !== -1) {
+            if (payload.name) products[matchIdx].name = payload.name;
+            if (payload.flavour) products[matchIdx].flavour = payload.flavour;
+            const targetPrice = payload.currentPrice !== undefined ? Number(payload.currentPrice) : (payload.startPrice !== undefined ? Number(payload.startPrice) : (payload.price !== undefined ? Number(payload.price) : 25.0));
+            if (!isNaN(targetPrice) && targetPrice > 0) {
+              products[matchIdx].currentCupPrice = targetPrice;
+            }
+            if (payload.minPrice !== undefined) products[matchIdx].minCupPrice = Number(payload.minPrice);
+            if (payload.maxPrice !== undefined) products[matchIdx].maxCupPrice = Number(payload.maxPrice);
+            if (payload.startPrice !== undefined) products[matchIdx].basePrice = Number(payload.startPrice);
+
+            const pId = products[matchIdx].id;
+            if (pId && priceHistoryMap[pId]) {
+              priceHistoryMap[pId].push({
+                timestamp: new Date().toISOString(),
+                price: products[matchIdx].currentCupPrice,
+                priceChange: 0,
+                reason: 'Live Sync'
+              });
+            }
+
+            renderProducts();
+            renderTicker();
+            renderCart();
+            renderAllSparklines();
+
+            const cardEl = document.getElementById(`flavourCard-${pId}`);
+            if (cardEl) {
+              cardEl.classList.add('flash-surge');
+              setTimeout(() => cardEl.classList.remove('flash-surge'), 1200);
+            }
+          }
+        }
+
+        fetchProducts();
+        fetchPricingConfiguration();
+      } else if (type === 'PRICING_TIMING_CHANGED' || msg.settlementIntervalSeconds || msg.intervalSeconds) {
+        const payload = msg.payload || msg;
+        updatePricingTimingState(payload);
+        fetchPricingConfiguration();
+      } else if (type === 'MARKET_CRASH_TRIGGER' || type === 'MARKET_CRASH_START') {
+        const p = msg.payload || msg;
+        let remaining = 180;
+        if (p.durationSeconds) remaining = Number(p.durationSeconds);
+        else if (p.remainingSeconds) remaining = Number(p.remainingSeconds);
+        else if (p.endTime) remaining = Math.max(1, Math.round((Number(p.endTime) - Date.now()) / 1000));
+        triggerLocalMarketCrash(remaining);
+      } else if (type === 'MARKET_CRASH_STOP') {
+        stopLocalMarketCrash();
+      }
+    }
+
+    let stompClient = null;
+    let isReconnectingWS = false;
+
+    async function checkMarketCrashStatus() {
+      let isCrashActive = false;
+      let remaining = 180;
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/market-crash/status`);
+        if (res.ok) {
+          const data = await res.json();
+          isCrashActive = data.active;
+          remaining = data.remainingSeconds || 180;
+        }
+      } catch (err) { }
+
+      if (isCrashActive) {
+        triggerLocalMarketCrash(remaining);
+      } else if (isMarketCrashActive) {
+        stopLocalMarketCrash();
+      }
+    }
+
+    function triggerLocalMarketCrash(seconds = 180) {
+      const wasActive = isMarketCrashActive;
+      isMarketCrashActive = true;
+      crashRemainingSeconds = seconds;
+
+      // 1. Dynamic Aurora Screen Strobe Flash
+      const strobe = document.getElementById('posCrashStrobeOverlay');
+      if (strobe) {
+        strobe.classList.remove('active');
+        void strobe.offsetWidth; // force DOM reflow
+        strobe.classList.add('active');
+        setTimeout(() => strobe.classList.remove('active'), 1000);
+      }
+
+      // 2. Play Venue Acoustic Alarm Tone
+      if (!wasActive) playMarketCrashSiren();
+
+      // 3. Immediately override all beverage prices to floor price (₹20.00)
+      products.forEach(p => {
+        p.currentCupPrice = (p.minCupPrice !== undefined && p.minCupPrice !== null) ? Number(p.minCupPrice) : 20.0;
+        p.trendDirection = 'DOWN';
+        p.trend = 'CRASH FLOOR';
+      });
+
+      const bannerMsg = document.getElementById('marketCrashBannerMsg');
+      if (bannerMsg) {
+        bannerMsg.textContent = `ALL BEVERAGE PRICES COLLAPSED TO FLOOR LIMIT ₹20.00!`;
+      }
+
+      const hurryNotice = document.getElementById('crashHurryNotice');
+      if (hurryNotice) hurryNotice.style.display = 'inline-block';
+
+      const crashBanner = document.getElementById('marketCrashBanner');
+      if (crashBanner) crashBanner.style.display = 'flex';
+
+      const healthBadge = document.getElementById('backendHealthBadge');
+
+      const updateTimer = () => {
+        const mins = Math.floor(Math.max(0, crashRemainingSeconds) / 60);
+        const secs = Math.max(0, crashRemainingSeconds) % 60;
+        const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        const timerDisp = document.getElementById('crashTimerDisplay');
+        if (timerDisp) timerDisp.textContent = `⏱️ ${timeStr}`;
+
+        if (healthBadge) {
+          healthBadge.className = 'status-badge-offline';
+          healthBadge.innerHTML = `<span class="dot"></span> 🚨 MARKET CRASH (${timeStr})`;
+        }
+      };
+
+      updateTimer();
+
+      // Force full card rebuild into vibrant crash theme
+      lastRenderedPosCardIds = '';
+      renderProducts();
+      renderTicker();
+      renderCart();
+
+      if (crashTimerInterval) clearInterval(crashTimerInterval);
+      crashTimerInterval = setInterval(() => {
+        crashRemainingSeconds--;
+        updateTimer();
+
+        if (crashRemainingSeconds <= 0) {
+          stopLocalMarketCrash();
+        }
+      }, 1000);
+    }
+
+    function stopLocalMarketCrash() {
+      isMarketCrashActive = false;
+      if (crashTimerInterval) clearInterval(crashTimerInterval);
+
+      const crashBanner = document.getElementById('marketCrashBanner');
+      if (crashBanner) crashBanner.style.display = 'none';
+
+      const hurryNotice = document.getElementById('crashHurryNotice');
+      if (hurryNotice) hurryNotice.style.display = 'none';
+
+      const healthBadge = document.getElementById('backendHealthBadge');
+      if (healthBadge) {
+        healthBadge.className = 'status-badge-live';
+        healthBadge.innerHTML = `<span class="dot"></span> LIVE &bull; Backend Connected`;
+      }
+
+      lastRenderedPosCardIds = '';
+      fetchProducts();
+    }
+
+    function normalizeProduct(p) {
+      if (!p) return null;
+      const id = p.id || p.beverageId || p.productId;
+      const existingProd = (typeof products !== 'undefined' && Array.isArray(products))
+        ? products.find(x => x && (x.id === id || (x.name && p.name && x.name.toLowerCase() === p.name.toLowerCase())))
+        : null;
+
+      const currentCupPrice = p.currentCupPrice !== undefined ? Number(p.currentCupPrice) : (p.currentPrice !== undefined ? Number(p.currentPrice) : (existingProd ? existingProd.currentCupPrice : 25.0));
+      const minCupPrice = p.minCupPrice !== undefined ? Number(p.minCupPrice) : (p.minPrice !== undefined ? Number(p.minPrice) : (existingProd ? existingProd.minCupPrice : 18.0));
+      const maxCupPrice = p.maxCupPrice !== undefined ? Number(p.maxCupPrice) : (p.maxPrice !== undefined ? Number(p.maxPrice) : (existingProd ? existingProd.maxCupPrice : 35.0));
+      const basePrice = p.basePrice !== undefined ? Number(p.basePrice) : (p.defaultCupPrice !== undefined ? Number(p.defaultCupPrice) : (existingProd ? existingProd.basePrice : 25.0));
+      const targetSalesPer1Minute = (p.targetSalesPer1Minute !== undefined && p.targetSalesPer1Minute !== null)
+        ? Number(p.targetSalesPer1Minute)
+        : ((p.targetSales !== undefined && p.targetSales !== null) ? Number(p.targetSales) : 0.40);
+      const defaultCupSizeMl = p.defaultCupSizeMl || 250;
+      let name = p.name || p.flavourName || (p.flavour ? p.flavour.replace(/_/g, ' ') : 'Juice');
+      try {
+        const fMap = JSON.parse(localStorage.getItem('pubexchange_flavours_map') || '{}');
+        if (fMap && fMap[id]) name = fMap[id];
+      } catch (e) {}
+      const flavour = p.flavour || p.name || 'JUICE';
+      const description = p.description || 'Fresh handcrafted fruit juice cooler';
+
+      let flashEffect = flashEffectMap[id] || '';
+      if (previousPriceMap[id] !== undefined && previousPriceMap[id] !== currentCupPrice) {
+        const diff = currentCupPrice - previousPriceMap[id];
+        flashEffect = diff > 0 ? 'flash-surge' : 'flash-decay';
+        flashEffectMap[id] = flashEffect;
+        setTimeout(() => {
+          flashEffectMap[id] = '';
+          const cardEl = document.getElementById(`flavourCard-${id}`);
+          if (cardEl) {
+            cardEl.classList.remove('flash-surge', 'flash-decay');
+          }
+        }, 1200);
+      }
+      previousPriceMap[id] = currentCupPrice;
+
+      if (!priceHistoryMap[id]) priceHistoryMap[id] = [];
+      const nowIso = new Date().toISOString();
+      const lastHist = priceHistoryMap[id][priceHistoryMap[id].length - 1];
+      if (!lastHist) {
+        priceHistoryMap[id].push({
+          timestamp: nowIso,
+          price: currentCupPrice,
+          oldPrice: basePrice,
+          priceChange: currentCupPrice - basePrice
+        });
+      } else if (Math.abs(lastHist.price - currentCupPrice) > 0.001) {
+        priceHistoryMap[id].push({
+          timestamp: nowIso,
+          price: currentCupPrice,
+          oldPrice: lastHist.price,
+          priceChange: currentCupPrice - lastHist.price
+        });
+        if (priceHistoryMap[id].length > 50) {
+          priceHistoryMap[id].shift();
+        }
+      }
+
+      return {
+        ...p,
+        id,
+        currentCupPrice,
+        minCupPrice,
+        maxCupPrice,
+        basePrice,
+        targetSalesPer1Minute,
+        defaultCupSizeMl,
+        name,
+        flavour,
+        description,
+        flashEffect,
+        staticHoldCyclesRemaining: p.staticHoldCyclesRemaining !== undefined ? p.staticHoldCyclesRemaining : (existingProd ? existingProd.staticHoldCyclesRemaining : 0),
+        isStaticHold: p.isStaticHold !== undefined ? p.isStaticHold : (existingProd ? existingProd.isStaticHold : false)
+      };
+    }
+
+    function normalizeProductsList(list) {
+      if (!Array.isArray(list)) return [];
+      return list.map(normalizeProduct).filter(Boolean);
+    }
+
+    function updateBackendStatusUI(isOnline) {
+      isBackendOnline = isOnline;
+      const healthBadge = document.getElementById('backendHealthBadge');
+      if (healthBadge && !isMarketCrashActive) {
+        if (!isOnline) {
+          healthBadge.className = 'status-badge-offline';
+          healthBadge.innerHTML = `<span class="dot"></span> 🔴 DISCONNECTED`;
+        } else {
+          healthBadge.className = 'status-badge-live';
+          healthBadge.innerHTML = `<span class="dot"></span> LIVE &bull; Backend Connected`;
+        }
+      }
+    }
+
+    async function fetchPricingConfiguration() {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/config`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const config = await res.json();
+          applyPricingConfiguration(config);
+        }
+      } catch (e) { }
+    }
+
+    function applyPricingConfiguration(config) {
+      if (!config) return;
+      currentPricingConfig = config;
+      const g = config.global || config;
+
+      const basePrice = g.defaultCupPrice !== undefined ? Number(g.defaultCupPrice).toFixed(2) : '25.00';
+      const minPrice = g.minCupPrice !== undefined ? Number(g.minCupPrice).toFixed(2) : '20.00';
+      const maxPrice = g.maxCupPrice !== undefined ? Number(g.maxCupPrice).toFixed(2) : '30.00';
+
+      const boundsEl = document.getElementById('metaExchangeBounds');
+      if (boundsEl) {
+        boundsEl.innerHTML = `Base: ₹${basePrice} &bull; Floor: ₹${minPrice} &bull; Ceiling: ₹${maxPrice}`;
+      }
+
+      if (g.settlementIntervalSeconds) {
+        updatePricingTimingState({
+          intervalSeconds: g.settlementIntervalSeconds,
+          settlementIntervalSeconds: g.settlementIntervalSeconds,
+          nextSettlementAt: config.nextSettlementAt
+        });
+      }
+    }
+
+    async function fetchProductHistory(productId) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/history/${productId}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const sorted = data.slice().sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp));
+            priceHistoryMap[productId] = sorted.map(item => ({
+              timestamp: item.createdAt || item.timestamp || new Date().toISOString(),
+              price: Number(item.newPrice !== undefined ? item.newPrice : item.price || 25),
+              oldPrice: Number(item.oldPrice !== undefined ? item.oldPrice : item.price || 25),
+              priceChange: Number(item.priceChange !== undefined ? item.priceChange : 0),
+              reason: item.reason || item.explanation || 'Settlement'
+            }));
+          }
+        }
+      } catch (err) { }
+
+      if (!priceHistoryMap[productId]) priceHistoryMap[productId] = [];
+    }
+
+    async function fetchAllPriceHistories() {
+      try {
+        await Promise.allSettled(products.map(p => fetchProductHistory(p.id)));
+        renderAllSparklines();
+      } catch (e) { }
+    }
+
+    async function fetchProducts() {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pos/products`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data) && data.length > 0) {
+            isBackendOnline = true;
+            products = normalizeProductsList(data);
+            updateBackendStatusUI(true);
+          } else if (products && products.length > 0) {
+            isBackendOnline = true;
+            updateBackendStatusUI(true);
+          }
+        } else if (products && products.length > 0) {
+          isBackendOnline = true;
+          updateBackendStatusUI(true);
+        }
+      } catch (err) {
+        if (!products || products.length === 0) {
+          isBackendOnline = false;
+          updateBackendStatusUI(false);
+        } else {
+          isBackendOnline = true;
+          updateBackendStatusUI(true);
+        }
+      }
+
+      if (isMarketCrashActive && products && products.length > 0) {
+        products.forEach(p => {
+          p.currentCupPrice = p.minCupPrice != null ? p.minCupPrice : (p.currentCupPrice != null ? p.currentCupPrice : p.defaultCupPrice);
+          p.trendDirection = 'DOWN';
+          p.trend = '-10% [CRASH]';
+        });
+      }
+
+      renderProducts();
+      renderTicker();
+      renderCart();
+      renderAllSparklines();
+    }
+
+    function renderTicker() {
+      if (!products || products.length === 0) return;
+      products.sort((a, b) => (a.id || 0) - (b.id || 0));
+      const container = document.getElementById('stockTickerContent');
+      if (!container) return;
+
+      const generateTapeItemHtml = (p) => {
+        const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0).toFixed(2);
+        const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0).toFixed(2);
+        const diff = Number(activePrice) - Number(baseP);
+        const pct = baseP > 0 ? (((Number(activePrice) - Number(baseP)) / Number(baseP)) * 100).toFixed(1) : '0.0';
+        const cleanName = (p.name || p.flavour || `PRODUCT #${p.id}`).replace(/_/g, ' ').toUpperCase();
+        const icon = getFruitIcon(p);
+
+        let badgeClass = 'is-flat';
+        let badgeText = '— 0.0%';
+        if (diff > 0.001) {
+          badgeClass = 'is-up';
+          badgeText = `▲ +${pct}%`;
+        } else if (diff < -0.001) {
+          badgeClass = 'is-down';
+          badgeText = `▼ ${pct}%`;
+        }
+
+        const t = getJuiceThemeTokens(p);
+
+        return `
+          <div class="ticker-tape-item" onclick="showProductDetailsModal(${p.id || 0})" title="Click to inspect ${cleanName}"
+            style="
+              --juice-accent: ${t.accent};
+              --juice-bg-dark: ${t.bgDark};
+              --juice-bg-light: ${t.bgLight};
+              --juice-border-dark: ${t.borderDark};
+              --juice-border-light: ${t.borderLight};
+              --juice-shadow-dark: ${t.shadowDark};
+              --juice-shadow-light: ${t.shadowLight};
+              --juice-glow: ${t.glow};
+            ">
+            <span class="ticker-fruit-aura" style="background: rgba(${t.rgb}, 0.16); border: 1.5px solid rgba(${t.rgb}, 0.45);">${icon}</span>
+            <span class="ticker-tape-name" style="color: ${t.accent};">${cleanName}</span>
+            <span class="ticker-tape-price">₹${activePrice}</span>
+            <span class="ticker-tape-badge ${badgeClass}">${badgeText}</span>
+          </div>
+        `;
+      };
+
+      const loopHtml = products.map(generateTapeItemHtml).join('<span class="ticker-neon-divider">◆</span>');
+      container.innerHTML = `
+        <div class="ticker-stream-loop">${loopHtml}</div>
+        <span class="ticker-neon-divider">◆</span>
+        <div class="ticker-stream-loop" aria-hidden="true">${loopHtml}</div>
+      `;
+
+      const totalEl = document.getElementById('summaryTotalProds');
+      if (totalEl) totalEl.textContent = `${products.length} Products`;
+
+      const sentimentPill = document.getElementById('summarySentimentPill');
+      if (sentimentPill) {
+        let rising = 0;
+        let discounted = 0;
+        let stable = 0;
+        products.forEach(p => {
+          const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+          const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+          const diff = activePrice - baseP;
+          if (diff > 0.05) rising++;
+          else if (diff < -0.05) discounted++;
+          else stable++;
+        });
+
+        if (rising > discounted) {
+          sentimentPill.style.color = 'var(--accent-emerald)';
+          sentimentPill.textContent = `BULLISH ▲ (${rising} Surge)`;
+        } else if (discounted > rising) {
+          sentimentPill.style.color = 'var(--accent-rose)';
+          sentimentPill.textContent = `BEARISH ▼ (${discounted} Discount)`;
+        } else {
+          sentimentPill.style.color = 'var(--accent-cyan)';
+          sentimentPill.textContent = `BALANCED ⇄ (${stable} Stable)`;
+        }
+      }
+
+      const syncEl = document.getElementById('summaryLastSync');
+      if (syncEl) syncEl.textContent = new Date().toLocaleTimeString();
+    }
+
+    let lastRenderedPosCardIds = '';
+
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      if (!grid) return;
+      if (!products || products.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted);">
+            <div style="font-size: 48px; margin-bottom: 12px;">🍹</div>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">No Beverages Available</h3>
+            <p style="font-size: 14px;">Market catalog is currently refreshing or empty. Please check back shortly.</p>
+          </div>
+        `;
+        return;
+      }
+      products.sort((a, b) => (a.id || 0) - (b.id || 0));
+
+      const currentIds = products.map(p => p.id).join(',');
+      const needsFullRebuild = (currentIds !== lastRenderedPosCardIds) || (grid.children.length !== products.length);
+
+      if (needsFullRebuild) {
+        lastRenderedPosCardIds = currentIds;
+        grid.innerHTML = products.map((p, _cardIndex) => {
+          const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+          const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+          const minP = Number(p.minCupPrice !== undefined ? p.minCupPrice : 18.0);
+          const maxP = Number(p.maxCupPrice !== undefined ? p.maxCupPrice : 35.0);
+          const diff = activePrice - baseP;
+          const icon = getFruitIcon(p);
+          const imgUrl = getBeverageImage(p);
+
+          const shortName = getShortFlavourLabel(p);
+          const badgeInfo = getMarketBadgeInfo(p, isMarketCrashActive);
+
+          let demandCategory = '⚡ ACTIVE FLOW';
+          let demandColor = 'var(--accent-emerald)';
+
+          if (p.isStaticHold || (p.staticHoldCyclesRemaining && p.staticHoldCyclesRemaining > 0) || p.demandLevelCategory === 'PURCHASE_STATIC_HOLD') {
+            demandCategory = `🔒 PURCHASE STATIC (${p.staticHoldCyclesRemaining || 2}/2 CYCLES)`;
+            demandColor = '#60a5fa';
+          } else if (diff > 0.05) {
+            demandCategory = '🔥 HIGH DEMAND';
+            demandColor = 'var(--warning)';
+          } else if (diff < -0.05) {
+            demandCategory = '❄️ DISCOUNT FLOOR';
+            demandColor = 'var(--accent-cyan)';
+          }
+
+          const themeClass = getFlavourThemeClass(p);
+          const crashCardClass = isMarketCrashActive ? 'crash-mode-card' : '';
+          const crashBtnClass = isMarketCrashActive ? 'crash-btn-pulse' : '';
+          const strikeHtml = isMarketCrashActive ? `<span class="crash-original-strikethrough">₹${baseP.toFixed(2)}</span>` : '';
+
+          return `
+            <div class="flavour-card ${themeClass} ${crashCardClass} ${p.flashEffect || ''}" id="flavourCard-${p.id}" style="animation-delay: ${_cardIndex * 0.04}s">
+              <div>
+                <!-- 1. Product Visual Area -->
+                <div class="card-img-banner">
+                  <img src="${imgUrl}" alt="${p.name}" class="beverage-photo" loading="lazy" id="beverageImg-${p.id}" />
+                  <span class="fruit-pill" id="fruitPill-${p.id}">${icon} 100% FRESH</span>
+                </div>
+
+                <!-- 2. Product Identity -->
+                <div class="card-header-info">
+                  <div class="card-name" id="cardName-${p.id}" title="${p.name}">${p.name}</div>
+                  <div class="card-size">${p.defaultCupSizeMl || 250}ml standard cup</div>
+                </div>
+
+                <!-- 3. Current Live Price (Dominant Hero) & Market Movement Badge -->
+                <div class="price-hero-section">
+                  <div class="price-primary-col">
+                    <div style="display: flex; align-items: baseline;">
+                      ${strikeHtml}
+                      <span class="price-main" id="priceMain-${p.id}">₹${activePrice.toFixed(2)}</span>
+                    </div>
+                    <span class="price-rate-label">${isMarketCrashActive ? '🔥 CRASH FLOOR RATE' : 'LIVE CUP PRICE'}</span>
+                  </div>
+                  <span class="price-status-badge ${badgeInfo.badgeClass}" id="marketBadge-${p.id}">
+                    ${badgeInfo.badgeText}
+                  </span>
+                </div>
+
+                <!-- 4. Mini Price Trend Chart -->
+                <div class="card-chart-wrap">
+                  <canvas id="posSparkline-${p.id}" class="card-chart-canvas"></canvas>
+                  <span class="chart-micro-tag" id="sparklinePts-${p.id}">30 PTS &bull; LIVE</span>
+                </div>
+                
+                <!-- 5. Market Demand Indicator -->
+                <div class="card-meta-row" style="justify-content: flex-end;">
+                  <span class="demand-pill" id="posDemandCat-${p.id}" style="color: ${demandColor};">${isMarketCrashActive ? '⚡ CRASH FLOOR LIMIT' : demandCategory}</span>
+                </div>
+              </div>
+
+              <!-- 6. Primary Action Button (Stable Static Juice Theme) -->
+              <button class="add-to-cart-btn" id="posAddToCart-${p.id}" onclick="addToCart(${p.id})">
+                ${!isBackendOnline ? '🔴 Market Offline' : '+ ADD TO ORDER'}
+              </button>
+            </div>
+          `;
+        }).join('');
+      } else {
+        // Smooth in-place DOM updates
+        products.forEach(p => {
+          const activePrice = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+          const baseP = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+          const diff = activePrice - baseP;
+
+          // In-place name & identity update
+          const nameEl = document.getElementById(`cardName-${p.id}`);
+          if (nameEl && p.name && nameEl.textContent !== p.name) {
+            nameEl.textContent = p.name;
+            nameEl.setAttribute('title', p.name);
+          }
+          const pillEl = document.getElementById(`fruitPill-${p.id}`);
+          if (pillEl) {
+            const icon = getFruitIcon(p);
+            pillEl.innerHTML = `${icon} 100% FRESH`;
+          }
+          const imgEl = document.getElementById(`beverageImg-${p.id}`);
+          if (imgEl) {
+            const expectedImg = getBeverageImage(p);
+            if (!imgEl.src.endsWith(expectedImg)) {
+              imgEl.src = expectedImg;
+            }
+            if (p.name) imgEl.setAttribute('alt', p.name);
+          }
+
+          const badgeInfo = getMarketBadgeInfo(p, isMarketCrashActive);
+          const badgeEl = document.getElementById(`marketBadge-${p.id}`);
+          if (badgeEl) {
+            badgeEl.className = 'price-status-badge ' + badgeInfo.badgeClass;
+            badgeEl.textContent = badgeInfo.badgeText;
+          }
+
+          const cardEl = document.getElementById(`flavourCard-${p.id}`);
+          if (cardEl) {
+            if (isMarketCrashActive) cardEl.classList.add('crash-mode-card');
+            else cardEl.classList.remove('crash-mode-card');
+          }
+
+          const btnEl = document.getElementById(`posAddToCart-${p.id}`);
+          if (btnEl) {
+            btnEl.textContent = !isBackendOnline ? '🔴 Market Offline' : '+ ADD TO ORDER';
+          }
+
+          const priceEl = document.getElementById(`priceMain-${p.id}`);
+          if (priceEl) {
+            const prevP = previousPriceMap[p.id];
+            if (prevP !== undefined && Math.abs(prevP - activePrice) > 0.01) {
+              applyPriceFlash(p.id, prevP, activePrice);
+              announcePrice(p.name, activePrice, activePrice > prevP ? 'up' : 'down');
+            }
+            previousPriceMap[p.id] = activePrice;
+            animateNumber(priceEl, activePrice);
+          }
+
+          const demandCatEl = document.getElementById(`posDemandCat-${p.id}`);
+          if (demandCatEl) {
+            if (isMarketCrashActive) {
+              demandCatEl.textContent = '⚡ CRASH FLOOR LIMIT';
+              demandCatEl.style.color = 'var(--accent-rose)';
+            } else if (p.isStaticHold || (p.staticHoldCyclesRemaining && p.staticHoldCyclesRemaining > 0) || p.demandLevelCategory === 'PURCHASE_STATIC_HOLD') {
+              demandCatEl.textContent = `🔒 PURCHASE STATIC (${p.staticHoldCyclesRemaining || 2}/2 CYCLES)`;
+              demandCatEl.style.color = '#60a5fa';
+            } else if (diff > 0.05) {
+              demandCatEl.textContent = '🔥 HIGH DEMAND';
+              demandCatEl.style.color = 'var(--warning)';
+            } else if (diff < -0.05) {
+              demandCatEl.textContent = '❄️ DISCOUNT FLOOR';
+              demandCatEl.style.color = 'var(--accent-cyan)';
+            } else {
+              demandCatEl.textContent = '⚡ ACTIVE FLOW';
+              demandCatEl.style.color = 'var(--accent-emerald)';
+            }
+          }
+        });
+      }
+
+      requestAnimationFrame(renderAllSparklines);
+    }
+
+    function renderAllSparklines() {
+      if (!products || products.length === 0) return;
+      products.forEach(p => {
+        drawSparkline(p.id, priceHistoryMap[p.id] || [], p.currentCupPrice, p.basePrice);
+      });
+    }
+
+    function drawSparkline(productId, history, currentPrice, basePrice) {
+      const canvas = document.getElementById(`posSparkline-${productId}`);
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const width = (rect.width && rect.width > 10) ? rect.width : (canvas.offsetWidth > 10 ? canvas.offsetWidth : 240);
+      const height = (rect.height && rect.height > 10) ? rect.height : (canvas.offsetHeight > 10 ? canvas.offsetHeight : 72);
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+
+      let dataPoints = [];
+      if (history && history.length > 0) {
+        dataPoints = history.slice(-30).map(h => ({
+          price: Number(h.price || 25),
+          timestamp: h.timestamp
+        }));
+      }
+
+      const prod = products.find(p => p.id === productId);
+      const floorP = Number(prod && prod.minCupPrice != null ? prod.minCupPrice : 18);
+      const ceilP = Number(prod && prod.maxCupPrice != null ? prod.maxCupPrice : 35);
+      const baseP = Number(basePrice || (prod && prod.basePrice != null ? prod.basePrice : 25) || 25);
+      const currP = Number(currentPrice !== undefined ? currentPrice : (prod && prod.currentCupPrice != null ? prod.currentCupPrice : baseP));
+
+      if (dataPoints.length === 0) {
+        const mid = Number(((baseP * 0.45) + (currP * 0.55)).toFixed(2));
+        dataPoints = [
+          { price: baseP, timestamp: new Date(Date.now() - 180000).toISOString() },
+          { price: mid, timestamp: new Date(Date.now() - 90000).toISOString() },
+          { price: currP, timestamp: new Date().toISOString() }
+        ];
+      } else if (dataPoints.length === 1) {
+        const pVal = dataPoints[0].price;
+        const mid = Number(((baseP * 0.45) + (pVal * 0.55)).toFixed(2));
+        dataPoints = [
+          { price: baseP, timestamp: new Date(Date.now() - 120000).toISOString() },
+          { price: mid, timestamp: new Date(Date.now() - 60000).toISOString() },
+          { price: pVal, timestamp: dataPoints[0].timestamp || new Date().toISOString() }
+        ];
+      }
+
+      const ptsBadge = document.getElementById(`sparklinePts-${productId}`);
+      if (ptsBadge) ptsBadge.innerHTML = `${dataPoints.length} PTS &bull; LIVE`;
+
+      const padLeft = 24;
+      const padRight = 8;
+      const padTop = 4;
+      const padBottom = 4;
+      const plotWidth = width - padLeft - padRight;
+      const plotHeight = height - padTop - padBottom;
+
+      const prices = dataPoints.map(d => d.price);
+      let pMin = Math.min(...prices, baseP);
+      let pMax = Math.max(...prices, baseP);
+      let diffRange = pMax - pMin;
+
+      let minP = Math.max(floorP - 0.5, pMin - Math.max(1.2, diffRange * 0.2));
+      let maxP = Math.min(ceilP + 0.5, pMax + Math.max(1.2, diffRange * 0.2));
+      if (maxP - minP < 3.0) {
+        const center = (pMax + pMin) / 2;
+        minP = center - 1.5;
+        maxP = center + 1.5;
+      }
+      const span = maxP - minP;
+
+      const getY = (val) => padTop + plotHeight - ((Math.min(maxP, Math.max(minP, val)) - minP) / span) * plotHeight;
+      const getX = (idx) => padLeft + (idx / Math.max(1, dataPoints.length - 1)) * plotWidth;
+
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light' || !document.body.classList.contains('dark-theme-mode');
+
+      const flavourColor = getProductChartColors(prod);
+      const strokeColor = flavourColor.stroke;
+      const strokeColorRgb = flavourColor.rgb;
+
+      // Base Price Dashed Reference Baseline
+      const baseY = getY(baseP);
+      ctx.beginPath();
+      ctx.strokeStyle = isLight ? 'rgba(100, 116, 139, 0.22)' : 'rgba(148, 163, 184, 0.18)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.moveTo(padLeft, baseY);
+      ctx.lineTo(width - padRight, baseY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Y-Axis Labels
+      ctx.save();
+      ctx.font = 'bold 7.5px "BL Melody", -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = isLight ? 'rgba(100, 116, 139, 0.7)' : 'rgba(148, 163, 184, 0.65)';
+      ctx.fillText(`₹${Math.round(maxP)}`, padLeft - 3, padTop + 2);
+      ctx.fillText(`₹${Math.round(minP)}`, padLeft - 3, padTop + plotHeight - 2);
+      ctx.restore();
+
+      // Area Under Curve (Bézier Smooth)
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        const cpx = (x0 + x1) / 2;
+        ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
+      }
+      ctx.lineTo(getX(dataPoints.length - 1), padTop + plotHeight);
+      ctx.lineTo(getX(0), padTop + plotHeight);
+      ctx.closePath();
+
+      const areaGrad = ctx.createLinearGradient(0, padTop, 0, padTop + plotHeight);
+      areaGrad.addColorStop(0, `rgba(${strokeColorRgb}, 0.35)`);
+      areaGrad.addColorStop(0.5, `rgba(${strokeColorRgb}, 0.12)`);
+      areaGrad.addColorStop(1, `rgba(${strokeColorRgb}, 0.0)`);
+      ctx.fillStyle = areaGrad;
+      ctx.fill();
+
+      // Main Stroke Line with glow
+      ctx.save();
+      ctx.shadowColor = strokeColor;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(getX(0), getY(dataPoints[0].price));
+      for (let i = 1; i < dataPoints.length; i++) {
+        const x0 = getX(i - 1), y0 = getY(dataPoints[i - 1].price);
+        const x1 = getX(i), y1 = getY(dataPoints[i].price);
+        const cpx = (x0 + x1) / 2;
+        ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
+      }
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2.4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.restore();
+
+      // Latest Point Beacon Dot with concentric glow
+      const lastX = getX(dataPoints.length - 1);
+      const lastY = getY(dataPoints[dataPoints.length - 1].price);
+
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${strokeColorRgb}, 0.2)`;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+      ctx.fillStyle = strokeColor;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(lastX, lastY, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+    }
+
+    function showProductDetailsModal(productId) {
+      const card = document.getElementById(`flavourCard-${productId}`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('flash-surge');
+        setTimeout(() => card.classList.remove('flash-surge'), 1400);
+      }
+    }
+
+    function addToCart(productId) {
+      if (!isBackendOnline) return;
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      const currentActivePrice = isMarketCrashActive
+        ? (product.minCupPrice != null ? product.minCupPrice : 20.0)
+        : (product.currentCupPrice != null ? product.currentCupPrice : (product.defaultCupPrice || 25.0));
+      const currentVersion = product.priceVersion || 1;
+
+      const existing = cart.find(item => item.product.id === productId);
+      if (existing) {
+        existing.quantity += 1;
+        existing.product = product;
+        // Retain original purchase lockedPrice so settlement timer does not alter cart price!
+      } else {
+        cart.push({
+          product,
+          quantity: 1,
+          cupSizeMl: product.defaultCupSizeMl || 250,
+          lockedPrice: currentActivePrice,
+          lockedPriceVersion: currentVersion,
+          addedAt: Date.now()
+        });
+      }
+      renderCart();
+
+      // Cart badge pulse micro-interaction
+      const cartBadgeEl = document.getElementById('cartItemCount');
+      if (cartBadgeEl) {
+        cartBadgeEl.classList.remove('cart-badge-pulse');
+        void cartBadgeEl.offsetWidth;
+        cartBadgeEl.classList.add('cart-badge-pulse');
+        setTimeout(() => cartBadgeEl.classList.remove('cart-badge-pulse'), 450);
+      }
+    }
+
+    function updateQty(index, change) {
+      cart[index].quantity += change;
+      if (cart[index].quantity <= 0) cart.splice(index, 1);
+      renderCart();
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItemsContainer');
+      const countLabel = document.getElementById('cartItemCount');
+      const summaryBox = document.getElementById('cartSummaryBox');
+      const checkoutBtn = document.getElementById('checkoutBtn');
+
+      if (!container || !countLabel || !summaryBox || !checkoutBtn) return;
+
+      const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
+      const totalVolume = cart.reduce((sum, i) => sum + (i.cupSizeMl * i.quantity), 0);
+      const totalPayable = Math.round(cart.reduce((sum, i) => {
+        const liveProduct = products.find(p => p.id === i.product.id) || i.product;
+        // If lockedPrice was set at purchase selection, hold static even if settlement occurs during purchase!
+        const itemPrice = (i.lockedPrice !== undefined && i.lockedPrice !== null)
+          ? i.lockedPrice
+          : (isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : 25.0));
+        return sum + (itemPrice * i.quantity);
+      }, 0));
+
+      countLabel.textContent = `${totalItems} ${totalItems === 1 ? 'item' : 'items'}`;
+
+      if (cart.length === 0) {
+        // Compute trending products (top 3 by price delta from base — highest demand)
+        let trendingProducts = [];
+        if (products && products.length > 0) {
+          trendingProducts = products
+            .map(p => {
+              const price = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+              const base = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+              const orderCount = Number(p.orderCount || p.order_count || 0);
+              const demandScore = orderCount > 0 ? orderCount : Math.abs(price - base);
+              return { ...p, demandScore, price };
+            })
+            .sort((a, b) => b.demandScore - a.demandScore)
+            .slice(0, 3);
+        }
+
+        // Compute market snapshot
+        let rising = 0, falling = 0, stable = 0;
+        let avgPrice = 0;
+        products.forEach(p => {
+          const price = Number(p.currentCupPrice !== undefined ? p.currentCupPrice : 25.0);
+          const base = Number(p.basePrice !== undefined ? p.basePrice : 25.0);
+          avgPrice += price;
+          if (price - base > 0.05) rising++;
+          else if (price - base < -0.05) falling++;
+          else stable++;
+        });
+        avgPrice = products.length > 0 ? (avgPrice / products.length).toFixed(2) : '25.00';
+        let sentiment = 'BALANCED ⇄';
+        let sentimentColor = 'var(--accent-cyan)';
+        if (rising > falling) { sentiment = 'BULLISH ▲'; sentimentColor = 'var(--accent-emerald)'; }
+        else if (falling > rising) { sentiment = 'BEARISH ▼'; sentimentColor = 'var(--accent-rose)'; }
+
+        const quickAddHtml = trendingProducts.length > 0 ? `
+          <div class="cart-quick-add">
+            <div class="cart-quick-add-title">🔥 Quick Add — Popular Right Now</div>
+            ${trendingProducts.map(tp => {
+              const icon = getFruitIcon(tp);
+              const shortName = getShortFlavourLabel(tp);
+              return `
+                <div class="cart-quick-add-item" onclick="addToCart(${tp.id})">
+                  <div class="cart-quick-add-item-info">
+                    <span class="cart-quick-add-item-icon">${icon}</span>
+                    <span class="cart-quick-add-item-name">${shortName}</span>
+                    <span class="cart-quick-add-item-price">₹${tp.price.toFixed(2)}</span>
+                  </div>
+                  <button class="cart-quick-add-btn" onclick="event.stopPropagation(); addToCart(${tp.id})">+ ADD</button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : '';
+
+        const snapshotHtml = products.length > 0 ? `
+          <div class="cart-empty-snapshot">
+            <div class="cart-snapshot-title">📊 Today's Market Snapshot</div>
+            <div class="cart-snapshot-row">
+              <span>Sentiment</span>
+              <span class="cart-snapshot-value" style="color: ${sentimentColor};">${sentiment}</span>
+            </div>
+            <div class="cart-snapshot-row">
+              <span>Rising / Falling</span>
+              <span class="cart-snapshot-value" style="color: var(--text-primary);">${rising} ▲ / ${falling} ▼</span>
+            </div>
+            <div class="cart-snapshot-row">
+              <span>Avg. Price</span>
+              <span class="cart-snapshot-value">₹${avgPrice}</span>
+            </div>
+            <div class="cart-snapshot-row">
+              <span>Active Products</span>
+              <span class="cart-snapshot-value">${products.length}</span>
+            </div>
+          </div>
+        ` : '';
+
+        container.innerHTML = `
+          <div class="cart-empty-state">
+            <div class="cart-empty-icon">🛒</div>
+            <div class="cart-empty-title">YOUR MARKET ORDER IS EMPTY</div>
+            <div class="cart-empty-subtitle">Select a beverage to begin.</div>
+            ${quickAddHtml}
+            ${snapshotHtml}
+          </div>
+        `;
+        summaryBox.style.display = 'none';
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Done / Next POS Order';
+      } else {
+        container.innerHTML = cart.map((item, idx) => {
+          const liveProduct = products.find(p => p.id === item.product.id) || item.product;
+          const itemPrice = (item.lockedPrice !== undefined && item.lockedPrice !== null)
+            ? item.lockedPrice
+            : (isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : 25.0));
+          const icon = getFruitIcon(liveProduct);
+          const imgUrl = getBeverageImage(liveProduct);
+          const itemTotal = (itemPrice * item.quantity).toFixed(2);
+          const isPriceStaticLocked = (item.lockedPrice !== undefined && liveProduct.currentCupPrice !== undefined && Math.abs(Number(item.lockedPrice) - Number(liveProduct.currentCupPrice)) > 0.01);
+          return `
+            <div class="cart-item cart-item-enter" style="animation-delay: ${idx * 0.05}s">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="${imgUrl}" alt="${liveProduct.name}" style="width: 44px; height: 44px; border-radius: var(--radius-sm); object-fit: cover; border: 1.5px solid rgba(255, 255, 255, 0.15); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); flex-shrink: 0;" />
+                <div>
+                  <div class="item-title">${icon} ${liveProduct.name} ${isPriceStaticLocked ? '<span style="font-size: 9.5px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 1px 4px; border-radius: 4px; margin-left: 4px;">🔒 STATIC HELD</span>' : ''}</div>
+                  <div class="item-sub">
+                    ₹${Number(itemPrice).toFixed(2)} &bull; ${item.cupSizeMl}ml &bull; Sub: ₹${itemTotal}
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <button class="qty-btn" onclick="updateQty(${idx}, -1)">-</button>
+                <span style="font-weight: 800; font-size: 13px; width: 20px; text-align: center; color: var(--text-primary); font-family: var(--font-mono);">${item.quantity}</span>
+                <button class="qty-btn" onclick="updateQty(${idx}, 1)">+</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        summaryBox.style.display = 'block';
+        document.getElementById('totalVolumeText').textContent = `${totalVolume} ml (${(totalVolume / 250).toFixed(0)} cups)`;
+        document.getElementById('totalPayableText').textContent = `₹${totalPayable.toFixed(2)}`;
+
+        if (!isBackendOnline) {
+          checkoutBtn.disabled = true;
+          checkoutBtn.textContent = '🔴 MARKET OFFLINE';
+        } else {
+          checkoutBtn.disabled = false;
+          checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable.toFixed(2)})`;
+        }
+      }
+    }
+
+    async function processCheckout() {
+      if (isProcessingCheckout || cart.length === 0) return;
+
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      const errBanner = document.getElementById('checkoutErrorBanner');
+      if (errBanner) errBanner.style.display = 'none';
+
+      isProcessingCheckout = true;
+      if (checkoutBtn) {
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Processing Order...';
+      }
+
+      const paymentMethod = document.getElementById('paymentMethodSelect').value || 'CASH';
+      const completedCart = [...cart];
+      const idempotencyKey = 'IDEM-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+
+      const apiPayload = {
+        idempotencyKey,
+        items: completedCart.map(i => {
+          const liveProduct = products.find(p => p.id === i.product.id) || i.product;
+          const lockedEffectivePrice = (i.lockedPrice !== undefined && i.lockedPrice !== null)
+            ? i.lockedPrice
+            : (isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : liveProduct.defaultCupPrice));
+          return {
+            productId: liveProduct.id,
+            quantity: i.quantity,
+            cupSizeMl: i.cupSizeMl,
+            priceVersion: i.lockedPriceVersion || liveProduct.priceVersion || 1,
+            lockedPrice: lockedEffectivePrice
+          };
+        }),
+        paymentMethod
+      };
+
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pos/checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': idempotencyKey
+          },
+          body: JSON.stringify(apiPayload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || `Server returned error (${res.status})`);
+        }
+
+        const data = await res.json();
+        if (data.success === false) {
+          throw new Error(data.message || 'Checkout failed on backend');
+        }
+
+        const orderNumber = data.orderNumber || (data.orderId ? `ORD-${data.orderId}` : `ORD-${Date.now()}`);
+        const totalAmount = data.totalAmount !== undefined ? data.totalAmount : completedCart.reduce((sum, i) => {
+          const liveP = products.find(p => p.id === i.product.id) || i.product;
+          const p = isMarketCrashActive ? (liveP.minCupPrice != null ? liveP.minCupPrice : 20.0) : (liveP.currentCupPrice != null ? liveP.currentCupPrice : 25.0);
+          return sum + (p * i.quantity);
+        }, 0);
+
+        cart = [];
+        renderCart();
+
+        if (pubExchangeChannel) {
+          try {
+            pubExchangeChannel.postMessage({
+              type: 'NEW_ORDER_PLACED',
+              orderNumber: orderNumber,
+              totalAmount: totalAmount,
+              timestamp: new Date().toISOString()
+            });
+            pubExchangeChannel.postMessage({
+              type: 'BATCH_UPDATED',
+              orderNumber: orderNumber,
+              totalAmount: totalAmount,
+              timestamp: new Date().toISOString()
+            });
+          } catch (e) { }
+        }
+        try {
+          localStorage.setItem('pubexchange_last_event', JSON.stringify({
+            type: 'BATCH_UPDATED',
+            orderNumber: orderNumber,
+            timestamp: Date.now()
+          }));
+        } catch (e) { }
+
+        const modalItemsHtml = completedCart.map(i => {
+          const liveProduct = products.find(p => p.id === i.product.id) || i.product;
+          const itemPrice = isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : 25.0);
+          const icon = getFruitIcon(liveProduct);
+          const imgUrl = getBeverageImage(liveProduct);
+          const itemTotal = (itemPrice * i.quantity).toFixed(2);
+          return `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13.5px; font-weight: 700; color: var(--text-primary);">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="${imgUrl}" alt="${liveProduct.name}" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;" />
+                <span>${icon} ${liveProduct.name} x ${i.quantity} (${i.cupSizeMl * i.quantity}ml)</span>
+              </div>
+              <span style="color: var(--success); font-family: var(--font-mono);">₹${itemTotal}</span>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('modalOrderNumber').textContent = `Receipt #${orderNumber}`;
+        document.getElementById('modalItemsContainer').innerHTML = modalItemsHtml + `
+          <div style="border-top: 1px dashed var(--border-color); margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 900; font-size: 15px; color: var(--text-primary);">
+            <span>TOTAL PAID</span>
+            <span style="color: var(--success); font-family: var(--font-mono);">₹${Number(totalAmount).toFixed(2)}</span>
+          </div>
+        `;
+        document.getElementById('modalPaymentMethod').textContent = paymentMethod;
+        openModalAnimated('receiptModal');
+        showPosToast(`Order #${orderNumber} completed — ₹${Number(totalAmount).toFixed(2)}`, 'success', { title: 'Checkout Success' });
+
+        await fetchProducts();
+
+      } catch (err) {
+        console.error('Checkout failed:', err);
+        if (errBanner) {
+          errBanner.style.display = 'block';
+          errBanner.textContent = `✕ POS Checkout Failed: ${err.message || 'Server connection error. Please try again.'}`;
+        } else {
+          alert(`✕ POS Checkout Failed: ${err.message || 'Server error. Please try again.'}`);
+        }
+      } finally {
+        isProcessingCheckout = false;
+        if (checkoutBtn) {
+          checkoutBtn.disabled = cart.length === 0;
+          if (cart.length > 0) {
+            const totalPayable = Math.round(cart.reduce((sum, i) => {
+              const liveP = products.find(p => p.id === i.product.id) || i.product;
+              const p = isMarketCrashActive ? (liveP.minCupPrice != null ? liveP.minCupPrice : 20.0) : (liveP.currentCupPrice != null ? liveP.currentCupPrice : 25.0);
+              return sum + (p * i.quantity);
+            }, 0));
+            checkoutBtn.textContent = `Done / Next POS Order (₹${totalPayable.toFixed(2)})`;
+          } else {
+            checkoutBtn.textContent = 'Done / Next POS Order';
+          }
+        }
+      }
+    }
+
+    async function closeReceiptModal() {
+      closeModalAnimated('receiptModal');
+      cart = [];
+      renderCart();
+      await fetchProducts();
+    }
+
+    let backendHealthChecking = false;
+    async function checkBackendHealth() {
+      if (backendHealthChecking) return;
+      backendHealthChecking = true;
+      const badge = document.getElementById('backendHealthBadge');
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/health`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (badge && !isMarketCrashActive) {
+          if (res.ok) {
+            isBackendOnline = true;
+            badge.className = 'status-badge-live';
+            badge.innerHTML = '<span class="dot"></span> BACKEND ONLINE';
+          } else {
+            isBackendOnline = false;
+            badge.className = 'status-badge-offline';
+            badge.innerHTML = '<span class="dot" style="background:#ef4444;"></span> BACKEND OFFLINE';
+          }
+        }
+      } catch (err) {
+        isBackendOnline = false;
+        if (badge && !isMarketCrashActive) {
+          badge.className = 'status-badge-offline';
+          badge.innerHTML = '<span class="dot" style="background:#ef4444;"></span> BACKEND OFFLINE';
+        }
+      } finally {
+        backendHealthChecking = false;
+      }
+    }
+
+    let currentPricingTiming = {
+      intervalSeconds: 60,
+      label: '1 Minute',
+      shortLabel: '1-Min',
+      nextSettlementAt: null
+    };
+
+    async function fetchPricingTiming() {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(`${CONFIG.API_BASE_URL}/pricing/timing`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          updatePricingTimingState(data);
+        }
+      } catch (e) { }
+    }
+
+    let serverTimeOffsetMs = 0;
+
+    function updatePricingTimingState(timing) {
+      if (!timing) return;
+      const sec = timing.intervalSeconds || timing.settlementIntervalSeconds || (currentPricingTiming ? currentPricingTiming.intervalSeconds : 60) || 60;
+      const currentSec = currentPricingTiming && currentPricingTiming.intervalSeconds ? Number(currentPricingTiming.intervalSeconds) : null;
+      const intervalChanged = currentSec !== null && currentSec !== Number(sec);
+
+      const label = timing.label || (sec === 10 ? '10 Seconds' : (sec === 30 ? '30 Seconds' : (sec % 60 === 0 ? `${sec / 60} Minute${sec > 60 ? 's' : ''}` : `${sec} Seconds`)));
+      const shortLabel = sec === 10 ? '10-Sec' : (sec === 30 ? '30-Sec' : (sec % 60 === 0 ? `${sec / 60}-Min` : `${sec}s`));
+
+      if (timing.serverTimeMs) {
+        serverTimeOffsetMs = Number(timing.serverTimeMs) - Date.now();
+      }
+
+      let targetEpochMs = null;
+      if (timing.nextSettlementEpochMs) {
+        targetEpochMs = Number(timing.nextSettlementEpochMs);
+      } else if (timing.nextSettlementAt) {
+        const parsed = new Date(timing.nextSettlementAt).getTime();
+        if (!isNaN(parsed)) targetEpochMs = parsed;
+      }
+
+      if (!targetEpochMs || targetEpochMs <= (Date.now() + serverTimeOffsetMs)) {
+        targetEpochMs = Date.now() + serverTimeOffsetMs + (sec * 1000);
+      }
+
+      currentPricingTiming = {
+        intervalSeconds: sec,
+        label: label,
+        shortLabel: shortLabel,
+        nextSettlementEpochMs: targetEpochMs,
+        nextSettlementAt: new Date(targetEpochMs).toISOString()
+      };
+
+      const openStateEl = document.getElementById('marketOpenStateText');
+      if (openStateEl) openStateEl.textContent = `Market Open (${shortLabel} DWMA)`;
+
+      const subtextEl = document.getElementById('posMarketSubtext');
+      if (subtextEl) subtextEl.innerHTML = `REAL-TIME ${shortLabel.toUpperCase()} DWMA PRICING &bull; DYNAMIC LIVE SETTLEMENTS`;
+
+      renderAllSparklines();
+      if (intervalChanged || !settlementCountdownInterval) {
+        startSettlementCountdown();
+      }
+    }
+
+    function startSettlementCountdown() {
+      if (settlementCountdownInterval) clearInterval(settlementCountdownInterval);
+
+      const updateTicker = () => {
+        const intervalSec = currentPricingTiming.intervalSeconds || 60;
+        const currentServerNow = Date.now() + serverTimeOffsetMs;
+        let remaining = intervalSec;
+
+        if (currentPricingTiming.nextSettlementEpochMs) {
+          const diffMs = currentPricingTiming.nextSettlementEpochMs - currentServerNow;
+          if (diffMs > 0) {
+            remaining = Math.min(intervalSec, Math.ceil(diffMs / 1000));
+          } else {
+            currentPricingTiming.nextSettlementEpochMs = currentServerNow + (intervalSec * 1000);
+            remaining = intervalSec;
+            fetchPricingTiming();
+          }
+        }
+
+        const mins = Math.floor(Math.max(0, remaining) / 60);
+        const secs = Math.max(0, remaining) % 60;
+        const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        const countdownEl = document.getElementById('summarySettlementCountdown');
+        if (countdownEl) countdownEl.textContent = timeStr;
+      };
+
+      updateTicker();
+      settlementCountdownInterval = setInterval(updateTicker, 1000);
+    }
+
+    function cleanupStompSubscriptions() {
+      if (Array.isArray(stompSubscriptions)) {
+        stompSubscriptions.forEach(sub => {
+          try { if (sub && typeof sub.unsubscribe === 'function') sub.unsubscribe(); } catch (e) { }
+        });
+      }
+      stompSubscriptions = [];
+    }
+
+    function connectWebSocket() {
+      if (typeof SockJS === 'undefined' || typeof Stomp === 'undefined') return;
+      if (isConnectingWS || isWsConnected) return;
+
+      if (wsReconnectTimer) {
+        clearTimeout(wsReconnectTimer);
+        wsReconnectTimer = null;
+      }
+
+      isConnectingWS = true;
+      try {
+        const socket = new SockJS(CONFIG.WS_URL);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.heartbeat.outgoing = 10000;
+        stompClient.heartbeat.incoming = 10000;
+
+        stompClient.connect({}, function () {
+          isConnectingWS = false;
+          isWsConnected = true;
+          wsReconnectAttempts = 0;
+          hideNetworkBanner();
+
+          const badge = document.getElementById('backendHealthBadge');
+          if (badge && !isMarketCrashActive) {
+            badge.className = 'status-badge-live';
+            badge.innerHTML = '<span class="dot"></span> BACKEND ONLINE';
+          }
+
+          cleanupStompSubscriptions();
+          fetchProducts();
+          fetchPricingTiming();
+          fetchPricingConfiguration();
+          checkMarketCrashStatus();
+
+          const subProds = stompClient.subscribe('/topic/products', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (Array.isArray(res) && res.length > 0) {
+                  products = normalizeProductsList(res);
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderProducts();
+                  renderTicker();
+                  renderCart();
+                  renderAllSparklines();
+                  return;
+                }
+              } catch (e) { }
+            }
+            fetchProducts();
+          });
+          stompSubscriptions.push(subProds);
+
+          const subBatches = stompClient.subscribe('/topic/batches', function () {
+            fetchProducts();
+          });
+          stompSubscriptions.push(subBatches);
+
+          const subInv = stompClient.subscribe('/topic/inventory', function () {
+            fetchProducts();
+          });
+          stompSubscriptions.push(subInv);
+
+          const subPrices = stompClient.subscribe('/topic/prices', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                let incoming = [];
+                if (res && res.updatedPrices && Array.isArray(res.updatedPrices)) {
+                  incoming = res.updatedPrices;
+                } else if (res && res.changes && Array.isArray(res.changes)) {
+                  incoming = res.changes;
+                } else if (res && res.products && Array.isArray(res.products)) {
+                  incoming = res.products;
+                } else if (Array.isArray(res)) {
+                  incoming = res;
+                } else if (res && (res.id || res.beverageId || res.productId)) {
+                  incoming = [res];
+                }
+
+                if (incoming.length > 0) {
+                  const normList = normalizeProductsList(incoming);
+                  normList.forEach(np => {
+                    const existingIdx = products.findIndex(p => p.id === np.id || (p.name && np.name && p.name.toLowerCase() === np.name.toLowerCase()));
+                    if (existingIdx !== -1) {
+                      const existing = products[existingIdx];
+                      const oldPrice = Number(existing.currentCupPrice !== undefined ? existing.currentCupPrice : (existing.price || 0));
+                      const newPrice = Number(np.currentCupPrice !== undefined ? np.currentCupPrice : (np.price || 0));
+                      if (oldPrice > 0 && newPrice > 0 && Math.abs(newPrice - oldPrice) > 0.01) {
+                        applyPriceFlash(np.id || existing.id, oldPrice, newPrice);
+                        announcePrice(np.name || existing.name, newPrice, newPrice > oldPrice ? 'up' : 'down');
+                      }
+                      products[existingIdx] = { ...existing, ...np };
+                    } else {
+                      products.push(np);
+                    }
+                  });
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderProducts();
+                  renderTicker();
+                  renderCart();
+                  renderAllSparklines();
+                } else {
+                  fetchProducts();
+                }
+              } catch (e) {
+                fetchProducts();
+              }
+            }
+          });
+          stompSubscriptions.push(subPrices);
+
+          const subConfig = stompClient.subscribe('/topic/pricing-config', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                applyPricingConfiguration(res);
+                if (res.products && Array.isArray(res.products) && res.products.length > 0) {
+                  products = normalizeProductsList(res.products);
+                  products.sort((a, b) => (a.id || 0) - (b.id || 0));
+                  renderProducts();
+                  renderTicker();
+                  renderCart();
+                  renderAllSparklines();
+                } else {
+                  fetchProducts();
+                }
+              } catch (e) {
+                fetchProducts();
+              }
+            }
+          });
+          stompSubscriptions.push(subConfig);
+
+          const subSettle = stompClient.subscribe('/topic/settlement', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (res.type === 'PRICING_TIMING_CHANGED' || res.intervalSeconds) {
+                  updatePricingTimingState(res);
+                }
+              } catch (e) { }
+            }
+            fetchProducts();
+            fetchPricingConfiguration();
+            fetchAllPriceHistories();
+          });
+          stompSubscriptions.push(subSettle);
+
+          const subCrash = stompClient.subscribe('/topic/market-crash', function (message) {
+            if (message && message.body) {
+              try {
+                const res = JSON.parse(message.body);
+                if (res && res.active) {
+                  triggerLocalMarketCrash(res.remainingSeconds || 180);
+                } else if (res && res.active === false) {
+                  stopLocalMarketCrash();
+                } else {
+                  checkMarketCrashStatus();
+                }
+              } catch (e) {
+                checkMarketCrashStatus();
+              }
+            }
+          });
+          stompSubscriptions.push(subCrash);
+
+        }, function () {
+          // On Disconnect / Error
+          isConnectingWS = false;
+          isWsConnected = false;
+          cleanupStompSubscriptions();
+          wsReconnectAttempts++;
+          showNetworkBanner(true);
+          const badge = document.getElementById('backendHealthBadge');
+          if (badge && !isMarketCrashActive) {
+            badge.className = 'status-badge-offline';
+            badge.innerHTML = '<span class="dot" style="background:#f59e0b;"></span> BACKEND CONNECTING';
+          }
+          const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
+          wsReconnectTimer = setTimeout(() => {
+            connectWebSocket();
+          }, backoffDelay);
+        });
+      } catch (err) {
+        isConnectingWS = false;
+        isWsConnected = false;
+        cleanupStompSubscriptions();
+        wsReconnectAttempts++;
+        showNetworkBanner(true);
+        const backoffDelay = Math.min(10000, Math.floor(1000 * Math.pow(1.4, Math.min(wsReconnectAttempts, 6)) + Math.random() * 800));
+        wsReconnectTimer = setTimeout(() => {
+          connectWebSocket();
+        }, backoffDelay);
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      renderAllSparklines();
+    });
+
+    // Startup Initialization
+    if (CONFIG && CONFIG.ADMIN_URL) {
+      const adminLink = document.getElementById('navAdminLink');
+      if (adminLink) adminLink.href = CONFIG.ADMIN_URL;
+    }
+    renderProducts();
+    renderTicker();
+    renderCart();
+    checkBackendHealth();
+    fetchPricingTiming();
+    fetchPricingConfiguration();
+    fetchAllPriceHistories().then(() => {
+      fetchProducts();
+    });
+    checkMarketCrashStatus();
+    connectWebSocket();
+    startSettlementCountdown();
+
+    const adminNavEl = document.getElementById('navAdminLink');
+    if (adminNavEl && window.CONFIG && window.CONFIG.ADMIN_URL) {
+      adminNavEl.href = window.CONFIG.ADMIN_URL;
+    }
+
+    setInterval(checkBackendHealth, 5000);
+    setInterval(() => {
+      fetchProducts();
+      fetchPricingTiming();
+      fetchPricingConfiguration();
+      fetchAllPriceHistories();
+    }, 15000);
+
+    function toggleThemeMode() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || document.body.classList.contains('dark-theme-mode');
+      setCustomerThemeMode(!isDark);
+    }
+
+    function setCustomerThemeMode(isDark) {
+      if (isDark) {
+        document.body.classList.add('dark-theme-mode');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('pubexchange_theme_mode', 'dark');
+      } else {
+        document.body.classList.remove('dark-theme-mode');
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('pubexchange_theme_mode', 'light');
+      }
+      updateThemeButtonUICustomer(isDark);
+      renderAllSparklines();
+    }
+
+    function updateThemeButtonUICustomer(isDark) {
+      const btn = document.getElementById('themeToggleBtnCustomer');
+      if (btn) {
+        btn.innerHTML = isDark ? '🌙 Theme: Dark' : '☀️ Theme: Light';
+      }
+    }
+
+    const savedThemeCust = localStorage.getItem('pubexchange_theme_mode');
+    setCustomerThemeMode(savedThemeCust === 'dark'); // Default to Light theme (#d5e7f0)
+  </script>
 </body>
+
 </html>
