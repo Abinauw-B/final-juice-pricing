@@ -29,42 +29,45 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     Long countOrdersSince(@Param("since") LocalDateTime since);
 
     @Query(value = "SELECT DISTINCT o FROM SalesOrder o WHERE " +
-           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = LOWER(:paymentStatus)) AND " +
+           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = :paymentStatus) AND " +
            "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
            "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
-           "(:search IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR CAST(o.id AS string) = :search OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE LOWER(CONCAT('%', :search, '%'))))",
+           "(:searchPattern IS NULL OR LOWER(o.orderNumber) LIKE :searchPattern OR CAST(o.id AS string) = :searchExact OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE :searchPattern))",
            countQuery = "SELECT COUNT(DISTINCT o) FROM SalesOrder o WHERE " +
-           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = LOWER(:paymentStatus)) AND " +
+           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = :paymentStatus) AND " +
            "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
            "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
-           "(:search IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR CAST(o.id AS string) = :search OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE LOWER(CONCAT('%', :search, '%'))))")
+           "(:searchPattern IS NULL OR LOWER(o.orderNumber) LIKE :searchPattern OR CAST(o.id AS string) = :searchExact OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE :searchPattern))")
     Page<SalesOrder> findWithFilters(
             @Param("paymentStatus") String paymentStatus,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
-            @Param("search") String search,
+            @Param("searchPattern") String searchPattern,
+            @Param("searchExact") String searchExact,
             Pageable pageable);
 
     @Query("SELECT COUNT(DISTINCT o) FROM SalesOrder o WHERE " +
-           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = LOWER(:paymentStatus)) AND " +
+           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = :paymentStatus) AND " +
            "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
            "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
-           "(:search IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR CAST(o.id AS string) = :search OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE LOWER(CONCAT('%', :search, '%'))))")
+           "(:searchPattern IS NULL OR LOWER(o.orderNumber) LIKE :searchPattern OR CAST(o.id AS string) = :searchExact OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE :searchPattern))")
     Long countWithFilters(
             @Param("paymentStatus") String paymentStatus,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
-            @Param("search") String search);
+            @Param("searchPattern") String searchPattern,
+            @Param("searchExact") String searchExact);
 
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM SalesOrder o WHERE " +
-           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = LOWER(:paymentStatus)) AND " +
+           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = :paymentStatus) AND " +
            "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
            "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
-           "(:search IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR CAST(o.id AS string) = :search OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE LOWER(CONCAT('%', :search, '%'))))")
+           "(:searchPattern IS NULL OR LOWER(o.orderNumber) LIKE :searchPattern OR CAST(o.id AS string) = :searchExact OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE :searchPattern))")
     BigDecimal sumTotalAmountWithFilters(
             @Param("paymentStatus") String paymentStatus,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
-            @Param("search") String search);
+            @Param("searchPattern") String searchPattern,
+            @Param("searchExact") String searchExact);
 }
 

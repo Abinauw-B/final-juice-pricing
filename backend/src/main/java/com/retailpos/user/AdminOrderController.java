@@ -107,7 +107,9 @@ public class AdminOrderController {
             @RequestParam(defaultValue = "DESC") String sortDir) {
 
         String cleanedSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        String cleanedStatus = (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) ? paymentStatus.trim() : null;
+        String searchPattern = (cleanedSearch != null) ? "%" + cleanedSearch.toLowerCase() + "%" : null;
+        String searchExact = cleanedSearch;
+        String cleanedStatus = (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) ? paymentStatus.trim().toLowerCase() : null;
 
         DateRange dr = parseDateRange(dateFilter, startDate, endDate);
 
@@ -122,7 +124,7 @@ public class AdminOrderController {
         }
 
         Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(direction, field));
-        Page<SalesOrder> orderPage = salesOrderRepository.findWithFilters(cleanedStatus, dr.start, dr.end, cleanedSearch, pageable);
+        Page<SalesOrder> orderPage = salesOrderRepository.findWithFilters(cleanedStatus, dr.start, dr.end, searchPattern, searchExact, pageable);
 
         Map<String, Object> response = new HashMap<>();
         response.put("content", orderPage.getContent());
@@ -161,16 +163,18 @@ public class AdminOrderController {
             @RequestParam(required = false) String endDate) {
 
         String cleanedSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        String cleanedStatus = (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) ? paymentStatus.trim() : null;
+        String searchPattern = (cleanedSearch != null) ? "%" + cleanedSearch.toLowerCase() + "%" : null;
+        String searchExact = cleanedSearch;
+        String cleanedStatus = (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) ? paymentStatus.trim().toLowerCase() : null;
         DateRange dr = parseDateRange(dateFilter, startDate, endDate);
 
-        Long totalOrders = salesOrderRepository.countWithFilters(cleanedStatus, dr.start, dr.end, cleanedSearch);
-        BigDecimal totalSales = salesOrderRepository.sumTotalAmountWithFilters(cleanedStatus, dr.start, dr.end, cleanedSearch);
+        Long totalOrders = salesOrderRepository.countWithFilters(cleanedStatus, dr.start, dr.end, searchPattern, searchExact);
+        BigDecimal totalSales = salesOrderRepository.sumTotalAmountWithFilters(cleanedStatus, dr.start, dr.end, searchPattern, searchExact);
 
-        Long completedOrders = salesOrderRepository.countWithFilters("COMPLETED", dr.start, dr.end, cleanedSearch);
-        Long pendingOrders = salesOrderRepository.countWithFilters("PENDING", dr.start, dr.end, cleanedSearch);
-        Long failedOrders = salesOrderRepository.countWithFilters("FAILED", dr.start, dr.end, cleanedSearch);
-        Long cancelledOrders = salesOrderRepository.countWithFilters("CANCELLED", dr.start, dr.end, cleanedSearch);
+        Long completedOrders = salesOrderRepository.countWithFilters("completed", dr.start, dr.end, searchPattern, searchExact);
+        Long pendingOrders = salesOrderRepository.countWithFilters("pending", dr.start, dr.end, searchPattern, searchExact);
+        Long failedOrders = salesOrderRepository.countWithFilters("failed", dr.start, dr.end, searchPattern, searchExact);
+        Long cancelledOrders = salesOrderRepository.countWithFilters("cancelled", dr.start, dr.end, searchPattern, searchExact);
 
         BigDecimal avgOrderValue = (totalOrders != null && totalOrders > 0 && totalSales != null)
                 ? totalSales.divide(BigDecimal.valueOf(totalOrders), 2, RoundingMode.HALF_UP)
@@ -199,7 +203,9 @@ public class AdminOrderController {
             @RequestParam(defaultValue = "DESC") String sortDir) {
 
         String cleanedSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        String cleanedStatus = (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) ? paymentStatus.trim() : null;
+        String searchPattern = (cleanedSearch != null) ? "%" + cleanedSearch.toLowerCase() + "%" : null;
+        String searchExact = cleanedSearch;
+        String cleanedStatus = (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) ? paymentStatus.trim().toLowerCase() : null;
         DateRange dr = parseDateRange(dateFilter, startDate, endDate);
 
         Sort.Direction direction = "ASC".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -211,7 +217,7 @@ public class AdminOrderController {
         }
 
         Pageable pageable = PageRequest.of(0, 5000, Sort.by(direction, field));
-        Page<SalesOrder> orderPage = salesOrderRepository.findWithFilters(cleanedStatus, dr.start, dr.end, cleanedSearch, pageable);
+        Page<SalesOrder> orderPage = salesOrderRepository.findWithFilters(cleanedStatus, dr.start, dr.end, searchPattern, searchExact, pageable);
 
         StringBuilder csv = new StringBuilder();
         csv.append("Order ID,Order Number,Date,Time,Total Amount (INR),Payment Method,Payment Status,Items Count,Items Purchased\n");
