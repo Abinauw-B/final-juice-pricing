@@ -114,3 +114,37 @@ Visual, motion, layout, and live-data refinement pass on the full-screen "Circui
 - **Countdown Focal Dominance:** Scaled countdown digits to `clamp(56px, 6.2vw, 84px)`—more than double the size of the headline title—ensuring the time-critical countdown is the undisputed single largest element on screen.
 - **Telemetry & Live Data Strip:** Preserved 4 high-contrast live metric tiles (Max Venue Discount, Floor Lock Price, Pricing Mode, and Floor Availability with real-time active tap count `products.filter(p => !p.soldOut && (p.remainingVolumeMl === undefined || p.remainingVolumeMl > 0)).length`).
 - **Full Card Detail Model:** Maintained per-card tap indicators, avatar boxes with fruit theme gradients, strikethrough base prices with green savings tags (`SAVE ₹X / CUP`), floor lock tags, live tap stock liters & percentage bars with liquid shimmer, and hover-reactive claim buttons.
+
+---
+
+## Radiant Crash Theme (Full Visual Reimagining)
+**Date:** 2026-09-22
+
+### Overview
+A comprehensive visual and motion reimagining of the **Market Crash Takeover Screen** on the Wall LED TV Display (`customer-web/src/led-display.html`). Transforms the previous monochrome dark red panel into a radiant, multi-color gradient theme blending a high-stakes Bloomberg terminal with a neon juice bar at night.
+
+### Color & Motion Architecture
+1. **Shifting Multi-Color Radial Mesh Background (`.crash-overlay`)**
+   - **Deep Base Gradient:** `radial-gradient(ellipse at 50% 15%, rgba(225, 29, 72, 0.38) 0%, rgba(124, 58, 237, 0.28) 45%, rgba(11, 15, 25, 0.97) 85%)`
+   - **Living Atmosphere:** Shifting multi-layer mesh (`@keyframes meshShift`) animating scale and rotation over 20s with `backdrop-filter: blur(20px)`.
+
+2. **Per-Beverage Fruit Identity Tokens (8 Distinct Themes)**
+   - **Fresh Mango Juice (🥭):** Gold-Orange gradient (`#FF6B00` → `#FFD600`), amber border, orange glow.
+   - **Zesty Lemon Juice (🍋):** Yellow-Lime gradient (`#EAB308` → `#84CC16`), yellow border, lime glow.
+   - **Cool Mint Cooler (🌿):** Emerald-Teal gradient (`#059669` → `#06B6D4`), mint border, emerald glow.
+   - **Valencia Orange Juice (🍊):** Deep Orange gradient (`#EA580C` → `#FB923C`), citrus border, orange glow.
+   - **Strawberry Delight (🍓):** Crimson-Pink gradient (`#E11D48` → `#FB7185`), strawberry border, rose glow.
+   - **Royal Grape Juice (🍇):** Violet-Magenta gradient (`#7C3AED` → `#C084FC`), purple border, violet glow.
+   - **Lychee Mist (🌸):** Soft Pink gradient (`#DB2777` → `#F472B6`), rose border, pink glow.
+   - **Thunder Power (⚡):** Electric Blue gradient (`#0284C7` → `#38BDF8`), cyan border, electric blue glow.
+
+3. **Countdown Halo Ring Anchor (`#crashTimerChamber`)**
+   - **Circular SVG Depletion Ring:** `stroke: url(#ringGrad)` with `stroke-dashoffset` dynamically depleting in real-time synced to `crashRemainingSeconds / crashTotalDuration`.
+   - **3-Stage Urgency Glow:**
+     - Calm Gold (>60s)
+     - Warning Orange (30s-60s)
+     - Critical Pulse Red/Magenta (<30s)
+
+4. **Zero-Regression Data & Event Bindings**
+   - Preserved 100% of DOM IDs (`crashOverlay`, `crashTimerChamber`, `crashTimerText`, `crashTimerMins`, `crashTimerSecs`, `crashProgressBar`, `crashMaxDiscountTelem`, `crashFloorLockVal`, `crashActiveTapsVal`, `crashJuiceMatrix`, `pubSirenBtn`).
+   - Retained all WebSocket subscriptions (`/topic/market-crash`, `/topic/orders`), audio siren debouncing, and POS QR claim handlers.
