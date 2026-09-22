@@ -3739,7 +3739,9 @@
         const orderNumber = data.orderNumber || (data.orderId ? `ORD-${data.orderId}` : `ORD-${Date.now()}`);
         const totalAmount = data.totalAmount !== undefined ? data.totalAmount : completedCart.reduce((sum, i) => {
           const liveP = products.find(p => p.id === i.product.id) || i.product;
-          const p = isMarketCrashActive ? (liveP.minCupPrice != null ? liveP.minCupPrice : 20.0) : (liveP.currentCupPrice != null ? liveP.currentCupPrice : 25.0);
+          const p = (i.lockedPrice !== undefined && i.lockedPrice !== null)
+            ? i.lockedPrice
+            : (isMarketCrashActive ? (liveP.minCupPrice != null ? liveP.minCupPrice : 20.0) : (liveP.currentCupPrice != null ? liveP.currentCupPrice : 25.0));
           return sum + (p * i.quantity);
         }, 0);
 
@@ -3772,7 +3774,9 @@
 
         const modalItemsHtml = completedCart.map(i => {
           const liveProduct = products.find(p => p.id === i.product.id) || i.product;
-          const itemPrice = isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : 25.0);
+          const itemPrice = (i.lockedPrice !== undefined && i.lockedPrice !== null)
+            ? i.lockedPrice
+            : (isMarketCrashActive ? (liveProduct.minCupPrice != null ? liveProduct.minCupPrice : 20.0) : (liveProduct.currentCupPrice != null ? liveProduct.currentCupPrice : 25.0));
           const icon = getFruitIcon(liveProduct);
           const imgUrl = getBeverageImage(liveProduct);
           const itemTotal = (itemPrice * i.quantity).toFixed(2);
