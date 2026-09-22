@@ -1736,7 +1736,11 @@
           <span>📑 Reports &amp; Exports</span>
         </div>
 
-        <div class="nav-link" id="tab-audit" onclick="switchTab('audit')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('audit');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-audit" aria-label="System Audit Trail (Shortcut: Alt+8)">
+        <div class="nav-link" id="tab-purchasing-history" onclick="switchTab('purchasing-history')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('purchasing-history');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-purchasing-history" aria-label="Purchasing History (Shortcut: Alt+8)">
+          <span>🛍️ Purchasing History</span>
+        </div>
+
+        <div class="nav-link" id="tab-audit" onclick="switchTab('audit')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('audit');}" role="tab" tabindex="0" aria-selected="false" aria-controls="view-audit" aria-label="System Audit Trail (Shortcut: Alt+9)">
           <span>📜 System Audit Trail</span>
         </div>
 
@@ -3054,6 +3058,174 @@
           </div>
         </div>
 
+        <!-- 9. Purchasing History / Order History Tab -->
+        <div id="view-purchasing-history" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+                <span>🛍️ Purchasing History</span>
+                <span class="status-tag tag-surge" style="font-size: 11px; padding: 3px 10px; font-weight: 700;">REAL-TIME DB SYNC</span>
+              </h1>
+              <p style="color: var(--text-muted);">Real-time financial sales orders, item breakdowns, and payment statuses directly from PostgreSQL database.</p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <button class="btn-primary" style="background: linear-gradient(135deg, #059669, #047857); padding: 8px 16px;" onclick="exportPurchasingHistoryCSV()">
+                📥 Export CSV
+              </button>
+              <button class="btn-primary" style="padding: 8px 16px;" onclick="refreshPurchasingHistory(true)">
+                🔄 Refresh
+              </button>
+            </div>
+          </div>
+
+          <!-- Top Summary Cards -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; box-shadow: var(--shadow-sm);">
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Total Orders</div>
+              <div id="ph-card-total-orders" style="font-size: 28px; font-weight: 800; color: var(--text-main);">--</div>
+              <div style="font-size: 11px; color: var(--accent-cyan); margin-top: 4px;">Lifetime recorded orders</div>
+            </div>
+
+            <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; box-shadow: var(--shadow-sm);">
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Completed Orders</div>
+              <div id="ph-card-completed-orders" style="font-size: 28px; font-weight: 800; color: #10b981;">--</div>
+              <div style="font-size: 11px; color: #10b981; margin-top: 4px;">Successfully settled</div>
+            </div>
+
+            <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; box-shadow: var(--shadow-sm);">
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Pending / Other</div>
+              <div id="ph-card-pending-orders" style="font-size: 28px; font-weight: 800; color: #f59e0b;">--</div>
+              <div style="font-size: 11px; color: #f59e0b; margin-top: 4px;">Pending or processing</div>
+            </div>
+
+            <div class="metric-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; box-shadow: var(--shadow-sm);">
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Total Revenue</div>
+              <div id="ph-card-total-sales" style="font-size: 28px; font-weight: 800; color: #38bdf8;">₹0</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Avg Order: <span id="ph-card-avg-order">₹0</span></div>
+            </div>
+          </div>
+
+          <!-- Filter, Search, and Sorting Bar -->
+          <div class="section-card" style="margin-bottom: 24px; padding: 16px;">
+            <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+              <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; flex: 1; min-width: 280px;">
+                <!-- Search -->
+                <div style="position: relative; flex: 1; min-width: 200px;">
+                  <input type="text" id="phSearchInput" placeholder="🔍 Search Order #, ID, or Product..." 
+                         style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-size: 13px;"
+                         oninput="onPurchasingHistorySearchInput()">
+                </div>
+
+                <!-- Payment Status Filter -->
+                <div>
+                  <select id="phPaymentStatusSelect" onchange="onPurchasingHistoryFilterChange()"
+                          style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-size: 13px;">
+                    <option value="ALL">Payment: All Statuses</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="FAILED">FAILED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                  </select>
+                </div>
+
+                <!-- Date Range Filter -->
+                <div>
+                  <select id="phDateFilterSelect" onchange="onPurchasingHistoryDateFilterChange()"
+                          style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-size: 13px;">
+                    <option value="ALL">Date: All Time</option>
+                    <option value="TODAY">Today</option>
+                    <option value="YESTERDAY">Yesterday</option>
+                    <option value="LAST_7_DAYS">Last 7 Days</option>
+                    <option value="LAST_30_DAYS">Last 30 Days</option>
+                    <option value="CUSTOM">Custom Date Range</option>
+                  </select>
+                </div>
+
+                <!-- Custom Date Container (hidden by default) -->
+                <div id="phCustomDateContainer" style="display: none; gap: 8px; align-items: center;">
+                  <input type="date" id="phStartDateInput" onchange="onPurchasingHistoryFilterChange()"
+                         style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-size: 12px;">
+                  <span style="color: var(--text-muted); font-size: 12px;">to</span>
+                  <input type="date" id="phEndDateInput" onchange="onPurchasingHistoryFilterChange()"
+                         style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-size: 12px;">
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <!-- Sort Selector -->
+                <div>
+                  <select id="phSortSelect" onchange="onPurchasingHistoryFilterChange()"
+                          style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-size: 13px;">
+                    <option value="createdAt_DESC">Sort: Newest First</option>
+                    <option value="createdAt_ASC">Sort: Oldest First</option>
+                    <option value="totalAmount_DESC">Sort: Highest Amount</option>
+                    <option value="totalAmount_ASC">Sort: Lowest Amount</option>
+                  </select>
+                </div>
+
+                <!-- Auto Refresh Selector -->
+                <div>
+                  <select id="phAutoRefreshSelect" onchange="togglePurchasingHistoryAutoRefresh()"
+                          style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-size: 13px;">
+                    <option value="30000">Auto Refresh: 30s</option>
+                    <option value="60000" selected>Auto Refresh: 60s</option>
+                    <option value="0">Auto Refresh: Off</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Orders Data Table Card -->
+          <div class="section-card" style="padding: 0; overflow: hidden; margin-bottom: 20px;">
+            <div style="overflow-x: auto;">
+              <table class="table-custom" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: rgba(255,255,255,0.03); text-align: left;">
+                    <th style="padding: 14px 16px;">Order ID</th>
+                    <th style="padding: 14px 16px;">Order Number</th>
+                    <th style="padding: 14px 16px;">Date &amp; Time</th>
+                    <th style="padding: 14px 16px;">Items Purchased</th>
+                    <th style="padding: 14px 16px; text-align: right;">Total Amount</th>
+                    <th style="padding: 14px 16px; text-align: center;">Payment Status</th>
+                    <th style="padding: 14px 16px; text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="phTableBody">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Table Footer & Pagination -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: rgba(0,0,0,0.1); border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px;">
+              <div style="font-size: 13px; color: var(--text-muted);" id="phPaginationInfo">
+                Showing orders 0 - 0 of 0
+              </div>
+
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <label style="font-size: 12px; color: var(--text-muted); margin-right: 4px;">Per Page:</label>
+                <select id="phPageSizeSelect" onchange="onPurchasingHistoryPageSizeChange()"
+                        style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-subtle); color: var(--text-main); font-size: 12px; margin-right: 12px;">
+                  <option value="10">10</option>
+                  <option value="20" selected>20</option>
+                  <option value="50">50</option>
+                </select>
+
+                <button id="phPrevPageBtn" class="btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="changePurchasingHistoryPage(-1)" disabled>
+                  ◀ Previous
+                </button>
+                <span id="phCurrentPageBadge" style="font-size: 13px; font-weight: 700; color: var(--text-main); padding: 4px 10px; background: var(--bg-subtle); border-radius: 6px; border: 1px solid var(--border-color);">
+                  Page 1
+                </span>
+                <button id="phNextPageBtn" class="btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="changePurchasingHistoryPage(1)" disabled>
+                  Next ▶
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </main>
     </div>
   </div>
@@ -3634,6 +3806,84 @@
           <button type="submit" id="btnUpdatePassword" class="btn-primary">Update Password</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Order Details Popup Modal -->
+  <div id="orderDetailsModal" style="display: none;" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="orderDetailsModalTitle">
+    <div style="background: var(--bg-card, #0f172a); border: 1px solid var(--border-color, rgba(255,255,255,0.15)); border-radius: 16px; max-width: 650px; width: 92%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.1)); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+        <div>
+          <h2 id="orderDetailsModalTitle" style="font-size: 20px; font-weight: 800; color: var(--text-main, #f8fafc); margin: 0;">Order Details</h2>
+          <div id="modalOrderNumberHeader" style="font-size: 13px; font-weight: 700; color: var(--accent-cyan, #38bdf8); margin-top: 2px;">#ORD-XXXX</div>
+        </div>
+        <button onclick="closeOrderDetailsModal()" style="background: transparent; border: none; font-size: 22px; color: var(--text-muted, #94a3b8); cursor: pointer; padding: 4px 8px; border-radius: 8px;" aria-label="Close modal">✕</button>
+      </div>
+
+      <div style="padding: 24px; overflow-y: auto; flex: 1;">
+        <!-- Order Header Overview Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 20px; background: var(--bg-subtle, rgba(255,255,255,0.03)); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color, rgba(255,255,255,0.08));">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Order ID</div>
+            <div id="modalOrderId" style="font-size: 15px; font-weight: 800; color: var(--text-main); margin-top: 4px;">--</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Date &amp; Time</div>
+            <div id="modalOrderDateTime" style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-top: 4px;">--</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Payment Status</div>
+            <div id="modalOrderPaymentStatus" style="margin-top: 4px;">--</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Payment Method</div>
+            <div id="modalOrderPaymentMethod" style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">CASH</div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">Purchased Items Breakdown</h3>
+        <div style="border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="background: rgba(255,255,255,0.05); text-align: left;">
+                <th style="padding: 10px 14px; color: var(--text-muted);">Product Name</th>
+                <th style="padding: 10px 14px; color: var(--text-muted); text-align: center;">Size</th>
+                <th style="padding: 10px 14px; color: var(--text-muted); text-align: center;">Qty</th>
+                <th style="padding: 10px 14px; color: var(--text-muted); text-align: right;">Unit Price</th>
+                <th style="padding: 10px 14px; color: var(--text-muted); text-align: right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="modalOrderItemsBody">
+              <!-- Itemized order lines -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Financial Summary Breakdown -->
+        <div style="background: var(--bg-subtle, rgba(255,255,255,0.03)); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color, rgba(255,255,255,0.08));">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-muted);">
+            <span>Subtotal:</span>
+            <span id="modalOrderSubtotal" style="font-weight: 700; color: var(--text-main);">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-muted);">
+            <span>Discount:</span>
+            <span id="modalOrderDiscount" style="font-weight: 700; color: #10b981;">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--text-muted);">
+            <span>Tax Amount:</span>
+            <span id="modalOrderTax" style="font-weight: 700; color: var(--text-main);">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border-color, rgba(255,255,255,0.15)); font-size: 16px; font-weight: 800; color: var(--text-main);">
+            <span>Total Amount Paid:</span>
+            <span id="modalOrderTotal" style="color: #38bdf8; font-size: 20px;">₹0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 16px 24px; border-top: 1px solid var(--border-color, rgba(255,255,255,0.1)); display: flex; justify-content: flex-end; background: rgba(0,0,0,0.1);">
+        <button class="btn-secondary" onclick="closeOrderDetailsModal()" style="padding: 8px 20px;">Close</button>
+      </div>
     </div>
   </div>
 
@@ -5020,7 +5270,7 @@
         }
         announceToScreenReader(`Switched to ${tabName.toUpperCase()} view`);
 
-        ['dashboard', 'crash', 'batches', 'pricing', 'simulator', 'users', 'reports', 'audit', 'settings'].forEach(t => {
+        ['dashboard', 'crash', 'batches', 'pricing', 'simulator', 'users', 'reports', 'audit', 'settings', 'purchasing-history'].forEach(t => {
           const view = document.getElementById(`view-${t}`);
           if (view) view.style.display = (t === tabName) ? 'block' : 'none';
         });
@@ -5040,6 +5290,7 @@
         if (tabName === 'reports') { renderReports(); }
         if (tabName === 'audit') { loadAuditLogs(); }
         if (tabName === 'settings') { loadPlatformConfig(); }
+        if (tabName === 'purchasing-history') { loadPurchasingHistory(); loadPurchasingHistorySummary(); }
       } catch (err) {
         console.error('Error switching tab:', err);
       }
