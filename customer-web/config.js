@@ -27,17 +27,17 @@
   }
 
   // 3. Injected environment override (e.g. window.__ENV__.API_BASE_URL)
-  const envApiUrl = (global.__ENV__ && global.__ENV__.API_BASE_URL) || global.BACKEND_API_URL;
+  const urlParams = (typeof location !== 'undefined' && location.search) ? new URLSearchParams(location.search) : null;
+  const queryApiUrl = urlParams ? urlParams.get('api_url') : null;
 
-  // 4. Determine base backend URL strictly from environment or origin defaults
-  let rawBaseUrl = (envApiUrl || '').trim();
-
-  if (!rawBaseUrl) {
-    if (isLocalhost) {
-      rawBaseUrl = 'http://localhost:8088';
-    } else {
-      rawBaseUrl = (global.__ENV__ && (global.__ENV__.PROD_BACKEND_URL || global.__ENV__.API_BASE_URL)) || 'https://juice-pricing-backend.onrender.com';
-    }
+  // 4. Determine base backend URL: Localhost takes priority when developing locally unless query override is supplied
+  let rawBaseUrl = '';
+  if (queryApiUrl) {
+    rawBaseUrl = queryApiUrl.trim();
+  } else if (isLocalhost) {
+    rawBaseUrl = 'http://localhost:8088';
+  } else {
+    rawBaseUrl = ((global.__ENV__ && (global.__ENV__.PROD_BACKEND_URL || global.__ENV__.API_BASE_URL)) || global.BACKEND_API_URL || 'https://juice-pricing-backend.onrender.com').trim();
   }
 
   // Normalize: strip trailing slashes
