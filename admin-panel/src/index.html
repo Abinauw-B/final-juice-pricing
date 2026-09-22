@@ -9022,7 +9022,415 @@
             });
           }
         }
-      } catch (e) { }
+    }
+
+    // ==========================================
+    // PURCHASING HISTORY MODULE (Section 14)
+    // ==========================================
+
+    let phCurrentPage = 0;
+    let phPageSize = 20;
+    let phTotalPages = 1;
+    let phTotalElements = 0;
+    let phSearchDebounceTimer = null;
+    let phAutoRefreshTimer = null;
+
+    function getPurchasingHistoryQueryParams(includePagination = true) {
+      const params = new URLSearchParams();
+      if (includePagination) {
+        params.append('page', phCurrentPage);
+        params.append('size', phPageSize);
+      }
+
+      const searchVal = document.getElementById('phSearchInput')?.value?.trim();
+      if (searchVal) params.append('search', searchVal);
+
+      const statusVal = document.getElementById('phPaymentStatusSelect')?.value;
+      if (statusVal && statusVal !== 'ALL') params.append('paymentStatus', statusVal);
+
+      const dateFilterVal = document.getElementById('phDateFilterSelect')?.value;
+      if (dateFilterVal && dateFilterVal !== 'ALL') {
+        params.append('dateFilter', dateFilterVal);
+        if (dateFilterVal === 'CUSTOM') {
+          const startDate = document.getElementById('phStartDateInput')?.value;
+          const endDate = document.getElementById('phEndDateInput')?.value;
+          if (startDate) params.append('startDate', startDate);
+          if (endDate) params.append('endDate', endDate);
+        }
+      }
+
+      const sortVal = document.getElementById('phSortSelect')?.value || 'createdAt_DESC';
+      const [sortBy, sortDir] = sortVal.split('_');
+      if (sortBy) params.append('sortBy', sortBy);
+      if (sortDir) params.append('sortDir', sortDir);
+
+      return params.toString();
+    }
+
+    async function loadPurchasingHistory(page = phCurrentPage) {
+      phCurrentPage = page;
+      const tbody = document.getElementById('phTableBody');
+      if (!tbody) return;
+
+      // Show professional skeleton loader
+      tbody.innerHTML = [1, 2, 3, 4, 5].map(() => `
+        <tr style="border-bottom: 1px solid var(--border-color); opacity: 0.6;">
+          <td style="padding: 14px 16px;"><div style="height: 16px; width: 50px; background: var(--bg-subtle); border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td style="padding: 14px 16px;"><div style="height: 16px; width: 140px; background: var(--bg-subtle); border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td style="padding: 14px 16px;"><div style="height: 16px; width: 110px; background: var(--bg-subtle); border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td style="padding: 14px 16px;"><div style="height: 16px; width: 160px; background: var(--bg-subtle); border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td style="padding: 14px 16px; text-align: right;"><div style="height: 16px; width: 60px; background: var(--bg-subtle); border-radius: 4px; margin-left: auto; animation: pulse 1.5s infinite;"></div></td>
+          <td style="padding: 14px 16px; text-align: center;"><div style="height: 22px; width: 90px; background: var(--bg-subtle); border-radius: 12px; margin: 0 auto; animation: pulse 1.5s infinite;"></div></td>
+          <td style="padding: 14px 16px; text-align: center;"><div style="height: 28px; width: 75px; background: var(--bg-subtle); border-radius: 6px; margin: 0 auto; animation: pulse 1.5s infinite;"></div></td>
+        </tr>
+      `).join('');
+
+      const queryStr = getPurchasingHistoryQueryParams(true);
+      let res;
+      try {
+        res = await apiFetch(`/admin/orders?${queryStr}`);
+        if (!res.ok && res.status === 404) {
+          res = await apiFetch(`/orders?${queryStr}`);
+        }
+      } catch (err) {
+        try {
+          res = await apiFetch(`/orders?${queryStr}`);
+        } catch (e2) {
+          res = null;
+        }
+      }
+
+      if (!res || !res.ok) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="padding: 40px; text-align: center;">
+              <div style="font-size: 32px; margin-bottom: 12px;">⚠️</div>
+              <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Unable to load purchasing history</div>
+              <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">There was a network or server communication error. Please try again.</div>
+              <button class="btn-primary" style="padding: 6px 18px; font-size: 13px;" onclick="loadPurchasingHistory()">🔄 Retry Loading</button>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        data = null;
+      }
+
+      let orders = [];
+      if (data && Array.isArray(data.content)) {
+        orders = data.content;
+        phTotalPages = data.totalPages || 1;
+        phTotalElements = data.totalElements || orders.length;
+      } else if (Array.isArray(data)) {
+        orders = data;
+        phTotalPages = 1;
+        phTotalElements = orders.length;
+      }
+
+      if (orders.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="padding: 40px; text-align: center;">
+              <div style="font-size: 32px; margin-bottom: 12px;">🔍</div>
+              <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">No orders found</div>
+              <div style="font-size: 13px; color: var(--text-muted);">No purchasing history orders matched your active search or filter criteria.</div>
+            </td>
+          </tr>
+        `;
+        updatePurchasingHistoryPaginationUI(0, 0, 0);
+        return;
+      }
+
+      tbody.innerHTML = orders.map(order => {
+        let dateStr = '--';
+        let timeStr = '--';
+        if (order.createdAt) {
+          try {
+            const d = new Date(order.createdAt);
+            dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+          } catch (e) {}
+        }
+
+        let itemsSummary = 'No items';
+        if (order.items && order.items.length > 0) {
+          itemsSummary = order.items.map(i => `${escapeHtml(i.productName || 'Juice')} × ${i.quantity}`).join(', ');
+          if (itemsSummary.length > 45) {
+            itemsSummary = itemsSummary.substring(0, 42) + '...';
+          }
+        }
+
+        const totalFormatted = (order.totalAmount !== null && order.totalAmount !== undefined)
+          ? '₹' + Number(order.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          : '₹0.00';
+
+        let statusBadge = '<span class="status-tag tag-surge" style="padding: 3px 10px; font-size: 11px;">COMPLETED</span>';
+        const status = (order.paymentStatus || 'COMPLETED').toUpperCase();
+        if (status === 'PENDING') {
+          statusBadge = '<span class="status-tag" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 10px; font-size: 11px;">PENDING</span>';
+        } else if (status === 'FAILED' || status === 'CANCELLED') {
+          statusBadge = '<span class="status-tag" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 3px 10px; font-size: 11px;">' + status + '</span>';
+        }
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.15s ease;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 14px 16px; font-weight: 800; font-family: monospace; color: var(--text-muted);">#${order.id}</td>
+            <td style="padding: 14px 16px; font-weight: 700; color: var(--text-main); font-family: monospace;">${escapeHtml(order.orderNumber || '')}</td>
+            <td style="padding: 14px 16px; font-size: 12px; color: var(--text-main);">
+              <div style="font-weight: 700;">${dateStr}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${timeStr}</div>
+            </td>
+            <td style="padding: 14px 16px; font-size: 13px; color: var(--text-main);" title="${order.items ? escapeHtml(order.items.map(i => `${i.productName} × ${i.quantity}`).join(', ')) : ''}">
+              ${itemsSummary}
+            </td>
+            <td style="padding: 14px 16px; font-weight: 800; text-align: right; color: #38bdf8; font-size: 15px;">
+              ${totalFormatted}
+            </td>
+            <td style="padding: 14px 16px; text-align: center;">
+              ${statusBadge}
+            </td>
+            <td style="padding: 14px 16px; text-align: center;">
+              <button class="btn-secondary" style="padding: 5px 12px; font-size: 12px; font-weight: 700;" onclick="openOrderDetailsModal(${order.id})">
+                👁️ View
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const startIdx = phCurrentPage * phPageSize + 1;
+      const endIdx = Math.min((phCurrentPage + 1) * phPageSize, phTotalElements);
+      updatePurchasingHistoryPaginationUI(startIdx, endIdx, phTotalElements);
+    }
+
+    function updatePurchasingHistoryPaginationUI(start, end, total) {
+      const infoEl = document.getElementById('phPaginationInfo');
+      if (infoEl) {
+        infoEl.textContent = total > 0 ? `Showing orders ${start} - ${end} of ${total}` : `Showing 0 orders`;
+      }
+
+      const pageBadge = document.getElementById('phCurrentPageBadge');
+      if (pageBadge) {
+        pageBadge.textContent = `Page ${phCurrentPage + 1} of ${Math.max(1, phTotalPages)}`;
+      }
+
+      const prevBtn = document.getElementById('phPrevPageBtn');
+      if (prevBtn) prevBtn.disabled = (phCurrentPage <= 0);
+
+      const nextBtn = document.getElementById('phNextPageBtn');
+      if (nextBtn) nextBtn.disabled = (phCurrentPage >= phTotalPages - 1);
+    }
+
+    function changePurchasingHistoryPage(delta) {
+      const newPage = phCurrentPage + delta;
+      if (newPage >= 0 && newPage < phTotalPages) {
+        loadPurchasingHistory(newPage);
+      }
+    }
+
+    function onPurchasingHistoryPageSizeChange() {
+      const select = document.getElementById('phPageSizeSelect');
+      if (select) {
+        phPageSize = parseInt(select.value, 10) || 20;
+        loadPurchasingHistory(0);
+      }
+    }
+
+    async function loadPurchasingHistorySummary() {
+      const queryStr = getPurchasingHistoryQueryParams(false);
+      let res;
+      try {
+        res = await apiFetch(`/admin/orders/summary?${queryStr}`);
+        if (!res.ok) res = await apiFetch(`/orders/summary?${queryStr}`);
+      } catch (e) {
+        try { res = await apiFetch(`/orders/summary?${queryStr}`); } catch (e2) { res = null; }
+      }
+
+      if (!res || !res.ok) return;
+
+      try {
+        const summary = await res.json();
+        const totalOrdersEl = document.getElementById('ph-card-total-orders');
+        if (totalOrdersEl) totalOrdersEl.textContent = Number(summary.totalOrders || 0).toLocaleString();
+
+        const completedOrdersEl = document.getElementById('ph-card-completed-orders');
+        if (completedOrdersEl) completedOrdersEl.textContent = Number(summary.completedOrders || 0).toLocaleString();
+
+        const pendingOrdersEl = document.getElementById('ph-card-pending-orders');
+        if (pendingOrdersEl) pendingOrdersEl.textContent = Number((summary.pendingOrders || 0) + (summary.failedOrders || 0) + (summary.cancelledOrders || 0)).toLocaleString();
+
+        const totalSalesEl = document.getElementById('ph-card-total-sales');
+        if (totalSalesEl) {
+          totalSalesEl.textContent = '₹' + Number(summary.totalSales || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        const avgOrderEl = document.getElementById('ph-card-avg-order');
+        if (avgOrderEl) {
+          avgOrderEl.textContent = '₹' + Number(summary.averageOrderValue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+      } catch (e) {
+        console.error('Error parsing order summary:', e);
+      }
+    }
+
+    function onPurchasingHistoryFilterChange() {
+      loadPurchasingHistory(0);
+      loadPurchasingHistorySummary();
+    }
+
+    function onPurchasingHistorySearchInput() {
+      if (phSearchDebounceTimer) clearTimeout(phSearchDebounceTimer);
+      phSearchDebounceTimer = setTimeout(() => {
+        onPurchasingHistoryFilterChange();
+      }, 350);
+    }
+
+    function onPurchasingHistoryDateFilterChange() {
+      const select = document.getElementById('phDateFilterSelect');
+      const customContainer = document.getElementById('phCustomDateContainer');
+      if (select && customContainer) {
+        if (select.value === 'CUSTOM') {
+          customContainer.style.display = 'inline-flex';
+        } else {
+          customContainer.style.display = 'none';
+          onPurchasingHistoryFilterChange();
+        }
+      }
+    }
+
+    function refreshPurchasingHistory(userTriggered = false) {
+      loadPurchasingHistory();
+      loadPurchasingHistorySummary();
+      if (userTriggered) {
+        showToast('🔄 Purchasing History Refreshed', 'info');
+      }
+    }
+
+    function togglePurchasingHistoryAutoRefresh() {
+      if (phAutoRefreshTimer) clearInterval(phAutoRefreshTimer);
+      const select = document.getElementById('phAutoRefreshSelect');
+      const intervalMs = select ? parseInt(select.value, 10) : 60000;
+      if (intervalMs > 0) {
+        phAutoRefreshTimer = setInterval(() => {
+          if (activeAdminTab === 'purchasing-history') {
+            loadPurchasingHistory();
+            loadPurchasingHistorySummary();
+          }
+        }, intervalMs);
+      }
+    }
+
+    async function openOrderDetailsModal(orderId) {
+      const modal = document.getElementById('orderDetailsModal');
+      if (!modal) return;
+
+      modal.style.display = 'flex';
+      document.getElementById('modalOrderNumberHeader').textContent = `Loading Order #${orderId}...`;
+      document.getElementById('modalOrderId').textContent = `--`;
+      document.getElementById('modalOrderDateTime').textContent = `--`;
+      document.getElementById('modalOrderPaymentStatus').innerHTML = `--`;
+      document.getElementById('modalOrderPaymentMethod').textContent = `--`;
+      document.getElementById('modalOrderItemsBody').innerHTML = `
+        <tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading line items...</td></tr>
+      `;
+      document.getElementById('modalOrderSubtotal').textContent = `₹0.00`;
+      document.getElementById('modalOrderDiscount').textContent = `₹0.00`;
+      document.getElementById('modalOrderTax').textContent = `₹0.00`;
+      document.getElementById('modalOrderTotal').textContent = `₹0.00`;
+
+      let res;
+      try {
+        res = await apiFetch(`/admin/orders/${orderId}`);
+        if (!res.ok) res = await apiFetch(`/orders/${orderId}`);
+      } catch (e) {
+        try { res = await apiFetch(`/orders/${orderId}`); } catch (e2) { res = null; }
+      }
+
+      if (!res || !res.ok) {
+        document.getElementById('modalOrderNumberHeader').textContent = `Order #${orderId}`;
+        document.getElementById('modalOrderItemsBody').innerHTML = `
+          <tr><td colspan="5" style="padding: 20px; text-align: center; color: #ef4444;">Failed to load order details.</td></tr>
+        `;
+        return;
+      }
+
+      try {
+        const order = await res.json();
+        document.getElementById('modalOrderNumberHeader').textContent = `#${order.orderNumber || ('ORD-' + order.id)}`;
+        document.getElementById('modalOrderId').textContent = `#${order.id}`;
+
+        let dt = '--';
+        if (order.createdAt) {
+          try {
+            const d = new Date(order.createdAt);
+            dt = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' +
+                 d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          } catch (e) {}
+        }
+        document.getElementById('modalOrderDateTime').textContent = dt;
+
+        const status = (order.paymentStatus || 'COMPLETED').toUpperCase();
+        let statusBadge = '<span class="status-tag tag-surge" style="padding: 2px 8px; font-size: 11px;">COMPLETED</span>';
+        if (status === 'PENDING') {
+          statusBadge = '<span class="status-tag" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 8px; font-size: 11px;">PENDING</span>';
+        } else if (status === 'FAILED' || status === 'CANCELLED') {
+          statusBadge = '<span class="status-tag" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 2px 8px; font-size: 11px;">' + status + '</span>';
+        }
+        document.getElementById('modalOrderPaymentStatus').innerHTML = statusBadge;
+        document.getElementById('modalOrderPaymentMethod').textContent = (order.paymentMethod || 'CASH').toUpperCase();
+
+        const items = order.items || [];
+        if (items.length === 0) {
+          document.getElementById('modalOrderItemsBody').innerHTML = `
+            <tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--text-muted);">No item breakdown available for this order.</td></tr>
+          `;
+        } else {
+          document.getElementById('modalOrderItemsBody').innerHTML = items.map(item => `
+            <tr style="border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.05));">
+              <td style="padding: 10px 14px; font-weight: 700; color: var(--text-main);">
+                ${escapeHtml(item.productName || 'Juice Product')}
+                <span style="display: block; font-size: 11px; font-weight: 400; color: var(--text-muted);">Product ID: ${item.productId || '--'}</span>
+              </td>
+              <td style="padding: 10px 14px; text-align: center; color: var(--text-muted);">${item.cupSizeMl ? item.cupSizeMl + ' ml' : 'Standard'}</td>
+              <td style="padding: 10px 14px; text-align: center; font-weight: 800; color: var(--text-main);">${item.quantity || 1}</td>
+              <td style="padding: 10px 14px; text-align: right; color: var(--text-main);">₹${Number(item.unitPrice || 0).toFixed(2)}</td>
+              <td style="padding: 10px 14px; text-align: right; font-weight: 800; color: #38bdf8;">₹${Number(item.totalPrice || (item.quantity * item.unitPrice) || 0).toFixed(2)}</td>
+            </tr>
+          `).join('');
+        }
+
+        const subtotal = order.subtotal !== null && order.subtotal !== undefined ? Number(order.subtotal) : Number(order.totalAmount || 0);
+        const discount = Number(order.discountAmount || 0);
+        const tax = Number(order.taxAmount || 0);
+        const total = Number(order.totalAmount || 0);
+
+        document.getElementById('modalOrderSubtotal').textContent = '₹' + subtotal.toFixed(2);
+        document.getElementById('modalOrderDiscount').textContent = '₹' + discount.toFixed(2);
+        document.getElementById('modalOrderTax').textContent = '₹' + tax.toFixed(2);
+        document.getElementById('modalOrderTotal').textContent = '₹' + total.toFixed(2);
+
+      } catch (e) {
+        console.error('Error opening order details:', e);
+      }
+    }
+
+    function closeOrderDetailsModal() {
+      const modal = document.getElementById('orderDetailsModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function exportPurchasingHistoryCSV() {
+      const queryStr = getPurchasingHistoryQueryParams(false);
+      const apiHost = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
+      const exportUrl = `${apiHost}/api/admin/orders/export?${queryStr}`;
+      
+      showToast('📥 Exporting Purchasing History CSV...', 'info');
+      window.open(exportUrl, '_blank');
     }
 
     function populateSimulatorFlavours() {
@@ -10155,6 +10563,10 @@
           const subOrders = stompClient.subscribe('/topic/orders', function (message) {
             scheduleBatchWsRefresh({ dashboard: true, batches: true, prices: true });
             loadBatches();
+            if (activeAdminTab === 'purchasing-history') {
+              loadPurchasingHistory();
+              loadPurchasingHistorySummary();
+            }
           });
           adminStompSubscriptions.push(subOrders);
 
