@@ -1,12 +1,12 @@
 package com.retailpos.user;
 
 import com.retailpos.domain.SalesOrder;
-import com.retailpos.domain.SalesOrderItem;
 import com.retailpos.domain.SalesOrderRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -106,12 +106,8 @@ public class AdminOrderController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
 
-        String cleanedSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        String searchPattern = (cleanedSearch != null) ? "%" + cleanedSearch.toLowerCase() + "%" : null;
-        String searchExact = cleanedSearch;
-        String cleanedStatus = (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) ? paymentStatus.trim().toLowerCase() : null;
-
         DateRange dr = parseDateRange(dateFilter, startDate, endDate);
+        Specification<SalesOrder> spec = SalesOrderRepository.buildSpecification(paymentStatus, dr.start, dr.end, search);
 
         Sort.Direction direction = "ASC".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
         String field = "id";
@@ -124,7 +120,7 @@ public class AdminOrderController {
         }
 
         Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(direction, field));
-        Page<SalesOrder> orderPage = salesOrderRepository.findWithFilters(cleanedStatus, dr.start, dr.end, searchPattern, searchExact, pageable);
+        Page<SalesOrder> orderPage = salesOrderRepository.findAll(spec, pageable);
 
         Map<String, Object> response = new HashMap<>();
         response.put("content", orderPage.getContent());
@@ -162,31 +158,40 @@ public class AdminOrderController {
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
 
-        String cleanedSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        String searchPattern = (cleanedSearch != null) ? "%" + cleanedSearch.toLowerCase() + "%" : null;
-        String searchExact = cleanedSearch;
-        String cleanedStatus = (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) ? paymentStatus.trim().toLowerCase() : null;
         DateRange dr = parseDateRange(dateFilter, startDate, endDate);
 
-        Long totalOrders = salesOrderRepository.countWithFilters(cleanedStatus, dr.start, dr.end, searchPattern, searchExact);
-        BigDecimal totalSales = salesOrderRepository.sumTotalAmountWithFilters(cleanedStatus, dr.start, dr.end, searchPattern, searchExact);
+        Specification<SalesOrder> baseSpec = SalesOrderRepository.buildSpecification(paymentStatus, dr.start, dr.end, search);
+        Long totalOrders = salesOrderRepository.count(baseSpec);
 
-        Long completedOrders = salesOrderRepository.countWithFilters("completed", dr.start, dr.end, searchPattern, searchExact);
-        Long pendingOrders = salesOrderRepository.countWithFilters("pending", dr.start, dr.end, searchPattern, searchExact);
-        Long failedOrders = salesOrderRepository.countWithFilters("failed", dr.start, dr.end, searchPattern, searchExact);
-        Long cancelledOrders = salesOrderRepository.countWithFilters("cancelled", dr.start, dr.end, searchPattern, searchExact);
+        Specification<SalesOrder> completedSpec = SalesOrderRepository.buildSpecification("COMPLETED", dr.start, dr.end, search);
+        Long completedOrders = salesOrderRepository.count(completedSpec);
 
-        BigDecimal avgOrderValue = (totalOrders != null && totalOrders > 0 && totalSales != null)
+        Specification<SalesOrder> pendingSpec = SalesOrderRepository.buildSpecification("PENDING", dr.start, dr.end, search);
+        Long pendingOrders = salesOrderRepository.count(pendingSpec);
+
+        Specification<SalesOrder> failedSpec = SalesOrderRepository.buildSpecification("FAILED", dr.start, dr.end, search);
+        Long failedOrders = salesOrderRepository.count(failedSpec);
+
+        Specification<SalesOrder> cancelledSpec = SalesOrderRepository.buildSpecification("CANCELLED", dr.start, dr.end, search);
+        Long cancelledOrders = salesOrderRepository.count(cancelledSpec);
+
+        List<SalesOrder> filteredOrders = salesOrderRepository.findAll(baseSpec);
+        BigDecimal totalSales = filteredOrders.stream()
+                .map(SalesOrder::getTotalAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal avgOrderValue = (totalOrders > 0 && totalSales.compareTo(BigDecimal.ZERO) > 0)
                 ? totalSales.divide(BigDecimal.valueOf(totalOrders), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
         Map<String, Object> summary = new HashMap<>();
-        summary.put("totalOrders", totalOrders != null ? totalOrders : 0L);
-        summary.put("completedOrders", completedOrders != null ? completedOrders : 0L);
-        summary.put("pendingOrders", pendingOrders != null ? pendingOrders : 0L);
-        summary.put("failedOrders", failedOrders != null ? failedOrders : 0L);
-        summary.put("cancelledOrders", cancelledOrders != null ? cancelledOrders : 0L);
-        summary.put("totalSales", totalSales != null ? totalSales : BigDecimal.ZERO);
+        summary.put("totalOrders", totalOrders);
+        summary.put("completedOrders", completedOrders);
+        summary.put("pendingOrders", pendingOrders);
+        summary.put("failedOrders", failedOrders);
+        summary.put("cancelledOrders", cancelledOrders);
+        summary.put("totalSales", totalSales);
         summary.put("averageOrderValue", avgOrderValue);
 
         return ResponseEntity.ok(summary);
@@ -202,11 +207,8 @@ public class AdminOrderController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
 
-        String cleanedSearch = (search != null && !search.isBlank()) ? search.trim() : null;
-        String searchPattern = (cleanedSearch != null) ? "%" + cleanedSearch.toLowerCase() + "%" : null;
-        String searchExact = cleanedSearch;
-        String cleanedStatus = (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) ? paymentStatus.trim().toLowerCase() : null;
         DateRange dr = parseDateRange(dateFilter, startDate, endDate);
+        Specification<SalesOrder> spec = SalesOrderRepository.buildSpecification(paymentStatus, dr.start, dr.end, search);
 
         Sort.Direction direction = "ASC".equalsIgnoreCase(sortDir) ? Sort.Direction.ASC : Sort.Direction.DESC;
         String field = "id";
@@ -217,7 +219,7 @@ public class AdminOrderController {
         }
 
         Pageable pageable = PageRequest.of(0, 5000, Sort.by(direction, field));
-        Page<SalesOrder> orderPage = salesOrderRepository.findWithFilters(cleanedStatus, dr.start, dr.end, searchPattern, searchExact, pageable);
+        Page<SalesOrder> orderPage = salesOrderRepository.findAll(spec, pageable);
 
         StringBuilder csv = new StringBuilder();
         csv.append("Order ID,Order Number,Date,Time,Total Amount (INR),Payment Method,Payment Status,Items Count,Items Purchased\n");

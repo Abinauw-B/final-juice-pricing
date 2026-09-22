@@ -1,18 +1,19 @@
 package com.retailpos.domain;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import jakarta.persistence.criteria.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
+public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long>, JpaSpecificationExecutor<SalesOrder> {
 
     List<SalesOrder> findByCreatedAtAfter(LocalDateTime since);
 
@@ -28,46 +29,46 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     @Query("SELECT COUNT(so) FROM SalesOrder so WHERE so.createdAt >= :since")
     Long countOrdersSince(@Param("since") LocalDateTime since);
 
-    @Query(value = "SELECT DISTINCT o FROM SalesOrder o WHERE " +
-           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = :paymentStatus) AND " +
-           "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
-           "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
-           "(:searchPattern IS NULL OR LOWER(o.orderNumber) LIKE :searchPattern OR CAST(o.id AS string) = :searchExact OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE :searchPattern))",
-           countQuery = "SELECT COUNT(DISTINCT o) FROM SalesOrder o WHERE " +
-           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = :paymentStatus) AND " +
-           "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
-           "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
-           "(:searchPattern IS NULL OR LOWER(o.orderNumber) LIKE :searchPattern OR CAST(o.id AS string) = :searchExact OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE :searchPattern))")
-    Page<SalesOrder> findWithFilters(
-            @Param("paymentStatus") String paymentStatus,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
-            @Param("searchPattern") String searchPattern,
-            @Param("searchExact") String searchExact,
-            Pageable pageable);
+    static Specification<SalesOrder> buildSpecification(String paymentStatus, LocalDateTime startDate, LocalDateTime endDate, String search) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-    @Query("SELECT COUNT(DISTINCT o) FROM SalesOrder o WHERE " +
-           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = :paymentStatus) AND " +
-           "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
-           "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
-           "(:searchPattern IS NULL OR LOWER(o.orderNumber) LIKE :searchPattern OR CAST(o.id AS string) = :searchExact OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE :searchPattern))")
-    Long countWithFilters(
-            @Param("paymentStatus") String paymentStatus,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
-            @Param("searchPattern") String searchPattern,
-            @Param("searchExact") String searchExact);
+            if (paymentStatus != null && !paymentStatus.isBlank() && !"ALL".equalsIgnoreCase(paymentStatus)) {
+                predicates.add(cb.equal(cb.lower(root.get("paymentStatus")), paymentStatus.trim().toLowerCase()));
+            }
 
-    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM SalesOrder o WHERE " +
-           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = :paymentStatus) AND " +
-           "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
-           "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
-           "(:searchPattern IS NULL OR LOWER(o.orderNumber) LIKE :searchPattern OR CAST(o.id AS string) = :searchExact OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE :searchPattern))")
-    BigDecimal sumTotalAmountWithFilters(
-            @Param("paymentStatus") String paymentStatus,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
-            @Param("searchPattern") String searchPattern,
-            @Param("searchExact") String searchExact);
+            if (startDate != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), startDate));
+            }
+
+            if (endDate != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), endDate));
+            }
+
+            if (search != null && !search.isBlank()) {
+                String pattern = "%" + search.trim().toLowerCase() + "%";
+                String exact = search.trim();
+
+                Predicate matchOrderNum = cb.like(cb.lower(root.get("orderNumber")), pattern);
+                Predicate matchId = cb.equal(root.get("id").as(String.class), exact);
+
+                Subquery<Long> sub = query.subquery(Long.class);
+                Root<SalesOrderItem> itemRoot = sub.from(SalesOrderItem.class);
+                sub.select(itemRoot.get("salesOrder").get("id"))
+                   .where(cb.like(cb.lower(itemRoot.get("productName")), pattern));
+
+                Predicate matchItem = root.get("id").in(sub);
+
+                predicates.add(cb.or(matchOrderNum, matchId, matchItem));
+            }
+
+            if (query != null && Long.class != query.getResultType() && long.class != query.getResultType()) {
+                root.fetch("items", JoinType.LEFT);
+                query.distinct(true);
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
 }
 
