@@ -1,10 +1,13 @@
 package com.retailpos.domain;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,6 +22,49 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     @Query("SELECT o FROM SalesOrder o LEFT JOIN FETCH o.items WHERE o.orderNumber = :orderNumber")
     java.util.Optional<SalesOrder> findByOrderNumberWithItems(@Param("orderNumber") String orderNumber);
 
+    @Query("SELECT o FROM SalesOrder o LEFT JOIN FETCH o.items WHERE o.id = :id")
+    java.util.Optional<SalesOrder> findByIdWithItems(@Param("id") Long id);
+
     @Query("SELECT COUNT(so) FROM SalesOrder so WHERE so.createdAt >= :since")
     Long countOrdersSince(@Param("since") LocalDateTime since);
+
+    @Query(value = "SELECT DISTINCT o FROM SalesOrder o WHERE " +
+           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = LOWER(:paymentStatus)) AND " +
+           "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
+           "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
+           "(:search IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR CAST(o.id AS string) = :search OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE LOWER(CONCAT('%', :search, '%'))))",
+           countQuery = "SELECT COUNT(DISTINCT o) FROM SalesOrder o WHERE " +
+           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = LOWER(:paymentStatus)) AND " +
+           "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
+           "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
+           "(:search IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR CAST(o.id AS string) = :search OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE LOWER(CONCAT('%', :search, '%'))))")
+    Page<SalesOrder> findWithFilters(
+            @Param("paymentStatus") String paymentStatus,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("search") String search,
+            Pageable pageable);
+
+    @Query("SELECT COUNT(DISTINCT o) FROM SalesOrder o WHERE " +
+           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = LOWER(:paymentStatus)) AND " +
+           "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
+           "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
+           "(:search IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR CAST(o.id AS string) = :search OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE LOWER(CONCAT('%', :search, '%'))))")
+    Long countWithFilters(
+            @Param("paymentStatus") String paymentStatus,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("search") String search);
+
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM SalesOrder o WHERE " +
+           "(:paymentStatus IS NULL OR LOWER(o.paymentStatus) = LOWER(:paymentStatus)) AND " +
+           "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
+           "(:endDate IS NULL OR o.createdAt <= :endDate) AND " +
+           "(:search IS NULL OR LOWER(o.orderNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR CAST(o.id AS string) = :search OR EXISTS (SELECT 1 FROM SalesOrderItem item WHERE item.salesOrder = o AND LOWER(item.productName) LIKE LOWER(CONCAT('%', :search, '%'))))")
+    BigDecimal sumTotalAmountWithFilters(
+            @Param("paymentStatus") String paymentStatus,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("search") String search);
 }
+

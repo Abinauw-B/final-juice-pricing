@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
 
                 // Customer POS endpoints (cashiers and customers don't need JWT)
-                .requestMatchers(HttpMethod.GET, "/api/pos/products", "/api/products", "/api/pos/orders/**", "/api/orders/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pos/products", "/api/products", "/api/pos/orders/**", "/api/orders/**", "/api/admin/orders/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pos/products/**", "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/pos/checkout", "/api/pos/orders", "/api/checkout", "/api/orders").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/pos/products/*/stock", "/api/products/*/stock").permitAll()
