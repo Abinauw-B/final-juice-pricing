@@ -3872,13 +3872,8 @@
         <label
           style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Role</label>
         <select id="userFormRole" style="width: 100%; padding: 10px;">
-          <option value="1">SUPER_ADMIN</option>
-          <option value="2">ADMIN</option>
-          <option value="3">MANAGER</option>
+          <!-- Dynamically populated from API -->
           <option value="4">CASHIER</option>
-          <option value="3">KITCHEN_STAFF</option>
-          <option value="3">INVENTORY_MANAGER</option>
-          <option value="5">VIEWER</option>
         </select>
       </div>
       <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
@@ -6306,7 +6301,24 @@
       { id: 4, username: 'cashier1', fullName: 'Alex Johnson', email: 'alex.pos@pubexchange.com', role: 'CASHIER', status: 'ACTIVE' }
     ];
 
+    let systemRoles = [];
+    async function loadSystemRoles() {
+      try {
+        const res = await apiFetch('/users/roles');
+        if (res.ok) {
+          systemRoles = await res.json();
+          const select = document.getElementById('userFormRole');
+          if (select && systemRoles.length > 0) {
+            select.innerHTML = systemRoles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load roles dynamically, falling back to defaults.');
+      }
+    }
+
     async function loadUsers() {
+      await loadSystemRoles();
       try {
         const res = await apiFetch('/users');
         if (res.ok) {
