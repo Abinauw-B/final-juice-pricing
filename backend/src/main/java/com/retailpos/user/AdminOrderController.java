@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping({"/api/admin/orders", "/api/orders"})
+@SuppressWarnings("null")
 public class AdminOrderController {
 
     private final SalesOrderRepository salesOrderRepository;
