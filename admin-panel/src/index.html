@@ -3815,18 +3815,18 @@
 
   <!-- Order Details Popup Modal -->
   <div id="orderDetailsModal" style="display: none;" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="orderDetailsModalTitle">
-    <div style="background: var(--bg-card, #0f172a); border: 1px solid var(--border-color, rgba(255,255,255,0.15)); border-radius: 16px; max-width: 650px; width: 92%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-      <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.1)); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; max-width: 650px; width: 92%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);">
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-input);">
         <div>
-          <h2 id="orderDetailsModalTitle" style="font-size: 20px; font-weight: 800; color: var(--text-main, #f8fafc); margin: 0;">Order Details</h2>
-          <div id="modalOrderNumberHeader" style="font-size: 13px; font-weight: 700; color: var(--accent-cyan, #38bdf8); margin-top: 2px;">#ORD-XXXX</div>
+          <h2 id="orderDetailsModalTitle" style="font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0;">Order Details</h2>
+          <div id="modalOrderNumberHeader" style="font-size: 13px; font-weight: 700; color: var(--accent-cyan); margin-top: 2px;">#ORD-XXXX</div>
         </div>
-        <button onclick="closeOrderDetailsModal()" style="background: transparent; border: none; font-size: 22px; color: var(--text-muted, #94a3b8); cursor: pointer; padding: 4px 8px; border-radius: 8px;" aria-label="Close modal">✕</button>
+        <button onclick="closeOrderDetailsModal()" style="background: transparent; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'" aria-label="Close modal">✕</button>
       </div>
 
       <div style="padding: 24px; overflow-y: auto; flex: 1;">
         <!-- Order Header Overview Grid -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 20px; background: var(--bg-subtle, rgba(255,255,255,0.03)); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color, rgba(255,255,255,0.08));">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 24px; background: var(--bg-input); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color);">
           <div>
             <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Order ID</div>
             <div id="modalOrderId" style="font-size: 15px; font-weight: 800; color: var(--text-main); margin-top: 4px;">--</div>
@@ -3847,15 +3847,15 @@
 
         <!-- Items Table -->
         <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">Purchased Items Breakdown</h3>
-        <div style="border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
+        <div style="border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; margin-bottom: 24px;">
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <thead>
-              <tr style="background: rgba(255,255,255,0.05); text-align: left;">
-                <th style="padding: 10px 14px; color: var(--text-muted);">Product Name</th>
-                <th style="padding: 10px 14px; color: var(--text-muted); text-align: center;">Size</th>
-                <th style="padding: 10px 14px; color: var(--text-muted); text-align: center;">Qty</th>
-                <th style="padding: 10px 14px; color: var(--text-muted); text-align: right;">Unit Price</th>
-                <th style="padding: 10px 14px; color: var(--text-muted); text-align: right;">Subtotal</th>
+              <tr style="background: var(--bg-input); text-align: left;">
+                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600;">Product Name</th>
+                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600; text-align: center;">Size</th>
+                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600; text-align: center;">Qty</th>
+                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600; text-align: right;">Unit Price</th>
+                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600; text-align: right;">Subtotal</th>
               </tr>
             </thead>
             <tbody id="modalOrderItemsBody">
@@ -3865,28 +3865,28 @@
         </div>
 
         <!-- Financial Summary Breakdown -->
-        <div style="background: var(--bg-subtle, rgba(255,255,255,0.03)); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color, rgba(255,255,255,0.08));">
+        <div style="background: var(--bg-input); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-muted);">
             <span>Subtotal:</span>
             <span id="modalOrderSubtotal" style="font-weight: 700; color: var(--text-main);">₹0.00</span>
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-muted);">
             <span>Discount:</span>
-            <span id="modalOrderDiscount" style="font-weight: 700; color: #10b981;">₹0.00</span>
+            <span id="modalOrderDiscount" style="font-weight: 700; color: var(--accent-emerald);">₹0.00</span>
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--text-muted);">
             <span>Tax Amount:</span>
             <span id="modalOrderTax" style="font-weight: 700; color: var(--text-main);">₹0.00</span>
           </div>
-          <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border-color, rgba(255,255,255,0.15)); font-size: 16px; font-weight: 800; color: var(--text-main);">
+          <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 16px; font-weight: 800; color: var(--text-main);">
             <span>Total Amount Paid:</span>
-            <span id="modalOrderTotal" style="color: #38bdf8; font-size: 20px;">₹0.00</span>
+            <span id="modalOrderTotal" style="color: var(--accent-blue); font-size: 20px;">₹0.00</span>
           </div>
         </div>
       </div>
 
-      <div style="padding: 16px 24px; border-top: 1px solid var(--border-color, rgba(255,255,255,0.1)); display: flex; justify-content: flex-end; background: rgba(0,0,0,0.1);">
-        <button class="btn-secondary" onclick="closeOrderDetailsModal()" style="padding: 8px 20px;">Close</button>
+      <div style="padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; background: var(--bg-card);">
+        <button class="btn-secondary" onclick="closeOrderDetailsModal()" style="padding: 8px 24px; font-weight: 600; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">Close</button>
       </div>
     </div>
   </div>
@@ -9426,7 +9426,7 @@
           `;
         } else {
           document.getElementById('modalOrderItemsBody').innerHTML = items.map(item => `
-            <tr style="border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.05));">
+            <tr style="border-bottom: 1px solid var(--border-color);">
               <td style="padding: 10px 14px; font-weight: 700; color: var(--text-main);">
                 ${escapeHtml(item.productName || 'Juice Product')}
                 <span style="display: block; font-size: 11px; font-weight: 400; color: var(--text-muted);">Product ID: ${item.productId || '--'}</span>
@@ -9434,7 +9434,7 @@
               <td style="padding: 10px 14px; text-align: center; color: var(--text-muted);">${item.cupSizeMl ? item.cupSizeMl + ' ml' : 'Standard'}</td>
               <td style="padding: 10px 14px; text-align: center; font-weight: 800; color: var(--text-main);">${item.quantity || 1}</td>
               <td style="padding: 10px 14px; text-align: right; color: var(--text-main);">₹${Number(item.unitPrice || 0).toFixed(2)}</td>
-              <td style="padding: 10px 14px; text-align: right; font-weight: 800; color: #38bdf8;">₹${Number(item.totalPrice || (item.quantity * item.unitPrice) || 0).toFixed(2)}</td>
+              <td style="padding: 10px 14px; text-align: right; font-weight: 800; color: var(--accent-blue);">₹${Number(item.totalPrice || (item.quantity * item.unitPrice) || 0).toFixed(2)}</td>
             </tr>
           `).join('');
         }
