@@ -6357,7 +6357,7 @@
         editingUserId = id;
         document.getElementById('userFormUsername').value = u.username;
         document.getElementById('userFormFullName').value = u.fullName;
-        document.getElementById('userFormRole').value = u.role;
+        document.getElementById('userFormRole').value = u.roleName || 'VIEWER';
         document.getElementById('userModal').style.display = 'flex';
       }
     }

@@ -45,6 +45,7 @@ public class User {
     private Boolean isDeleted = false;
 
     @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty("roleName")
     private String roleName;
 
     public User() {}

@@ -31,6 +31,8 @@ public class UserController {
     public void initSequence() {
         try {
             jdbcTemplate.execute("SELECT setval(pg_get_serial_sequence('users', 'id'), COALESCE((SELECT MAX(id) FROM users), 1))");
+            jdbcTemplate.execute("INSERT INTO roles (name, description) VALUES ('KITCHEN_STAFF', 'Kitchen Operations') ON CONFLICT (name) DO NOTHING");
+            jdbcTemplate.execute("INSERT INTO roles (name, description) VALUES ('INVENTORY_MANAGER', 'Inventory & Stock Control') ON CONFLICT (name) DO NOTHING");
         } catch (Exception ignored) {}
     }
 
