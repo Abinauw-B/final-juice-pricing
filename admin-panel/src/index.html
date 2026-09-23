@@ -3872,13 +3872,13 @@
         <label
           style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Role</label>
         <select id="userFormRole" style="width: 100%; padding: 10px;">
-          <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-          <option value="ADMIN">ADMIN</option>
-          <option value="MANAGER">MANAGER</option>
-          <option value="CASHIER">CASHIER</option>
-          <option value="KITCHEN_STAFF">KITCHEN_STAFF</option>
-          <option value="INVENTORY_MANAGER">INVENTORY_MANAGER</option>
-          <option value="VIEWER">VIEWER</option>
+          <option value="1">SUPER_ADMIN</option>
+          <option value="2">ADMIN</option>
+          <option value="3">MANAGER</option>
+          <option value="4">CASHIER</option>
+          <option value="3">KITCHEN_STAFF</option>
+          <option value="3">INVENTORY_MANAGER</option>
+          <option value="5">VIEWER</option>
         </select>
       </div>
       <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
@@ -6357,7 +6357,7 @@
         editingUserId = id;
         document.getElementById('userFormUsername').value = u.username;
         document.getElementById('userFormFullName').value = u.fullName;
-        document.getElementById('userFormRole').value = u.roleName || 'VIEWER';
+        document.getElementById('userFormRole').value = u.roleId || '5';
         document.getElementById('userModal').style.display = 'flex';
       }
     }
@@ -6368,7 +6368,9 @@
 
       const username = document.getElementById('userFormUsername').value.trim();
       const fullName = document.getElementById('userFormFullName').value.trim();
-      const role = document.getElementById('userFormRole').value;
+      const roleSelect = document.getElementById('userFormRole');
+      const roleId = parseInt(roleSelect.value);
+      const roleName = roleSelect.options[roleSelect.selectedIndex].text;
 
       if (!username || !fullName) {
         showToast('Please enter both username and full name!', 'warning');
@@ -6376,7 +6378,14 @@
         return;
       }
 
-      const userPayload = { username, fullName, email: `${username.toLowerCase()}@pubexchange.com`, roleName: role, status: 'ACTIVE' };
+      const userPayload = { 
+        username, 
+        fullName, 
+        email: `${username.toLowerCase()}@pubexchange.com`, 
+        roleId: roleId, 
+        roleName: roleName, 
+        status: 'ACTIVE' 
+      };
 
       try {
         if (editingUserId) {
