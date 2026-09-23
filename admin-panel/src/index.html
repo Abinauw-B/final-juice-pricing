@@ -3814,48 +3814,73 @@
   </div>
 
   <!-- Order Details Popup Modal -->
-  <div id="orderDetailsModal" style="display: none;" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="orderDetailsModalTitle">
-    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; max-width: 650px; width: 92%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);">
-      <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-input);">
+  <div id="orderDetailsModal" style="display: none; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); justify-content: center; align-items: center; position: fixed; inset: 0; z-index: 9999;" class="modal-overlay modal-overlay-fade" role="dialog" aria-modal="true" aria-labelledby="orderDetailsModalTitle">
+    <style>
+      @keyframes modalOverlayFade { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes orderModalEntrance {
+        0% { opacity: 0; transform: scale(0.96) translateY(15px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      .modal-overlay-fade { animation: modalOverlayFade 0.2s ease-out forwards; }
+      .order-modal-anim { animation: orderModalEntrance 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+      .ph-row-hover:hover { background: rgba(128,128,128,0.06); }
+      
+      .modal-scroll::-webkit-scrollbar { width: 6px; }
+      .modal-scroll::-webkit-scrollbar-track { background: transparent; }
+      .modal-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+      .modal-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+    <div class="order-modal-anim" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; width: 100%; max-width: 720px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.6); margin: 20px;">
+      
+      <!-- Header -->
+      <div style="padding: 24px 28px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; background: var(--bg-input);">
         <div>
-          <h2 id="orderDetailsModalTitle" style="font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0;">Order Details</h2>
-          <div id="modalOrderNumberHeader" style="font-size: 13px; font-weight: 700; color: var(--accent-cyan); margin-top: 2px;">#ORD-XXXX</div>
+          <h2 id="orderDetailsModalTitle" style="font-size: 22px; font-weight: 800; color: var(--text-main); margin: 0 0 8px 0; letter-spacing: -0.5px;">Order Details</h2>
+          <div id="modalOrderNumberHeader" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; font-weight: 700; color: var(--accent-cyan); background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2); padding: 4px 10px; border-radius: 6px; display: inline-block;">#ORD-XXXX</div>
         </div>
-        <button onclick="closeOrderDetailsModal()" style="background: transparent; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'" aria-label="Close modal">✕</button>
+        <button onclick="closeOrderDetailsModal()" style="background: rgba(128,128,128,0.1); border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s;" onmouseover="this.style.background='rgba(128,128,128,0.2)'; this.style.color='var(--text-main)';" onmouseout="this.style.background='rgba(128,128,128,0.1)'; this.style.color='var(--text-muted)';" aria-label="Close modal">✕</button>
       </div>
 
-      <div style="padding: 24px; overflow-y: auto; flex: 1;">
+      <div style="padding: 28px; overflow-y: auto; flex: 1;">
         <!-- Order Header Overview Grid -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; margin-bottom: 24px; background: var(--bg-input); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color);">
-          <div>
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Order ID</div>
-            <div id="modalOrderId" style="font-size: 15px; font-weight: 800; color: var(--text-main); margin-top: 4px;">--</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 32px;">
+          <div style="background: var(--bg-input); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">
+              <span style="font-size: 15px;">🏷️</span> Order ID
+            </div>
+            <div id="modalOrderId" style="font-size: 16px; font-weight: 800; color: var(--text-main);">--</div>
           </div>
-          <div>
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Date &amp; Time</div>
-            <div id="modalOrderDateTime" style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-top: 4px;">--</div>
+          <div style="background: var(--bg-input); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">
+              <span style="font-size: 15px;">📅</span> Date &amp; Time
+            </div>
+            <div id="modalOrderDateTime" style="font-size: 14px; font-weight: 700; color: var(--text-main);">--</div>
           </div>
-          <div>
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Payment Status</div>
-            <div id="modalOrderPaymentStatus" style="margin-top: 4px;">--</div>
+          <div style="background: var(--bg-input); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">
+              <span style="font-size: 15px;">✅</span> Payment Status
+            </div>
+            <div id="modalOrderPaymentStatus">--</div>
           </div>
-          <div>
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Payment Method</div>
-            <div id="modalOrderPaymentMethod" style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 4px;">CASH</div>
+          <div style="background: var(--bg-input); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">
+              <span style="font-size: 15px;">💵</span> Payment Method
+            </div>
+            <div id="modalOrderPaymentMethod" style="font-size: 15px; font-weight: 700; color: var(--text-main);">CASH</div>
           </div>
         </div>
 
         <!-- Items Table -->
-        <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">Purchased Items Breakdown</h3>
-        <div style="border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; margin-bottom: 24px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><span style="color: var(--accent-blue);">📦</span> Purchased Items Breakdown</h3>
+        <div class="modal-scroll" style="border: 1px solid var(--border-color); border-radius: 12px; overflow-y: auto; max-height: 280px; margin-bottom: 32px; background: var(--bg-card); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <thead>
-              <tr style="background: var(--bg-input); text-align: left;">
-                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600;">Product Name</th>
-                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600; text-align: center;">Size</th>
-                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600; text-align: center;">Qty</th>
-                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600; text-align: right;">Unit Price</th>
-                <th style="padding: 12px 14px; color: var(--text-muted); font-weight: 600; text-align: right;">Subtotal</th>
+            <thead style="position: sticky; top: 0; background: var(--bg-input); z-index: 10; box-shadow: 0 1px 0 var(--border-color);">
+              <tr style="text-align: left;">
+                <th style="padding: 14px 18px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">Product Name</th>
+                <th style="padding: 14px 18px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; text-align: center;">Size</th>
+                <th style="padding: 14px 18px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; text-align: center;">Qty</th>
+                <th style="padding: 14px 18px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; text-align: right;">Unit Price</th>
+                <th style="padding: 14px 18px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; text-align: right;">Subtotal</th>
               </tr>
             </thead>
             <tbody id="modalOrderItemsBody">
@@ -3865,28 +3890,30 @@
         </div>
 
         <!-- Financial Summary Breakdown -->
-        <div style="background: var(--bg-input); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color);">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-muted);">
-            <span>Subtotal:</span>
-            <span id="modalOrderSubtotal" style="font-weight: 700; color: var(--text-main);">₹0.00</span>
+        <div style="background: var(--bg-input); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); max-width: 400px; margin-left: auto;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 14px; color: var(--text-muted);">
+            <span style="font-weight: 500;">Subtotal</span>
+            <span id="modalOrderSubtotal" style="font-weight: 600; color: var(--text-main);">₹0.00</span>
           </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-muted);">
-            <span>Discount:</span>
-            <span id="modalOrderDiscount" style="font-weight: 700; color: var(--accent-emerald);">₹0.00</span>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 14px; color: var(--text-muted);">
+            <span style="font-weight: 500;">Discount</span>
+            <span id="modalOrderDiscount" style="font-weight: 600; color: var(--text-muted);">₹0.00</span>
           </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--text-muted);">
-            <span>Tax Amount:</span>
-            <span id="modalOrderTax" style="font-weight: 700; color: var(--text-main);">₹0.00</span>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; color: var(--text-muted);">
+            <span style="font-weight: 500;">Tax Amount</span>
+            <span id="modalOrderTax" style="font-weight: 600; color: var(--text-main);">₹0.00</span>
           </div>
-          <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 16px; font-weight: 800; color: var(--text-main);">
-            <span>Total Amount Paid:</span>
-            <span id="modalOrderTotal" style="color: var(--accent-blue); font-size: 20px;">₹0.00</span>
+          <div style="display: flex; justify-content: space-between; padding-top: 20px; border-top: 2px dashed var(--border-color); font-size: 16px; font-weight: 800; color: var(--text-main); align-items: center;">
+            <span>Total Amount Paid</span>
+            <div style="background: var(--accent-blue); color: white; padding: 8px 16px; border-radius: 10px; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);">
+              <span id="modalOrderTotal" style="font-size: 22px;">₹0.00</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div style="padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; background: var(--bg-card);">
-        <button class="btn-secondary" onclick="closeOrderDetailsModal()" style="padding: 8px 24px; font-weight: 600; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">Close</button>
+      <div style="padding: 20px 28px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; background: var(--bg-card);">
+        <button class="btn-secondary" onclick="closeOrderDetailsModal()" style="padding: 10px 28px; font-size: 14px; font-weight: 700; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); border-radius: 10px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.filter='brightness(1.1)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.filter='brightness(1)'; this.style.transform='translateY(0)';">Close</button>
       </div>
     </div>
   </div>
@@ -9410,11 +9437,11 @@
         document.getElementById('modalOrderDateTime').textContent = dt;
 
         const status = (order.paymentStatus || 'COMPLETED').toUpperCase();
-        let statusBadge = '<span class="status-tag tag-surge" style="padding: 2px 8px; font-size: 11px;">COMPLETED</span>';
+        let statusBadge = '<span class="status-tag tag-surge" style="padding: 4px 10px; font-size: 11px; letter-spacing: 0.5px; border-radius: 6px; box-shadow: 0 2px 4px rgba(16,185,129,0.15);">COMPLETED</span>';
         if (status === 'PENDING') {
-          statusBadge = '<span class="status-tag" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 8px; font-size: 11px;">PENDING</span>';
+          statusBadge = '<span class="status-tag" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-amber, #f59e0b); border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; font-size: 11px; letter-spacing: 0.5px; border-radius: 6px;">PENDING</span>';
         } else if (status === 'FAILED' || status === 'CANCELLED') {
-          statusBadge = '<span class="status-tag" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 2px 8px; font-size: 11px;">' + status + '</span>';
+          statusBadge = '<span class="status-tag" style="background: rgba(239, 68, 68, 0.15); color: var(--accent-red, #ef4444); border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 10px; font-size: 11px; letter-spacing: 0.5px; border-radius: 6px;">' + status + '</span>';
         }
         document.getElementById('modalOrderPaymentStatus').innerHTML = statusBadge;
         document.getElementById('modalOrderPaymentMethod').textContent = (order.paymentMethod || 'CASH').toUpperCase();
@@ -9422,21 +9449,28 @@
         const items = order.items || [];
         if (items.length === 0) {
           document.getElementById('modalOrderItemsBody').innerHTML = `
-            <tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--text-muted);">No item breakdown available for this order.</td></tr>
+            <tr><td colspan="5" style="padding: 32px; text-align: center; color: var(--text-muted); font-size: 14px;">No item breakdown available for this order.</td></tr>
           `;
         } else {
-          document.getElementById('modalOrderItemsBody').innerHTML = items.map(item => `
-            <tr style="border-bottom: 1px solid var(--border-color);">
-              <td style="padding: 10px 14px; font-weight: 700; color: var(--text-main);">
-                ${escapeHtml(item.productName || 'Juice Product')}
-                <span style="display: block; font-size: 11px; font-weight: 400; color: var(--text-muted);">Product ID: ${item.productId || '--'}</span>
+          document.getElementById('modalOrderItemsBody').innerHTML = items.map(item => {
+            const safeName = escapeHtml(item.productName || 'Juice Product');
+            const initials = safeName.substring(0,2).toUpperCase();
+            return `
+            <tr class="ph-row-hover" style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 14px 18px; display: flex; align-items: center; gap: 14px;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: var(--text-muted); flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">${initials}</div>
+                <div>
+                  <div style="font-weight: 800; color: var(--text-main); font-size: 14px; letter-spacing: -0.2px;">${safeName}</div>
+                  <div style="font-size: 11px; font-weight: 500; color: var(--text-muted); margin-top: 3px;">Product ID: ${item.productId || '--'}</div>
+                </div>
               </td>
-              <td style="padding: 10px 14px; text-align: center; color: var(--text-muted);">${item.cupSizeMl ? item.cupSizeMl + ' ml' : 'Standard'}</td>
-              <td style="padding: 10px 14px; text-align: center; font-weight: 800; color: var(--text-main);">${item.quantity || 1}</td>
-              <td style="padding: 10px 14px; text-align: right; color: var(--text-main);">₹${Number(item.unitPrice || 0).toFixed(2)}</td>
-              <td style="padding: 10px 14px; text-align: right; font-weight: 800; color: var(--accent-blue);">₹${Number(item.totalPrice || (item.quantity * item.unitPrice) || 0).toFixed(2)}</td>
+              <td style="padding: 14px 18px; text-align: center; color: var(--text-muted); font-weight: 600;">${item.cupSizeMl ? item.cupSizeMl + ' ml' : 'Standard'}</td>
+              <td style="padding: 14px 18px; text-align: center; font-weight: 800; color: var(--text-main);">${item.quantity || 1}</td>
+              <td style="padding: 14px 18px; text-align: right; color: var(--text-muted); font-weight: 500;">₹${Number(item.unitPrice || 0).toFixed(2)}</td>
+              <td style="padding: 14px 18px; text-align: right; font-weight: 800; color: var(--text-main);">₹${Number(item.totalPrice || (item.quantity * item.unitPrice) || 0).toFixed(2)}</td>
             </tr>
-          `).join('');
+            `;
+          }).join('');
         }
 
         const subtotal = order.subtotal !== null && order.subtotal !== undefined ? Number(order.subtotal) : Number(order.totalAmount || 0);
@@ -9445,7 +9479,17 @@
         const total = Number(order.totalAmount || 0);
 
         document.getElementById('modalOrderSubtotal').textContent = '₹' + subtotal.toFixed(2);
-        document.getElementById('modalOrderDiscount').textContent = '₹' + discount.toFixed(2);
+        
+        const discSpan = document.getElementById('modalOrderDiscount');
+        discSpan.textContent = (discount > 0 ? '-₹' : '₹') + discount.toFixed(2);
+        if (discount > 0) {
+            discSpan.style.color = 'var(--accent-emerald, #10b981)';
+            discSpan.style.fontWeight = '800';
+        } else {
+            discSpan.style.color = 'var(--text-muted)';
+            discSpan.style.fontWeight = '600';
+        }
+        
         document.getElementById('modalOrderTax').textContent = '₹' + tax.toFixed(2);
         document.getElementById('modalOrderTotal').textContent = '₹' + total.toFixed(2);
 
