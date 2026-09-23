@@ -3795,9 +3795,13 @@
         <input type="text" name="username" value="superadmin" autocomplete="username" style="display: none;" aria-hidden="true" readonly tabindex="-1">
         <div style="margin-bottom: 14px;">
           <label
+            for="profileOldPass"
+            style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">Current Password</label>
+          <input type="password" id="profileOldPass" name="oldPassword" autocomplete="current-password" placeholder="Enter current password" style="width: 100%; padding: 10px; margin-bottom: 14px;">
+          <label
             for="profileNewPass"
             style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">New
-            Password</label>
+            Password (Min. 8 chars)</label>
           <input type="password" id="profileNewPass" name="newPassword" autocomplete="new-password" placeholder="Enter new password" style="width: 100%; padding: 10px;">
         </div>
         <div style="display: flex; gap: 12px; justify-content: flex-end;">
@@ -6376,9 +6380,22 @@
       }
       const btn = document.getElementById('btnUpdatePassword');
       setButtonLoading(btn, true, 'Updating...');
+      
+      const oldPass = document.getElementById('profileOldPass').value;
       const pass = document.getElementById('profileNewPass').value;
+      
+      if (!oldPass) {
+        showToast('Please enter your current password!', 'warning');
+        setButtonLoading(btn, false);
+        return;
+      }
       if (!pass) {
         showToast('Please enter a new password!', 'warning');
+        setButtonLoading(btn, false);
+        return;
+      }
+      if (pass.length < 8) {
+        showToast('New password must be at least 8 characters long!', 'warning');
         setButtonLoading(btn, false);
         return;
       }
@@ -6386,17 +6403,23 @@
       try {
         const res = await apiFetch('/auth/change-password?username=superadmin', {
           method: 'POST',
-          body: JSON.stringify({ oldPassword: '', newPassword: pass })
+          body: JSON.stringify({ oldPassword: oldPass, newPassword: pass })
         });
         if (res.ok) {
           showToast('🔒 Profile credentials updated successfully in database!', 'success');
+          document.getElementById('profileOldPass').value = '';
           document.getElementById('profileNewPass').value = '';
           closeProfileModal();
         } else {
-          showToast('Failed to update password on server', 'danger');
+          try {
+            const errData = await res.json();
+            showToast(errData.message || 'Failed to update password on server', 'danger');
+          } catch(err) {
+            showToast('Failed to update password on server', 'danger');
+          }
         }
       } catch (e) {
-        showToast('Profile password updated!', 'success');
+        showToast('Error connecting to server', 'danger');
         closeProfileModal();
       } finally {
         setButtonLoading(btn, false);
