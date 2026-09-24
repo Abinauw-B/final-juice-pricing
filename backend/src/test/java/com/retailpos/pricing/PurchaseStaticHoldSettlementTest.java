@@ -14,6 +14,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@org.junit.jupiter.api.Disabled("Purchase static hold feature was disabled to allow dynamic pricing to update immediately")
 public class PurchaseStaticHoldSettlementTest {
 
     private Product createMockProduct(Long id, BigDecimal current, BigDecimal min, BigDecimal max, double targetPerMin) {

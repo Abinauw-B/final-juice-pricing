@@ -52,10 +52,9 @@ public class PriceAdjustmentService {
     }
 
     public void registerProductPurchase(Long productId) {
-        if (productId != null) {
-            purchaseStaticCyclesRemaining.put(productId, 2);
-            log.info("[PURCHASE_PRICE_LOCK] ProductId={} registered purchase. Pricing retained static for next 2 settlement cycles.", productId);
-        }
+        // Feature disabled: Purchase Static Hold was causing prices to never update
+        // because by the time the 2-cycle hold expired, the purchase had aged out
+        // of the active demand window (w0), preventing price surges.
     }
 
     public void registerProductPurchases(Collection<Long> productIds) {
@@ -342,58 +341,9 @@ public class PriceAdjustmentService {
                     .build();
         }
 
-        // Check Purchase Static Hold (Product pricing retained static for 2 settlement cycles after purchase)
-        Integer staticCyclesRemaining = purchaseStaticCyclesRemaining.get(productId);
-        if (staticCyclesRemaining != null && staticCyclesRemaining > 0) {
-            int currentCycleNum = 3 - staticCyclesRemaining;
-            int nextCyclesRemaining = staticCyclesRemaining - 1;
-            if (nextCyclesRemaining <= 0) {
-                purchaseStaticCyclesRemaining.remove(productId);
-            } else {
-                purchaseStaticCyclesRemaining.put(productId, nextCyclesRemaining);
-            }
-
-            log.info("[PURCHASE_STATIC_HOLD] ProductId={} ({}) undergoing settlement cycle {}/2 under purchase static guarantee. Price held constant at ₹{}.",
-                    productId, product.getName(), currentCycleNum, oldPrice);
-
-            // Save authoritative audit record in PriceHistory to show this settlement cycle held price static
-            PriceHistory history = PriceHistory.builder()
-                    .productId(productId)
-                    .oldPrice(oldPrice)
-                    .newPrice(oldPrice)
-                    .priceChange(BigDecimal.ZERO)
-                    .demandRatio(1.0)
-                    .orderCount(orderCount)
-                    .rawPriceChangePercent(BigDecimal.ZERO)
-                    .appliedPriceChangePercent(BigDecimal.ZERO)
-                    .volatility(volatility)
-                    .floorPrice(floor)
-                    .ceilingPrice(ceiling)
-                    .priceVersion(product.getPriceVersion())
-                    .cycleId(cycleId)
-                    .triggerType("PURCHASE_STATIC_HOLD")
-                    .reason("PURCHASE_STATIC_CYCLE_" + currentCycleNum)
-                    .explanation("Price retained static after purchase (Settlement cycle " + currentCycleNum + "/2). Price held at ₹" + oldPrice)
-                    .createdAt(now)
-                    .build();
-            priceHistoryRepository.save(history);
-
-            return PriceEvaluationResult.builder()
-                    .productId(productId)
-                    .flavour(product.getFlavour())
-                    .oldPrice(oldPrice)
-                    .newPrice(oldPrice)
-                    .priceChange(BigDecimal.ZERO)
-                    .priceChanged(false)
-                    .demandRatio(1.0)
-                    .weightedSales((double) orderCount)
-                    .targetSales((double) targetOrders)
-                    .rawW0(orderCount)
-                    .demandLevelCategory("PURCHASE_STATIC_HOLD")
-                    .explanation("Price retained static after purchase (Settlement cycle " + currentCycleNum + "/2). Price held at ₹" + oldPrice)
-                    .statusReason("PURCHASE_STATIC_CYCLE_" + currentCycleNum)
-                    .build();
-        }
+        // Feature disabled: Purchase Static Hold
+        // Integer staticCyclesRemaining = purchaseStaticCyclesRemaining.get(productId);
+        // ... removed static hold logic to allow immediate price updates ...
 
         // --- SINGLE AUTHORITATIVE DWMA PRICING MODEL (SNAPSHOT CONFIGURATION) ---
         PricingConfigurationService.PricingConfigSnapshot config = (snapshot != null)
