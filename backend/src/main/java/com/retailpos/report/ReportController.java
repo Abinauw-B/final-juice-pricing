@@ -67,7 +67,7 @@ public class ReportController {
                 SELECT
                     soi.product_id,
                     soi.product_name,
-                    COUNT(DISTINCT soi.sales_order_id) AS order_count,
+                    COUNT(DISTINCT soi.order_id) AS order_count,
                     COALESCE(SUM(soi.quantity), 0) AS total_cups_sold,
                     COALESCE(SUM(soi.total_price), 0) AS total_revenue,
                     COALESCE(AVG(soi.unit_price), 0) AS avg_unit_price,
