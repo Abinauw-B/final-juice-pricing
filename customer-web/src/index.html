@@ -3496,14 +3496,21 @@
         : (product.currentCupPrice != null ? product.currentCupPrice : (product.defaultCupPrice || 25.0));
       const currentVersion = product.priceVersion || 1;
 
-      cart = [{
-        product,
-        quantity: 1,
-        cupSizeMl: product.defaultCupSizeMl || 250,
-        lockedPrice: currentActivePrice,
-        lockedPriceVersion: currentVersion,
-        addedAt: Date.now()
-      }];
+      const existing = cart.find(item => item.product.id === productId);
+      if (existing) {
+        existing.quantity += 1;
+        existing.product = product;
+        // Retain original purchase lockedPrice so settlement timer does not alter cart price!
+      } else {
+        cart.push({
+          product,
+          quantity: 1,
+          cupSizeMl: product.defaultCupSizeMl || 250,
+          lockedPrice: currentActivePrice,
+          lockedPriceVersion: currentVersion,
+          addedAt: Date.now()
+        });
+      }
       renderCart();
 
       // Cart badge pulse micro-interaction
