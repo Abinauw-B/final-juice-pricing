@@ -437,7 +437,7 @@ public class PriceAdjustmentService {
 
         if (rd.compareTo(highThresh) >= 0) {
             // Low-sample protection: prevent price surge unless real customer orders occurred in current window W0
-            boolean hasSufficientVolume = (w0 >= 1) && ((w0 + w1 >= 2) || (targetSalesBd.compareTo(BigDecimal.ONE) >= 0));
+            boolean hasSufficientVolume = (w0 >= 1);
             if (sw.compareTo(BigDecimal.ZERO) > 0 && hasSufficientVolume) {
                 deltaP = new BigDecimal("1.00");
                 movement = 1;
