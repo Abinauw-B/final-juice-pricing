@@ -4467,8 +4467,8 @@
 
           const targetDisplay = `${Number(p.targetSalesPer1Minute || p.targetSalesPerMinute || p.targetSales || 0.55).toFixed(2)} cups/min`;
 
-          const remainingVolMl = p.remainingVolumeMl !== undefined ? p.remainingVolumeMl : (20000 - ((p.id * 1370) % 6000));
-          const tankPct = Math.max(10, Math.min(100, Math.round((remainingVolMl / 20000) * 100)));
+          const remainingVolMl = p.remainingVolumeMl !== undefined ? p.remainingVolumeMl : 0;
+          const tankPct = Math.max(0, Math.min(100, Math.round((remainingVolMl / 20000) * 100)));
           const remainingLitres = (remainingVolMl / 1000).toFixed(1);
           const remainingCups = Math.floor(remainingVolMl / cupSize);
           
@@ -5952,8 +5952,8 @@
         const savingsAmount = Math.max(0, (baseP - floorP)).toFixed(2);
         const tapNum = String(idx + 1).padStart(2, '0');
         
-        // Real tap volume calculation
-        const remainingVolMl = p.remainingVolumeMl !== undefined ? p.remainingVolumeMl : (20000 - ((p.id * 1370) % 6000));
+        // Real tap volume calculation - default to 0 if no active batches are found
+        const remainingVolMl = p.remainingVolumeMl !== undefined ? p.remainingVolumeMl : 0;
         const tankPct = Math.max(0, Math.min(100, Math.round((remainingVolMl / 20000) * 100)));
         const remainingLiters = (remainingVolMl / 1000).toFixed(1);
         
