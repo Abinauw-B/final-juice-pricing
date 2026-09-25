@@ -1,5 +1,5 @@
 /**
- * Noida Pub Exchange - Centralized Frontend API & WebSocket Configuration
+ * Mojito Exchange - Centralized Frontend API & WebSocket Configuration
  * Customer POS & LED Display Application
  *
  * Supported Environments:

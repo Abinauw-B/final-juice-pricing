@@ -683,7 +683,7 @@ public class PricingConfigurationService {
         }
     }
 
-    public static final Set<Integer> STANDARD_INTERVALS = Set.of(10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600);
+    public static final Set<Integer> STANDARD_INTERVALS = Set.of(10, 15, 30, 60, 120, 300, 600, 900, 1200, 1500, 1800, 3600);
     public static final Set<Integer> ALLOWED_INTERVALS = STANDARD_INTERVALS;
 
     public static boolean isValidInterval(int seconds) {
@@ -711,6 +711,8 @@ public class PricingConfigurationService {
             case 300 -> "5 Minutes";
             case 600 -> "10 Minutes";
             case 900 -> "15 Minutes";
+            case 1200 -> "20 Minutes";
+            case 1500 -> "25 Minutes";
             case 1800 -> "30 Minutes";
             case 3600 -> "1 Hour";
             default -> (seconds % 60 == 0) ? (seconds / 60) + " Minutes" : seconds + " Seconds";
