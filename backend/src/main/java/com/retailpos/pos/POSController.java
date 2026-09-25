@@ -208,27 +208,12 @@ public class POSController {
     @Transactional
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         if (productRepository.existsById(id)) {
-            if (jdbcTemplate != null) {
-                try {
-                    jdbcTemplate.update("DELETE FROM pricing_configurations WHERE product_id = ?", id);
-                    jdbcTemplate.update("DELETE FROM product_correlations WHERE source_product_id = ? OR target_product_id = ?", id, id);
-                    jdbcTemplate.update("DELETE FROM market_events WHERE product_id = ?", id);
-                    jdbcTemplate.update("DELETE FROM market_crash_snapshots WHERE product_id = ?", id);
-                    jdbcTemplate.update("DELETE FROM juice_batches WHERE product_id = ?", id);
-                    jdbcTemplate.update("DELETE FROM price_history WHERE product_id = ?", id);
-                    jdbcTemplate.update("DELETE FROM inventory_transactions WHERE product_id = ?", id);
-                    jdbcTemplate.update("DELETE FROM sales_order_items WHERE product_id = ?", id);
-                } catch (Exception ignored) {}
-            }
-            try {
-                productRepository.deleteById(id);
-            } catch (Exception ex) {
-                // If foreign key constraint still blocks hard deletion, perform safe soft-delete
-                productRepository.findById(id).ifPresent(p -> {
-                    p.setIsActive(false);
-                    productRepository.saveAndFlush(p);
-                });
-            }
+            // Always perform a soft-delete to preserve audit logs, price history, and referential integrity
+            productRepository.findById(id).ifPresent(p -> {
+                p.setIsActive(false);
+                p.setPricingMode("INACTIVE");
+                productRepository.saveAndFlush(p);
+            });
             broadcastProductUpdate();
             return ResponseEntity.ok().build();
         }
