@@ -207,6 +207,13 @@ public class JuiceBatchService {
 
     @Transactional
     public void deleteBatch(Long batchId) {
-        batchRepository.deleteById(batchId);
+        batchRepository.findById(batchId).ifPresent(batch -> {
+            productRepository.findById(batch.getProductId()).ifPresent(p -> {
+                p.setIsActive(false);
+                p.setPricingMode("INACTIVE");
+                productRepository.saveAndFlush(p);
+            });
+            batchRepository.deleteById(batchId);
+        });
     }
 }
