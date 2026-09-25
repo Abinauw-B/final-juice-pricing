@@ -8003,7 +8003,7 @@
         targetSalesPer1Minute: targetSales,
         weightedSales: weightedSales,
         volatility: volatility,
-        imageUrl: imageUrl || null
+        imageUrl: imageUrl
       };
 
       try {
@@ -8014,7 +8014,7 @@
 
         await apiFetch(`/admin/pricing/products/${productId}/config`, {
           method: 'PUT',
-          body: JSON.stringify({ targetSales, weightedSales, imageUrl: imageUrl || null })
+          body: JSON.stringify({ targetSales, weightedSales, imageUrl: imageUrl })
         });
 
         await apiFetch(`/pricing/products/${productId}/price?newPrice=${currentPrice}&reason=MANUAL_ADMIN_OVERRIDE`, {

@@ -65,7 +65,7 @@ public class Product {
     @Column(name = "pricing_mode", nullable = false, length = 30)
     private String pricingMode = "DYNAMIC";
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     @Column(name = "created_at", insertable = false, updatable = false)

@@ -190,6 +190,12 @@ public class POSController {
             if (details.getWeightedSales() != null) existing.setWeightedSales(details.getWeightedSales());
             if (details.getVolatility() != null) existing.setVolatility(details.getVolatility());
             if (details.getIsActive() != null) existing.setIsActive(details.getIsActive());
+            if (details.getImageUrl() != null) {
+                existing.setImageUrl(details.getImageUrl().isEmpty() ? null : details.getImageUrl());
+            } else if (details.getImageUrl() == null && existing.getImageUrl() != null && details.getName() == null) {
+                // To clear it, we might need a specific check, but since JSON maps empty string to "",
+                // we handle empty string above. If it's literally not passed, we keep existing to avoid wiping it on partial updates.
+            }
             existing.setLastPriceChangeTimestamp(LocalDateTime.now());
             existing.setPriceVersion(existing.getPriceVersion() != null ? existing.getPriceVersion() + 1 : 1);
             Product updated = productRepository.saveAndFlush(existing);
