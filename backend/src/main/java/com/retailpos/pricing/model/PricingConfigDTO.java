@@ -174,7 +174,7 @@ public class PricingConfigDTO {
         public ProductConfig() {}
 
         public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice) {
-            this(productId, productName, flavour, targetSales, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, "DYNAMIC", null);
+            this(productId, productName, flavour, targetSales, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, "DYNAMIC", null, null);
         }
 
         public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, String pricingMode) {
