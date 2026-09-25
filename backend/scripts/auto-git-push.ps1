@@ -23,7 +23,13 @@ param(
     [switch]$Quiet
 )
 
-$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+try {
+    $gitTopLevel = (git rev-parse --show-toplevel 2>$null)
+    if ($gitTopLevel) { $RepoRoot = $gitTopLevel.Trim() }
+    else { $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path }
+} catch {
+    $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
 Set-Location $RepoRoot
 
 $LogFile = Join-Path $PSScriptRoot ".autopush.log"
