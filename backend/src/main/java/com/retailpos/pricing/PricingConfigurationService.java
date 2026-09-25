@@ -302,7 +302,8 @@ public class PricingConfigurationService {
                     p.getMinCupPrice() != null ? p.getMinCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("20.00"),
                     p.getMaxCupPrice() != null ? p.getMaxCupPrice().setScale(2, RoundingMode.HALF_UP) : new BigDecimal("30.00"),
                     p.getPricingMode(),
-                    p.getWeightedSales()
+                    p.getWeightedSales(),
+                    p.getImageUrl()
             ));
         }
 
@@ -523,6 +524,9 @@ public class PricingConfigurationService {
         if (update.getCurrentCupPrice() != null) {
             product.setCurrentCupPrice(update.getCurrentCupPrice());
         }
+        if (update.getImageUrl() != null) {
+            product.setImageUrl(update.getImageUrl().trim().isEmpty() ? null : update.getImageUrl().trim());
+        }
 
         productRepository.saveAndFlush(product);
 
@@ -615,7 +619,8 @@ public class PricingConfigurationService {
                 product.getMinCupPrice(),
                 product.getMaxCupPrice(),
                 product.getPricingMode(),
-                product.getWeightedSales()
+                product.getWeightedSales(),
+                product.getImageUrl()
         );
     }
 

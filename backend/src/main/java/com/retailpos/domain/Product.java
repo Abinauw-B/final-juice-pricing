@@ -65,6 +65,9 @@ public class Product {
     @Column(name = "pricing_mode", nullable = false, length = 30)
     private String pricingMode = "DYNAMIC";
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -92,6 +95,7 @@ public class Product {
         this.priceVersion = priceVersion != null ? priceVersion : 1;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.imageUrl = null;
     }
 
     public Long getId() { return id; }
@@ -162,6 +166,8 @@ public class Product {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public static ProductBuilder builder() { return new ProductBuilder(); }
 
@@ -185,6 +191,7 @@ public class Product {
         private Integer priceVersion = 1;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private String imageUrl;
 
         public ProductBuilder id(Long id) { this.id = id; return this; }
         public ProductBuilder name(String name) { this.name = name; return this; }
@@ -213,12 +220,14 @@ public class Product {
         public ProductBuilder priceVersion(Integer priceVersion) { this.priceVersion = priceVersion; return this; }
         public ProductBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
         public ProductBuilder updatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
+        public ProductBuilder imageUrl(String imageUrl) { this.imageUrl = imageUrl; return this; }
 
         public Product build() {
             Product p = new Product(id, name, flavour, description, defaultCupSizeMl, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, targetSalesPer1Minute, orderCount, targetOrders, volatility, lastPriceChangeTimestamp, priceVersion, createdAt, updatedAt);
             if (targetSalesPer2Minute != null) p.setTargetSalesPer2Minute(targetSalesPer2Minute);
             if (targetSalesPer1Minute != null) p.setTargetSalesPer1Minute(targetSalesPer1Minute);
             if (weightedSales != null) p.setWeightedSales(weightedSales);
+            if (imageUrl != null) p.setImageUrl(imageUrl);
             return p;
         }
     }

@@ -169,6 +169,7 @@ public class PricingConfigDTO {
         private Double weightedSales;
 
         private String pricingMode;
+        private String imageUrl;
 
         public ProductConfig() {}
 
@@ -177,10 +178,10 @@ public class PricingConfigDTO {
         }
 
         public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, String pricingMode) {
-            this(productId, productName, flavour, targetSales, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, pricingMode, null);
+            this(productId, productName, flavour, targetSales, defaultCupPrice, currentCupPrice, minCupPrice, maxCupPrice, pricingMode, null, null);
         }
 
-        public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, String pricingMode, Double weightedSales) {
+        public ProductConfig(Long productId, String productName, String flavour, Double targetSales, BigDecimal defaultCupPrice, BigDecimal currentCupPrice, BigDecimal minCupPrice, BigDecimal maxCupPrice, String pricingMode, Double weightedSales, String imageUrl) {
             this.productId = productId;
             this.productName = productName;
             this.flavour = flavour;
@@ -192,6 +193,7 @@ public class PricingConfigDTO {
             this.maxCupPrice = maxCupPrice;
             this.pricingMode = pricingMode != null ? pricingMode : "DYNAMIC";
             this.weightedSales = weightedSales;
+            this.imageUrl = imageUrl;
         }
 
         public Long getProductId() { return productId; }
@@ -239,5 +241,8 @@ public class PricingConfigDTO {
         public Double getWeightedSales() { return weightedSales; }
         @JsonAlias({"weightedSales", "salesWeight"})
         public void setWeightedSales(Double weightedSales) { this.weightedSales = weightedSales; }
+
+        public String getImageUrl() { return imageUrl; }
+        public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     }
 }
