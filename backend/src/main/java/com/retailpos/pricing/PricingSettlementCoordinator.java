@@ -85,7 +85,7 @@ public class PricingSettlementCoordinator {
     public LocalDateTime getNextSettlementTime() {
         int interval = pricingConfigurationService != null ? pricingConfigurationService.getSettlementIntervalSeconds() : 60;
         if (interval <= 0) interval = 60;
-        if (nextSettlementTime == null) {
+        if (nextSettlementTime == null || nextSettlementTime.isBefore(LocalDateTime.now())) {
             nextSettlementTime = LocalDateTime.now().plusSeconds(interval);
         }
         return nextSettlementTime;
@@ -278,6 +278,9 @@ public class PricingSettlementCoordinator {
 
             log.info("[PERF_TIMING] PRICING_DB_COMMIT executionId={} Database transaction committed in {} ms. Updated: {}, Unchanged: {}.",
                     executionId, (System.currentTimeMillis() - settlementStartTime), txResult.updatedCount, txResult.unchangedCount);
+
+            lastSettlementTime = now;
+            nextSettlementTime = now.plusSeconds(intervalSeconds);
 
             // 6. Post-Commit STOMP WebSocket Broadcast (IMMEDIATE & PRIORITIZED)
             PricingEngineService.PriceEvaluationCycleResult cycleResult = PricingEngineService.PriceEvaluationCycleResult.builder()

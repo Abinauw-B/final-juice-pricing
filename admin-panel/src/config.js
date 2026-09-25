@@ -1,5 +1,5 @@
 /**
- * Noida Pub Exchange - Centralized Frontend API & WebSocket Configuration
+ * Mojito Exchange - Centralized Frontend API & WebSocket Configuration
  * Admin Control Center Application
  *
  * Supported Environments:

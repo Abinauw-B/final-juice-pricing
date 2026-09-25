@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Control Center - Juice Bar Stock Exchange</title>
+  <title>Admin Control Center - Mojito Exchange</title>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍹</text></svg>">
   <script>
@@ -1809,7 +1809,7 @@
       <div class="sidebar-brand-box" style="display: flex; align-items: center; gap: 12px; padding: 4px 6px 20px 6px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;">
         <div class="brand-icon-badge" style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(192, 132, 252, 0.2)); border: 1px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);">🍹</div>
         <div>
-          <div style="font-size: 16px; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">PUB EXCHANGE</div>
+          <div style="font-size: 16px; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">MOJITO EXCHANGE</div>
           <div style="font-size: 10px; font-weight: 800; color: var(--accent-cyan); letter-spacing: 0.08em; text-transform: uppercase;">ADMIN NODE v2.0</div>
         </div>
       </div>
@@ -1858,7 +1858,7 @@
 
       <div
         style="margin-top: auto; font-size: 12px; color: var(--text-muted); padding-top: 16px; border-top: 1px solid var(--border-color);">
-        Spring Boot Production Backend<br>Pub Exchange Enterprise Terminal
+        Spring Boot Production Backend<br>Mojito Exchange Enterprise Terminal
       </div>
     </nav>
 
@@ -1889,7 +1889,7 @@
           <!-- Live Trading Simulation Bot Toggle Button -->
           <button id="btnLiveBotToggle" onclick="toggleLiveTradingBot()" class="btn-primary"
             style="background: #10b981; border: 1px solid #059669; color: white; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25); transition: all 0.2s ease;"
-            title="Click to Pause or Resume Autonomous Pub Exchange Trading Bot">
+            title="Click to Pause or Resume Autonomous Mojito Exchange Trading Bot">
             <span id="liveBotIndicator">🟢</span>
             <span id="liveBotLabel">Trading Bot: LIVE</span>
           </button>
@@ -1974,7 +1974,7 @@
             <div>
               <div
                 style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
-                <span>🚨 Pub Exchange "Market Crash" Event Script</span>
+                <span>🚨 Mojito Exchange "Market Crash" Event Script</span>
                 <span class="status-tag tag-active" id="dashCrashStatusTag">TRADING NORMAL</span>
               </div>
               <p style="font-size: 13px; color: var(--text-muted);">Triggers digital siren gong and instantly drops all
@@ -2458,7 +2458,7 @@
         <div id="view-pricing" style="display: none;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <div>
-              <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">Pub Exchange
+              <h1 style="font-size: 26px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">Mojito Exchange
                 Dynamic Pricing Engine &amp; Maintenance</h1>
               <p style="color: var(--text-muted);">Real-time weighted demand scoring, live price overrides,
                 floor/ceiling circuit breakers, and 1-minute market settlement cycles.</p>
@@ -3088,7 +3088,7 @@
             <!-- Print-Only Header -->
             <div id="printHeader" style="display: none; color: black; font-family: sans-serif;">
               <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 16px; margin-bottom: 24px;">
-                <h1 style="font-size: 28px; font-weight: 900; margin: 0 0 8px 0; color: #000;">PUB EXCHANGE</h1>
+                <h1 style="font-size: 28px; font-weight: 900; margin: 0 0 8px 0; color: #000;">MOJITO EXCHANGE</h1>
                 <h2 id="printReportTitle" style="font-size: 20px; font-weight: 700; margin: 0 0 8px 0; color: #000;">POS Sales & Revenue Report</h2>
                 <p id="printReportMeta" style="font-size: 14px; margin: 0; color: #444;">Generated on [date] | Filter: [filter]</p>
               </div>
@@ -7049,58 +7049,18 @@
       const cycleDisplay = document.getElementById('timingCurrentCycleDisplay');
       const btn = document.getElementById('btnApplyPricingTiming');
 
-      // Cancel any previously pending revert
       _clearPendingIntervalRevert();
 
       if (sec !== activeSec) {
-        // ── PENDING STATE: Show countdown on Apply button ──
         if (cycleDisplay) {
-          cycleDisplay.innerHTML = `<span style="color: #f59e0b; font-weight: 800;">${shortLabel} (pending…)</span>`;
+          cycleDisplay.innerHTML = `<span style="color: #f59e0b; font-weight: 800;">${shortLabel} (pending apply)</span>`;
         }
-
-        let secsLeft = 5;
-        const updateBtn = () => {
-          if (btn) {
-            btn.style.boxShadow = '0 0 20px rgba(245,158,11,0.9)';
-            btn.style.background = 'linear-gradient(135deg, #d97706, #b45309)';
-            btn.innerHTML = `⚡ APPLY ${label.toUpperCase()} (${secsLeft}s)`;
-          }
-        };
-        updateBtn();
-
-        pendingIntervalCountdown = setInterval(() => {
-          secsLeft--;
-          if (secsLeft <= 0) {
-            _clearPendingIntervalRevert();
-            // Revert dropdown and UI back to active interval
-            const revertSec = activeSec;
-            const revertLabel = labelMap[revertSec] || `${revertSec}s`;
-            const revertShort = revertSec === 10 ? '10-Sec' :
-              (revertSec === 30 ? '30-Sec' :
-                (revertSec % 60 === 0 ? `${revertSec / 60}-Min` : `${revertSec}s`));
-            const sel = document.getElementById('pricingIntervalSelect');
-            if (sel) sel.value = String(revertSec);
-            if (document.getElementById('cfgSettlementInterval'))
-              document.getElementById('cfgSettlementInterval').value = revertSec;
-            if (cycleDisplay) cycleDisplay.textContent = `${revertShort} DWMA`;
-            if (btn) {
-              btn.style.boxShadow = '';
-              btn.style.background = 'linear-gradient(135deg, #2563eb, #1d4ed8)';
-              btn.innerHTML = `⚡ APPLY PRICING TIMING`;
-            }
-            showToast(`⏱️ No change applied — reverted to ${revertLabel}.`, 'info');
-            return;
-          }
-          updateBtn();
-        }, 1000);
-
-        // Safety timeout slightly after countdown finishes
-        pendingIntervalRevertTimer = setTimeout(() => {
-          _clearPendingIntervalRevert();
-        }, 6000);
-
+        if (btn) {
+          btn.style.boxShadow = '0 0 16px rgba(245,158,11,0.7)';
+          btn.style.background = 'linear-gradient(135deg, #d97706, #b45309)';
+          btn.innerHTML = `⚡ APPLY ${label.toUpperCase()}`;
+        }
       } else {
-        // Selected same as active — no pending state needed
         if (cycleDisplay) {
           cycleDisplay.textContent = `${shortLabel} DWMA`;
         }
@@ -7153,6 +7113,7 @@
       const btn = document.getElementById('btnApplyPricingTiming');
       if (btn) {
         btn.style.boxShadow = '';
+        btn.style.background = 'linear-gradient(135deg, #2563eb, #1d4ed8)';
         btn.innerHTML = `⚡ APPLY PRICING TIMING`;
       }
 
@@ -7164,7 +7125,6 @@
     }
 
     async function applyPricingTimingDirect() {
-      // Clear any pending 5-second revert — the user clicked Apply in time
       _clearPendingIntervalRevert();
 
       const btn = document.getElementById('btnApplyPricingTiming');
@@ -7188,19 +7148,28 @@
       const label = labelMap[selectedSec] || `${selectedSec} Seconds`;
 
       try {
-        let res = await apiFetch('/admin/pricing/timing', {
+        let res = await apiFetch(`/admin/pricing/timing?intervalSeconds=${selectedSec}`, {
           method: 'PUT',
           body: JSON.stringify({ intervalSeconds: selectedSec })
-        });
-        if (!res.ok) {
-          res = await apiFetch('/pricing/timing', {
+        }).catch(() => null);
+
+        if (!res || !res.ok) {
+          res = await apiFetch(`/pricing/timing?intervalSeconds=${selectedSec}`, {
             method: 'PUT',
             body: JSON.stringify({ intervalSeconds: selectedSec })
-          });
+          }).catch(() => null);
         }
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || `Server returned HTTP ${res.status}`);
+
+        if (!res || !res.ok) {
+          res = await apiFetch(`/admin/pricing/timing?intervalSeconds=${selectedSec}`, {
+            method: 'POST',
+            body: JSON.stringify({ intervalSeconds: selectedSec })
+          }).catch(() => null);
+        }
+
+        if (!res || !res.ok) {
+          const errData = res ? await res.json().catch(() => ({})) : {};
+          throw new Error(errData.message || (res ? `Server returned HTTP ${res.status}` : 'Backend unreachable'));
         }
 
         const newTarget = new Date(Date.now() + selectedSec * 1000).toISOString();
@@ -7227,12 +7196,24 @@
           nextSettlementAt: newTarget
         });
 
-        // Do NOT immediately alter prices; prices remain steady until the full duration countdown elapses
-        showToast(`⏱️ Settlement duration set to ${label}. Prices remain steady and will recalculate when the countdown completes.`, 'success');
+        showToast(`⏱️ Settlement timing updated to ${label}. Cycle timer synchronized.`, 'success');
         loadPricingConfiguration();
         loadPricingAuditLogs();
+
+        // Trigger immediate evaluation with the new interval
+        triggerPriceEngine({ silent: true });
       } catch (e) {
-        showToast(`Network error while updating pricing timing: ${e.message}`, 'error');
+        showToast(`Timing update notice: ${e.message}. Active cycle updated locally.`, 'warning');
+        // Still apply to UI and local ticker
+        const newTarget = new Date(Date.now() + selectedSec * 1000).toISOString();
+        activePricingTiming = {
+          intervalSeconds: selectedSec,
+          settlementIntervalSeconds: selectedSec,
+          intervalMinutes: selectedSec / 60.0,
+          label: label,
+          nextSettlementAt: newTarget
+        };
+        applyTimingToUI(activePricingTiming);
       } finally {
         if (btn) setButtonLoading(btn, false);
       }
