@@ -154,7 +154,9 @@ public class Product {
     public void setTargetOrders(Integer targetOrders) { this.targetOrders = targetOrders; }
     public BigDecimal getVolatility() { return volatility != null ? volatility : new BigDecimal("0.0800"); }
     public void setVolatility(BigDecimal volatility) { this.volatility = volatility; }
+    @com.fasterxml.jackson.annotation.JsonProperty("isActive")
     public Boolean getIsActive() { return isActive != null ? isActive : true; }
+    @com.fasterxml.jackson.annotation.JsonProperty("isActive")
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
     public LocalDateTime getLastPriceChangeTimestamp() { return lastPriceChangeTimestamp; }
     public void setLastPriceChangeTimestamp(LocalDateTime lastPriceChangeTimestamp) { this.lastPriceChangeTimestamp = lastPriceChangeTimestamp; }

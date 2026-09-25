@@ -1915,7 +1915,7 @@
           <a id="adminNavLedLink" href="http://localhost:8000/led-display.html" target="_blank"
             style="text-decoration: none; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25); display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease;"
             aria-label="Open LED Wall Display in new tab">
-            📺 LED Ticker
+            📺 LED TV
           </a>
         </div>
 
@@ -8094,8 +8094,8 @@
               method: 'PUT',
               body: JSON.stringify({
                 id: productId,
-                name: name,
                 isActive: false,
+                active: false,
                 pricingMode: 'INACTIVE',
                 currentCupPrice: 25,
                 defaultCupPrice: 25,
