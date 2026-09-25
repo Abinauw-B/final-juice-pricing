@@ -9,6 +9,7 @@
     { "source": "/bridge.html", "destination": "/src/bridge.html" },
     { "source": "/config.js", "destination": "/src/config.js" },
     { "source": "/pub-exchange-tokens.css", "destination": "/src/pub-exchange-tokens.css" },
+    { "source": "/styles.css", "destination": "/src/styles.css" },
     { "source": "/(.*)", "destination": "/src/$1" }
   ]
 }
