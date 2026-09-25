@@ -2,7 +2,13 @@ param(
     [int]$IntervalMinutes = 10
 )
 
-$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+try {
+    $gitTopLevel = (git rev-parse --show-toplevel 2>$null)
+    if ($gitTopLevel) { $RepoRoot = $gitTopLevel.Trim() }
+    else { $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path }
+} catch {
+    $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
 $pidFile = Join-Path $PSScriptRoot ".autopush.pid"
 $scriptPath = Join-Path $PSScriptRoot "auto-git-push.ps1"
 
