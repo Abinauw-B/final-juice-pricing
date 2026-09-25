@@ -284,7 +284,7 @@ public class MarketCrashService {
                     .newPrice(crashPrice)
                     .priceChange(crashPrice.subtract(preCrashPrice))
                     .reason("MARKET_CRASH_START")
-                    .explanation(String.format("🚨 MARKET CRASH STARTED! Price snapshot of ₹%s saved; live price set to ₹%s", preCrashPrice, crashPrice))
+                    .explanation(String.format("🚨 MARKET CRASH STARTED! Duration: %ds. Price snapshot of ₹%s saved; live price set to ₹%s", durationSeconds, preCrashPrice, crashPrice))
                     .configVersion(pricingConfigurationService != null ? pricingConfigurationService.getConfigurationVersion() : 1L)
                     .createdAt(crashStartedTime)
                     .build();
