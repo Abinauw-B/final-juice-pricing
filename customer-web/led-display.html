@@ -3838,6 +3838,7 @@
 
     function getBeverageImage(p) {
       if (!p) return beverageImages[1];
+      if (p.imageUrl && p.imageUrl.trim() !== '') return p.imageUrl.trim();
       const pid = p.id || p.productId;
       if (beverageImages[pid]) return beverageImages[pid];
       const f = (p.flavour || p.name || '').toUpperCase();

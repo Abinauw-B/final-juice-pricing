@@ -3586,7 +3586,6 @@
             <input type="text" id="editPricingJuiceDesc"
               onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitProductPricingDetails(); }"
               style="width: 100%; padding: 9px 12px; font-size: 13px; border: 1.5px solid var(--border-color); border-radius: 8px; background: var(--bg-surface); color: var(--text-main); transition: border-color 0.2s;"
-              style="width: 100%; padding: 9px 12px; font-size: 13px; border: 1.5px solid var(--border-color); border-radius: 8px; background: var(--bg-surface); color: var(--text-main); transition: border-color 0.2s;"
               onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border-color)'">
           </div>
           <div>
@@ -6687,6 +6686,7 @@
 
     function getBeverageImageAdmin(p) {
       if (!p) return adminBeverageImages[1];
+      if (p.imageUrl && p.imageUrl.trim() !== '') return p.imageUrl.trim();
       const pid = p.productId || p.id;
       if (adminBeverageImages[pid]) return adminBeverageImages[pid];
       const f = (p.flavour || p.name || p.productName || '').toUpperCase();
