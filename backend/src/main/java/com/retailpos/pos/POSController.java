@@ -31,16 +31,13 @@ public class POSController {
     private final SalesOrderRepository salesOrderRepository;
     private final PriceHistoryRepository priceHistoryRepository;
     private final SimpMessagingTemplate messagingTemplate;
-    private final JdbcTemplate jdbcTemplate;
-
-    public POSController(POSService posService, ProductRepository productRepository, JuiceBatchService juiceBatchService, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, SimpMessagingTemplate messagingTemplate, @Autowired(required = false) JdbcTemplate jdbcTemplate) {
+    public POSController(POSService posService, ProductRepository productRepository, JuiceBatchService juiceBatchService, SalesOrderRepository salesOrderRepository, PriceHistoryRepository priceHistoryRepository, SimpMessagingTemplate messagingTemplate) {
         this.posService = posService;
         this.productRepository = productRepository;
         this.juiceBatchService = juiceBatchService;
         this.salesOrderRepository = salesOrderRepository;
         this.priceHistoryRepository = priceHistoryRepository;
         this.messagingTemplate = messagingTemplate;
-        this.jdbcTemplate = jdbcTemplate;
     }
 
     private void broadcastProductUpdate() {
